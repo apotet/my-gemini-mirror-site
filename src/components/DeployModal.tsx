@@ -9,11 +9,13 @@ import {
   Key,
   FolderGit2,
   Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 import {
   pushProjectToGitHub,
   generateProjectZip,
   downloadBlob,
+  getProjectFiles,
 } from '../projectExporter';
 
 interface DeployModalProps {
@@ -38,7 +40,72 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
     repoUrl: string;
     pageUrl: string;
     owner: string;
+    actionsUrl?: string;
   } | null>(null);
+
+  const [liveActionStatus, setLiveActionStatus] = useState<{
+    status: 'queued' | 'in_progress' | 'completed' | 'unknown';
+    conclusion: 'success' | 'failure' | 'cancelled' | null;
+    updatedAt?: string;
+  } | null>(null);
+
+  // Poll GitHub Actions status when successResult is available
+  React.useEffect(() => {
+    if (!successResult || !token) return;
+
+    let isSubscribed = true;
+    const cleanRepo = repoName.replace(/^https?:\/\/github\.com\//i, '').replace(/^.*\//, '').trim() || 'my-gemini-mirror-site';
+    const authHeader = {
+      Authorization: `Bearer ${token.trim()}`,
+      Accept: 'application/vnd.github.v3+json',
+    };
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${successResult.owner}/${cleanRepo}/actions/runs?per_page=1`,
+          { headers: authHeader }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const latestRun = data.workflow_runs?.[0];
+        if (latestRun && isSubscribed) {
+          setLiveActionStatus({
+            status: latestRun.status,
+            conclusion: latestRun.conclusion,
+            updatedAt: latestRun.updated_at,
+          });
+        }
+      } catch {
+        // quiet fallback
+      }
+    };
+
+    // Initial check and interval every 6 seconds
+    checkStatus();
+    const interval = setInterval(checkStatus, 6000);
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
+  }, [successResult, token, repoName]);
+
+  const projectFiles = React.useMemo(() => {
+    try {
+      return getProjectFiles();
+    } catch {
+      return [];
+    }
+  }, [isOpen]);
+
+  const hasPracticeHub = projectFiles.some((f) => f.path.includes('PracticeHub.tsx'));
+  const hasNewIpv4 = projectFiles.some(
+    (f) => f.path.includes('Ipv4Trainer.tsx') && f.content.includes('Правило непрерывности')
+  );
+
+  const forceReloadApp = () => {
+    window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
+  };
 
   if (!isOpen) return null;
 
@@ -99,23 +166,79 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400">
             <UploadCloud className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold tracking-tight">
-              Синхронизация зеркала с GitHub
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight">
+                Синхронизация с GitHub
+              </h2>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                v2.4
+              </span>
+            </div>
             <p className="text-xs text-slate-400">
-              Публикация обновлённого тренажёра в{' '}
+              Публикация обновлённого зеркала в{' '}
               <span className="text-cyan-300 font-mono">my-gemini-mirror-site</span>
             </p>
           </div>
         </div>
 
+        {/* Verification banner of browser memory status */}
+        {!hasPracticeHub || !hasNewIpv4 ? (
+          <div className="p-3.5 rounded-xl bg-rose-950/80 border-2 border-rose-500/80 text-rose-200 mb-4 space-y-2">
+            <div className="font-bold text-xs text-rose-100 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              Вкладка браузера держит устаревший кэш!
+            </div>
+            <p className="text-[11px] text-rose-300">
+              В память браузера ещё не загрузились последние правки (Практика и новая логика IPv4). Нажмите кнопку ниже, чтобы обновить код перед выгрузкой:
+            </p>
+            <button
+              onClick={forceReloadApp}
+              type="button"
+              className="w-full py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Принудительно перезагрузить код
+            </button>
+          </div>
+        ) : (
+          <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-[11px] text-emerald-300 flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>
+                <strong>Код проверен (v2.4):</strong> PracticeHub и IPv4 непрерывные маски загружены ({projectFiles.length} файлов).
+              </span>
+            </div>
+            <button
+              onClick={forceReloadApp}
+              type="button"
+              title="Перезагрузить код"
+              className="px-2 py-1 text-emerald-300 hover:text-white rounded bg-emerald-900/60 hover:bg-emerald-800 text-[10px] font-mono cursor-pointer flex items-center gap-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Обновить
+            </button>
+          </div>
+        )}
+
+        {/* Change summary pill */}
+        <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-[11px] text-slate-300 space-y-1 mb-5">
+          <span className="font-semibold text-cyan-300 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" /> Включено в это обновление:
+          </span>
+          <ul className="list-disc list-inside text-slate-400 space-y-0.5 pl-1">
+            <li><strong className="text-slate-200">IPv4 Тренажёр:</strong> непрерывные маски (перед 1 не бывает 0, клик по 2 или 1 ставит единицы).</li>
+            <li><strong className="text-slate-200">Вкладка «Практика»:</strong> объединены все 4 симулятора (Путь пакета, VLAN, Протоколы, CLI).</li>
+            <li><strong className="text-slate-200">Чистая навигация:</strong> 4 главные вкладки (Экзамен, IPv4, Практика, Теория OSI).</li>
+          </ul>
+        </div>
+
         {/* URLs overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
           <a
             href="https://apotet.github.io/osi-tcpip-exam-public/"
             target="_blank"
@@ -154,11 +277,41 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
             <div className="flex items-center gap-3 text-emerald-300">
               <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
               <div>
-                <h3 className="font-bold">Зеркало успешно обновлено!</h3>
+                <h3 className="font-bold">Файлы успешно выгружены на GitHub!</h3>
                 <p className="text-xs text-emerald-400/90">
-                  Все файлы тренажёра (React 19 + 502 вопроса) выгружены на GitHub.
+                  Все файлы обновления отправлены в репозиторий.
                 </p>
               </div>
+            </div>
+
+            {/* Live Actions Status Card */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-semibold flex items-center gap-1.5">
+                  Статус автосборки (GitHub Actions):
+                </span>
+                {liveActionStatus?.status === 'in_progress' || liveActionStatus?.status === 'queued' ? (
+                  <span className="flex items-center gap-1.5 text-amber-400 font-mono font-bold animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    Собирается на сервере... (~1 мин)
+                  </span>
+                ) : liveActionStatus?.conclusion === 'success' ? (
+                  <span className="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    Готово! Сайт обновлён на GitHub
+                  </span>
+                ) : (
+                  <span className="text-cyan-300 font-mono">
+                    {liveActionStatus?.status || 'Запуск задачи...'}
+                  </span>
+                )}
+              </div>
+
+              {liveActionStatus?.conclusion === 'success' && (
+                <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-xs text-emerald-200">
+                  🚀 <strong>Сборка готова!</strong> Теперь откройте сайт зеркала и нажмите <strong>Ctrl + F5</strong> (или Command + Shift + R на Mac) для сброса кэша браузера.
+                </div>
+              )}
             </div>
 
             <div className="space-y-2 text-xs">
@@ -168,12 +321,28 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
                   href={successResult.pageUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-cyan-300 hover:underline flex items-center gap-1"
+                  className="font-mono text-cyan-300 hover:underline flex items-center gap-1 font-bold"
                 >
                   {successResult.pageUrl}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
+
+              {successResult.actionsUrl && (
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30">
+                  <span className="text-slate-300">Логи GitHub Actions:</span>
+                  <a
+                    href={successResult.actionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-cyan-300 hover:underline flex items-center gap-1 font-bold"
+                  >
+                    Открыть логи сборки
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30">
                 <span className="text-slate-400">Репозиторий:</span>
                 <a
@@ -188,14 +357,25 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400">
-              GitHub Pages обновляет кэш обычно за 30-90 секунд.
-            </p>
+            <div className="p-3.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-[11px] text-amber-200 space-y-1.5">
+              <div className="font-bold text-amber-300 flex items-center gap-1.5">
+                ⚡ Почему сайт может показывать старую версию:
+              </div>
+              <p>
+                1. <strong>Кэш браузера:</strong> GitHub Pages отдаёт заголовок <code className="bg-black/40 px-1 py-0.5 rounded text-white">cache-control: max-age=600</code> (10 минут). Браузер показывает сохранённую копию. Обязательно нажмите <strong>Ctrl+F5</strong> на ПК или откройте ссылку в режиме <strong>Инкогнито</strong>.
+              </p>
+              <p>
+                2. <strong>Сборка GitHub Actions:</strong> занимает ~60-90 секунд. Дождитесь зелёного статуса выше.
+              </p>
+            </div>
 
             <button
-              onClick={() => setSuccessResult(null)}
+              onClick={() => {
+                setSuccessResult(null);
+                setLiveActionStatus(null);
+              }}
               type="button"
-              className="w-full py-2.5 px-4 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+              className="w-full py-2.5 px-4 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
             >
               Синхронизировать снова
             </button>
@@ -254,6 +434,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
             )}
+
+            <div className="p-2.5 rounded-lg bg-blue-950/40 border border-blue-500/30 text-[11px] text-blue-200 flex items-start gap-2">
+              <span className="text-cyan-400 font-bold">ℹ️</span>
+              <span>
+                <strong>Перед отправкой:</strong> если вкладка AI Studio на ПК открыта давно, нажмите <kbd className="px-1.5 py-0.5 rounded bg-black/50 text-cyan-300 font-mono text-[10px]">F5</kbd> (обновить страницу), чтобы браузер гарантированно держал в памяти свежий код.
+              </span>
+            </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
               <button
