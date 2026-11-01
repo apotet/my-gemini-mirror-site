@@ -136,14 +136,19 @@ export default function App() {
     setIsFixingWorkflow(true);
     setPagesError(null);
     try {
-      const res = await fixAndDeployPages({
+      const res = await pushProjectToGitHub({
         token: githubToken.trim(),
-        repoName: mirrorRepoName.trim() || 'my-gemini-mirror-site'
+        repoName: mirrorRepoName.trim() || 'my-gemini-mirror-site',
+        isPrivate: false,
+        onProgress: (status, percent) => {
+          setPushStatus(status);
+          setPushProgress(percent);
+        },
       });
       setPagesActivatedUrl(res.pageUrl);
-      setFixSuccessMessage('Сборка запущена! GitHub Actions пересобирает проект с нужными параметрами. Через 60-90 секунд сайт откроется!');
+      setFixSuccessMessage('Готово! Все файлы и скомпилированный сайт загружены в ваш GitHub. Сайт запускается.');
     } catch (err: any) {
-      setPagesError(err.message || 'Ошибка запуска сборки');
+      setPagesError(err.message || 'Ошибка загрузки файлов');
     } finally {
       setIsFixingWorkflow(false);
     }
