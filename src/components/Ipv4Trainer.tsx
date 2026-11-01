@@ -384,25 +384,26 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 w-full sm:w-auto p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setSubTab('practice')}
               type="button"
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 subTab === 'practice'
-                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Тренировка навыков
+              <span className="sm:hidden">Тренировка</span>
+              <span className="hidden sm:inline">Тренировка навыков</span>
             </button>
             <button
               onClick={() => setSubTab('calculator')}
               type="button"
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 subTab === 'calculator'
-                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Калькулятор
@@ -410,21 +411,21 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
             <button
               onClick={() => setSubTab('bits')}
               type="button"
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 subTab === 'bits'
-                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              8 Битов октета
+              8 Бит октета
             </button>
             <button
               onClick={() => setSubTab('cheatsheet')}
               type="button"
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 subTab === 'cheatsheet'
-                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Таблица CIDR
@@ -820,36 +821,36 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
 
       {/* Sub-tab 4: CIDR Reference Table */}
       {subTab === 'cheatsheet' && (
-        <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl space-y-4">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-cyan-400" />
+        <div className="p-4 sm:p-8 rounded-3xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/20 shadow-xl space-y-4">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             Справочная таблица префиксов CIDR от /16 до /30
           </h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left font-mono text-xs">
-              <thead className="bg-slate-900/80 text-cyan-400 uppercase text-[10px]">
+              <thead className="bg-slate-100 dark:bg-slate-900/80 text-cyan-700 dark:text-cyan-400 uppercase text-[10px]">
                 <tr>
-                  <th className="p-3">CIDR</th>
-                  <th className="p-3">Маска</th>
-                  <th className="p-3">Октет & Шаг</th>
-                  <th className="p-3">Всего IP</th>
-                  <th className="p-3">Хостов</th>
+                  <th className="p-2.5 sm:p-3">CIDR</th>
+                  <th className="p-2.5 sm:p-3">Маска</th>
+                  <th className="p-2.5 sm:p-3">Октет & Шаг</th>
+                  <th className="p-2.5 sm:p-3">Всего IP</th>
+                  <th className="p-2.5 sm:p-3">Хостов</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {[16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map((p) => {
                   const step = interestingOctet(p);
                   const total = Math.pow(2, 32 - p);
                   const usable = total - 2;
                   return (
-                    <tr key={p} className="hover:bg-slate-900/40 text-slate-300">
-                      <td className="p-3 font-bold text-white">/{p}</td>
-                      <td className="p-3 text-cyan-300">{maskText(p)}</td>
-                      <td className="p-3 text-amber-300">
+                    <tr key={p} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 text-slate-700 dark:text-slate-300">
+                      <td className="p-2.5 sm:p-3 font-bold text-slate-900 dark:text-white">/{p}</td>
+                      <td className="p-2.5 sm:p-3 text-cyan-700 dark:text-cyan-300 font-semibold">{maskText(p)}</td>
+                      <td className="p-2.5 sm:p-3 text-amber-700 dark:text-amber-300">
                         Шаг {step.step} в {step.octet}-м октете
                       </td>
-                      <td className="p-3">{total.toLocaleString()}</td>
-                      <td className="p-3 text-emerald-300 font-bold">
+                      <td className="p-2.5 sm:p-3">{total.toLocaleString()}</td>
+                      <td className="p-2.5 sm:p-3 text-emerald-700 dark:text-emerald-300 font-bold">
                         {usable.toLocaleString()}
                       </td>
                     </tr>
