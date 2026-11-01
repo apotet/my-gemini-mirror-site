@@ -333,12 +333,8 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
   };
 
   const toggleBit = (index: number) => {
-    // IPv4 subnet mask rule: '0' cannot precede '1'.
-    // Clicking bit at index sets all preceding bits (0..index) to 1.
-    // If clicking the current rightmost active boundary bit, toggle it off.
-    const currentActiveCount = bits.filter((b) => b === 1).length;
-    const newCount = currentActiveCount === index + 1 ? index : index + 1;
-    const newBits = Array.from({ length: 8 }, (_, i) => (i < newCount ? 1 : 0));
+    const newBits = [...bits];
+    newBits[index] = newBits[index] ? 0 : 1;
     setBits(newBits);
     if (soundEnabled) playClickSound();
   };
@@ -698,25 +694,18 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
         <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl space-y-6">
           <div>
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-              Пойми один октет маски
+              Пойми один октет
             </span>
             <h2 className="text-xl font-bold text-white mt-1">
               8 Битов и веса позиций: 128, 64, 32, 16, 8, 4, 2, 1
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              В маске сети перед <code className="text-cyan-300 font-bold">1</code> не может стоять <code className="text-slate-300 font-bold">0</code>. При клике на любой бит (например, 2 или 1) все биты левее автоматически становятся единицами.
+              Нажмите на любой бит для переключения 0 и 1, либо используйте готовые пресеты масок
             </p>
           </div>
 
           {/* Interactive bits display */}
           <div className="p-6 rounded-2xl bg-[#060f1b] border border-cyan-500/30 space-y-6">
-            <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200 flex items-start gap-2 max-w-xl mx-auto">
-              <span className="text-cyan-400 font-bold text-sm">💡</span>
-              <p className="leading-relaxed">
-                <strong>Правило непрерывности:</strong> маска подсети — это сплошной ряд единиц слева направо. Нажатие на бит <span className="font-mono text-cyan-300">2</span> заполнит 7 бит (254), а на <span className="font-mono text-cyan-300">1</span> — все 8 бит (255).
-              </p>
-            </div>
-
             <div className="grid grid-cols-8 gap-2 max-w-xl mx-auto">
               {bits.map((b, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1.5">
@@ -724,7 +713,6 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
                   <button
                     onClick={() => toggleBit(idx)}
                     type="button"
-                    title={`Бит веса ${bitWeights[idx]}: кликните для установки маски до этой позиции`}
                     className={`w-full aspect-square rounded-xl flex items-center justify-center font-mono font-black text-base sm:text-xl border transition-all cursor-pointer ${
                       b === 1
                         ? 'bg-cyan-500 border-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/30 scale-105'
@@ -738,36 +726,20 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
               ))}
             </div>
 
-            {/* Decimal sum & Network step */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-xl mx-auto text-center pt-2">
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Двоичный октет</span>
-                <code className="text-cyan-400 font-mono font-bold text-sm tracking-widest">{bits.join('')}</code>
-                <span className="text-[10px] text-slate-500 block mt-0.5">
-                  {bits.filter((x) => x === 1).length} из 8 бит
-                </span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-cyan-500/30">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Десятичный октет</span>
-                <div className="text-2xl font-black text-white font-mono">{decimalValue}</div>
-                <span className="text-[10px] text-cyan-300 block mt-0.5">Значение маски</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Шаг подсети</span>
-                <div className="text-xl font-bold text-amber-300 font-mono">
-                  {decimalValue === 0 ? 256 : decimalValue === 255 ? 1 : 256 - decimalValue}
-                </div>
-                <span className="text-[10px] text-slate-500 block mt-0.5">256 − {decimalValue}</span>
-              </div>
+            {/* Decimal sum */}
+            <div className="text-center pt-2">
+              <span className="text-xs font-mono text-slate-400">Двоичный вид: </span>
+              <code className="text-cyan-400 font-mono font-bold text-sm">{bits.join('')}</code>
+              <div className="text-3xl font-black text-white font-mono mt-1">{decimalValue}</div>
+              <span className="text-[11px] text-slate-400">
+                Десятичное значение октета маски
+              </span>
             </div>
 
             {/* Preset chips */}
-            <div className="flex flex-wrap justify-center gap-1.5 pt-2 border-t border-slate-800">
-              <span className="text-xs text-slate-400 self-center mr-1">Быстрые маски:</span>
+            <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-slate-800">
+              <span className="text-xs text-slate-400 self-center">Быстрые маски:</span>
               {[
-                { count: 0, val: 0 },
                 { count: 1, val: 128 },
                 { count: 2, val: 192 },
                 { count: 3, val: 224 },
@@ -776,23 +748,16 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
                 { count: 6, val: 252 },
                 { count: 7, val: 254 },
                 { count: 8, val: 255 },
-              ].map((chip) => {
-                const isActive = decimalValue === chip.val;
-                return (
-                  <button
-                    key={chip.val}
-                    onClick={() => handleSetPrefixBits(chip.count)}
-                    type="button"
-                    className={`px-2.5 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-cyan-500 border-cyan-300 text-slate-950 font-bold shadow-md shadow-cyan-500/20'
-                        : 'bg-slate-900 border-slate-700 text-cyan-300 hover:border-cyan-400'
-                    }`}
-                  >
-                    {chip.val} ({chip.count} б.)
-                  </button>
-                );
-              })}
+              ].map((chip) => (
+                <button
+                  key={chip.val}
+                  onClick={() => handleSetPrefixBits(chip.count)}
+                  type="button"
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-cyan-400 font-mono text-xs text-cyan-300 transition-all cursor-pointer"
+                >
+                  {chip.val} ({chip.count} б.)
+                </button>
+              ))}
             </div>
           </div>
         </div>
