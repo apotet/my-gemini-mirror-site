@@ -13,9 +13,12 @@ import {
   Menu,
   X,
   Sparkles,
+  FlaskConical,
+  BookOpen,
+  RotateCcw,
 } from 'lucide-react';
 
-export type NavTab = 'exam' | 'ipv4' | 'journey' | 'vlan' | 'protocols' | 'osi' | 'cli';
+export type NavTab = 'exam' | 'ipv4' | 'practice' | 'osi';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -41,11 +44,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const tabs: Array<{ id: NavTab; label: string; icon: React.ReactNode }> = [
     { id: 'exam', label: 'Экзамен', icon: <Layers className="w-4 h-4" /> },
     { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
-    { id: 'journey', label: 'Путь пакета', icon: <Activity className="w-4 h-4" /> },
-    { id: 'vlan', label: 'VLAN & Trunk', icon: <Layers className="w-4 h-4" /> },
-    { id: 'protocols', label: 'DHCP/NAT/Wire', icon: <Cpu className="w-4 h-4" /> },
-    { id: 'osi', label: 'Модель OSI', icon: <Cpu className="w-4 h-4" /> },
-    { id: 'cli', label: 'CLI', icon: <Terminal className="w-4 h-4" /> },
+    { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-cyan-400" /> },
+    { id: 'osi', label: 'Теория OSI', icon: <BookOpen className="w-4 h-4 text-indigo-400" /> },
   ];
 
   const handleTabClick = (tab: NavTab) => {
@@ -125,6 +125,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <UploadCloud className="w-4 h-4 text-cyan-400" />
             <span className="hidden md:inline">Синхронизировать</span>
+          </button>
+
+          {/* Reload / Refresh App Cache Button */}
+          <button
+            onClick={() => {
+              window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
+            }}
+            type="button"
+            className="p-2 text-slate-400 hover:text-cyan-300 rounded-xl hover:bg-white/5 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
+            aria-label="Обновить код приложения"
+            title="Перезагрузить код приложения (сброс кэша)"
+          >
+            <RotateCcw className="w-4 h-4" />
           </button>
 
           {/* Sound Toggle */}
