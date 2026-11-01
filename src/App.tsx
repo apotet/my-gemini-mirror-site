@@ -40,6 +40,7 @@ import {
   downloadBlob,
   pushProjectToGitHub,
   enableGitHubPages,
+  fixAndDeployPages,
   getProjectFiles
 } from './projectExporter';
 
@@ -121,6 +122,30 @@ export default function App() {
       setPagesError(err.message || 'Не удалось автоматически включить GitHub Pages через API');
     } finally {
       setIsEnablingPages(false);
+    }
+  };
+
+  const [isFixingWorkflow, setIsFixingWorkflow] = useState(false);
+  const [fixSuccessMessage, setFixSuccessMessage] = useState<string | null>(null);
+
+  const handleFixAndDeploy = async () => {
+    if (!githubToken.trim()) {
+      setShowExportModal(true);
+      return;
+    }
+    setIsFixingWorkflow(true);
+    setPagesError(null);
+    try {
+      const res = await fixAndDeployPages({
+        token: githubToken.trim(),
+        repoName: mirrorRepoName.trim() || 'my-gemini-mirror-site'
+      });
+      setPagesActivatedUrl(res.pageUrl);
+      setFixSuccessMessage('Сборка запущена! GitHub Actions пересобирает проект с нужными параметрами. Через 60-90 секунд сайт откроется!');
+    } catch (err: any) {
+      setPagesError(err.message || 'Ошибка запуска сборки');
+    } finally {
+      setIsFixingWorkflow(false);
     }
   };
 
@@ -355,6 +380,59 @@ export default function App() {
           </div>
         )}
       </header>
+
+      {/* DEPLOYMENT LIVE STATUS & 1-CLICK ACTIVATION BANNER */}
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-slate-900 to-violet-950/60 backdrop-blur-xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span className="font-bold text-sm text-white">
+                Репозиторий apotet/my-gemini-mirror-site
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                GitHub Pages
+              </span>
+            </div>
+            <p className="text-xs text-slate-300">
+              Адрес сайта: <a href="https://apotet.github.io/my-gemini-mirror-site/" target="_blank" rel="noreferrer" className="text-cyan-400 font-mono underline hover:text-cyan-300">https://apotet.github.io/my-gemini-mirror-site/</a>
+            </p>
+            {fixSuccessMessage && (
+              <div className="text-xs text-emerald-400 font-semibold pt-1 flex items-center gap-1.5 animate-fadeIn">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{fixSuccessMessage}</span>
+              </div>
+            )}
+            {pagesError && (
+              <div className="text-xs text-rose-400 font-medium pt-1">
+                {pagesError}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={handleFixAndDeploy}
+              disabled={isFixingWorkflow}
+              className="flex-1 md:flex-initial min-h-[44px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] cursor-pointer disabled:opacity-50"
+            >
+              <Sparkles className={`w-4 h-4 ${isFixingWorkflow ? 'animate-spin' : ''}`} />
+              <span>{isFixingWorkflow ? 'Запуск сборки...' : '⚡ Исправить и запустить сборку (1 клик)'}</span>
+            </button>
+
+            <a
+              href="https://apotet.github.io/my-gemini-mirror-site/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 md:flex-initial min-h-[44px] px-4 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center justify-center space-x-1.5 transition"
+            >
+              <span>Проверить сайт</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
+          </div>
+        </div>
+      </div>
 
       {/* HERO SECTION */}
       <section id="hero" className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
@@ -913,15 +991,21 @@ export default function App() {
               <h3 className="font-bold text-xl text-slate-900 dark:text-white">
                 Выгрузить зеркало в ваш GitHub
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Приложение создаст отдельный репозиторий на вашем GitHub и загрузит весь код.
-              </p>
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>Ваш основной сайт от ChatGPT НЕ затрагивается!</span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  Зеркало публикуется в <strong>отдельный репозиторий</strong> и будет доступно по своей резервной ссылке. У вас останутся два разных сайта.
+                </p>
+              </div>
             </div>
 
             <form onSubmit={handlePushToGithub} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Имя нового репозитория
+                  Имя нового репозитория для зеркала
                 </label>
                 <input
                   type="text"
@@ -936,15 +1020,15 @@ export default function App() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    GitHub Personal Access Token (PAT)
+                    GitHub Personal Access Token (начинается на ghp_...)
                   </label>
                   <a
                     href="https://github.com/settings/tokens/new"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5"
+                    className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-0.5"
                   >
-                    Получить токен <ExternalLink className="w-3 h-3" />
+                    Создать токен (30 сек) <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <div className="relative">
@@ -956,7 +1040,7 @@ export default function App() {
                       setGithubToken(e.target.value);
                       safeStorage.setItem('gh_token', e.target.value.trim());
                     }}
-                    placeholder="ghp_..."
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx"
                     className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm font-mono text-slate-900 dark:text-white"
                   />
                   <button
@@ -967,6 +1051,9 @@ export default function App() {
                     {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Если токен был случайно стёрт: GitHub показывает ключ только один раз при создании. Нажмите ссылку выше, поставьте галочку <code>repo</code> и скопируйте новый ключ.
+                </p>
               </div>
 
               {isPushing && (
