@@ -71,7 +71,7 @@ function interestingOctet(prefix: number) {
   return { octet: octetIndex, mask: value, step: 256 - value };
 }
 
-type Ipv4SubTab = 'practice' | 'calculator' | 'bits' | 'cheatsheet';
+export type Ipv4SubTab = 'practice' | 'calculator' | 'bits' | 'cheatsheet';
 type PracticeMode =
   | 'cidr-to-mask'
   | 'mask-to-cidr'
@@ -92,8 +92,18 @@ interface QuestionTask {
   stepFormula?: string;
 }
 
-export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled }) => {
-  const [subTab, setSubTab] = useState<Ipv4SubTab>('practice');
+interface Ipv4TrainerProps {
+  soundEnabled: boolean;
+  initialPrefix?: number;
+  initialSubTab?: Ipv4SubTab;
+}
+
+export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
+  soundEnabled,
+  initialPrefix,
+  initialSubTab,
+}) => {
+  const [subTab, setSubTab] = useState<Ipv4SubTab>(initialSubTab || 'practice');
   const [practiceMode, setPracticeMode] = useState<PracticeMode>('network');
 
   // Octet Bits Explorer State
@@ -103,7 +113,17 @@ export const Ipv4Trainer: React.FC<{ soundEnabled: boolean }> = ({ soundEnabled 
 
   // Subnet Calculator State
   const [calcIp, setCalcIp] = useState<string>('192.168.10.45');
-  const [calcPrefix, setCalcPrefix] = useState<number>(27);
+  const [calcPrefix, setCalcPrefix] = useState<number>(initialPrefix || 27);
+
+  // Update when props change from external navigation
+  useEffect(() => {
+    if (initialPrefix) {
+      setCalcPrefix(initialPrefix);
+    }
+    if (initialSubTab) {
+      setSubTab(initialSubTab);
+    }
+  }, [initialPrefix, initialSubTab]);
 
   // Interactive Practice State
   const [currentTask, setCurrentTask] = useState<QuestionTask | null>(null);
