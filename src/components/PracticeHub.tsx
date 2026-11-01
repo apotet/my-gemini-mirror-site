@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import {
+  Activity,
+  Layers,
+  Cpu,
+  Terminal,
+  FlaskConical,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+import { PacketJourney } from './PacketJourney';
+import { VlanSimulator } from './VlanSimulator';
+import { ProtocolSimulators } from './ProtocolSimulators';
+import { CliSimulator } from './CliSimulator';
+
+export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli';
+
+interface PracticeItem {
+  id: PracticeSimulator;
+  title: string;
+  badge: string;
+  subtitle: string;
+  icon: React.ReactNode;
+}
+
+const PRACTICE_ITEMS: PracticeItem[] = [
+  {
+    id: 'journey',
+    title: 'Путь пакета',
+    badge: 'L2–L7',
+    subtitle: 'Анимация инкапсуляции и декапсуляции данных через узлы сети',
+    icon: <Activity className="w-4 h-4 text-cyan-400" />,
+  },
+  {
+    id: 'vlan',
+    title: 'VLAN & Trunk',
+    badge: '802.1Q',
+    subtitle: 'Интерактивный коммутатор, изоляция портов и транкинг',
+    icon: <Layers className="w-4 h-4 text-purple-400" />,
+  },
+  {
+    id: 'protocols',
+    title: 'DHCP / NAT / TCP',
+    badge: 'DORA & Handshake',
+    subtitle: 'Пошаговые симуляторы сетевых протоколов и трансляции адресов',
+    icon: <Cpu className="w-4 h-4 text-emerald-400" />,
+  },
+  {
+    id: 'cli',
+    title: 'CLI Терминал',
+    badge: 'Cisco & Linux',
+    subtitle: 'Эмулятор консоли сетевого оборудования с подсказками команд',
+    icon: <Terminal className="w-4 h-4 text-amber-400" />,
+  },
+];
+
+export const PracticeHub: React.FC = () => {
+  const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>('journey');
+
+  return (
+    <div className="space-y-6">
+      {/* Practice Header & Sub-Navigation */}
+      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+              <FlaskConical className="w-3.5 h-3.5" />
+              Интерактивная лаборатория
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Сетевая практика и симуляторы
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Интерактивные стенды для отработки сетевых процессов: от сборки кадров и изоляции VLAN до симуляции трансляции NAT и терминала Cisco IOS.
+            </p>
+          </div>
+        </div>
+
+        {/* 4 Practice Selector Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {PRACTICE_ITEMS.map((item) => {
+            const isActive = activeSimulator === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveSimulator(item.id)}
+                type="button"
+                className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                  isActive
+                    ? 'bg-gradient-to-b from-cyan-950/80 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/50'
+                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`p-2 rounded-xl ${
+                        isActive ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="font-bold text-sm text-white">{item.title}</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700">
+                    {item.badge}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
+                  {item.subtitle}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active Simulator Container */}
+      <div className="animate-fade-in">
+        {activeSimulator === 'journey' && <PacketJourney />}
+        {activeSimulator === 'vlan' && <VlanSimulator />}
+        {activeSimulator === 'protocols' && <ProtocolSimulators />}
+        {activeSimulator === 'cli' && <CliSimulator />}
+      </div>
+    </div>
+  );
+};
