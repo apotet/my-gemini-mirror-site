@@ -39,6 +39,7 @@ import {
   generateProjectZip,
   downloadBlob,
   pushProjectToGitHub,
+  enableGitHubPages,
   getProjectFiles
 } from './projectExporter';
 
@@ -97,6 +98,31 @@ export default function App() {
   const [pushProgress, setPushProgress] = useState(0);
   const [pushSuccessUrl, setPushSuccessUrl] = useState<string | null>(null);
   const [pushError, setPushError] = useState<string | null>(null);
+
+  // GitHub Pages auto-activation state
+  const [isEnablingPages, setIsEnablingPages] = useState(false);
+  const [pagesActivatedUrl, setPagesActivatedUrl] = useState<string | null>(null);
+  const [pagesError, setPagesError] = useState<string | null>(null);
+
+  const handleAutoEnablePages = async () => {
+    if (!githubToken.trim()) {
+      setPagesError('Токен доступа не найден. Введите ваш GitHub Personal Access Token.');
+      return;
+    }
+    setIsEnablingPages(true);
+    setPagesError(null);
+    try {
+      const res = await enableGitHubPages({
+        token: githubToken.trim(),
+        repoName: mirrorRepoName.trim() || 'my-gemini-mirror-site'
+      });
+      setPagesActivatedUrl(res.pageUrl);
+    } catch (err: any) {
+      setPagesError(err.message || 'Не удалось автоматически включить GitHub Pages через API');
+    } finally {
+      setIsEnablingPages(false);
+    }
+  };
 
   // Copy helper state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -965,20 +991,64 @@ export default function App() {
               )}
 
               {pushSuccessUrl && (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs space-y-2">
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs space-y-3">
                   <div className="font-bold flex items-center gap-1.5 text-sm">
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     <span>Зеркальный сайт успешно выгружен на GitHub!</span>
                   </div>
-                  <p>Теперь вы можете включить GitHub Pages в настройках репозитория.</p>
-                  <a
-                    href={pushSuccessUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 font-semibold underline text-indigo-600 dark:text-indigo-400"
-                  >
-                    {pushSuccessUrl} <ExternalLink className="w-3 h-3" />
-                  </a>
+                  <p className="text-slate-600 dark:text-slate-300">
+                    Репозиторий готов. Теперь мы можем автоматически включить GitHub Pages в один клик:
+                  </p>
+
+                  {pagesActivatedUrl ? (
+                    <div className="p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/40 space-y-1.5">
+                      <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span>GitHub Pages активирован!</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                        GitHub запустил сборку (1–2 минуты). Адрес вашего работающего сайта:
+                      </p>
+                      <a
+                        href={pagesActivatedUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 underline text-xs pt-1"
+                      >
+                        <span>{pagesActivatedUrl}</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleAutoEnablePages}
+                      disabled={isEnablingPages}
+                      className="w-full min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Sparkles className={`w-4 h-4 ${isEnablingPages ? 'animate-spin' : ''}`} />
+                      <span>{isEnablingPages ? 'Включение GitHub Pages через API...' : '⚡ Включить GitHub Pages автоматически'}</span>
+                    </button>
+                  )}
+
+                  {pagesError && (
+                    <div className="p-2 rounded bg-rose-500/10 text-rose-500 text-[11px]">
+                      {pagesError}
+                    </div>
+                  )}
+
+                  <div className="pt-1 text-[11px] text-slate-500 flex items-center justify-between">
+                    <span>Ссылка на сам репозиторий:</span>
+                    <a
+                      href={pushSuccessUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold underline text-indigo-600 dark:text-indigo-400"
+                    >
+                      <span>Открыть код</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               )}
 
