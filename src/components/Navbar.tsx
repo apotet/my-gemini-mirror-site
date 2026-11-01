@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export type NavTab = 'exam' | 'ipv4' | 'journey' | 'vlan' | 'protocols' | 'osi' | 'cli';
+export type NavTab = 'exam' | 'osi' | 'journey' | 'vlan' | 'cli';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -40,12 +40,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const tabs: Array<{ id: NavTab; label: string; icon: React.ReactNode }> = [
     { id: 'exam', label: 'Экзамен', icon: <Layers className="w-4 h-4" /> },
-    { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
+    { id: 'osi', label: 'Модель OSI', icon: <Cpu className="w-4 h-4" /> },
     { id: 'journey', label: 'Путь пакета', icon: <Activity className="w-4 h-4" /> },
     { id: 'vlan', label: 'VLAN & Trunk', icon: <Layers className="w-4 h-4" /> },
-    { id: 'protocols', label: 'DHCP/NAT/Wire', icon: <Cpu className="w-4 h-4" /> },
-    { id: 'osi', label: 'Модель OSI', icon: <Cpu className="w-4 h-4" /> },
-    { id: 'cli', label: 'CLI', icon: <Terminal className="w-4 h-4" /> },
+    { id: 'cli', label: 'CLI-терминал', icon: <Terminal className="w-4 h-4" /> },
   ];
 
   const handleTabClick = (tab: NavTab) => {
