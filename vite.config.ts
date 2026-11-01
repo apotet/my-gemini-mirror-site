@@ -7,6 +7,17 @@ export default defineConfig(() => {
   return {
     base: './',
     plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('questions.json')) return 'questions-data';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('node_modules/react')) return 'vendor-react';
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), '.'),
