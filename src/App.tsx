@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { ExamView } from './components/ExamView';
 import { Ipv4Trainer } from './components/Ipv4Trainer';
-import { ProtocolSimulators } from './components/ProtocolSimulators';
+import { PracticeHub } from './components/PracticeHub';
 import { OsiExplorer } from './components/OsiExplorer';
-import { PacketJourney } from './components/PacketJourney';
-import { VlanSimulator } from './components/VlanSimulator';
-import { CliSimulator } from './components/CliSimulator';
 import { DeployModal } from './components/DeployModal';
 import { ExternalLink, Sparkles, Shield, GitBranch, ArrowUpRight } from 'lucide-react';
 
@@ -75,11 +72,8 @@ export function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'exam' && <ExamView soundEnabled={soundEnabled} />}
         {activeTab === 'ipv4' && <Ipv4Trainer soundEnabled={soundEnabled} />}
-        {activeTab === 'journey' && <PacketJourney />}
-        {activeTab === 'vlan' && <VlanSimulator />}
-        {activeTab === 'protocols' && <ProtocolSimulators />}
+        {activeTab === 'practice' && <PracticeHub />}
         {activeTab === 'osi' && <OsiExplorer />}
-        {activeTab === 'cli' && <CliSimulator />}
       </main>
 
       {/* Footer */}
