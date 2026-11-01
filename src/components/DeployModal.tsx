@@ -150,7 +150,53 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
     }
 
     try {
-      const cleanRepo = repoName.replace(/^https?:\/\/github\.com\//i, '').replace(/^.*\//, '').trim() || 'my-gemini-mirror-site';
+      const cleanRepo =
+        repoName.replace(/^https?:\/\/github\.com\//i, '').replace(/^.*\//, '').trim() ||
+        'my-gemini-mirror-site';
+
+      // 1. Try server-side publishing bridge first (100% reliable on mobile Safari, no CORS / ITP issues)
+      setPushStatus('Синхронизация через серверный мост...');
+      setProgressPercent(20);
+
+      let serverSuccess = false;
+      try {
+        const srvRes = await fetch('/api/publish-github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token.trim(), repoName: cleanRepo }),
+        });
+
+        if (srvRes.ok) {
+          const srvData = await srvRes.json();
+          if (srvData.success) {
+            serverSuccess = true;
+            setProgressPercent(100);
+            setPushStatus('Готово! Зеркало успешно опубликовано.');
+            setSuccessResult(srvData);
+            setTimeout(() => {
+              handleRunAccessibilityTest(srvData.pageUrl);
+            }, 1500);
+            return;
+          }
+        } else {
+          const errData = await srvRes.json().catch(() => ({}));
+          // If GitHub returned 401 or bad credentials from server, fail immediately with clear message
+          if (errData.error && (srvRes.status === 401 || errData.error.includes('Bad credentials'))) {
+            throw new Error('Недействительный токен GitHub (Bad credentials). Проверьте правильность токена.');
+          }
+          if (errData.error) {
+            throw new Error(errData.error);
+          }
+        }
+      } catch (srvErr: any) {
+        if (srvErr.message && !srvErr.message.includes('Failed to fetch') && !srvErr.message.includes('404')) {
+          throw srvErr;
+        }
+        console.warn('Server bridge unavailable, falling back to direct browser push:', srvErr);
+      }
+
+      // 2. Direct browser push fallback (if server bridge was not available)
+      setPushStatus('Прямая выгрузка в GitHub...');
       const result = await pushProjectToGitHub({
         token: token.trim(),
         repoName: cleanRepo,
@@ -168,19 +214,25 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
         handleRunAccessibilityTest(result.pageUrl);
       }, 1500);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Ошибка синхронизации с GitHub.');
+      console.error(err);
+      let message = err.message || 'Ошибка синхронизации с GitHub.';
+      if (message.includes('Load failed') || message.includes('Failed to fetch')) {
+        message =
+          'Браузер Safari заблокировал прямой запрос к GitHub API. Мы переключили режим на серверную выгрузку — пожалуйста, нажмите кнопку ещё раз.';
+      }
+      setErrorMsg(message);
     } finally {
       setIsPushing(false);
     }
   };
 
-  const handleDownloadZip = async () => {
-    try {
-      const blob = await generateProjectZip();
-      downloadBlob(blob, 'osi-tcpip-gemini-mirror.zip');
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDownloadZip = () => {
+    const a = document.createElement('a');
+    a.href = '/osi-tcpip-trainer-source.zip';
+    a.download = 'osi-tcpip-trainer-source.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
