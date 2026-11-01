@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { ExamView } from './components/ExamView';
-import { Ipv4Trainer } from './components/Ipv4Trainer';
+import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
 import { PracticeHub } from './components/PracticeHub';
-import { OsiExplorer } from './components/OsiExplorer';
+import { TheoryView } from './components/TheoryView';
 import { DeployModal } from './components/DeployModal';
 import { ExternalLink, Sparkles, Shield, GitBranch, ArrowUpRight } from 'lucide-react';
 
@@ -13,6 +13,11 @@ export function App() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isDeployModalOpen, setIsDeployModalOpen] = useState<boolean>(false);
 
+  // Deep linking state between Exam Mistakes, Theory, and IPv4 Trainer
+  const [theoryQuestionId, setTheoryQuestionId] = useState<string | null>(null);
+  const [ipv4InitialPrefix, setIpv4InitialPrefix] = useState<number | undefined>(undefined);
+  const [ipv4InitialSubTab, setIpv4InitialSubTab] = useState<Ipv4SubTab | undefined>(undefined);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -20,6 +25,20 @@ export function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  const handleNavigateToTheory = (questionId: string) => {
+    setTheoryQuestionId(questionId);
+    setActiveTab('theory');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateToIpv4 = (prefix?: number, mode?: 'calc' | 'trainer') => {
+    if (prefix) setIpv4InitialPrefix(prefix);
+    if (mode === 'calc') setIpv4InitialSubTab('calculator');
+    else if (mode === 'trainer') setIpv4InitialSubTab('practice');
+    setActiveTab('ipv4');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#07111f] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
@@ -62,7 +81,12 @@ export function App() {
       {/* Main Navigation */}
       <Navbar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'theory') {
+            setTheoryQuestionId(null);
+          }
+        }}
         isDark={isDark}
         onToggleTheme={() => setIsDark(!isDark)}
         soundEnabled={soundEnabled}
@@ -71,11 +95,28 @@ export function App() {
       />
 
       {/* Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'exam' && <ExamView soundEnabled={soundEnabled} />}
-        {activeTab === 'ipv4' && <Ipv4Trainer soundEnabled={soundEnabled} />}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {activeTab === 'exam' && (
+          <ExamView
+            soundEnabled={soundEnabled}
+            onNavigateToTheory={handleNavigateToTheory}
+          />
+        )}
+        {(activeTab === 'theory' || activeTab === 'osi') && (
+          <TheoryView
+            initialQuestionId={theoryQuestionId}
+            onNavigateToIpv4={handleNavigateToIpv4}
+            onClearInitialQuestion={() => setTheoryQuestionId(null)}
+          />
+        )}
+        {activeTab === 'ipv4' && (
+          <Ipv4Trainer
+            soundEnabled={soundEnabled}
+            initialPrefix={ipv4InitialPrefix}
+            initialSubTab={ipv4InitialSubTab}
+          />
+        )}
         {activeTab === 'practice' && <PracticeHub />}
-        {activeTab === 'osi' && <OsiExplorer />}
       </main>
 
       {/* Footer */}
