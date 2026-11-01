@@ -11,6 +11,10 @@ import {
   resolveImageUrl,
 } from '../data/questionsData';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
+import { triggerHaptic } from '../utils/haptics';
+import { recordQuestionResult } from '../utils/userProgress';
+import { KnowledgeRadar } from './KnowledgeRadar';
+import { LivingOsiStack } from './LivingOsiStack';
 import {
   CheckCircle2,
   XCircle,
@@ -29,6 +33,7 @@ import {
 interface ExamViewProps {
   soundEnabled: boolean;
   onNavigateToTheory?: (questionId: string) => void;
+  onSelectLevel?: (level: string) => void;
 }
 
 export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory }) => {
@@ -106,6 +111,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   const handleSelectAnswer = (index: number) => {
     if (isAnswerSubmitted && session?.feedbackMode === 'instant') return;
 
+    triggerHaptic('selection');
     if (soundEnabled) playClickSound();
 
     if (isMultiSelect) {
@@ -124,10 +130,14 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
       selectedAnswers.length === currentQuestion.correct.length &&
       selectedAnswers.every((a) => currentQuestion.correct.includes(a));
 
+    triggerHaptic(isCorrect ? 'success' : 'error');
     if (soundEnabled) {
       if (isCorrect) playSuccessSound();
       else playErrorSound();
     }
+
+    // Immediately record result to dynamic user progress store
+    recordQuestionResult(currentQuestion.id, currentQuestion.topic, currentQuestion.group, isCorrect);
 
     const updatedUserAnswers = {
       ...session.userAnswers,
@@ -202,55 +212,93 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
     }
   };
 
-  // If no active session, show setup / start screen
+  const [lastMistakes, setLastMistakes] = useState<Question[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('osi_last_mistakes');
+      if (saved) {
+        const ids: string[] = JSON.parse(saved);
+        if (Array.isArray(ids)) {
+          const matched = ALL_QUESTIONS.filter((q) => ids.includes(q.id));
+          setLastMistakes(matched);
+        }
+      }
+    } catch {
+      // safe fallback
+    }
+  }, []);
+
+  // If no active session, show Bento Dashboard + Living Stack
   if (!session || !currentQuestion) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
-        {/* Intro Card */}
-        <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/30 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6 animate-fade-in">
+        {/* Top Bento Card with Readiness Gauge & Quick Stats */}
+        <KnowledgeRadar
+          mistakesCount={lastMistakes.length}
+          totalQuestionsCount={ALL_QUESTIONS.length}
+          onStartExam={(levelFilter) => {
+            if (levelFilter) {
+              const matched = ALL_QUESTIONS.filter(
+                (q) => q.topic.includes(levelFilter) || q.group.includes(levelFilter.toLowerCase())
+              );
+              startNewQuiz(matched.length > 0 ? matched.slice(0, 10) : undefined);
+            } else {
+              startNewQuiz();
+            }
+          }}
+          onReviewMistakes={() => {
+            const pool = lastMistakes.length > 0 ? lastMistakes : ALL_QUESTIONS.slice(0, 14);
+            startNewQuiz(pool);
+          }}
+          onOpenVisualL1={() => {
+            setSelectedMode('visual-l1');
+            const visualPool = ALL_QUESTIONS.filter((q) => q.group === 'visual-l1').slice(0, 20);
+            startNewQuiz(visualPool);
+          }}
+        />
 
-          <div className="relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold tracking-wider uppercase">
-              <Sparkles className="w-3.5 h-3.5" />
-              Тренажёр нового поколения · 502 вопроса
-            </div>
+        {/* Living OSI Stack (Путь пакета L7 -> L1) */}
+        <LivingOsiStack
+          onSelectLevel={(level) => {
+            if (level === 'L1' || level === 'L2') setSelectedMode('l1-l2');
+            else if (level === 'L3') setSelectedMode('l3');
+            else if (level === 'L4') setSelectedMode('l4');
+            else if (level === 'L5' || level === 'L6' || level === 'L7') setSelectedMode('l5-l7');
+          }}
+          onExploreTheory={(level) => {
+            if (onNavigateToTheory) {
+              const matchedQ = ALL_QUESTIONS.find((q) => q.topic.includes(level) || q.group.includes(level.toLowerCase()));
+              onNavigateToTheory(matchedQ ? matchedQ.id : 'l3-01');
+            }
+          }}
+          onStartExamForLevel={(level) => {
+            let filterGroup = 'mixed';
+            if (level === 'L1' || level === 'L2') filterGroup = 'l1-l2';
+            else if (level === 'L3') filterGroup = 'l3';
+            else if (level === 'L4') filterGroup = 'l4';
+            else if (level === 'L5' || level === 'L6' || level === 'L7') filterGroup = 'l5-l7';
+            setSelectedMode(filterGroup as QuizModeId);
+            startNewQuiz(getRandomQuestions(filterGroup as QuizModeId, questionCount));
+          }}
+        />
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
-              Интерактивный экзамен по OSI и TCP/IP
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-              Комплексная проверка знаний: от физических уровней, SFP-трансиверов и коммутации кадра
-              до маршрутизации IP, флагов TCP и сетевого траблшутинга в CLI.
-            </p>
-
-            {/* Visual 7-layer stack preview */}
-            <div className="pt-4 flex items-end gap-1.5 h-16 max-w-md">
-              {['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'].map((layer, idx) => (
-                <div
-                  key={layer}
-                  className="flex-1 rounded-t-lg bg-gradient-to-t from-cyan-600/40 to-blue-500/60 border border-cyan-400/30 flex items-center justify-center font-mono font-bold text-xs text-white"
-                  style={{ height: `${30 + idx * 5}px` }}
-                >
-                  {layer}
-                </div>
-              ))}
-            </div>
+        {/* Detailed Configuration Accordion / Panel */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/20 shadow-xl space-y-4 transition-colors">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              <span>Параметры тестирования</span>
+            </h2>
+            <span className="text-[11px] font-mono text-cyan-600 dark:text-cyan-400 font-bold">
+              {QUIZ_MODES.find((m) => m.id === selectedMode)?.count || 502} вопр. в пуле
+            </span>
           </div>
-        </div>
-
-        {/* Configuration Card */}
-        <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl space-y-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-cyan-400" />
-            Настройка экзамена
-          </h2>
 
           <div className="space-y-4">
             {/* Mode selection grid */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                 Выберите раздел знаний
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -263,17 +311,17 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
                       type="button"
                       className={`p-4 rounded-2xl text-left border transition-all cursor-pointer min-h-[76px] flex flex-col justify-between ${
                         isSelected
-                          ? 'bg-cyan-950/60 border-cyan-400 ring-2 ring-cyan-400/30 shadow-lg shadow-cyan-500/20'
-                          : 'bg-slate-900/50 border-slate-800 hover:border-slate-700 text-slate-300'
+                          ? 'bg-cyan-50 dark:bg-cyan-950/60 border-cyan-500 dark:border-cyan-400 ring-2 ring-cyan-400/30 shadow-lg shadow-cyan-500/20'
+                          : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full mb-1">
-                        <span className="font-bold text-sm text-white">{mode.title}</span>
-                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-black/40 text-cyan-400">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white">{mode.title}</span>
+                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-black/40 text-cyan-700 dark:text-cyan-400">
                           {mode.count} вопр.
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 line-clamp-1">{mode.subtitle}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{mode.subtitle}</p>
                     </button>
                   );
                 })}
@@ -283,7 +331,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
             {/* Questions count & Mode type */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                   Количество вопросов
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -295,7 +343,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
                       className={`py-2.5 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer min-h-[44px] ${
                         questionCount === cnt
                           ? 'bg-cyan-500 text-slate-950 border-cyan-400'
-                          : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       {cnt}
@@ -305,7 +353,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                   Режим проверки
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -314,12 +362,12 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
                     type="button"
                     className={`p-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[44px] flex flex-col items-center justify-center ${
                       feedbackMode === 'instant'
-                        ? 'bg-cyan-950/60 border-cyan-400 text-cyan-300'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700'
+                        ? 'bg-cyan-50 dark:bg-cyan-950/60 border-cyan-500 dark:border-cyan-400 text-cyan-800 dark:text-cyan-300 font-bold'
+                        : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <span>Тренажёр</span>
-                    <span className="text-[10px] text-slate-400">Объяснение сразу</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Объяснение сразу</span>
                   </button>
 
                   <button
@@ -327,12 +375,12 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
                     type="button"
                     className={`p-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer min-h-[44px] flex flex-col items-center justify-center ${
                       feedbackMode === 'exam'
-                        ? 'bg-cyan-950/60 border-cyan-400 text-cyan-300'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700'
+                        ? 'bg-cyan-50 dark:bg-cyan-950/60 border-cyan-500 dark:border-cyan-400 text-cyan-800 dark:text-cyan-300 font-bold'
+                        : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <span>Экзамен</span>
-                    <span className="text-[10px] text-slate-400">Результат в конце</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Результат в конце</span>
                   </button>
                 </div>
               </div>
@@ -532,51 +580,58 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
-      {/* Quiz Top bar */}
-      <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+      {/* Quiz Top bar with generous touch targets & anti-pull-refresh protection */}
+      <div className="pt-2 pb-1 flex items-center justify-between gap-2 text-xs font-mono">
         <button
-          onClick={exitQuiz}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            exitQuiz();
+          }}
           type="button"
-          className="hover:text-rose-400 transition-colors py-1 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold min-h-[42px] cursor-pointer shadow-sm active:scale-95 touch-action-manipulation select-none transition-all"
+          title="Вернуться к настройкам и статистике"
         >
-          ← Выйти в меню
+          <span>← Выйти в меню</span>
         </button>
 
-        <span className="font-bold text-white">
-          Вопрос {session.currentIndex + 1} из {session.questions.length}
-        </span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="font-bold text-slate-800 dark:text-white px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
+            Вопрос {session.currentIndex + 1} из {session.questions.length}
+          </span>
 
-        <span className="text-cyan-400 font-bold">{progressPercent}%</span>
+          <span className="text-cyan-600 dark:text-cyan-400 font-extrabold text-sm">{progressPercent}%</span>
+        </div>
       </div>
 
       {/* Progress Track */}
-      <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+      <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 rounded-full"
+          className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300 rounded-full"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
       {/* Question Card */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl space-y-6">
+      <div className="p-5 sm:p-8 rounded-3xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/20 shadow-xl space-y-6 transition-colors">
         {/* Topic and Hints */}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="px-3 py-1 rounded-lg bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 font-bold text-xs font-mono">
+          <span className="px-3 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-950/70 border border-cyan-200 dark:border-cyan-500/30 text-cyan-800 dark:text-cyan-300 font-bold text-xs font-mono">
             {currentQuestion.topic}
           </span>
-          <span className="text-xs font-semibold text-amber-300 font-mono">
+          <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 font-mono">
             {isMultiSelect ? '✦ Выберите все подходящие ответы' : '✦ Выберите один правильный ответ'}
           </span>
         </div>
 
         {/* Question Text */}
-        <h2 className="text-lg sm:text-xl font-bold text-white leading-relaxed">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-relaxed">
           {currentQuestion.text}
         </h2>
 
         {/* Visual photo if present */}
         {currentQuestion.image && (
-          <div className="rounded-2xl overflow-hidden border border-slate-700 bg-black/60 p-2">
+          <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-black/60 p-2">
             <img
               src={resolveImageUrl(currentQuestion.image)}
               alt={currentQuestion.imageAlt || 'Фото оборудования к вопросу'}
@@ -588,7 +643,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
               }}
             />
             {currentQuestion.imageAlt && (
-              <p className="text-[11px] text-slate-400 text-center mt-1.5 font-mono">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center mt-1.5 font-mono">
                 {currentQuestion.imageAlt}
               </p>
             )}
@@ -601,16 +656,19 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
             const isSelected = selectedAnswers.includes(ansIdx);
             const isCorrect = currentQuestion.correct.includes(ansIdx);
 
-            let itemClass = 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-200';
+            let itemClass =
+              'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-cyan-400 text-slate-800 dark:text-slate-200';
 
             if (isAnswerSubmitted && session.feedbackMode === 'instant') {
               if (isCorrect) {
-                itemClass = 'bg-emerald-950/60 border-emerald-500 text-emerald-200 font-medium shadow-md shadow-emerald-500/10';
+                itemClass =
+                  'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-medium shadow-md shadow-emerald-500/10';
               } else if (isSelected && !isCorrect) {
-                itemClass = 'bg-rose-950/60 border-rose-500 text-rose-200';
+                itemClass = 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-900 dark:text-rose-200';
               }
             } else if (isSelected) {
-              itemClass = 'bg-cyan-950/70 border-cyan-400 text-cyan-100 ring-1 ring-cyan-400 shadow-md shadow-cyan-500/10';
+              itemClass =
+                'bg-cyan-50 dark:bg-cyan-950/70 border-cyan-500 dark:border-cyan-400 text-slate-950 dark:text-cyan-100 ring-1 ring-cyan-500 shadow-md shadow-cyan-500/10';
             }
 
             return (
@@ -628,10 +686,10 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
                         ? 'bg-emerald-500 text-slate-950'
                         : isSelected
                         ? 'bg-rose-500 text-slate-950'
-                        : 'bg-slate-800 text-slate-500'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-500'
                       : isSelected
                       ? 'bg-cyan-500 text-slate-950'
-                      : 'bg-slate-800 text-slate-400'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400'
                   }`}
                 >
                   {isAnswerSubmitted && session.feedbackMode === 'instant' ? (
@@ -655,28 +713,28 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
 
         {/* Instant Feedback Panel */}
         {isAnswerSubmitted && session.feedbackMode === 'instant' && (
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#091725] border border-cyan-500/30 space-y-3 animate-fade-in">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#091725] border border-slate-200 dark:border-cyan-500/30 space-y-3 animate-fade-in">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">
                 Подробное объяснение
               </span>
               <button
                 onClick={() => onNavigateToTheory?.(currentQuestion.id)}
                 type="button"
-                className="text-xs font-bold text-cyan-300 hover:text-white hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+                className="text-xs font-bold text-cyan-700 dark:text-cyan-300 hover:underline flex items-center gap-1 cursor-pointer shrink-0"
               >
-                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <BookOpen className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 <span>Разбор в Теории →</span>
               </button>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
               {currentQuestion.explanation}
             </p>
 
             {currentQuestion.remember && (
-              <div className="p-3 rounded-xl bg-amber-950/30 border-l-4 border-amber-400 text-xs text-amber-200">
-                <strong className="block text-amber-300 font-bold mb-0.5">Важно запомнить:</strong>
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border-l-4 border-amber-500 text-xs text-amber-900 dark:text-amber-200">
+                <strong className="block text-amber-800 dark:text-amber-300 font-bold mb-0.5">Важно запомнить:</strong>
                 {currentQuestion.remember}
               </div>
             )}
