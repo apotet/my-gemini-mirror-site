@@ -18,7 +18,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
-export type NavTab = 'exam' | 'ipv4' | 'practice' | 'osi';
+export type NavTab = 'exam' | 'theory' | 'ipv4' | 'practice' | 'osi';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -43,9 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const tabs: Array<{ id: NavTab; label: string; icon: React.ReactNode }> = [
     { id: 'exam', label: 'Экзамен', icon: <Layers className="w-4 h-4" /> },
-    { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
-    { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-cyan-400" /> },
-    { id: 'osi', label: 'Теория OSI', icon: <BookOpen className="w-4 h-4 text-indigo-400" /> },
+    { id: 'theory', label: 'Теория и разборы', icon: <BookOpen className="w-4 h-4 text-cyan-400" /> },
+    { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
+    { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-indigo-400" /> },
   ];
 
   const handleTabClick = (tab: NavTab) => {
@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Desktop Tabs */}
         <nav className="hidden lg:flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800">
           {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
+            const isActive = activeTab === tab.id || (tab.id === 'theory' && activeTab === 'osi');
             return (
               <button
                 key={tab.id}
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="lg:hidden p-4 border-t border-slate-800 bg-[#07111f]/98 backdrop-blur-2xl space-y-3 animate-fade-in shadow-2xl">
           <div className="space-y-1.5">
             {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
+              const isActive = activeTab === tab.id || (tab.id === 'theory' && activeTab === 'osi');
               return (
                 <button
                   key={tab.id}
