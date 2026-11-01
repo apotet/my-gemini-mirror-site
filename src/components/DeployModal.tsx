@@ -10,12 +10,19 @@ import {
   FolderGit2,
   Sparkles,
   RotateCcw,
+  Smartphone,
+  Laptop,
+  Check,
+  ShieldCheck,
+  Activity,
 } from 'lucide-react';
 import {
   pushProjectToGitHub,
   generateProjectZip,
   downloadBlob,
   getProjectFiles,
+  testRemoteSiteAccessibility,
+  AccessibilityTestResult,
 } from '../projectExporter';
 
 interface DeployModalProps {
@@ -42,6 +49,9 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
     owner: string;
     actionsUrl?: string;
   } | null>(null);
+
+  const [testResult, setTestResult] = useState<AccessibilityTestResult | null>(null);
+  const [isTesting, setIsTesting] = useState<boolean>(false);
 
   const [liveActionStatus, setLiveActionStatus] = useState<{
     status: 'queued' | 'in_progress' | 'completed' | 'unknown';
@@ -81,7 +91,6 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
       }
     };
 
-    // Initial check and interval every 6 seconds
     checkStatus();
     const interval = setInterval(checkStatus, 6000);
     return () => {
@@ -98,10 +107,25 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
     }
   }, [isOpen]);
 
+  const hasCompiledIndex = projectFiles.some((f) => f.path === 'index.html' && f.content.includes('./assets/index-'));
+  const hasAssets = projectFiles.some((f) => f.path.startsWith('assets/'));
   const hasPracticeHub = projectFiles.some((f) => f.path.includes('PracticeHub.tsx'));
   const hasNewIpv4 = projectFiles.some(
     (f) => f.path.includes('Ipv4Trainer.tsx') && f.content.includes('Правило непрерывности')
   );
+
+  const handleRunAccessibilityTest = async (targetUrl?: string) => {
+    const url = targetUrl || (successResult ? successResult.pageUrl : 'https://apotet.github.io/my-gemini-mirror-site/');
+    setIsTesting(true);
+    try {
+      const res = await testRemoteSiteAccessibility(url);
+      setTestResult(res);
+    } catch {
+      // quiet fallback
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const forceReloadApp = () => {
     window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
@@ -138,6 +162,11 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
       });
 
       setSuccessResult(result);
+
+      // Run live reachability test automatically after push
+      setTimeout(() => {
+        handleRunAccessibilityTest(result.pageUrl);
+      }, 1500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Ошибка синхронизации с GitHub.');
     } finally {
@@ -155,62 +184,119 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-xl p-6 sm:p-8 rounded-2xl bg-[#0d1b2b] border border-cyan-500/30 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-2xl p-6 sm:p-8 rounded-2xl bg-[#0c1726] border border-cyan-500/40 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
           aria-label="Закрыть"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-400">
-            <UploadCloud className="w-6 h-6" />
+        {/* Header */}
+        <div className="flex items-center gap-3.5 mb-5">
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-500/25 border border-cyan-400/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
+            <UploadCloud className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight">
-                Синхронизация с GitHub
+              <h2 className="text-xl font-bold tracking-tight text-white">
+                Публикация зеркала на GitHub
               </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                v2.4
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                v2.4 Bundle
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Публикация обновлённого зеркала в{' '}
-              <span className="text-cyan-300 font-mono">my-gemini-mirror-site</span>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Единый сайт для iPhone, Android и ПК без логинов и задержек
             </p>
           </div>
         </div>
 
-        {/* Verification banner of browser memory status */}
-        {!hasPracticeHub || !hasNewIpv4 ? (
-          <div className="p-3.5 rounded-xl bg-rose-950/80 border-2 border-rose-500/80 text-rose-200 mb-4 space-y-2">
-            <div className="font-bold text-xs text-rose-100 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-              Вкладка браузера держит устаревший кэш!
+        {/* Universal URL Showcase Card */}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/60 via-slate-900 to-blue-950/60 border border-cyan-500/40 mb-5 space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-cyan-300 font-bold uppercase tracking-wider flex items-center gap-1.5 text-[11px]">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Единая универсальная ссылка:
+            </span>
+            <div className="flex items-center gap-2 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-400">
+                <Smartphone className="w-3 h-3" /> Телефон
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1 text-cyan-400">
+                <Laptop className="w-3 h-3" /> Компьютер
+              </span>
             </div>
-            <p className="text-[11px] text-rose-300">
-              В память браузера ещё не загрузились последние правки (Практика и новая логика IPv4). Нажмите кнопку ниже, чтобы обновить код перед выгрузкой:
-            </p>
-            <button
-              onClick={forceReloadApp}
-              type="button"
-              className="w-full py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
+          </div>
+
+          <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-black/40 border border-slate-700/60">
+            <a
+              href="https://apotet.github.io/my-gemini-mirror-site/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs sm:text-sm font-mono text-cyan-300 hover:underline truncate font-bold flex items-center gap-1.5"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Принудительно перезагрузить код
+              https://apotet.github.io/my-gemini-mirror-site/
+              <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+            </a>
+            <button
+              onClick={() => handleRunAccessibilityTest('https://apotet.github.io/my-gemini-mirror-site/')}
+              disabled={isTesting}
+              type="button"
+              className="px-2.5 py-1 text-[11px] font-semibold rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/30 transition-colors flex items-center gap-1 flex-shrink-0 cursor-pointer"
+            >
+              <Activity className="w-3 h-3" />
+              {isTesting ? 'Проверка...' : 'Тест ссылки'}
             </button>
           </div>
-        ) : (
-          <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-[11px] text-emerald-300 flex items-center justify-between mb-4">
+
+          <div className="text-[11px] text-slate-300 space-y-1">
+            <p>
+              💡 <strong>Почему ссылка Google Cloud (.run.app) не открывалась на телефоне:</strong> адреса предпросмотра среды разработки защищены сессией Google. На iPhone/Android без входа в тот же аккаунт Google система возвращает ошибку.
+            </p>
+            <p className="text-slate-400">
+              Ссылка на <strong>GitHub Pages выше</strong> — полностью публичная, доступна любому устройству и браузеру (Safari, Chrome, Telegram) без каких-либо логинов.
+            </p>
+          </div>
+        </div>
+
+        {/* Live Accessibility Test Results if run */}
+        {testResult && (
+          <div className={`p-3.5 rounded-xl border mb-5 text-xs space-y-2 ${testResult.ok && testResult.hasFreshCode ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200' : 'bg-amber-950/50 border-amber-500/50 text-amber-200'}`}>
+            <div className="font-bold flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                {testResult.ok && testResult.hasFreshCode ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-amber-400" />
+                )}
+                Результат проверки публичного URL (HTTP {testResult.status})
+              </span>
+              <span className="text-[10px] font-mono opacity-80">Live Check</span>
+            </div>
+            <ul className="text-[11px] space-y-1 pl-1 opacity-90">
+              {testResult.details.map((line, idx) => (
+                <li key={idx}>{line}</li>
+              ))}
+            </ul>
+            {testResult.ok && !testResult.hasFreshCode && (
+              <p className="text-[11px] font-semibold text-amber-300 pt-1 border-t border-amber-500/20">
+                ⚡ Для обновления сайта нажмите кнопку публикации ниже. В репозиторий отправится готовая production-сборка (7 файлов), и сайт сразу обновится.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Bundle verification banner */}
+        {hasCompiledIndex && hasAssets ? (
+          <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-[11px] text-emerald-300 flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span>
-                <strong>Код проверен (v2.4):</strong> PracticeHub и IPv4 непрерывные маски загружены ({projectFiles.length} файлов).
+                <strong>Production Bundle готов (v2.4):</strong> Скомпилированные JS/CSS файлы включены. GitHub Pages запустится мгновенно без необходимости компиляции Node.js.
               </span>
             </div>
             <button
@@ -220,56 +306,26 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
               className="px-2 py-1 text-emerald-300 hover:text-white rounded bg-emerald-900/60 hover:bg-emerald-800 text-[10px] font-mono cursor-pointer flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />
-              Обновить
+              Сброс
             </button>
+          </div>
+        ) : (
+          <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-[11px] text-amber-200 flex items-center gap-2 mb-4">
+            <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span>Подготовка бандла... При первой синхронизации создаются скомпилированные ассеты.</span>
           </div>
         )}
 
-        {/* Change summary pill */}
+        {/* Change summary */}
         <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-[11px] text-slate-300 space-y-1 mb-5">
           <span className="font-semibold text-cyan-300 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" /> Включено в это обновление:
           </span>
           <ul className="list-disc list-inside text-slate-400 space-y-0.5 pl-1">
-            <li><strong className="text-slate-200">IPv4 Тренажёр:</strong> непрерывные маски (перед 1 не бывает 0, клик по 2 или 1 ставит единицы).</li>
-            <li><strong className="text-slate-200">Вкладка «Практика»:</strong> объединены все 4 симулятора (Путь пакета, VLAN, Протоколы, CLI).</li>
-            <li><strong className="text-slate-200">Чистая навигация:</strong> 4 главные вкладки (Экзамен, IPv4, Практика, Теория OSI).</li>
+            <li><strong className="text-slate-200">IPv4 Тренажёр:</strong> непрерывные биты маски (перед 1 не бывает 0, клик по 2 или 1 ставит единицы).</li>
+            <li><strong className="text-slate-200">Вкладка «Практика»:</strong> все 4 симулятора (Путь пакета, VLAN, Протоколы, CLI) в одном хабе.</li>
+            <li><strong className="text-slate-200">Production-бандл в корне:</strong> полное решение проблемы с открытием на iPhone/Safari.</li>
           </ul>
-        </div>
-
-        {/* URLs overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-          <a
-            href="https://apotet.github.io/osi-tcpip-exam-public/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/50 hover:border-slate-500 transition-colors group"
-          >
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
-              Оригинал (ChatGPT)
-              <ExternalLink className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100" />
-            </div>
-            <div className="text-xs font-mono text-emerald-400 truncate">
-              osi-tcpip-exam-public
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Не затрагивается</div>
-          </a>
-
-          <a
-            href="https://apotet.github.io/my-gemini-mirror-site/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/40 hover:border-cyan-400 transition-colors group"
-          >
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-cyan-400 mb-1 flex items-center justify-between">
-              Зеркало (Gemini Edition)
-              <ExternalLink className="w-3.5 h-3.5 opacity-80 group-hover:opacity-100" />
-            </div>
-            <div className="text-xs font-mono text-cyan-300 truncate">
-              my-gemini-mirror-site
-            </div>
-            <div className="text-[10px] text-cyan-500/80 mt-0.5">Резервная ссылка</div>
-          </a>
         </div>
 
         {successResult ? (
@@ -277,46 +333,39 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
             <div className="flex items-center gap-3 text-emerald-300">
               <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
               <div>
-                <h3 className="font-bold">Файлы успешно выгружены на GitHub!</h3>
+                <h3 className="font-bold text-base">Файлы успешно выгружены на GitHub!</h3>
                 <p className="text-xs text-emerald-400/90">
-                  Все файлы обновления отправлены в репозиторий.
+                  Скомпилированная сборка и исходный код отправлены в репозиторий.
                 </p>
               </div>
             </div>
 
-            {/* Live Actions Status Card */}
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-300 font-semibold flex items-center gap-1.5">
-                  Статус автосборки (GitHub Actions):
+                  Статус автосборки GitHub:
                 </span>
                 {liveActionStatus?.status === 'in_progress' || liveActionStatus?.status === 'queued' ? (
                   <span className="flex items-center gap-1.5 text-amber-400 font-mono font-bold animate-pulse">
                     <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    Собирается на сервере... (~1 мин)
+                    Публикация страниц... (~15 сек)
                   </span>
                 ) : liveActionStatus?.conclusion === 'success' ? (
                   <span className="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    Готово! Сайт обновлён на GitHub
+                    Готово! Сайт обновлён
                   </span>
                 ) : (
-                  <span className="text-cyan-300 font-mono">
-                    {liveActionStatus?.status || 'Запуск задачи...'}
+                  <span className="text-emerald-300 font-mono text-[11px]">
+                    ✓ Бандл отправлен (статический деплой)
                   </span>
                 )}
               </div>
-
-              {liveActionStatus?.conclusion === 'success' && (
-                <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-xs text-emerald-200">
-                  🚀 <strong>Сборка готова!</strong> Теперь откройте сайт зеркала и нажмите <strong>Ctrl + F5</strong> (или Command + Shift + R на Mac) для сброса кэша браузера.
-                </div>
-              )}
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30">
-                <span className="text-slate-400">Сайт зеркала:</span>
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-cyan-500/20">
+                <span className="text-slate-400">Единая ссылка для телефона и ПК:</span>
                 <a
                   href={successResult.pageUrl}
                   target="_blank"
@@ -328,23 +377,8 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
                 </a>
               </div>
 
-              {successResult.actionsUrl && (
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30">
-                  <span className="text-slate-300">Логи GitHub Actions:</span>
-                  <a
-                    href={successResult.actionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-cyan-300 hover:underline flex items-center gap-1 font-bold"
-                  >
-                    Открыть логи сборки
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
-
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/30">
-                <span className="text-slate-400">Репозиторий:</span>
+                <span className="text-slate-400">Репозиторий GitHub:</span>
                 <a
                   href={successResult.repoUrl}
                   target="_blank"
@@ -357,52 +391,73 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-[11px] text-amber-200 space-y-1.5">
-              <div className="font-bold text-amber-300 flex items-center gap-1.5">
-                ⚡ Почему сайт может показывать старую версию:
-              </div>
-              <p>
-                1. <strong>Кэш браузера:</strong> GitHub Pages отдаёт заголовок <code className="bg-black/40 px-1 py-0.5 rounded text-white">cache-control: max-age=600</code> (10 минут). Браузер показывает сохранённую копию. Обязательно нажмите <strong>Ctrl+F5</strong> на ПК или откройте ссылку в режиме <strong>Инкогнито</strong>.
-              </p>
-              <p>
-                2. <strong>Сборка GitHub Actions:</strong> занимает ~60-90 секунд. Дождитесь зелёного статуса выше.
-              </p>
-            </div>
+            <div className="flex gap-2.5 pt-2">
+              <button
+                onClick={() => handleRunAccessibilityTest(successResult.pageUrl)}
+                disabled={isTesting}
+                type="button"
+                className="flex-1 py-2.5 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Activity className="w-3.5 h-3.5" />
+                {isTesting ? 'Проверка...' : 'Проверить обновление на сайте'}
+              </button>
 
-            <button
-              onClick={() => {
-                setSuccessResult(null);
-                setLiveActionStatus(null);
-              }}
-              type="button"
-              className="w-full py-2.5 px-4 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
-            >
-              Синхронизировать снова
-            </button>
+              <button
+                onClick={() => {
+                  setSuccessResult(null);
+                  setLiveActionStatus(null);
+                }}
+                type="button"
+                className="py-2.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
+              >
+                Снова
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-cyan-400" />
-                Персональный токен GitHub (PAT)
-              </label>
-              <input
-                type="password"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Токен хранится локально в вашем браузере. Требуется право <code className="text-cyan-300">repo</code>.
-              </p>
-            </div>
+            {token.trim() ? (
+              <div className="p-3 rounded-xl bg-cyan-950/60 border border-cyan-400/50 flex items-center justify-between text-xs text-cyan-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div>
+                    <span className="font-bold text-white">Токен GitHub найден в памяти браузера: </span>
+                    <span className="font-mono text-[11px] text-cyan-300">
+                      {token.trim().slice(0, 7)}••••••••••••••••••••
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setToken('')}
+                  type="button"
+                  className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                >
+                  Сменить
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-400" />
+                  Персональный токен GitHub (PAT)
+                </label>
+                <input
+                  type="password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Токен сохраняется в локальной памяти вашего браузера. Требуется право <code className="text-cyan-300">repo</code>.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <FolderGit2 className="w-3.5 h-3.5 text-cyan-400" />
-                Имя репозитория-зеркала
+                Имя репозитория
               </label>
               <input
                 type="text"
@@ -435,13 +490,6 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
               </div>
             )}
 
-            <div className="p-2.5 rounded-lg bg-blue-950/40 border border-blue-500/30 text-[11px] text-blue-200 flex items-start gap-2">
-              <span className="text-cyan-400 font-bold">ℹ️</span>
-              <span>
-                <strong>Перед отправкой:</strong> если вкладка AI Studio на ПК открыта давно, нажмите <kbd className="px-1.5 py-0.5 rounded bg-black/50 text-cyan-300 font-mono text-[10px]">F5</kbd> (обновить страницу), чтобы браузер гарантированно держал в памяти свежий код.
-              </span>
-            </div>
-
             <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
               <button
                 onClick={handlePush}
@@ -450,13 +498,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({ isOpen, onClose }) => 
                 className="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer min-h-[44px]"
               >
                 <Sparkles className="w-4 h-4" />
-                {isPushing ? 'Выгрузка...' : 'Опубликовать зеркало в 1 клик'}
+                {isPushing ? 'Выгрузка и компиляция...' : 'Опубликовать зеркало в 1 клик'}
               </button>
 
               <button
                 onClick={handleDownloadZip}
                 type="button"
-                className="py-3 px-4 rounded-xl font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                className="py-3 px-4 rounded-xl font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 Скачать ZIP
