@@ -22,36 +22,38 @@ export function App() {
   }, [isDark]);
 
   return (
-    <div className="min-h-screen bg-[#07111f] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#07111f] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
       {/* Top Banner comparing Original & Mirror */}
-      <div className="bg-gradient-to-r from-cyan-950/80 via-slate-900 to-blue-950/80 border-b border-cyan-500/20 py-2 px-4 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-slate-300">
-              <strong className="text-cyan-300">Резервное зеркало Gemini</strong> для учебного тренажёра OSI/TCP-IP
+      <div className="w-full bg-gradient-to-r from-cyan-950/90 via-slate-900 to-blue-950/90 border-b border-cyan-500/20 py-2 px-3 sm:px-4 text-xs">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+            <span className="text-slate-300 text-[11px] sm:text-xs truncate">
+              <strong className="text-cyan-300">Резервное зеркало Gemini</strong> для тренажёра OSI/TCP-IP
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[11px] min-w-0">
             <a
               href="https://apotet.github.io/osi-tcpip-exam-public/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-400 hover:underline flex items-center gap-1 font-mono"
+              className="text-emerald-400 hover:underline flex items-center gap-1 font-mono shrink-0"
+              title="Оригинальный сайт тренажера от ChatGPT"
             >
-              Оригинал (ChatGPT): osi-tcpip-exam-public
-              <ArrowUpRight className="w-3 h-3" />
+              <span>Оригинал: osi-tcpip</span>
+              <ArrowUpRight className="w-3 h-3 shrink-0" />
             </a>
 
             <a
               href="https://apotet.github.io/my-gemini-mirror-site/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-300 hover:underline flex items-center gap-1 font-mono font-bold"
+              className="text-cyan-300 hover:underline flex items-center gap-1 font-mono font-bold shrink-0"
+              title="Зеркало тренажера от Gemini"
             >
-              Зеркало (Gemini): my-gemini-mirror-site
-              <ArrowUpRight className="w-3 h-3" />
+              <span>Зеркало: my-gemini</span>
+              <ArrowUpRight className="w-3 h-3 shrink-0" />
             </a>
           </div>
         </div>
