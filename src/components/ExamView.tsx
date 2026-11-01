@@ -23,13 +23,15 @@ import {
   ChevronRight,
   BookmarkCheck,
   Image as ImageIcon,
+  BookOpen,
 } from 'lucide-react';
 
 interface ExamViewProps {
   soundEnabled: boolean;
+  onNavigateToTheory?: (questionId: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory }) => {
   const [session, setSession] = useState<QuizSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [questionCount, setQuestionCount] = useState<number>(10);
@@ -54,6 +56,25 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled }) => {
       // safe fallback
     }
   }, []);
+
+  // Sync mistakes to localStorage when session completes
+  useEffect(() => {
+    if (session?.isCompleted && session.questions) {
+      const mistakeIds: string[] = [];
+      session.questions.forEach((q) => {
+        const userAns = session.userAnswers[q.id] || [];
+        const isCorrect = userAns.length === q.correct.length && userAns.every((a) => q.correct.includes(a));
+        if (!isCorrect) mistakeIds.push(q.id);
+      });
+      if (mistakeIds.length > 0) {
+        try {
+          localStorage.setItem('osi_last_mistakes', JSON.stringify(mistakeIds));
+        } catch {
+          // safe fallback
+        }
+      }
+    }
+  }, [session?.isCompleted]);
 
   const startNewQuiz = (customQuestions?: Question[]) => {
     const questions = customQuestions || getRandomQuestions(selectedMode, questionCount);
@@ -480,6 +501,21 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled }) => {
                     <strong className="block text-cyan-300 mb-0.5">Пояснение:</strong>
                     {m.explanation}
                   </div>
+
+                  {/* Link to Theory Deep Dive */}
+                  <div className="pt-1 flex items-center justify-between">
+                    <button
+                      onClick={() => onNavigateToTheory?.(m.id)}
+                      type="button"
+                      className="py-2 px-3.5 rounded-xl bg-gradient-to-r from-cyan-950 via-slate-900 to-blue-950 border border-cyan-400/40 text-cyan-300 hover:text-white hover:border-cyan-300 hover:shadow-md hover:shadow-cyan-500/20 transition-all text-xs font-bold flex items-center gap-2 cursor-pointer"
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>📖 Подробный разбор в Теории →</span>
+                    </button>
+                    <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                      Анализ темы «{m.topic}»
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -620,10 +656,18 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled }) => {
         {/* Instant Feedback Panel */}
         {isAnswerSubmitted && session.feedbackMode === 'instant' && (
           <div className="p-4 sm:p-5 rounded-2xl bg-[#091725] border border-cyan-500/30 space-y-3 animate-fade-in">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
                 Подробное объяснение
               </span>
+              <button
+                onClick={() => onNavigateToTheory?.(currentQuestion.id)}
+                type="button"
+                className="text-xs font-bold text-cyan-300 hover:text-white hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Разбор в Теории →</span>
+              </button>
             </div>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
