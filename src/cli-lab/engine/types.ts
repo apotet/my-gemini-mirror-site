@@ -98,7 +98,8 @@ export type GoalPredicate =
   | { type: 'if.switchportMode'; device: string; ifName: string; mode: 'access' | 'trunk' }
   | { type: 'vlan.exists'; device: string; vlanId: number; name?: string }
   | { type: 'if.ipv4'; device: string; ifName: string; address: string; prefix: number }
-  | { type: 'hostname'; device: string; hostname: string };
+  | { type: 'hostname'; device: string; hostname: string }
+  | { type: 'route.exists'; device: string; prefix: string; prefixLen: number; nextHop?: string };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;
@@ -111,7 +112,6 @@ export interface ScenarioStep {
   instruction: string;
   explanation?: string;
   hint?: string;
-  /** If set, step completes when all predicates pass */
   accept: GoalPredicate[];
 }
 
@@ -156,7 +156,6 @@ export type CommandHandler = (
 
 export interface CommandSpec {
   id: string;
-  /** First token(s) used for dispatch, e.g. ['show','vlan'] or ['interface'] */
   match: string[];
   modes: DeviceMode[];
   minPrivilege?: number;
