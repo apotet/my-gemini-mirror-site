@@ -1,6 +1,7 @@
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
+import { ciscoTrunkCommands } from './trunkCommands';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   return {
@@ -329,6 +330,12 @@ const baseCommands: CommandSpec[] = [
             lines.push(` switchport access vlan ${iface.switchport.accessVlan}`);
           }
         }
+        if (iface.switchport?.mode === 'trunk') {
+          lines.push(' switchport mode trunk');
+          if (iface.switchport.trunkAllowed?.length) {
+            lines.push(` switchport trunk allowed vlan ${iface.switchport.trunkAllowed.join(',')}`);
+          }
+        }
         lines.push(iface.adminUp ? ' no shutdown' : ' shutdown');
         lines.push('!');
       }
@@ -344,10 +351,10 @@ const baseCommands: CommandSpec[] = [
       const m = device.modeCtx.mode;
       const map: Record<string, string> = {
         exec: 'enable  show  ?',
-        privileged: 'configure terminal  show  show ip route  disable  ?',
+        privileged: 'configure terminal  show  show ip route  show interfaces trunk  disable  ?',
         config: 'hostname  vlan  interface  ip route  exit  end  ?',
         'config-if':
-          'ip address  switchport mode access  switchport access vlan  shutdown  no shutdown  exit  end  ?',
+          'ip address  switchport mode access  switchport mode trunk  switchport access vlan  switchport trunk allowed vlan  shutdown  no shutdown  exit  end  ?',
         'config-vlan': 'name  exit  end  ?',
       };
       return {
@@ -357,7 +364,11 @@ const baseCommands: CommandSpec[] = [
   },
 ];
 
-export const ciscoIosCommands: CommandSpec[] = [...baseCommands, ...ciscoL3Commands];
+export const ciscoIosCommands: CommandSpec[] = [
+  ...baseCommands,
+  ...ciscoL3Commands,
+  ...ciscoTrunkCommands,
+];
 
 function normalizeIfaceName(raw: string): string {
   const s = raw.replace(/\s+/g, '');
