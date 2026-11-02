@@ -1,5 +1,6 @@
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
+import { ciscoL3Commands } from './l3Commands';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   return {
@@ -17,7 +18,7 @@ function ensureVlan(device: DeviceState, id: number): void {
   }
 }
 
-export const ciscoIosCommands: CommandSpec[] = [
+const baseCommands: CommandSpec[] = [
   {
     id: 'cisco.enable',
     match: ['enable'],
@@ -73,7 +74,10 @@ export const ciscoIosCommands: CommandSpec[] = [
     minPrivilege: 15,
     handler: (_tokens, state, device) => {
       device.modeCtx = { mode: 'config' };
-      return { output: 'Enter configuration commands, one per line. End with CNTL/Z.', state: commitDevice(state, device) };
+      return {
+        output: 'Enter configuration commands, one per line. End with CNTL/Z.',
+        state: commitDevice(state, device),
+      };
     },
   },
   {
@@ -83,7 +87,10 @@ export const ciscoIosCommands: CommandSpec[] = [
     minPrivilege: 15,
     handler: (_tokens, state, device) => {
       device.modeCtx = { mode: 'config' };
-      return { output: 'Enter configuration commands, one per line. End with CNTL/Z.', state: commitDevice(state, device) };
+      return {
+        output: 'Enter configuration commands, one per line. End with CNTL/Z.',
+        state: commitDevice(state, device),
+      };
     },
   },
   {
@@ -143,10 +150,12 @@ export const ciscoIosCommands: CommandSpec[] = [
       if (tokens.length < 2) {
         return { output: ciscoIosProfile.messages.incomplete, error: true };
       }
-      // Support: interface FastEthernet0/1 | Fa0/1 | GigabitEthernet0/1 | Gi0/1
       const name = normalizeIfaceName(tokens.slice(1).join(' '));
       if (!device.interfaces[name]) {
-        return { output: `% Invalid interface type and number\n${ciscoIosProfile.messages.invalid}`, error: true };
+        return {
+          output: `% Invalid interface type and number\n${ciscoIosProfile.messages.invalid}`,
+          error: true,
+        };
       }
       device.modeCtx = { mode: 'config-if', ifName: name };
       return { output: '', state: commitDevice(state, device) };
@@ -263,7 +272,6 @@ export const ciscoIosCommands: CommandSpec[] = [
     match: ['show', 'vlan'],
     modes: ['exec', 'privileged'],
     handler: (tokens, state, device, profile) => {
-      // if more specific command matched elsewhere, fine; bare show vlan → brief-like
       if (tokens.length > 2) {
         return { output: profile.messages.invalid, error: true };
       }
@@ -298,17 +306,23 @@ export const ciscoIosCommands: CommandSpec[] = [
     handler: (_tokens, _state, device) => {
       const lines = ['Building configuration...', '', 'Current configuration:', '!'];
       lines.push(`hostname ${device.hostname}`, '!');
-      const vlanIds = Object.keys(device.vlans)
-        .map(Number)
-        .filter((id) => id !== 1)
-        .sort((a, b) => a - b);
-      for (const id of vlanIds) {
-        lines.push(`vlan ${id}`);
-        if (device.vlans[id].name) lines.push(` name ${device.vlans[id].name}`);
-        lines.push('!');
+      for (const r of device.routes) {
+        const mask =
+          r.prefixLen === 0
+            ? '0.0.0.0'
+            : r.prefixLen === 24
+              ? '255.255.255.0'
+              : `/${r.prefixLen}`;
+        if (r.nextHop) {
+          lines.push(`ip route ${r.prefix} ${mask} ${r.nextHop}`);
+        }
       }
+      if (device.routes.length) lines.push('!');
       for (const iface of Object.values(device.interfaces)) {
         lines.push(`interface ${iface.name}`);
+        if (iface.ipv4) {
+          lines.push(` ip address ${iface.ipv4.address} ${iface.ipv4.mask}`);
+        }
         if (iface.switchport?.mode === 'access') {
           lines.push(' switchport mode access');
           if (iface.switchport.accessVlan && iface.switchport.accessVlan !== 1) {
@@ -330,9 +344,10 @@ export const ciscoIosCommands: CommandSpec[] = [
       const m = device.modeCtx.mode;
       const map: Record<string, string> = {
         exec: 'enable  show  ?',
-        privileged: 'configure terminal  show  disable  ?',
-        config: 'hostname  vlan  interface  exit  end  ?',
-        'config-if': 'switchport mode access  switchport access vlan  shutdown  no shutdown  exit  end  ?',
+        privileged: 'configure terminal  show  show ip route  disable  ?',
+        config: 'hostname  vlan  interface  ip route  exit  end  ?',
+        'config-if':
+          'ip address  switchport mode access  switchport access vlan  shutdown  no shutdown  exit  end  ?',
         'config-vlan': 'name  exit  end  ?',
       };
       return {
@@ -341,6 +356,8 @@ export const ciscoIosCommands: CommandSpec[] = [
     },
   },
 ];
+
+export const ciscoIosCommands: CommandSpec[] = [...baseCommands, ...ciscoL3Commands];
 
 function normalizeIfaceName(raw: string): string {
   const s = raw.replace(/\s+/g, '');
