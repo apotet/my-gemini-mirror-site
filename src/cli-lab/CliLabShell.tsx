@@ -50,6 +50,10 @@ function goalLabel(g: Scenario['goals'][number]): string {
       return `route ${g.prefix}/${g.prefixLen}${g.nextHop ? ` via ${g.nextHop}` : ''}`;
     case 'if.trunkAllowed':
       return `${g.ifName} trunk allowed ${g.vlans.join(',')}`;
+    case 'mode':
+      return `режим: ${g.modes.join('|')}`;
+    case 'privilege':
+      return `privilege ≥ ${g.min}`;
     default:
       return 'goal';
   }
@@ -77,10 +81,16 @@ export const CliLabShell: React.FC = () => {
 
   const resetLab = () => {
     engine.reset(structuredClone(scenario.initialState));
+    const first = scenario.steps?.[0];
+    const intro = `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset). Type ? for commands. Tab completes. Mode: ${labMode}`;
+    const stepLine =
+      labMode === 'learn' && first
+        ? `\n—— Шаг 1 / ${scenario.steps!.length} ——\n${first.instruction}${first.hint ? `\nПодсказка: ${first.hint}` : ''}`
+        : '';
     setHistory([
       {
         type: 'system',
-        text: `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset). Type ? for commands. Tab completes. Mode: ${labMode}`,
+        text: intro + stepLine,
       },
     ]);
     setStepIndex(0);
@@ -116,52 +126,42 @@ export const CliLabShell: React.FC = () => {
 
   const tryAdvanceLearnStep = () => {
     if (labMode !== 'learn' || !currentStep) return;
-    const state = engine.getState();
-    const device = state.devices[state.activeDeviceId];
+    if (!currentStep.accept?.length) return;
 
-    if (currentStep.id === 's1' && currentStep.accept.length === 0) {
-      const inConfig =
-        device.modeCtx.mode === 'config' ||
-        device.modeCtx.mode === 'config-if' ||
-        device.modeCtx.mode === 'config-vlan';
-      if (currentStep.instruction.includes('configure') || currentStep.instruction.includes('conf')) {
-        if (inConfig) {
-          setStepIndex((i) => i + 1);
-          setHintOpen(false);
-          setHistory((h) => [
-            ...h,
-            { type: 'system', text: `✓ Шаг выполнен. ${currentStep.explanation || ''}` },
-          ]);
-        }
-        return;
-      }
-      if (device.privilege >= 15 && device.modeCtx.mode === 'privileged') {
-        setStepIndex((i) => i + 1);
-        setHintOpen(false);
-        setHistory((h) => [
-          ...h,
-          { type: 'system', text: `✓ Шаг выполнен. ${currentStep.explanation || ''}` },
-        ]);
-      }
+    const state = engine.getState();
+    const { allPassed } = evaluateGoals(state, currentStep.accept);
+    if (!allPassed) return;
+
+    const next = stepIndex + 1;
+    setHintOpen(false);
+
+    if (next >= steps.length) {
+      setCompleted(true);
+      setGoalResults(evaluateGoals(state, scenario.goals));
+      setHistory((h) => [
+        ...h,
+        {
+          type: 'system',
+          text: `✓ Шаг выполнен. ${currentStep.explanation || ''}\n\n✓ ${scenario.successMessage}`,
+        },
+      ]);
       return;
     }
 
-    if (currentStep.accept.length === 0) return;
-    const { allPassed } = evaluateGoals(state, currentStep.accept);
-    if (allPassed) {
-      const next = stepIndex + 1;
-      setHintOpen(false);
-      setHistory((h) => [
-        ...h,
-        { type: 'system', text: `✓ Шаг выполнен. ${currentStep.explanation || ''}` },
-      ]);
-      if (next >= steps.length) {
-        setCompleted(true);
-        setGoalResults(evaluateGoals(state, scenario.goals));
-      } else {
-        setStepIndex(next);
-      }
-    }
+    const nextStep = steps[next];
+    const nextLine = nextStep
+      ? `\n—— Шаг ${next + 1} / ${steps.length} ——\n${nextStep.instruction}${
+          nextStep.hint ? `\nПодсказка: ${nextStep.hint}` : ''
+        }`
+      : '';
+    setHistory((h) => [
+      ...h,
+      {
+        type: 'system',
+        text: `✓ Шаг выполнен. ${currentStep.explanation || ''}${nextLine}`,
+      },
+    ]);
+    setStepIndex(next);
   };
 
   const runCheck = () => {
@@ -426,13 +426,18 @@ export const CliLabShell: React.FC = () => {
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 p-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
-            Tab — автодополнение · Esc — выход из полного экрана. Trunk: switchport mode trunk, allowed vlan
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Режимы</p>
+            <p>
+              <span className="font-mono text-cyan-600 dark:text-cyan-400">learn</span> — пошагово с
+              подсказками · <span className="font-mono text-cyan-600 dark:text-cyan-400">drill</span> —
+              свободная практика · <span className="font-mono text-cyan-600 dark:text-cyan-400">task</span>/
+              <span className="font-mono text-cyan-600 dark:text-cyan-400">exam</span> — только цели,
+              проверка по кнопке или автоматически.
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default CliLabShell;
