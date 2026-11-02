@@ -107,6 +107,6 @@ export function resolveImageUrl(imgPath?: string): string {
   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
     return imgPath;
   }
-  const cleanPath = imgPath.replace(/^\.\/?/, '');
+  const cleanPath = imgPath.replace(/^\.?\//, '');
   return `https://raw.githubusercontent.com/apotet/osi-tcpip-exam-public/main/${cleanPath}`;
 }
