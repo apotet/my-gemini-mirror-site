@@ -1,11 +1,13 @@
 import rawQuestions from './questions.json';
 import { EXTRA_QUESTIONS } from './questionsExtra';
+import { EXTRA_DIFFICULTY_QUESTIONS } from './questionsExtraDifficulty';
 import { Question, QuizMode, QuizModeId } from '../types/quiz';
 
-/** Base bank + expansion pack. Existing questions.json is never trimmed. */
+/** Base bank + expansion packs. Existing questions.json is never trimmed. */
 export const ALL_QUESTIONS: Question[] = [
   ...(rawQuestions as Question[]),
   ...EXTRA_QUESTIONS,
+  ...EXTRA_DIFFICULTY_QUESTIONS,
 ];
 
 export const QUIZ_MODES: QuizMode[] = [
