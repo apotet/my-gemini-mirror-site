@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,10 +18,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
 
-      - name: Install
-        run: npm ci
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
 
       - name: Validate question bank (esbuild real modules)
         run: npm run validate:questions
@@ -46,4 +45,5 @@ jobs:
           path: |
             scripts/.cache/coverage-report.json
             scripts/.cache/coverage-summary.txt
+            scripts/.cache/validate-summary.txt
           if-no-files-found: ignore
