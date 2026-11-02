@@ -99,7 +99,8 @@ export type GoalPredicate =
   | { type: 'vlan.exists'; device: string; vlanId: number; name?: string }
   | { type: 'if.ipv4'; device: string; ifName: string; address: string; prefix: number }
   | { type: 'hostname'; device: string; hostname: string }
-  | { type: 'route.exists'; device: string; prefix: string; prefixLen: number; nextHop?: string };
+  | { type: 'route.exists'; device: string; prefix: string; prefixLen: number; nextHop?: string }
+  | { type: 'if.trunkAllowed'; device: string; ifName: string; vlans: number[] };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;
