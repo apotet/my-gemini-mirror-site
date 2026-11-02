@@ -6,6 +6,7 @@ import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
+import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -25,7 +26,11 @@ interface HistoryLine {
   error?: boolean;
 }
 
-const SCENARIOS: Scenario[] = [ciscoVlanAccessScenario, ciscoL3GatewayScenario];
+const SCENARIOS: Scenario[] = [
+  ciscoVlanAccessScenario,
+  ciscoTrunkScenario,
+  ciscoL3GatewayScenario,
+];
 
 function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
@@ -43,6 +48,8 @@ function goalLabel(g: Scenario['goals'][number]): string {
       return `hostname ${g.hostname}`;
     case 'route.exists':
       return `route ${g.prefix}/${g.prefixLen}${g.nextHop ? ` via ${g.nextHop}` : ''}`;
+    case 'if.trunkAllowed':
+      return `${g.ifName} trunk allowed ${g.vlans.join(',')}`;
     default:
       return 'goal';
   }
@@ -420,7 +427,7 @@ export const CliLabShell: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 p-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
-            Tab — автодополнение · Esc — выход из полного экрана. L3: ip address, ip route, show ip route
+            Tab — автодополнение · Esc — выход из полного экрана. Trunk: switchport mode trunk, allowed vlan
           </div>
         </div>
       </div>
