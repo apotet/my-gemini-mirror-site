@@ -1,15 +1,14 @@
 import { Question } from '../types/quiz';
+import { APPLIED_INDIVIDUAL_DEEP } from './questionExplanationsApplied';
 
 export interface QuestionDeepDive {
   questionId: string;
   category: 'l1' | 'l2' | 'l3' | 'l4' | 'l5_l7' | 'tcpip' | 'cli' | 'visual';
   categoryLabel: string;
   categoryColor: string;
-  /** Short answer for everyone (always visible). */
   briefAnswer: string;
   coreConcept: string;
   deepAnalysis: string;
-  /** Optional long engineering sections for advanced/applied diagnostics. */
   engineeringDeep?: string;
   hasIndividualDeep: boolean;
   commonTrap: string;
@@ -27,7 +26,7 @@ export interface QuestionDeepDive {
 }
 
 /** Hand-authored deep dives for advanced IDs (no generic L1–L7 paste). */
-const INDIVIDUAL_DEEP: Record<
+const ADVANCED_INDIVIDUAL_DEEP: Record<
   string,
   { brief: string; deep: string; trap?: string; next?: string }
 > = {
@@ -185,7 +184,7 @@ Half-duplex возможен, но не единственная и не пер�
   },
   'ts-d06': {
     brief: 'SIP/RTP: DNS, NAT/ALG, ACL портов, одностороннее аудио.',
-    deep: `Проверьте signalling 5060/TLS и RTP range, helper-address, fixup/ALG осторожно.',
+    deep: `Проверьте signalling 5060/TLS и RTP range, helper-address, fixup/ALG осторожно.`,
   },
   'ts-d07': {
     brief: 'Policy routing: ip rule и таблицы ip route show table …',
@@ -195,6 +194,14 @@ Half-duplex возможен, но не единственная и не пер�
     brief: '«Падает через ~5 мин»: ARP/MAC aging, DHCP renew, FW session timeout.',
     deep: `Сверьте lease timers, idle timeouts, silent host behavior.`,
   },
+};
+
+const INDIVIDUAL_DEEP: Record<
+  string,
+  { brief: string; deep: string; trap?: string; next?: string }
+> = {
+  ...ADVANCED_INDIVIDUAL_DEEP,
+  ...APPLIED_INDIVIDUAL_DEEP,
 };
 
 export function getQuestionDeepDive(question: Question): QuestionDeepDive {
@@ -290,22 +297,19 @@ function getCategoryColor(category: QuestionDeepDive['category']): string {
   }
 }
 
+/** Only real subnet/mask math — not ARP/routing mentions alone. */
 function detectIpv4Practice(q: Question): QuestionDeepDive['ipv4Practice'] | undefined {
-  const text = (q.text + ' ' + q.topic + ' ' + (q.explanation || '')).toLowerCase();
-  const needsCalc =
+  const text = `${q.text} ${q.topic} ${q.explanation || ''}`.toLowerCase();
+  const hasPrefix = /\/(8|9|[12]\d|30)\b/.test(text);
+  const hasMaskWords =
     text.includes('маск') ||
     text.includes('подсет') ||
     text.includes('cidr') ||
-    text.includes('префикс') ||
-    text.includes('/24') ||
-    text.includes('/25') ||
-    text.includes('/26') ||
-    text.includes('/27') ||
-    text.includes('/28') ||
-    text.includes('/29') ||
-    text.includes('/30');
-
-  if (!needsCalc) return undefined;
+    text.includes('usable host') ||
+    text.includes('broadcast у');
+  if (!hasPrefix && !hasMaskWords) return undefined;
+  // Avoid false positives: pure ARP/NAT without calculation
+  if (text.includes('arp') && !hasPrefix && !hasMaskWords) return undefined;
 
   let targetPrefix: number | undefined;
   const m = text.match(/\/(\d{1,2})/);
@@ -316,7 +320,7 @@ function detectIpv4Practice(q: Question): QuestionDeepDive['ipv4Practice'] | und
 
   return {
     enabled: true,
-    reason: 'Этот вопрос опирается на расчёт маски или границ подсети — удобно закрепить в тренажёре.',
+    reason: 'Вопрос опирается на расчёт маски или границ подсети.',
     targetPrefix,
     targetMode: 'trainer',
   };
@@ -329,72 +333,53 @@ function enrichExplanation(
 ): string {
   if (category === 'visual') {
     const extra =
-      'На практике сверяйте маркировку на корпусе/гильзе, тип волокна (SMF 9/125 или MMF 50/125) и полировку торца (UPC — синий, APC — зелёный). Ошибка в типе коннектора или загрязнение торца даёт потери и нестабильный линк.';
+      'На практике сверяйте маркировку, тип волокна и полировку торца. Грязь/неверный тип дают потери.';
     return base ? `${base}\n\n${extra}` : extra;
   }
-
-  // Prefer author explanation; avoid generic OSI blurb when text is already solid.
   if (base.length > 40) return base;
-
-  switch (category) {
-    case 'cli':
-      return `${base} Диагностику начинают с L1/L2 (линк, ошибки), затем L3/L4 и сервисы.`.
-        replace(/^\s+/, '');
-    default:
-      return base || 'Сверьте формулировку вопроса с моделью OSI и стандартами темы.';
+  if (category === 'cli') {
+    return `${base} Диагностику начинают с L1/L2, затем L3/L4 и сервисы.`.trim();
   }
+  return base || 'Сверьте формулировку с стандартами темы.';
 }
 
 function detectCommonTrap(q: Question): string {
   const t = (q.text + ' ' + (q.explanation || '')).toLowerCase();
-
   if (t.includes('маск') || t.includes('хост')) {
-    return 'Частая ошибка: забывают вычесть 2 адреса (сеть и broadcast) или путают шаг подсети с числом хостов.';
+    return 'Частая ошибка: забывают сеть/broadcast или путают шаг с числом хостов.';
   }
-  if (t.includes('кадр') || t.includes('пакет') || t.includes('сегмент')) {
-    return 'Путаница PDU: кадр — L2, пакет — L3, сегмент/датаграмма — L4.';
-  }
-  if (t.includes('syn') || t.includes('handshake') || t.includes('трёхкратное')) {
-    return 'Часто путают порядок флагов handshake (кто отправляет SYN+ACK).';
+  if (t.includes('syn') || t.includes('handshake')) {
+    return 'Часто путают порядок флагов handshake.';
   }
   if (q.group === 'visual-l1' || t.includes('оптик')) {
-    if (t.includes('царапин') || t.includes('скол')) {
-      return 'Царапина или скол на торце — не косметика: стык переделывают. Нельзя «лечить» дефект увеличением дуги.';
-    }
-    if (t.includes('upc') || t.includes('apc') || t.includes('полир')) {
-      return 'Нельзя стыковать UPC (синий) с APC (зелёный, скос ~8°): риск скола и высоких потерь.';
-    }
-    return 'Похожие разъёмы легко перепутать. Смотрите форму, цвет хвостовика, защёлку и маркировку.';
+    return 'Сверяйте маркировку и тип разъёма, не только «на глаз».';
   }
-  return 'Смотрите точные формулировки стандартов и исключения из общих правил.';
+  return 'Смотрите точные формулировки стандартов и исключения.';
 }
 
 function getPracticalTip(category: QuestionDeepDive['category']): string {
   switch (category) {
     case 'cli':
-      return 'Сначала проверьте линк (L1/L2), затем маршруты и DNS.';
+      return 'Сначала линк (L1/L2), затем маршруты и DNS.';
     case 'l3':
-      return 'Команды `ip route` / `route print` быстро показывают шлюзы и метрики.';
+      return '`ip route` / `route print` — быстрый взгляд на шлюзы.';
     case 'l4':
-      return '`ss -tulpn` показывает слушающие сокеты и порты.';
+      return '`ss -tulpn` — слушающие сокеты.';
     case 'l2':
-      return 'Таблица MAC/CAM устаревает по тайм-ауту, если узел молчит.';
+      return 'MAC/CAM устаревает по aging, если узел молчит.';
     case 'visual':
-      return 'Перед подключением: осмотр торца, чистка, сверка типа разъёма. После — измерение потерь.';
+      return 'Осмотр/чистка торца, сверка типа, затем измерение потерь.';
     default:
-      return 'Каждый уровень модели решает свою задачу; не смешивайте симптомы разных слоёв.';
+      return 'Не смешивайте симптомы разных слоёв модели.';
   }
 }
 
 function generateDiagramForQuestion(q: Question): string | undefined {
   if (q.topic.includes('Подсети') || q.topic.includes('Маски')) {
-    return 'Шаг октета = 256 − значение маски; хостов = 2^(32 − prefix) − 2';
+    return 'Шаг октета = 256 − маска; хостов = 2^(32 − prefix) − 2';
   }
   if (q.topic.includes('TCP') || q.topic.includes('Handshake')) {
     return 'Client → SYN → Server → SYN+ACK → Client → ACK';
-  }
-  if (q.topic.includes('Единицы данных') || q.topic.includes('PDU')) {
-    return 'L7 данные → L4 сегмент → L3 пакет → L2 кадр → L1 биты';
   }
   return undefined;
 }
@@ -405,10 +390,8 @@ function generateKeyTakeaways(
   correctText: string
 ): string[] {
   const tips = [`Правильный ответ: ${correctText}`, `Тема: ${q.topic}`];
-  if (category === 'visual') {
-    tips.push('Сверяйте фото с маркировкой и признаками разъёма/модуля.');
-  } else if (category === 'l3' && q.text.includes('/')) {
-    tips.push('Расчёт маски удобно проверить в IPv4-тренажёре');
+  if (category === 'l3' && /\/\d+/.test(q.text)) {
+    tips.push('Расчёт маски можно закрепить в IPv4-тренажёре');
   }
   return tips;
 }
