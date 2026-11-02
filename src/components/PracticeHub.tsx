@@ -5,13 +5,11 @@ import {
   Cpu,
   Terminal,
   FlaskConical,
-  Sparkles,
-  ArrowRight,
 } from 'lucide-react';
 import { PacketJourney } from './PacketJourney';
 import { VlanSimulator } from './VlanSimulator';
 import { ProtocolSimulators } from './ProtocolSimulators';
-import { CliSimulator } from './CliSimulator';
+import { CliLabShell } from '../cli-lab/CliLabShell';
 
 export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli';
 
@@ -47,19 +45,18 @@ const PRACTICE_ITEMS: PracticeItem[] = [
   },
   {
     id: 'cli',
-    title: 'CLI Терминал',
-    badge: 'Cisco & Linux',
-    subtitle: 'Эмулятор консоли сетевого оборудования с подсказками команд',
+    title: 'CLI Lab 2.0',
+    badge: 'Cisco IOS',
+    subtitle: 'Лаборатория с проверкой состояния: VLAN, access-порт, режимы IOS',
     icon: <Terminal className="w-4 h-4 text-amber-400" />,
   },
 ];
 
 export const PracticeHub: React.FC = () => {
-  const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>('journey');
+  const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>('cli');
 
   return (
     <div className="space-y-6">
-      {/* Practice Header & Sub-Navigation */}
       <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-cyan-500/20 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
@@ -71,12 +68,11 @@ export const PracticeHub: React.FC = () => {
               Сетевая практика и симуляторы
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Интерактивные стенды для отработки сетевых процессов: от сборки кадров и изоляции VLAN до симуляции трансляции NAT и терминала Cisco IOS.
+              Стенды для отработки сетевых процессов и CLI Lab 2.0 с проверкой конфигурации по состоянию устройства.
             </p>
           </div>
         </div>
 
-        {/* 4 Practice Selector Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {PRACTICE_ITEMS.map((item) => {
             const isActive = activeSimulator === item.id;
@@ -85,8 +81,7 @@ export const PracticeHub: React.FC = () => {
                 key={item.id}
                 onClick={() => setActiveSimulator(item.id)}
                 type="button"
-                className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
-                  isActive
+                className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 ${\n                  isActive
                     ? 'bg-gradient-to-b from-cyan-950/80 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/50'
                     : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
                 }`}
@@ -94,8 +89,7 @@ export const PracticeHub: React.FC = () => {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`p-2 rounded-xl ${
-                        isActive ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
+                      className={`p-2 rounded-xl ${\n                        isActive ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
                       }`}
                     >
                       {item.icon}
@@ -106,21 +100,18 @@ export const PracticeHub: React.FC = () => {
                     {item.badge}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
-                  {item.subtitle}
-                </p>
+                <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">{item.subtitle}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Active Simulator Container */}
       <div className="animate-fade-in">
         {activeSimulator === 'journey' && <PacketJourney />}
         {activeSimulator === 'vlan' && <VlanSimulator />}
         {activeSimulator === 'protocols' && <ProtocolSimulators />}
-        {activeSimulator === 'cli' && <CliSimulator />}
+        {activeSimulator === 'cli' && <CliLabShell />}
       </div>
     </div>
   );
