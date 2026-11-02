@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-/**
- * Validate the bank the app actually uses: esbuild-bundle of bank-entry.ts
- * (same composition as questionsData.ts).
- */
 import { loadBank, writeText } from './load-bank.mjs';
 
 const ALLOWED_DIFF = new Set(['basic', 'beginner', 'applied', 'advanced']);
@@ -19,10 +15,17 @@ const ALLOWED_GROUPS = new Set([
 const errors = [];
 const warnings = [];
 
-const mod = await loadBank();
-const ALL_QUESTIONS = mod.ALL_QUESTIONS;
+let ALL_QUESTIONS;
+try {
+  const mod = await loadBank();
+  ALL_QUESTIONS = mod.ALL_QUESTIONS;
+} catch (e) {
+  console.error('Failed to load bank via esbuild:', e);
+  process.exit(1);
+}
+
 if (!Array.isArray(ALL_QUESTIONS) || ALL_QUESTIONS.length === 0) {
-  console.error('CRITICAL: ALL_QUESTIONS empty after esbuild load');
+  console.error('CRITICAL: ALL_QUESTIONS empty');
   process.exit(1);
 }
 
@@ -53,8 +56,8 @@ for (const q of ALL_QUESTIONS) {
     if (new Set(n).size !== n.length) warnings.push(`${q.id}: duplicate answer texts`);
   }
   if (!q.explanation?.trim()) warnings.push(`${q.id}: empty explanation`);
-  if (q.explanation && /\uFFFD|��/.test(q.explanation))
-    errors.push(`${q.id}: corrupted explanation encoding`);
+  if (q.explanation && /\uFFFD/.test(q.explanation))
+    errors.push(`${q.id}: corrupted explanation encoding (U+FFFD)`);
   if (q.difficulty && !ALLOWED_DIFF.has(q.difficulty))
     errors.push(`${q.id}: bad difficulty ${q.difficulty}`);
   if (q.group && !ALLOWED_GROUPS.has(q.group))
@@ -65,7 +68,6 @@ for (const q of ALL_QUESTIONS) {
   else byDiff.other++;
 }
 
-// text dups
 const byText = new Map();
 for (const q of ALL_QUESTIONS) {
   const key = String(q.text || '')
@@ -93,7 +95,7 @@ if (textDups.length) {
 }
 if (warnings.length) {
   lines.push(`Warnings: ${warnings.length}`);
-  for (const w of warnings.slice(0, 30)) lines.push(' - ' + w);
+  for (const w of warnings.slice(0, 40)) lines.push(' - ' + w);
 }
 if (errors.length) {
   lines.push(`ERRORS: ${errors.length}`);

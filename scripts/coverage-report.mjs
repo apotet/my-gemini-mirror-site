@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-import { loadBank, writeJson, writeText } from './load-bank.mjs';
+import { loadBankWithExplanations, writeJson, writeText } from './load-bank.mjs';
 
-const mod = await loadBank();
-const rows = mod.buildCoverageRows();
+let rows;
+try {
+  const mod = await loadBankWithExplanations();
+  rows = mod.buildCoverageRows();
+} catch (e) {
+  console.error('Coverage load failed:', e);
+  process.exit(1);
+}
 
 const byDiff = {};
 const missingApplied = [];
@@ -39,13 +45,13 @@ const lines = [
       `  ${d}: ${v.individual}/${v.total} individual (${v.total ? Math.round((100 * v.individual) / v.total) : 0}%)`
   ),
   `Applied missing individual: ${missingApplied.length}`,
-  missingApplied.length ? '  ' + missingApplied.slice(0, 40).join(', ') : '',
+  missingApplied.length ? '  ' + missingApplied.slice(0, 60).join(', ') : '',
   `Advanced missing individual: ${missingAdvanced.length}`,
-  missingAdvanced.length ? '  ' + missingAdvanced.slice(0, 40).join(', ') : '',
+  missingAdvanced.length ? '  ' + missingAdvanced.slice(0, 60).join(', ') : '',
   `Weak engineering (<80 chars) among individual: ${weakEngineering.length}`,
 ];
 
-const text = lines.filter(Boolean).join('\n');
+const text = lines.filter.filter(Boolean).join('\n');
 console.log(text);
 writeText('scripts/.cache/coverage-summary.txt', text);
 writeJson('scripts/.cache/coverage-report.json', { summary, rows });
