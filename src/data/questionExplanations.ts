@@ -5,8 +5,13 @@ export interface QuestionDeepDive {
   category: 'l1' | 'l2' | 'l3' | 'l4' | 'l5_l7' | 'tcpip' | 'cli' | 'visual';
   categoryLabel: string;
   categoryColor: string;
+  /** Short answer for everyone (always visible). */
+  briefAnswer: string;
   coreConcept: string;
   deepAnalysis: string;
+  /** Optional long engineering sections for advanced/applied diagnostics. */
+  engineeringDeep?: string;
+  hasIndividualDeep: boolean;
   commonTrap: string;
   practicalTip?: string;
   memorizationRule?: string;
@@ -18,25 +23,218 @@ export interface QuestionDeepDive {
     targetMode?: 'calc' | 'trainer';
   };
   keyTakeaways: string[];
+  nextStudy?: string;
 }
+
+/** Hand-authored deep dives for advanced IDs (no generic L1–L7 paste). */
+const INDIVIDUAL_DEEP: Record<
+  string,
+  { brief: string; deep: string; trap?: string; next?: string }
+> = {
+  'l12-d01': {
+    brief:
+      'Проверить edge/PortFast на access и политику BPDU Guard: без edge RSTP не форвардит сразу.',
+    deep: `Суть. Access к ПК не должен ждать полной сходимости как uplink.
+
+Механизм RSTP. Роли Root/Designated/Alternate/Backup; состояния Discarding → Learning → Forwarding. Edge-порт (PortFast) сразу переходит к forwarding для data plane, продолжая слушать BPDU.
+
+Почему «долго». Без edge порт ведёт себя как часть топологии: negotiation и learning задерживают пользовательский трафик на секунды.
+
+Диагностика. show spanning-tree interface … detail; edge/portfast status; нет ли BPDU с access (тогда Guard ошибёт порт — это правильно).
+
+Ловушка. Путать состояния classic STP (Listening/Learning 15s) с RSTP: цифры и термины другие, идея edge — та же.
+
+Проверка. После edge+guard ПК получает DHCP/ARP сразу; при подключении свитча на access — errdisable/guard.`,
+    trap: 'Описывать RSTP исключительно терминами classic STP Listening 15s без edge.',
+    next: 'CLI Lab: VLAN/trunk; теория STP/RSTP',
+  },
+  'l12-d02': {
+    brief: 'Разные VLAN = разные L2-домены; между ними нужен L3 (SVI/router), не «магия» trunk.',
+    deep: `Trunk переносит несколько VLAN между свитчами, но не маршрутизирует.
+Access в VLAN 30 и сервер в VLAN 10 не разделяют broadcast domain.
+Нужен inter-VLAN routing (SVI, router-on-a-stick, L3-link) и согласованные allowed VLAN на trunk для тех VLAN, которые реально нужны на пути.
+Проверка: одинаковый access VLAN внутри сегмента; ping SVI; ACL на SVI.`,
+  },
+  'l12-d03': {
+    brief: 'Native VLAN mismatch смешивает untagged и даёт трудноуловимые L2-глюки.',
+    deep: `Untagged кадры на trunk попадают в native VLAN каждой стороны.
+Если native 10 vs 20, untagged «переезжает» между VLAN без тега — утечки CDP/DHCP/STP, «фантомная» связность.
+Выравнивайте native (лучше не VLAN 1) и минимизируйте untagged data.`,
+  },
+  'l12-d04': {
+    brief: 'Rx −28 dBm при чувствительности −18 dBm — сигнал слишком слабый (не «перегрев» приёмника).',
+    deep: `Бюджет мощности: Tx − потери ≤ Rx ≤ overload.
+Слишком низкий Rx: дальность, плохие стыки, грязь, неверный тип волокна/модуля.
+Too hot / overload — наоборот, слишком высокий Rx (часто короткая линия без аттенюатора).
+Диагностика: DOM/optical thresholds, чистка, измерение потерь, сверка SMF/MMF и дальности модуля.`,
+  },
+  'l12-d05': {
+    brief: 'Без STP broadcast/unknown unicast зацикливаются; IP TTL Ethernet storm не останавливает.',
+    deep: `Ethernet не декрементирует TTL. Петля размножает flood до насыщения каналов.
+Нужны STP/RSTP/MSTP, storm-control, разумный дизайн без L2-колец без защиты.`,
+  },
+  'l12-d06': {
+    brief: 'CAM full → больше unknown unicast flood (и риск mac-flooding атак).',
+    deep: `Таблица MAC ограничена. При переполнении новые адреса не учат стабильно → flood как hub для unknown.
+Защита: port-security, ограничение MAC на access, контроль uplink.`,
+  },
+  'l3-d02': {
+    brief: '192.168.5.64/27 → блок 64–95, broadcast 192.168.5.95.',
+    deep: `/27 = шаг 32. Подсети …0, 32, 64, 96…
+Диапазон 64–95: network 64, hosts 65–94, broadcast 95.`,
+  },
+  'l3-d03': {
+    brief: 'Longest prefix match: /25 побеждает /24; metric сравнивают при равной специфичности.',
+    deep: `Сначала выбирают наиболее specific prefix. AD/metric — среди равных по длине префикса.
+Пакет в хост из /25 идёт в /25, даже если metric хуже.`,
+  },
+  'l3-d05': {
+    brief: 'PAT различает сессии по 5-tuple (ip/port/proto), разделяя один public IP.',
+    deep: `Many-to-one: разные internal:ephemeral → один public с разными source port.
+Исчерпание портов и ALG — типичные пределы.`,
+  },
+  'l3-d07': {
+    brief: 'Proxy ARP маскирует неверные маски/«плоскую» сеть: шлюз отвечает своим MAC за чужие IP.',
+    deep: `Хост считает, что цель on-link, шлёт ARP; router отвечает своим MAC и маршрутизирует дальше.
+Удобно временно, опасно как постоянный костыль — скрывает design-ошибки.`,
+  },
+  'l3-d08': {
+    brief: 'ECMP обычно per-flow (hash), не per-packet — чтобы не ломать порядок TCP.',
+    deep: `Hash по адресам/портам держит поток на одном path. Per-packet ECMP редок из-за reordering.`,
+  },
+  'l4-d01': {
+    brief: 'Нет SYN-ACK: ACL/firewall, сервис down, asymmetry+stateful FW — не «только duplex».',
+    deep: `Проверка: ss/netstat listen; ACL/security groups; traceroute/path; stateful на обоих направлениях.
+Half-duplex возможен, но не единственная и не первая гипотеза при чистом отсутствии SYN-ACK.`,
+  },
+  'l4-d02': {
+    brief: 'Рост retransmits при большом RTT: loss, bufferbloat, police, PMTUD.',
+    deep: `Смотрите interface drops, queueing, policers, ICMP frag-needed, TCP graphs (window/rtt).`,
+  },
+  'l4-d03': {
+    brief: 'TIME-WAIT гасит запоздалые сегменты старой incarnции сокета.',
+    deep: `2MSL после active close. Нужен для reliability RFC793 FSM, не «ускорение SYN-flood».`,
+  },
+  'l4-d05': {
+    brief: 'SACK подтверждает несмежные блоки — быстрее восстановление при множественных потерях.',
+    deep: `Без SACK — чаще большой rollback; с SACK — selective retransmit.`,
+  },
+  'l4-d06': {
+    brief: 'Policing режет TCP → loss → cwnd down → низкий throughput.',
+    deep: `Лучше shaping с очередями, чем жёсткий police на интерактивных TCP, если политика позволяет.`,
+  },
+  'l57-d01': {
+    brief: 'Имя в URL/SNI должно совпадать с CN/SAN сертификата.',
+    deep: `example.com ≠ www.example.com без SAN. Браузер даст name mismatch.`,
+  },
+  'l57-d02': {
+    brief: 'Без SNI сервер отдаёт default cert на IP — возможен mismatch у vhost.',
+    deep: `SNI в ClientHello выбирает сертификат/сайт. Старые клиенты без SNI ломают multi-host HTTPS.`,
+  },
+  'l57-d03': {
+    brief: 'Split-horizon: разные DNS-ответы internal vs external для одного имени.',
+    deep: `Внутри — private IP, снаружи — public. Ошибки view дают «резолвится не туда».`,
+  },
+  'l57-d04': {
+    brief: 'HTTP/2 multiplex не убирает TCP HOL blocking при потерях; HTTP/3/QUIC — другой путь.',
+    deep: `Один потерянный TCP-сегмент тормозит все потоки на соединении.`,
+  },
+  'l57-d05': {
+    brief: 'Два DHCP в одном L2 без split/failover → гонка Offer и хаос настроек.',
+    deep: `Split scope, DHCP failover, или ACL/port isolation для серверов.`,
+  },
+  'l57-d06': {
+    brief: 'Долгий HSTS max-age / preload усложняет откат при аварии TLS.',
+    deep: `Планируйте короткий max-age на время обкатки; preload — только при уверенности.`,
+  },
+  'tcpip-d01': {
+    brief: 'Без NAT IP src/dst end-to-end; на каждом hop переписываются MAC под next-hop.',
+    deep: `Декапсуляция L2 → lookup L3 → новая L2-инкапсуляция. TTL−1.`,
+  },
+  'tcpip-d02': {
+    brief: 'PMTUD black hole: DF=1 и нет ICMP Fragmentation Needed/PTB.',
+    deep: `Разрешите ICMP PTB на path или чините MTU/MSS clamp осознанно.`,
+  },
+  'tcpip-d04': {
+    brief: 'Stateful FW на асимметричном path не видит full duplex state → drop.',
+    deep: `Симметрия через FW, state sync кластера, или policy-routing осторожно.`,
+  },
+  'tcpip-d05': {
+    brief: 'ECN маркирует перегрузку (CE), не обязательно drop.',
+    deep: `Нужна поддержка на концах и в очереди (AQM). Иначе mark бесполезен.`,
+  },
+  'ts-d01': {
+    brief: 'Сеть жива → смотреть proxy/PAC, SSL inspection, ACL 443, split DNS, cert.',
+    deep: `Сверка curl -v, сертификат цепочки, PAC URL, firewall app-id.`,
+  },
+  'ts-d02': {
+    brief: 'После VLAN-миграции сверьте access VLAN, SVI, ACL и реальный L2-домен.',
+    deep: `show vlan, show interfaces switchport, ping SVI, одинаковый mask/gateway.`,
+  },
+  'ts-d03': {
+    brief: 'Пустой traceroute ≠ down: часто режут ICMP/UDP probe при живом 443.',
+    deep: `Проверяйте application path (TCP/TLS), не только traceroute.`,
+  },
+  'ts-d04': {
+    brief: 'TCP slow / UDP iperf ok → loss-sensitive path, police, bufferbloat, window.',
+    deep: `Смотрите retransmits, pacing, policers, BQL/CoDel, middlebox.`,
+  },
+  'ts-d05': {
+    brief: 'Strict uRPF + asymmetry дропает легитимный ingress.',
+    deep: `Feasible paths, loose mode, или убрать asymmetry на том интерфейсе.`,
+  },
+  'ts-d06': {
+    brief: 'SIP/RTP: DNS, NAT/ALG, ACL портов, одностороннее аудио.',
+    deep: `Проверьте signalling 5060/TLS и RTP range, helper-address, fixup/ALG осторожно.',
+  },
+  'ts-d07': {
+    brief: 'Policy routing: ip rule и таблицы ip route show table …',
+    deep: `Не путать с main table only; смотрите priority rules.`,
+  },
+  'ts-d08': {
+    brief: '«Падает через ~5 мин»: ARP/MAC aging, DHCP renew, FW session timeout.',
+    deep: `Сверьте lease timers, idle timeouts, silent host behavior.`,
+  },
+};
 
 export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const category = detectCategory(question);
   const correctText = question.correct.map((idx) => question.answers[idx]).join('; ');
+  const individual = INDIVIDUAL_DEEP[question.id];
+  const baseExpl = (question.explanation || '').trim();
+
+  const briefAnswer =
+    individual?.brief ||
+    (baseExpl.length > 0 && baseExpl.length <= 220
+      ? baseExpl
+      : `Правильный ответ: «${correctText}».`);
+
+  const deepAnalysis = individual
+    ? individual.deep
+    : enrichExplanation(question, category, baseExpl);
+
+  const engineeringDeep =
+    question.difficulty === 'advanced' || question.difficulty === 'applied'
+      ? individual?.deep || (baseExpl.length > 80 ? baseExpl : undefined)
+      : individual?.deep;
 
   return {
     questionId: question.id,
     category,
     categoryLabel: question.topic,
     categoryColor: getCategoryColor(category),
+    briefAnswer,
     coreConcept: `Правильный ответ: «${correctText}». Тема: ${question.topic}.`,
-    deepAnalysis: enrichExplanation(question, category),
-    commonTrap: detectCommonTrap(question),
+    deepAnalysis,
+    engineeringDeep,
+    hasIndividualDeep: Boolean(individual),
+    commonTrap: individual?.trap || detectCommonTrap(question),
     practicalTip: question.remember || getPracticalTip(category),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: detectIpv4Practice(question),
     keyTakeaways: generateKeyTakeaways(question, category, correctText),
+    nextStudy: individual?.next,
   };
 }
 
@@ -124,30 +322,24 @@ function detectIpv4Practice(q: Question): QuestionDeepDive['ipv4Practice'] | und
   };
 }
 
-function enrichExplanation(q: Question, category: QuestionDeepDive['category']): string {
-  const base = (q.explanation || '').trim();
-
+function enrichExplanation(
+  q: Question,
+  category: QuestionDeepDive['category'],
+  base: string
+): string {
   if (category === 'visual') {
     const extra =
       'На практике сверяйте маркировку на корпусе/гильзе, тип волокна (SMF 9/125 или MMF 50/125) и полировку торца (UPC — синий, APC — зелёный). Ошибка в типе коннектора или загрязнение торца даёт потери и нестабильный линк.';
     return base ? `${base}\n\n${extra}` : extra;
   }
 
+  // Prefer author explanation; avoid generic OSI blurb when text is already solid.
   if (base.length > 40) return base;
 
   switch (category) {
-    case 'l1':
-      return `${base} Физический уровень передаёт битовый поток через среду (медь, оптика, радио) без разбора адресов.`;
-    case 'l2':
-      return `${base} Канальный уровень работает с кадрами, MAC-адресами и проверкой FCS/CRC.`;
-    case 'l3':
-      return `${base} Сетевой уровень маршрутизирует IP-пакеты между сетями по логическим адресам.`;
-    case 'l4':
-      return `${base} Транспортный уровень связывает процессы через порты и управляет доставкой (TCP/UDP).`;
-    case 'l5_l7':
-      return `${base} Прикладные протоколы (DNS, HTTP, DHCP, TLS) обслуживают пользовательские сервисы.`;
     case 'cli':
-      return `${base} Диагностику начинают с L1/L2 (линк, ошибки), затем L3/L4 и сервисы.`;
+      return `${base} Диагностику начинают с L1/L2 (линк, ошибки), затем L3/L4 и сервисы.`.
+        replace(/^\s+/, '');
     default:
       return base || 'Сверьте формулировку вопроса с моделью OSI и стандартами темы.';
   }
@@ -167,15 +359,12 @@ function detectCommonTrap(q: Question): string {
   }
   if (q.group === 'visual-l1' || t.includes('оптик')) {
     if (t.includes('царапин') || t.includes('скол')) {
-      return 'Царапина или скол на торце — не косметика: стык переделывают (новый скол/зачистка или замена пигтейла). Нельзя «лечить» дефект увеличением дуги или сдвигом гильзы.';
+      return 'Царапина или скол на торце — не косметика: стык переделывают. Нельзя «лечить» дефект увеличением дуги.';
     }
     if (t.includes('upc') || t.includes('apc') || t.includes('полир')) {
-      return 'Нельзя стыковать UPC (синий, плоский торец) с APC (зелёный, скос ~8°): риск скола и высоких потерь.';
+      return 'Нельзя стыковать UPC (синий) с APC (зелёный, скос ~8°): риск скола и высоких потерь.';
     }
-    if (t.includes('гряз') || t.includes('чист') || t.includes('торец')) {
-      return 'Многие «непонятные» потери — загрязнённый торец. Сначала осмотр и чистка, потом повтор измерения.';
-    }
-    return 'Похожие разъёмы и модули легко перепутать на фото. Смотрите форму, цвет хвостовика, защёлку и заводскую маркировку.';
+    return 'Похожие разъёмы легко перепутать. Смотрите форму, цвет хвостовика, защёлку и маркировку.';
   }
   return 'Смотрите точные формулировки стандартов и исключения из общих правил.';
 }
@@ -191,9 +380,9 @@ function getPracticalTip(category: QuestionDeepDive['category']): string {
     case 'l2':
       return 'Таблица MAC/CAM устаревает по тайм-ауту, если узел молчит.';
     case 'visual':
-      return 'Перед подключением: осмотр торца, чистка, сверка типа разъёма. После — измерение потерь, а не только «линк up».';
+      return 'Перед подключением: осмотр торца, чистка, сверка типа разъёма. После — измерение потерь.';
     default:
-      return 'Каждый уровень OSI решает свою задачу и инкапсулирует PDU уровня выше.';
+      return 'Каждый уровень модели решает свою задачу; не смешивайте симптомы разных слоёв.';
   }
 }
 
@@ -217,14 +406,9 @@ function generateKeyTakeaways(
 ): string[] {
   const tips = [`Правильный ответ: ${correctText}`, `Тема: ${q.topic}`];
   if (category === 'visual') {
-    tips.push('Сверяйте фото с маркировкой и признаками разъёма/модуля, а не только «на глаз».');
-    if (q.explanation) {
-      tips.push(q.explanation.length > 140 ? q.explanation.slice(0, 140).trim() + '…' : q.explanation);
-    }
+    tips.push('Сверяйте фото с маркировкой и признаками разъёма/модуля.');
   } else if (category === 'l3' && q.text.includes('/')) {
     tips.push('Расчёт маски удобно проверить в IPv4-тренажёре');
-  } else {
-    tips.push('Проверьте соответствие уровню модели OSI и формулировке стандарта');
   }
   return tips;
 }
