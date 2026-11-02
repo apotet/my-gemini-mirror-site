@@ -7,12 +7,24 @@ import { TheoryView } from './components/TheoryView';
 import { DeployModal } from './components/DeployModal';
 import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
-import { ExternalLink, Sparkles, Shield, GitBranch, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+
+function readStoredBool(key: string, fallback: boolean): boolean {
+  try {
+    const v = localStorage.getItem(key);
+    if (v === null) return fallback;
+    return v === '1' || v === 'true';
+  } catch {
+    return fallback;
+  }
+}
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
-  const [isDark, setIsDark] = useState<boolean>(true);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  // Default: dark theme on (matches product design)
+  const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
+  // Sound off by default
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => readStoredBool('osi_sound', false));
   const [isDeployModalOpen, setIsDeployModalOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
@@ -33,13 +45,31 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Apply theme class + persist
   useEffect(() => {
+    const root = document.documentElement;
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      root.style.colorScheme = 'light';
+    }
+    try {
+      localStorage.setItem('osi_theme_dark', isDark ? '1' : '0');
+    } catch {
+      // ignore
     }
   }, [isDark]);
+
+  // Persist sound preference
+  useEffect(() => {
+    try {
+      localStorage.setItem('osi_sound', soundEnabled ? '1' : '0');
+    } catch {
+      // ignore
+    }
+  }, [soundEnabled]);
 
   const handleNavigateToTheory = (questionId: string) => {
     setTheoryQuestionId(questionId);
@@ -72,7 +102,7 @@ export function App() {
               href="https://apotet.github.io/osi-tcpip-exam-public/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-400 hover:underline flex items-center gap-1 font-mono shrink-0"
+              className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-mono shrink-0"
               title="Оригинальный сайт тренажера от ChatGPT"
             >
               <span>Оригинал: osi-tcpip</span>
@@ -83,7 +113,7 @@ export function App() {
               href="https://apotet.github.io/my-gemini-mirror-site/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-300 hover:underline flex items-center gap-1 font-mono font-bold shrink-0"
+              className="text-cyan-700 dark:text-cyan-300 hover:underline flex items-center gap-1 font-mono font-bold shrink-0"
               title="Зеркало тренажера от Gemini"
             >
               <span>Зеркало: my-gemini</span>
@@ -103,9 +133,9 @@ export function App() {
           }
         }}
         isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
+        onToggleTheme={() => setIsDark((v) => !v)}
         soundEnabled={soundEnabled}
-        onToggleSound={() => setSoundEnabled(!soundEnabled)}
+        onToggleSound={() => setSoundEnabled((v) => !v)}
         onOpenDeploy={() => setIsDeployModalOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
@@ -135,7 +165,7 @@ export function App() {
         {activeTab === 'practice' && <PracticeHub />}
       </main>
 
-      {/* Mobile Bottom Tab Bar (Visible on mobile/tablet matching mockup IMG_2164) */}
+      {/* Mobile Bottom Tab Bar */}
       <MobileTabBar
         activeTab={activeTab}
         onTabChange={(tab) => {
@@ -154,11 +184,11 @@ export function App() {
           setActiveTab(tab);
           if (tab !== 'theory') setTheoryQuestionId(null);
         }}
-        onSelectLayer={(layer) => {
+        onSelectLayer={() => {
           setActiveTab('theory');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        onToggleTheme={() => setIsDark(!isDark)}
+        onToggleTheme={() => setIsDark((v) => !v)}
         onOpenDeploy={() => setIsDeployModalOpen(true)}
         isDark={isDark}
       />
@@ -182,7 +212,7 @@ export function App() {
             <a
               href="/osi-tcpip-trainer-source.zip"
               download="osi-tcpip-trainer-source.zip"
-              className="text-emerald-400 hover:underline cursor-pointer font-bold flex items-center gap-1"
+              className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer font-bold flex items-center gap-1"
               title="Скачать полный ZIP архив проекта с исходным кодом"
             >
               <span>📦 Скачать ZIP исходник</span>
@@ -191,7 +221,7 @@ export function App() {
             <button
               onClick={() => setIsDeployModalOpen(true)}
               type="button"
-              className="text-cyan-400 hover:underline cursor-pointer"
+              className="text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
             >
               Синхронизировать с GitHub
             </button>
@@ -200,7 +230,7 @@ export function App() {
               href="https://github.com/apotet/osi-tcpip-exam-public"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
+              className="hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Исходный репозиторий
             </a>
