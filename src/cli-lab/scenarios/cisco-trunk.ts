@@ -34,7 +34,6 @@ function buildInitialState(): NetworkState {
   };
 }
 
-/** 802.1Q trunk on Fa0/1 with allowed VLANs 10,20 */
 export const ciscoTrunkScenario: Scenario = {
   id: 'cisco-trunk-basic',
   title: 'Trunk 802.1Q',
@@ -51,7 +50,7 @@ export const ciscoTrunkScenario: Scenario = {
       instruction: 'enable → configure terminal',
       explanation: 'Конфигурация VLAN и портов — из global config.',
       hint: 'enable → conf t',
-      accept: [],
+      accept: [{ type: 'mode', device: 'sw1', modes: ['config', 'config-if', 'config-vlan'] }],
     },
     {
       id: 's2',

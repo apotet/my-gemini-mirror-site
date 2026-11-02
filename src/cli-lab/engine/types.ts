@@ -100,7 +100,9 @@ export type GoalPredicate =
   | { type: 'if.ipv4'; device: string; ifName: string; address: string; prefix: number }
   | { type: 'hostname'; device: string; hostname: string }
   | { type: 'route.exists'; device: string; prefix: string; prefixLen: number; nextHop?: string }
-  | { type: 'if.trunkAllowed'; device: string; ifName: string; vlans: number[] };
+  | { type: 'if.trunkAllowed'; device: string; ifName: string; vlans: number[] }
+  | { type: 'mode'; device: string; modes: DeviceMode[] }
+  | { type: 'privilege'; device: string; min: number };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;

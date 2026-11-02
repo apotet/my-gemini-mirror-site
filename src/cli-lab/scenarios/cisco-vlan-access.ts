@@ -34,7 +34,6 @@ function buildInitialState(): NetworkState {
   };
 }
 
-/** Learn + task scenario: VLAN 10 on Fa0/1 access, port up */
 export const ciscoVlanAccessScenario: Scenario = {
   id: 'cisco-vlan-access-basic',
   title: 'Access VLAN на порту',
@@ -51,14 +50,14 @@ export const ciscoVlanAccessScenario: Scenario = {
       instruction: 'Войдите в privileged EXEC: enable',
       explanation: 'Без enable недоступны configure terminal и show running-config.',
       hint: 'enable',
-      accept: [{ type: 'hostname', device: 'sw1', hostname: 'Switch' }], // privilege checked via mode in UI step advance
+      accept: [{ type: 'privilege', device: 'sw1', min: 15 }],
     },
     {
       id: 's2',
       instruction: 'Откройте конфигурацию: configure terminal (или conf t)',
       explanation: 'Глобальный config-режим — точка входа для VLAN и интерфейсов.',
       hint: 'configure terminal',
-      accept: [],
+      accept: [{ type: 'mode', device: 'sw1', modes: ['config', 'config-if', 'config-vlan'] }],
     },
     {
       id: 's3',

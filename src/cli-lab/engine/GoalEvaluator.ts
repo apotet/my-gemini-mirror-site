@@ -18,6 +18,27 @@ export function evaluatePredicate(state: NetworkState, p: GoalPredicate): GoalCh
           : `Ожидался hostname ${p.hostname}, сейчас ${dev?.hostname ?? '—'}`,
       };
     }
+    case 'mode': {
+      const current = dev?.modeCtx.mode;
+      const ok = !!current && p.modes.includes(current);
+      return {
+        predicate: p,
+        passed: ok,
+        detail: ok
+          ? `Режим ${current}`
+          : `Режим сейчас ${current ?? '—'}, нужен один из: ${p.modes.join(', ')}`,
+      };
+    }
+    case 'privilege': {
+      const ok = !!dev && dev.privilege >= p.min;
+      return {
+        predicate: p,
+        passed: ok,
+        detail: ok
+          ? `Privilege ≥ ${p.min}`
+          : `Privilege сейчас ${dev?.privilege ?? 0}, нужно ≥ ${p.min}`,
+      };
+    }
     case 'vlan.exists': {
       const vlan = dev?.vlans[p.vlanId];
       const exists = !!vlan;

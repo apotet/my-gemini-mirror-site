@@ -30,7 +30,6 @@ function buildInitialState(): NetworkState {
   };
 }
 
-/** Configure Gi0/0 IP and default route */
 export const ciscoL3GatewayScenario: Scenario = {
   id: 'cisco-l3-gateway-basic',
   title: 'IP-адрес и маршрут по умолчанию',
@@ -47,7 +46,7 @@ export const ciscoL3GatewayScenario: Scenario = {
       instruction: 'enable → configure terminal',
       explanation: 'Конфигурация интерфейсов и маршрутов выполняется из privileged → config.',
       hint: 'enable → conf t',
-      accept: [],
+      accept: [{ type: 'mode', device: 'r1', modes: ['config', 'config-if'] }],
     },
     {
       id: 's2',
