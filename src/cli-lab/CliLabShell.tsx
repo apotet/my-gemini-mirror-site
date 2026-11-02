@@ -5,6 +5,7 @@ import { LabMode, Scenario } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
+import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -22,10 +23,32 @@ interface HistoryLine {
   error?: boolean;
 }
 
-const SCENARIOS: Scenario[] = [ciscoVlanAccessScenario];
+const SCENARIOS: Scenario[] = [ciscoVlanAccessScenario, ciscoL3GatewayScenario];
+
+function goalLabel(g: Scenario['goals'][number]): string {
+  switch (g.type) {
+    case 'vlan.exists':
+      return `VLAN ${g.vlanId}${g.name ? ` (${g.name})` : ''}`;
+    case 'if.accessVlan':
+      return `${g.ifName} access VLAN ${g.vlanId}`;
+    case 'if.switchportMode':
+      return `${g.ifName} mode ${g.mode}`;
+    case 'if.admin':
+      return `${g.ifName} admin ${g.up ? 'up' : 'down'}`;
+    case 'if.ipv4':
+      return `${g.ifName} ${g.address}/${g.prefix}`;
+    case 'hostname':
+      return `hostname ${g.hostname}`;
+    case 'route.exists':
+      return `route ${g.prefix}/${g.prefixLen}${g.nextHop ? ` via ${g.nextHop}` : ''}`;
+    default:
+      return 'goal';
+  }
+}
 
 export const CliLabShell: React.FC = () => {
-  const scenario = SCENARIOS[0];
+  const [scenarioId, setScenarioId] = useState(SCENARIOS[0].id);
+  const scenario = SCENARIOS.find((s) => s.id === scenarioId) ?? SCENARIOS[0];
   const [labMode, setLabMode] = useState<LabMode>('learn');
   const [history, setHistory] = useState<HistoryLine[]>([]);
   const [input, setInput] = useState('');
@@ -33,15 +56,13 @@ export const CliLabShell: React.FC = () => {
   const [hintOpen, setHintOpen] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
+  const [tick, setTick] = useState(0);
 
-  const engineRef = useRef<LabEngine | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const engine = useMemo(() => {
-    const e = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
-    engineRef.current = e;
-    return e;
+    return new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   }, [scenario]);
 
   const resetLab = () => {
@@ -49,7 +70,7 @@ export const CliLabShell: React.FC = () => {
     setHistory([
       {
         type: 'system',
-        text: `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset only). Type ? for commands. Mode: ${labMode}`,
+        text: `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset). Type ? for commands. Mode: ${labMode}`,
       },
     ]);
     setStepIndex(0);
@@ -57,13 +78,14 @@ export const CliLabShell: React.FC = () => {
     setCompleted(false);
     setGoalResults(null);
     setInput('');
+    setTick((t) => t + 1);
     inputRef.current?.focus();
   };
 
   useEffect(() => {
     resetLab();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [labMode]);
+  }, [labMode, scenarioId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -79,20 +101,23 @@ export const CliLabShell: React.FC = () => {
     const state = engine.getState();
     const device = state.devices[state.activeDeviceId];
 
-    // Mode-aware early steps
-    if (currentStep.id === 's1') {
-      if (device.privilege >= 15 && device.modeCtx.mode === 'privileged') {
-        setStepIndex((i) => i + 1);
-        setHintOpen(false);
-        setHistory((h) => [
-          ...h,
-          { type: 'system', text: `✓ Шаг выполнен. ${currentStep.explanation || ''}` },
-        ]);
+    if (currentStep.id === 's1' && currentStep.accept.length === 0) {
+      const inConfig =
+        device.modeCtx.mode === 'config' ||
+        device.modeCtx.mode === 'config-if' ||
+        device.modeCtx.mode === 'config-vlan';
+      if (currentStep.instruction.includes('configure') || currentStep.instruction.includes('conf')) {
+        if (inConfig) {
+          setStepIndex((i) => i + 1);
+          setHintOpen(false);
+          setHistory((h) => [
+            ...h,
+            { type: 'system', text: `✓ Шаг выполнен. ${currentStep.explanation || ''}` },
+          ]);
+        }
+        return;
       }
-      return;
-    }
-    if (currentStep.id === 's2') {
-      if (device.modeCtx.mode === 'config' || device.modeCtx.mode === 'config-if' || device.modeCtx.mode === 'config-vlan') {
+      if (device.privilege >= 15 && device.modeCtx.mode === 'privileged') {
         setStepIndex((i) => i + 1);
         setHintOpen(false);
         setHistory((h) => [
@@ -145,14 +170,12 @@ export const CliLabShell: React.FC = () => {
     setHistory((h) => [
       ...h,
       { type: 'input', prompt, text: line },
-      ...(result.output
-        ? [{ type: 'output' as const, text: result.output, error: result.error }]
-        : []),
+      ...(result.output ? [{ type: 'output' as const, text: result.output, error: result.error }] : []),
     ]);
     setInput('');
+    setTick((t) => t + 1);
     tryAdvanceLearnStep();
 
-    // Auto-check goals in task/exam after each command
     if (labMode === 'task' || labMode === 'exam') {
       const g = engine.checkGoals(scenario.goals);
       if (g.allPassed) {
@@ -164,6 +187,7 @@ export const CliLabShell: React.FC = () => {
   };
 
   const modes: LabMode[] = ['learn', 'drill', 'task', 'exam'];
+  void tick;
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
@@ -174,7 +198,7 @@ export const CliLabShell: React.FC = () => {
             CLI Lab 2.0
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {ciscoIosProfile.displayName} · только документированный subset команд · проверка по состоянию устройства
+            {ciscoIosProfile.displayName} · проверка по состоянию устройства
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -183,11 +207,11 @@ export const CliLabShell: React.FC = () => {
               key={m}
               type="button"
               onClick={() => setLabMode(m)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide cursor-pointer ${
+              className={
                 labMode === m
-                  ? 'bg-cyan-500 text-slate-950'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-              }`}
+                  ? 'px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide cursor-pointer bg-cyan-500 text-slate-950'
+                  : 'px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+              }
             >
               {m}
             </button>
@@ -195,8 +219,24 @@ export const CliLabShell: React.FC = () => {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {SCENARIOS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => setScenarioId(s.id)}
+            className={
+              scenarioId === s.id
+                ? 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-cyan-500 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 cursor-pointer'
+                : 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer'
+            }
+          >
+            {s.title}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Terminal */}
         <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]">
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/80">
             <div className="flex items-center gap-2 text-xs font-mono text-cyan-300">
@@ -214,7 +254,16 @@ export const CliLabShell: React.FC = () => {
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 font-mono text-[12px] leading-relaxed space-y-1">
             {history.map((h, i) => (
-              <div key={i} className={h.error ? 'text-rose-300' : h.type === 'system' ? 'text-amber-200/90 whitespace-pre-wrap' : 'whitespace-pre-wrap'}>
+              <div
+                key={i}
+                className={
+                  h.error
+                    ? 'text-rose-300 whitespace-pre-wrap'
+                    : h.type === 'system'
+                      ? 'text-amber-200/90 whitespace-pre-wrap'
+                      : 'whitespace-pre-wrap'
+                }
+              >
                 {h.type === 'input' ? (
                   <span>
                     <span className="text-emerald-400">{h.prompt} </span>
@@ -250,7 +299,6 @@ export const CliLabShell: React.FC = () => {
           </form>
         </div>
 
-        {/* Coach / goals */}
         <div className="space-y-3">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Сценарий</div>
@@ -264,16 +312,14 @@ export const CliLabShell: React.FC = () => {
                 Шаг {stepIndex + 1} / {steps.length}
               </div>
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed">{currentStep.instruction}</p>
-              {labMode !== 'exam' && (
-                <button
-                  type="button"
-                  onClick={() => setHintOpen((v) => !v)}
-                  className="text-xs text-cyan-700 dark:text-cyan-300 flex items-center gap-1 cursor-pointer"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  {hintOpen ? 'Скрыть подсказку' : 'Подсказка'}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setHintOpen((v) => !v)}
+                className="text-xs text-cyan-700 dark:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                {hintOpen ? 'Скрыть подсказку' : 'Подсказка'}
+              </button>
               {hintOpen && currentStep.hint && (
                 <p className="text-xs font-mono text-cyan-800 dark:text-cyan-200 bg-white/50 dark:bg-black/30 rounded-lg px-2 py-1.5">
                   {currentStep.hint}
@@ -300,16 +346,7 @@ export const CliLabShell: React.FC = () => {
                 scenario.goals.map((g) => ({
                   predicate: g,
                   passed: false,
-                  detail:
-                    g.type === 'vlan.exists'
-                      ? `VLAN ${g.vlanId}${g.name ? ` (${g.name})` : ''}`
-                      : g.type === 'if.accessVlan'
-                        ? `${g.ifName} access VLAN ${g.vlanId}`
-                        : g.type === 'if.switchportMode'
-                          ? `${g.ifName} mode ${g.mode}`
-                          : g.type === 'if.admin'
-                            ? `${g.ifName} admin up`
-                            : g.type,
+                  detail: goalLabel(g),
                 }))).map((r, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
                   {r.passed ? (
@@ -327,9 +364,7 @@ export const CliLabShell: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 p-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
-            Поддерживается: enable, conf t, hostname, vlan, name, interface Fa0/1,
-            switchport mode access, switchport access vlan, shutdown / no shutdown,
-            show vlan brief, show ip interface brief, show running-config, exit, end, ?
+            + L3: ip address A.B.C.D M.M.M.M, ip route, show ip route, no ip address
           </div>
         </div>
       </div>
