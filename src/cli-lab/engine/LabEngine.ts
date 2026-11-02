@@ -18,7 +18,6 @@ function activeDevice(state: NetworkState): DeviceState {
   return d;
 }
 
-/** Longest-prefix match on command tokens */
 function findCommand(specs: CommandSpec[], tokens: string[]): CommandSpec | undefined {
   const lower = tokens.map((t) => t.toLowerCase());
   let best: CommandSpec | undefined;
@@ -64,6 +63,78 @@ export class LabEngine {
     this.state = cloneState(initial);
   }
 
+  /**
+   * Tab-completion for the current input line.
+   * Returns completed line and/or candidate tokens when ambiguous.
+   */
+  complete(line: string): { completed?: string; candidates: string[] } {
+    const device = activeDevice(this.state);
+    const mode = device.modeCtx.mode;
+    const priv = device.privilege;
+
+    const endsWithSpace = /\s$/.test(line);
+    const trimmed = line.trim();
+    const parts = trimmed.length === 0 ? [] : trimmed.split(/\s+/);
+    const tokens = endsWithSpace ? parts : parts.slice(0, -1);
+    const partial = endsWithSpace ? '' : (parts[parts.length - 1] ?? '').toLowerCase();
+
+    const available = this.commands.filter((spec) => {
+      if (!spec.modes.includes(mode)) return false;
+      if (spec.minPrivilege != null && priv < spec.minPrivilege) return false;
+      if (tokens.length > spec.match.length) return false;
+      for (let i = 0; i < tokens.length; i++) {
+        if (spec.match[i] !== tokens[i].toLowerCase()) return false;
+      }
+      return true;
+    });
+
+    const nextSet = new Set<string>();
+    const phraseCandidates: string[] = [];
+
+    for (const spec of available) {
+      if (tokens.length >= spec.match.length) continue;
+      const rest = spec.match.slice(tokens.length);
+      if (rest.length === 0) continue;
+      if (partial && !rest[0].startsWith(partial)) continue;
+      nextSet.add(rest[0]);
+      phraseCandidates.push([...tokens, ...rest].join(' '));
+    }
+
+    const nextTokens = Array.from(nextSet).sort();
+    const uniquePhrases = Array.from(new Set(phraseCandidates)).sort();
+
+    if (uniquePhrases.length === 1) {
+      return { completed: uniquePhrases[0] + ' ', candidates: uniquePhrases };
+    }
+
+    if (nextTokens.length === 1) {
+      const base = tokens.join(' ');
+      return {
+        completed: (base ? base + ' ' : '') + nextTokens[0] + ' ',
+        candidates: nextTokens,
+      };
+    }
+
+    if (nextTokens.length > 1) {
+      let lcp = nextTokens[0];
+      for (const t of nextTokens.slice(1)) {
+        let i = 0;
+        while (i < lcp.length && i < t.length && lcp[i] === t[i]) i++;
+        lcp = lcp.slice(0, i);
+      }
+      if (lcp.length > partial.length) {
+        const base = tokens.join(' ');
+        return {
+          completed: (base ? base + ' ' : '') + lcp,
+          candidates: nextTokens,
+        };
+      }
+      return { candidates: nextTokens };
+    }
+
+    return { candidates: [] };
+  }
+
   execute(line: string): CommandResult {
     const trimmed = line.trim();
     if (!trimmed) return { output: '' };
@@ -87,7 +158,6 @@ export class LabEngine {
       return { output: this.profile.messages.needEnable, error: true };
     }
 
-    // Handlers receive a clone; if they return state, we commit it
     const working = cloneState(this.state);
     const workingDevice = activeDevice(working);
     const result = spec.handler(tokens, working, workingDevice, this.profile);
@@ -95,20 +165,9 @@ export class LabEngine {
     if (result.state) {
       this.state = result.state;
     } else if (result.modeCtx) {
-      // mode-only change on current state
       const next = cloneState(this.state);
       next.devices[next.activeDeviceId].modeCtx = result.modeCtx;
       this.state = next;
-    } else {
-      // handler may have mutated working via returned fields only — prefer explicit state
-      // If handler mutated working in place without returning state, commit working when output ok
-      // Convention: handlers should return state when mutating.
-    }
-
-    // If handler mutated working and returned state undefined but changed mode on workingDevice
-    if (!result.state && result.modeCtx == null) {
-      // commit working if handler wrote into it (detect by privilege/mode/hostname/if changes is hard)
-      // Standard: handlers always return state when changing anything.
     }
 
     if (result.state) this.state = result.state;
