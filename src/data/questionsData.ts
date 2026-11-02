@@ -1,7 +1,12 @@
 import rawQuestions from './questions.json';
+import { EXTRA_QUESTIONS } from './questionsExtra';
 import { Question, QuizMode, QuizModeId } from '../types/quiz';
 
-export const ALL_QUESTIONS: Question[] = rawQuestions as Question[];
+/** Base bank + expansion pack. Existing questions.json is never trimmed. */
+export const ALL_QUESTIONS: Question[] = [
+  ...(rawQuestions as Question[]),
+  ...EXTRA_QUESTIONS,
+];
 
 export const QUIZ_MODES: QuizMode[] = [
   {
@@ -77,7 +82,6 @@ export const QUIZ_MODES: QuizMode[] = [
   },
 ];
 
-// Helper to shuffle questions
 export function getRandomQuestions(
   modeId: QuizModeId,
   count: number = 10
@@ -89,23 +93,20 @@ export function getRandomQuestions(
     pool = ALL_QUESTIONS.filter((q) => q.group === modeId);
   }
 
-  // Shuffle pool (Fisher-Yates)
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  // Return requested count (or all if count >= shuffled.length)
   return count >= shuffled.length ? shuffled : shuffled.slice(0, count);
 }
 
-// Format image URL so it always resolves from GitHub CDN if relative
 export function resolveImageUrl(imgPath?: string): string {
   if (!imgPath) return '';
   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
     return imgPath;
   }
-  const cleanPath = imgPath.replace(/^\.?\//, '');
+  const cleanPath = imgPath.replace(/^\.\/?/, '');
   return `https://raw.githubusercontent.com/apotet/osi-tcpip-exam-public/main/${cleanPath}`;
 }
