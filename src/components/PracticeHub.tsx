@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Activity,
-  Layers,
-  Cpu,
-  Terminal,
-  FlaskConical,
-} from 'lucide-react';
+import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
 import { PacketJourney } from './PacketJourney';
 import { VlanSimulator } from './VlanSimulator';
 import { ProtocolSimulators } from './ProtocolSimulators';
@@ -52,6 +46,19 @@ const PRACTICE_ITEMS: PracticeItem[] = [
   },
 ];
 
+function cardClass(isActive: boolean): string {
+  if (isActive) {
+    return 'p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 bg-gradient-to-b from-cyan-950/80 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/50';
+  }
+  return 'p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60';
+}
+
+function iconWrapClass(isActive: boolean): string {
+  return isActive
+    ? 'p-2 rounded-xl bg-cyan-500/20 text-cyan-300'
+    : 'p-2 rounded-xl bg-slate-800 text-slate-400';
+}
+
 export const PracticeHub: React.FC = () => {
   const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>('cli');
 
@@ -81,19 +88,11 @@ export const PracticeHub: React.FC = () => {
                 key={item.id}
                 onClick={() => setActiveSimulator(item.id)}
                 type="button"
-                className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-3 ${\n                  isActive
-                    ? 'bg-gradient-to-b from-cyan-950/80 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/50'
-                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
-                }`}
+                className={cardClass(isActive)}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div
-                      className={`p-2 rounded-xl ${\n                        isActive ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      {item.icon}
-                    </div>
+                    <div className={iconWrapClass(isActive)}>{item.icon}</div>
                     <span className="font-bold text-sm text-white">{item.title}</span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700">
