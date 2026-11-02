@@ -19,7 +19,7 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     ],
     correct: [0],
     explanation:
-      'Обычный RSTP listening/learning задерживает форвардинг; для access к эндпоинтам включают edge/PortFast (осторожно с BPDU).',
+      'В RSTP порт без edge-конфигурации проходит negotiation/learning before forwarding (роли Root/Designated/Alternate и состояния Discarding/Learning/Forwarding). Для портов к эндпоинтам включают edge/PortFast, чтобы сразу форвардить; BPDUguard защищает от случайного свитча на access.',
     difficulty: 'advanced',
   },
   {
@@ -131,7 +131,8 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
       'Решает только ARP',
     ],
     correct: [0],
-    explanation: 'Longest prefix match важнее administrative distance/metric при выборе среди подходящих префиксов (AD сравнивают для одинаковой специфичности — здесь разная длина).',
+    explanation:
+      'Longest prefix match важнее administrative distance/metric при выборе среди подходящих префиксов (AD сравнивают для одинаковой специфичности — здесь разная длина).',
     difficulty: 'advanced',
   },
   {
@@ -550,7 +551,7 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
   {
     id: 'ts-d06',
     group: 'troubleshooting',
-    topic: 'Диагностика · Методика',
+    topic: 'Диагностика · Сценарий',
     text: 'Какой порядок разумнее при «интернет есть / телефония SIP нет»?',
     answers: [
       'Проверить DNS, ALG/NAT, ACL по SIP/RTP портам, ALG, одностороннее аудио (NAT)',
