@@ -14,6 +14,8 @@ import {
   HelpCircle,
   ChevronRight,
   Cpu,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 
 interface HistoryLine {
@@ -57,6 +59,7 @@ export const CliLabShell: React.FC = () => {
   const [completed, setCompleted] = useState(false);
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
   const [tick, setTick] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -70,7 +73,7 @@ export const CliLabShell: React.FC = () => {
     setHistory([
       {
         type: 'system',
-        text: `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset). Type ? for commands. Mode: ${labMode}`,
+        text: `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset). Type ? for commands. Tab completes. Mode: ${labMode}`,
       },
     ]);
     setStepIndex(0);
@@ -92,6 +95,14 @@ export const CliLabShell: React.FC = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [history]);
+
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && fullscreen) setFullscreen(false);
+    };
+    window.addEventListener('keydown', onEsc);
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [fullscreen]);
 
   const steps = scenario.steps ?? [];
   const currentStep = steps[stepIndex];
@@ -162,6 +173,27 @@ export const CliLabShell: React.FC = () => {
     ]);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const result = engine.complete(input);
+      if (result.completed != null) {
+        setInput(result.completed);
+        return;
+      }
+      if (result.candidates.length > 1) {
+        setHistory((h) => [
+          ...h,
+          {
+            type: 'system',
+            text: result.candidates.join('  '),
+          },
+        ]);
+      }
+      return;
+    }
+  };
+
   const submitLine = () => {
     const line = input;
     if (!line.trim()) return;
@@ -190,7 +222,13 @@ export const CliLabShell: React.FC = () => {
   void tick;
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto">
+    <div
+      className={
+        fullscreen
+          ? 'fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-sm p-4 sm:p-6 overflow-auto space-y-4'
+          : 'space-y-4 max-w-5xl mx-auto'
+      }
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -198,7 +236,7 @@ export const CliLabShell: React.FC = () => {
             CLI Lab 2.0
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {ciscoIosProfile.displayName} · проверка по состоянию устройства
+            {ciscoIosProfile.displayName} · проверка по состоянию · Tab — дополнение команд
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -236,20 +274,37 @@ export const CliLabShell: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]">
+      <div className={fullscreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto' : 'grid grid-cols-1 lg:grid-cols-3 gap-4'}>
+        <div
+          className={
+            fullscreen
+              ? 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[calc(100vh-10rem)]'
+              : 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]'
+          }
+        >
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/80">
             <div className="flex items-center gap-2 text-xs font-mono text-cyan-300">
               <TerminalIcon className="w-3.5 h-3.5" />
               {scenario.id}
             </div>
-            <button
-              type="button"
-              onClick={resetLab}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Сброс
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setFullscreen((v) => !v)}
+                className="hidden sm:inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
+                title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
+              >
+                {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                {fullscreen ? 'Окно' : 'Полный экран'}
+              </button>
+              <button
+                type="button"
+                onClick={resetLab}
+                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Сброс
+              </button>
+            </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 font-mono text-[12px] leading-relaxed space-y-1">
@@ -288,8 +343,9 @@ export const CliLabShell: React.FC = () => {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="flex-1 bg-transparent border-0 outline-none font-mono text-[12px] text-white placeholder:text-slate-600"
-              placeholder="command…"
+              placeholder="command… (Tab — complete)"
               autoComplete="off"
               spellCheck={false}
             />
@@ -364,7 +420,7 @@ export const CliLabShell: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 p-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
-            + L3: ip address A.B.C.D M.M.M.M, ip route, show ip route, no ip address
+            Tab — автодополнение · Esc — выход из полного экрана. L3: ip address, ip route, show ip route
           </div>
         </div>
       </div>
