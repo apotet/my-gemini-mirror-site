@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate question bank (esbuild real modules)
+        run: npm run validate:questions
+
+      - name: Coverage report
+        run: npm run coverage:explanations
+
+      - name: Quiz logic unit tests
+        run: npm run test:logic
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-coverage
+          path: |
+            scripts/.cache/coverage-report.json
+            scripts/.cache/coverage-summary.txt
+          if-no-files-found: ignore

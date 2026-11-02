@@ -10,6 +10,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "validate:questions": "node scripts/validate-questions.mjs",
+    "coverage:explanations": "node scripts/coverage-report.mjs",
+    "test:logic": "node scripts/quiz-logic.test.mjs",
     "prebuild": "node scripts/validate-questions.mjs"
   },
   "dependencies": {
