@@ -7,6 +7,8 @@ import { TheoryRazbory } from './TheoryRazbory';
 
 interface TheoryViewProps {
   initialQuestionId?: string | null;
+  fromExam?: boolean;
+  onReturnToExam?: () => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
 }
@@ -22,6 +24,8 @@ const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = 
 
 export const TheoryView: React.FC<TheoryViewProps> = ({
   initialQuestionId,
+  fromExam,
+  onReturnToExam,
   onNavigateToIpv4,
   onClearInitialQuestion,
 }) => {
@@ -66,6 +70,8 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       {section === 'razbory' && (
         <TheoryRazbory
           initialQuestionId={initialQuestionId}
+          fromExam={fromExam}
+          onReturnToExam={onReturnToExam}
           onNavigateToIpv4={onNavigateToIpv4}
           onClearInitialQuestion={onClearInitialQuestion}
         />
