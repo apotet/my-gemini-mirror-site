@@ -12,6 +12,7 @@ import {
   BookOpen,
   Search,
 } from 'lucide-react';
+import { TOTAL_QUESTION_COUNT } from '../data/questionsData';
 
 export type NavTab = 'exam' | 'theory' | 'ipv4' | 'practice' | 'osi';
 
@@ -65,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 OSI & TCP/IP
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-                502 вопроса · визуализаторы · CLI
+                {TOTAL_QUESTION_COUNT} вопроса · визуализаторы · CLI
               </p>
             </div>
           </button>

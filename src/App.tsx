@@ -7,6 +7,7 @@ import { TheoryView } from './components/TheoryView';
 import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
 import { PhotoCredits } from './components/PhotoCredits';
+import { TOTAL_QUESTION_COUNT } from './data/questionsData';
 
 function readStoredBool(key: string, fallback: boolean): boolean {
   try {
@@ -144,7 +145,7 @@ export function App() {
               OSI & TCP/IP Exam Trainer
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              502 практических вопроса, симуляции L2/L3 протоколов и CLI-терминал.
+              {TOTAL_QUESTION_COUNT} практических вопросов, симуляции L2/L3 протоколов и CLI-терминал.
             </p>
           </div>
 

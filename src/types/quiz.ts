@@ -11,7 +11,8 @@ export interface Question {
   imageAlt?: string;
   template?: boolean;
   family?: string;
-  difficulty?: 'basic' | 'applied' | 'advanced';
+  /** beginner kept for bank compatibility (legacy alias of basic). */
+  difficulty?: 'basic' | 'beginner' | 'applied' | 'advanced';
 }
 
 export type QuizModeId =

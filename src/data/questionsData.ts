@@ -10,6 +10,31 @@ export const ALL_QUESTIONS: Question[] = [
   ...EXTRA_DIFFICULTY_QUESTIONS,
 ];
 
+/** Unique IDs only — source of truth for UI counters. */
+function computeBankStats(questions: Question[]) {
+  const seen = new Set<string>();
+  const duplicates: string[] = [];
+  for (const q of questions) {
+    if (seen.has(q.id)) duplicates.push(q.id);
+    else seen.add(q.id);
+  }
+  if (duplicates.length > 0 && typeof console !== 'undefined') {
+    console.warn('[questionsData] Duplicate question ids:', [...new Set(duplicates)]);
+  }
+  return {
+    total: seen.size,
+    duplicates: [...new Set(duplicates)],
+  };
+}
+
+const _bankStats = computeBankStats(ALL_QUESTIONS);
+
+/** Actual unique question count across all connected packs. */
+export const TOTAL_QUESTION_COUNT = _bankStats.total;
+
+/** Duplicate ids if any (empty when bank is clean). */
+export const DUPLICATE_QUESTION_IDS = _bankStats.duplicates;
+
 export const QUIZ_MODES: QuizMode[] = [
   {
     id: 'mixed',
