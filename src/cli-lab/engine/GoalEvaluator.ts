@@ -76,6 +76,23 @@ export function evaluatePredicate(state: NetworkState, p: GoalPredicate): GoalCh
           : `${p.ifName}: сейчас ${iface?.ipv4 ? `${iface.ipv4.address}/${iface.ipv4.prefix}` : 'без IP'}`,
       };
     }
+    case 'if.trunkAllowed': {
+      const iface = dev?.interfaces[p.ifName];
+      const allowed = iface?.switchport?.trunkAllowed ?? [];
+      const need = [...p.vlans].sort((a, b) => a - b);
+      const have = [...allowed].sort((a, b) => a - b);
+      const ok =
+        iface?.switchport?.mode === 'trunk' &&
+        need.length === have.length &&
+        need.every((v, i) => v === have[i]);
+      return {
+        predicate: p,
+        passed: ok,
+        detail: ok
+          ? `${p.ifName} trunk allowed ${need.join(',')}`
+          : `${p.ifName}: allowed сейчас ${have.join(',') || '—'}, нужно ${need.join(',')}`,
+      };
+    }
     case 'route.exists': {
       const routes = dev?.routes ?? [];
       const found = routes.find((r) => {
