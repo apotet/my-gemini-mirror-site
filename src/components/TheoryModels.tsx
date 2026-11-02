@@ -43,7 +43,7 @@ export const TheoryModels: React.FC = () => {
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-2 pr-3 font-mono">L3 Network</td>
                 <td className="py-2 pr-3">Internet</td>
-                <td className="py cons-2">IPv4/IPv6, ICMP, OSPF, BGP</td>
+                <td className="py-2">IPv4/IPv6, ICMP, OSPF, BGP</td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-2 pr-3 font-mono">L2 Data Link</td>
