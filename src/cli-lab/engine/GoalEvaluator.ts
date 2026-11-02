@@ -67,14 +67,29 @@ export function evaluatePredicate(state: NetworkState, p: GoalPredicate): GoalCh
     }
     case 'if.ipv4': {
       const iface = dev?.interfaces[p.ifName];
-      const ok =
-        iface?.ipv4?.address === p.address && iface?.ipv4?.prefix === p.prefix;
+      const ok = iface?.ipv4?.address === p.address && iface?.ipv4?.prefix === p.prefix;
       return {
         predicate: p,
         passed: ok,
         detail: ok
           ? `${p.ifName} ${p.address}/${p.prefix}`
           : `${p.ifName}: сейчас ${iface?.ipv4 ? `${iface.ipv4.address}/${iface.ipv4.prefix}` : 'без IP'}`,
+      };
+    }
+    case 'route.exists': {
+      const routes = dev?.routes ?? [];
+      const found = routes.find((r) => {
+        if (r.prefix !== p.prefix || r.prefixLen !== p.prefixLen) return false;
+        if (p.nextHop && r.nextHop !== p.nextHop) return false;
+        return true;
+      });
+      const ok = !!found;
+      return {
+        predicate: p,
+        passed: ok,
+        detail: ok
+          ? `Маршрут ${p.prefix}/${p.prefixLen}${p.nextHop ? ` via ${p.nextHop}` : ''}`
+          : `Нет маршрута ${p.prefix}/${p.prefixLen}${p.nextHop ? ` via ${p.nextHop}` : ''}`,
       };
     }
     default:
