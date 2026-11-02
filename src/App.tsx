@@ -27,6 +27,7 @@ export function App() {
   const [showCredits, setShowCredits] = useState<boolean>(false);
 
   const [theoryQuestionId, setTheoryQuestionId] = useState<string | null>(null);
+  const [theoryFromExam, setTheoryFromExam] = useState<boolean>(false);
   const [ipv4InitialPrefix, setIpv4InitialPrefix] = useState<number | undefined>(undefined);
   const [ipv4InitialSubTab, setIpv4InitialSubTab] = useState<Ipv4SubTab | undefined>(undefined);
 
@@ -67,7 +68,15 @@ export function App() {
 
   const handleNavigateToTheory = (questionId: string) => {
     setTheoryQuestionId(questionId);
+    setTheoryFromExam(true);
     setActiveTab('theory');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleReturnToExam = () => {
+    setTheoryQuestionId(null);
+    setTheoryFromExam(false);
+    setActiveTab('exam');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -85,7 +94,10 @@ export function App() {
         activeTab={activeTab}
         onTabChange={(tab) => {
           setActiveTab(tab);
-          if (tab !== 'theory') setTheoryQuestionId(null);
+          if (tab !== 'theory') {
+            setTheoryQuestionId(null);
+            setTheoryFromExam(false);
+          }
         }}
         isDark={isDark}
         onToggleTheme={() => setIsDark((v) => !v)}
@@ -101,8 +113,13 @@ export function App() {
         {(activeTab === 'theory' || activeTab === 'osi') && (
           <TheoryView
             initialQuestionId={theoryQuestionId}
+            fromExam={theoryFromExam}
+            onReturnToExam={handleReturnToExam}
             onNavigateToIpv4={handleNavigateToIpv4}
-            onClearInitialQuestion={() => setTheoryQuestionId(null)}
+            onClearInitialQuestion={() => {
+              setTheoryQuestionId(null);
+              setTheoryFromExam(false);
+            }}
           />
         )}
         {activeTab === 'ipv4' && (
@@ -119,7 +136,10 @@ export function App() {
         activeTab={activeTab}
         onTabChange={(tab) => {
           setActiveTab(tab);
-          if (tab !== 'theory') setTheoryQuestionId(null);
+          if (tab !== 'theory') {
+            setTheoryQuestionId(null);
+            setTheoryFromExam(false);
+          }
         }}
       />
 
@@ -128,7 +148,10 @@ export function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
           setActiveTab(tab);
-          if (tab !== 'theory') setTheoryQuestionId(null);
+          if (tab !== 'theory') {
+            setTheoryQuestionId(null);
+            setTheoryFromExam(false);
+          }
         }}
         onSelectLayer={() => {
           setActiveTab('theory');
