@@ -12,16 +12,21 @@ import {
   CheckCircle2,
   XCircle,
   ArrowLeft,
+  PlayCircle,
 } from 'lucide-react';
 
 interface Props {
   initialQuestionId?: string | null;
+  fromExam?: boolean;
+  onReturnToExam?: () => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
 }
 
 export const TheoryRazbory: React.FC<Props> = ({
   initialQuestionId,
+  fromExam,
+  onReturnToExam,
   onNavigateToIpv4,
   onClearInitialQuestion,
 }) => {
@@ -116,7 +121,6 @@ export const TheoryRazbory: React.FC<Props> = ({
           })}
         </div>
 
-        {/* Level 1 — always visible brief */}
         <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-50/80 dark:bg-cyan-950/30 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 font-mono">
@@ -133,7 +137,6 @@ export const TheoryRazbory: React.FC<Props> = ({
           </p>
         </div>
 
-        {/* Level 2 — collapsible engineering */}
         {(isAdvanced || deep.engineeringDeep || deep.deepAnalysis) && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <button
@@ -143,7 +146,7 @@ export const TheoryRazbory: React.FC<Props> = ({
             >
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
                 <BookOpen className="w-4 h-4 text-cyan-500 shrink-0" />
-                {isAdvanced ? 'Открыть инженерный разбор' : 'Подробный разбор'}
+                {isAdvanced ? 'Инженерный разбор' : 'Подробный разбор'}
               </span>
               {showEngineering ? (
                 <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
@@ -156,15 +159,8 @@ export const TheoryRazbory: React.FC<Props> = ({
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words pt-3">
                   {deep.engineeringDeep || deep.deepAnalysis}
                 </p>
-                {!deep.hasIndividualDeep && q.difficulty === 'advanced' && (
-                  <p className="text-xs text-amber-700 dark:text-amber-300/90">
-                    Индивидуальный разбор для этого ID ещё дополняется; показан авторский explanation и тематические блоки.
-                  </p>
-                )}
                 {deep.nextStudy && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Дальше: {deep.nextStudy}
-                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {deep.nextStudy}</p>
                 )}
               </div>
             )}
@@ -244,21 +240,42 @@ export const TheoryRazbory: React.FC<Props> = ({
                 {focusedQuestion.text}
               </h2>
             </div>
-            {onClearInitialQuestion && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClearInitialQuestion();
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer shrink-0"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" /> К каталогу
-              </button>
-            )}
+            <div className="flex flex-wrap gap-2 shrink-0">
+              {fromExam && onReturnToExam && (
+                <button
+                  type="button"
+                  onClick={onReturnToExam}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 cursor-pointer"
+                >
+                  <PlayCircle className="w-3.5 h-3.5" /> Вернуться к экзамену
+                </button>
+              )}
+              {onClearInitialQuestion && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClearInitialQuestion();
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> К каталогу
+                </button>
+              )}
+            </div>
           </div>
           {renderDeepDive(focusedQuestion.id)}
+          {fromExam && onReturnToExam && (
+            <button
+              type="button"
+              onClick={onReturnToExam}
+              className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-sm font-bold cursor-pointer inline-flex items-center justify-center gap-2"
+            >
+              <PlayCircle className="w-4 h-4" />
+              Продолжить экзамен
+            </button>
+          )}
         </div>
       )}
 
