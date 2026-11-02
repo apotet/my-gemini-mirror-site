@@ -51,7 +51,7 @@ const lines = [
   `Weak engineering (<80 chars) among individual: ${weakEngineering.length}`,
 ];
 
-const text = lines.filter.filter(Boolean).join('\n');
+const text = lines.filter(Boolean).join('\n');
 console.log(text);
 writeText('scripts/.cache/coverage-summary.txt', text);
 writeJson('scripts/.cache/coverage-report.json', { summary, rows });
