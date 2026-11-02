@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpen, Layers, FileText, Table2 } from 'lucide-react';
+import { BookOpen, Layers, FileText, Table2, Library } from 'lucide-react';
 import { TheoryModels } from './TheoryModels';
 import { TheoryPorts } from './TheoryPorts';
 import { TheoryCheatsheets } from './TheoryCheatsheets';
 import { TheoryRazbory } from './TheoryRazbory';
+import { KnowledgeBase } from './KnowledgeBase';
 
 interface TheoryViewProps {
   initialQuestionId?: string | null;
@@ -13,11 +14,12 @@ interface TheoryViewProps {
   onClearInitialQuestion?: () => void;
 }
 
-type TheorySection = 'razbory' | 'models' | 'ports' | 'cheatsheets';
+type TheorySection = 'razbory' | 'knowledge' | 'models' | 'ports' | 'cheatsheets';
 
 const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = [
-  { id: 'razbory', label: 'Разборы', icon: <BookOpen className="w-3.5 h-3.5" /> },
-  { id: 'models', label: 'OSI & TCP/IP', icon: <Layers className="w-3.5 h-3.5" /> },
+  { id: 'razbory', label: 'Разборы вопросов', icon: <BookOpen className="w-3.5 h-3.5" /> },
+  { id: 'knowledge', label: 'База знаний', icon: <Library className="w-3.5 h-3.5" /> },
+  { id: 'models', label: 'OSI и TCP/IP', icon: <Layers className="w-3.5 h-3.5" /> },
   { id: 'ports', label: 'Порты', icon: <Table2 className="w-3.5 h-3.5" /> },
   { id: 'cheatsheets', label: 'Шпаргалки L1–L7', icon: <FileText className="w-3.5 h-3.5" /> },
 ];
@@ -30,10 +32,31 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
   onClearInitialQuestion,
 }) => {
   const [section, setSection] = useState<TheorySection>('razbory');
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [returnQuestionId, setReturnQuestionId] = useState<string | null>(null);
+  const [focusQuestionId, setFocusQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialQuestionId) setSection('razbory');
+    if (initialQuestionId) {
+      setSection('razbory');
+      setFocusQuestionId(initialQuestionId);
+    }
   }, [initialQuestionId]);
+
+  const openLesson = (id: string, fromQuestionId?: string) => {
+    setLessonId(id);
+    setReturnQuestionId(fromQuestionId || focusQuestionId || initialQuestionId || null);
+    setSection('knowledge');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const openQuestionFromLesson = (questionId: string) => {
+    setFocusQuestionId(questionId);
+    setSection('razbory');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const effectiveQuestionId = focusQuestionId || initialQuestionId;
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-16">
@@ -43,7 +66,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
           Теория и разборы
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Модели OSI/TCP-IP, шпаргалки по уровням, таблица портов и подробные разборы вопросов экзамена.
+          Разборы вопросов, база знаний, модели OSI/TCP-IP, порты и шпаргалки по уровням.
         </p>
         <div className="flex flex-wrap gap-1.5 pt-1">
           {SECTIONS.map((s) => (
@@ -67,13 +90,22 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       {section === 'models' && <TheoryModels />}
       {section === 'ports' && <TheoryPorts />}
       {section === 'cheatsheets' && <TheoryCheatsheets />}
+      {section === 'knowledge' && (
+        <KnowledgeBase
+          initialLessonId={lessonId}
+          returnQuestionId={returnQuestionId}
+          onOpenQuestion={openQuestionFromLesson}
+          onClearLesson={() => setLessonId(null)}
+        />
+      )}
       {section === 'razbory' && (
         <TheoryRazbory
-          initialQuestionId={initialQuestionId}
+          initialQuestionId={effectiveQuestionId}
           fromExam={fromExam}
           onReturnToExam={onReturnToExam}
           onNavigateToIpv4={onNavigateToIpv4}
           onClearInitialQuestion={onClearInitialQuestion}
+          onOpenLesson={openLesson}
         />
       )}
     </div>
