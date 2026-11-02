@@ -4,17 +4,11 @@ import { triggerHaptic } from '../utils/haptics';
 import {
   Search,
   Layers,
-  Sparkles,
   BookOpen,
   Calculator,
   Terminal,
-  Download,
-  UploadCloud,
   Moon,
   Sun,
-  X,
-  ArrowRight,
-  Zap,
 } from 'lucide-react';
 
 interface CommandPaletteProps {
@@ -23,14 +17,13 @@ interface CommandPaletteProps {
   onSelectTab: (tab: NavTab) => void;
   onSelectLayer: (layer: string) => void;
   onToggleTheme: () => void;
-  onOpenDeploy: () => void;
   isDark: boolean;
 }
 
 interface CommandItem {
   id: string;
   title: string;
-  category: 'Навигация' | 'Уровни OSI' | 'Инструменты' | 'Система';
+  category: 'Навигация' | 'Уровни OSI' | 'Система';
   shortcut?: string;
   icon: React.ReactNode;
   action: () => void;
@@ -42,14 +35,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onSelectTab,
   onSelectLayer,
   onToggleTheme,
-  onOpenDeploy,
   isDark,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Global Keyboard Listener for Cmd+K / Ctrl+K
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -57,7 +48,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   }, [isOpen]);
 
   const commands: CommandItem[] = [
-    // Navigation
     {
       id: 'tab-exam',
       title: 'Экзамен — Режим тестирования',
@@ -90,8 +80,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       icon: <Terminal className="w-4 h-4 text-amber-400" />,
       action: () => onSelectTab('practice'),
     },
-
-    // OSI Layers
     {
       id: 'layer-l7',
       title: 'L7 Прикладной уровень (HTTP/3, DNS, DHCP)',
@@ -131,25 +119,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       shortcut: 'L1',
       icon: <span className="font-mono text-xs font-bold text-amber-400">L1</span>,
       action: () => onSelectLayer('L1'),
-    },
-
-    // Tools
-    {
-      id: 'action-zip',
-      title: 'Скачать полный ZIP архив проекта',
-      category: 'Инструменты',
-      shortcut: 'ZIP',
-      icon: <Download className="w-4 h-4 text-emerald-400" />,
-      action: () => {
-        window.location.href = '/osi-tcpip-trainer-source.zip';
-      },
-    },
-    {
-      id: 'action-deploy',
-      title: 'Синхронизация зеркала с GitHub Pages',
-      category: 'Инструменты',
-      icon: <UploadCloud className="w-4 h-4 text-cyan-400" />,
-      action: onOpenDeploy,
     },
     {
       id: 'action-theme',
@@ -192,12 +161,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md">
       <div
         className="w-full max-w-xl rounded-2xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/30 shadow-2xl overflow-hidden flex flex-col text-slate-900 dark:text-slate-100 transition-colors"
         onKeyDown={handleKeyDown}
       >
-        {/* Search Input Bar */}
         <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-slate-900/80">
           <Search className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
           <input
@@ -220,7 +188,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           </button>
         </div>
 
-        {/* Command Results */}
         <div className="max-h-80 overflow-y-auto p-2 space-y-1">
           {filtered.length === 0 ? (
             <div className="p-6 text-center text-xs text-slate-400">
@@ -229,7 +196,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           ) : (
             filtered.map((item, idx) => {
               const isSelected = selectedIndex === idx;
-
               return (
                 <div
                   key={item.id}
@@ -250,7 +216,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     </div>
                     <span className="font-medium">{item.title}</span>
                   </div>
-
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                       {item.category}
@@ -267,7 +232,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           )}
         </div>
 
-        {/* Footer shortcuts hint */}
         <div className="p-2.5 bg-slate-100 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
           <span>Навигация: ↑ ↓</span>
           <span>Выбрать: Enter</span>
