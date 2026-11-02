@@ -344,6 +344,68 @@ const baseCommands: CommandSpec[] = [
     },
   },
   {
+    id: 'cisco.show_run_short',
+    match: ['show', 'run'],
+    modes: ['privileged', 'exec'],
+    minPrivilege: 1,
+    handler: (tokens, state, device, profile) => {
+      const full = ciscoIosCommands.find((c) => c.id === 'cisco.show_running_config');
+      return full ? full.handler(tokens, state, device, profile) : { output: '' };
+    },
+  },
+  {
+    id: 'cisco.do',
+    match: ['do'],
+    modes: ['config', 'config-if', 'config-vlan'],
+    minPrivilege: 15,
+    handler: (tokens, state, device, profile) => {
+      if (tokens.length < 2) {
+        return { output: profile.messages.incomplete, error: true };
+      }
+      const rest = tokens.slice(1);
+      const savedMode = device.modeCtx;
+      const savedPriv = device.privilege;
+      device.modeCtx = { mode: 'privileged' };
+      device.privilege = 15;
+      const lower = rest.map((t) => t.toLowerCase());
+      let best: (typeof ciscoIosCommands)[number] | undefined;
+      let bestLen = 0;
+      for (const spec of ciscoIosCommands) {
+        if (spec.id === 'cisco.do') continue;
+        const m = spec.match;
+        if (m.length > lower.length) continue;
+        let ok = true;
+        for (let i = 0; i < m.length; i++) {
+          if (m[i] !== lower[i]) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok && m.length >= bestLen) {
+          best = spec;
+          bestLen = m.length;
+        }
+      }
+      if (!best) {
+        device.modeCtx = savedMode;
+        device.privilege = savedPriv;
+        return { output: profile.messages.invalid, error: true };
+      }
+      const result = best.handler(rest, state, device, profile);
+      if (result.state) {
+        const d = result.state.devices[result.state.activeDeviceId];
+        if (d) {
+          d.modeCtx = savedMode;
+          d.privilege = savedPriv;
+        }
+        return result;
+      }
+      device.modeCtx = savedMode;
+      device.privilege = savedPriv;
+      return result;
+    },
+  },
+  {
     id: 'cisco.help_question',
     match: ['?'],
     modes: ['exec', 'privileged', 'config', 'config-if', 'config-vlan'],
@@ -352,9 +414,9 @@ const baseCommands: CommandSpec[] = [
       const map: Record<string, string> = {
         exec: 'enable  show  ?',
         privileged: 'configure terminal  show  show ip route  show interfaces trunk  disable  ?',
-        config: 'hostname  vlan  interface  ip route  exit  end  ?',
+        config: 'hostname  vlan  interface  ip route  do show …  exit  end  ?',
         'config-if':
-          'ip address  switchport mode access  switchport mode trunk  switchport access vlan  switchport trunk allowed vlan  shutdown  no shutdown  exit  end  ?',
+          'ip address  switchport …  shutdown  no shutdown  do show …  exit  end  ?',
         'config-vlan': 'name  exit  end  ?',
       };
       return {
