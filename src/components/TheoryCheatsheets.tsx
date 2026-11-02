@@ -28,14 +28,13 @@ export const TheoryCheatsheets: React.FC = () => {
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 p-4 sm:p-5 space-y-4">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{activeCheat.title}</h2>
 
-        <div className="max-w-xl">
-          <ZoomableImage
-            src={activeCheat.cheatWebp}
-            alt={`Шпаргалка ${activeCheat.title}`}
-            caption="Нажмите для увеличения · можно зумить колесом / жестом"
-            imgClassName="max-h-80"
-          />
-        </div>
+        <ZoomableImage
+          src={activeCheat.cheatWebp}
+          alt={`Шпаргалка ${activeCheat.title}`}
+          caption="Нажмите на картинку — откроется на весь экран с зумом"
+          imgClassName="max-h-96"
+          fullscreenOnClick
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {activeCheat.sections.map((sec) => (
