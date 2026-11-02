@@ -1,6 +1,6 @@
 {
-  "name": "GitHub Connector & Explorer",
-  "description": "Интеграция с GitHub: пошаговое руководство по связке с Google AI Studio, работа с репозиториями через API и инструменты синхронизации кода.",
+  "name": "OSI & TCP/IP Trainer",
+  "description": "Интерактивный учебный тренажёр OSI, TCP/IP, IPv4-масок и сетевых CLI-команд: экзамен, теория, симуляторы и разбор ошибок.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
