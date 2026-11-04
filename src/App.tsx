@@ -108,7 +108,12 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} />
+          <ExamView soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+            setTheoryQuestionId(null);
+            setTheoryFromExam(false);
+            setActiveTab('theory');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }} />
         )}
         {(activeTab === 'theory' || activeTab === 'osi') && (
           <TheoryView

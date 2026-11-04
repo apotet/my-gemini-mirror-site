@@ -80,7 +80,7 @@ await build({ stdin: { contents: `
   export const render = session => renderToStaticMarkup(React.createElement(ExamReview,
     { session, onExit() {}, onRetry() {}, onNavigateToTheory() {} }));
 `, resolveDir: process.cwd(), sourcefile: 'review-ui.ts' }, bundle: true, platform: 'node', format: 'esm',
-  external: ['react', 'react-dom/server'], outfile, logLevel: 'silent' });
+  external: ['react', 'react-dom/server', 'lucide-react'], outfile, logLevel: 'silent' });
 const { render } = await import(pathToFileURL(outfile).href);
 const html = render(session);
 assert.equal((html.match(/<details/g) || []).length, 10, 'all ten compact review cards');
@@ -89,10 +89,10 @@ assert.ok(html.includes('Ваш выбор'));
 assert.ok(html.includes('Индивидуальное объяснение 0'));
 assert.ok(html.includes('Индивидуальное объяснение в сохранённом вопросе отсутствует.'));
 assert.ok(!html.includes('TODO'));
-assert.ok(!html.includes('Открыть связанный разбор:'), 'no theory button without exact mapping');
+assert.ok(!html.includes('Разобрать подробнее:'), 'no theory button without exact mapping');
 assert.ok(html.includes('aria-pressed="true"'));
 assert.equal(render({ ...session, isCompleted: false }), '', 'actual review UI hidden until completion');
-assert.ok(render({ ...session, questions: [sni] }).includes('Открыть связанный разбор:'), 'mapped lesson visible');
+assert.ok(render({ ...session, questions: [sni] }).includes('Разобрать подробнее:'), 'mapped lesson visible');
 const photoHtml = render({ ...session, questions: [{ ...questions[0], image: 'assets/photos/lc-connector.webp', imageAlt: 'LC-коннектор' }] });
 assert.ok(photoHtml.includes('alt="LC-коннектор"') && photoHtml.includes('lc-connector.webp'), 'photo context preserved in review');
 assert.equal(store.export(), before, 'render does not record progress');
