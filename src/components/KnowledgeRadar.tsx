@@ -17,6 +17,8 @@ import {
 
 interface KnowledgeRadarProps {
   onStartExam: (levelFilter?: string) => void;
+  onStartNewExam?: () => void;
+  hasActiveSession?: boolean;
   onReviewMistakes: () => void;
   onOpenVisualL1: () => void;
   mistakesCount: number;
@@ -25,6 +27,8 @@ interface KnowledgeRadarProps {
 
 export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   onStartExam,
+  onStartNewExam,
+  hasActiveSession = false,
   onReviewMistakes,
   onOpenVisualL1,
   mistakesCount,
@@ -302,7 +306,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         </div>
       </div>
 
-      {/* Main Big Glow CTA Button: "Продолжить экзамен" */}
+      {/* A paused exam and a new exam are separate actions. */}
       <button
         onClick={() => {
           triggerHaptic('heavy');
@@ -312,8 +316,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400 text-slate-950 font-black text-sm sm:text-base hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(34,211,238,0.35)] cursor-pointer tracking-wide"
       >
         <Sparkles className="w-4 h-4 fill-slate-950" />
-        <span>Продолжить экзамен</span>
+        <span>{hasActiveSession ? 'Продолжить экзамен' : 'Начать экзамен'}</span>
       </button>
+      {hasActiveSession && onStartNewExam && (
+        <button type="button" onClick={onStartNewExam} className="w-full rounded-xl border border-cyan-500/40 px-4 py-2.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">
+          Начать новый экзамен
+        </button>
+      )}
     </div>
   );
 };
