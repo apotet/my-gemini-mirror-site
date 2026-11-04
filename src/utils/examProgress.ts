@@ -19,9 +19,14 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         !Number.isFinite(saved.startTime) || saved.startTime <= 0 || saved.startTime > now ||
         (saved.attemptId !== undefined && typeof saved.attemptId !== 'string') ||
         (saved.progressEpoch !== undefined && typeof saved.progressEpoch !== 'string') ||
-        (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some(id => typeof id !== 'string')))) return null;
-    const questions = saved.questions.map(item => bank.find(q => q.id === item?.id));
-    if (questions.some(q => !q) || new Set(questions.map(q => q.id)).size !== questions.length) return null;
+        (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some((id: unknown) => typeof id !== 'string')))) return null;
+    const questions: Question[] = [];
+    for (const item of saved.questions as Array<{ id?: unknown } | null>) {
+      const question = bank.find(q => q.id === item?.id);
+      if (!question) return null;
+      questions.push(question);
+    }
+    if (new Set(questions.map(q => q.id)).size !== questions.length) return null;
     for (const q of questions) {
       const chosen = saved.userAnswers[q.id];
       if (saved.submittedQuestions[q.id] !== undefined && typeof saved.submittedQuestions[q.id] !== 'boolean') return null;
