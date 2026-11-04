@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { triggerHaptic } from '../utils/haptics';
-import { getInitialProgress, ProgressState, resetProgress, subscribeProgress, exportProgress } from '../utils/userProgress';
+import { getInitialProgress, ProgressState, resetProgress, subscribeProgress } from '../utils/userProgress';
 import {
   Flame,
   Award,
@@ -63,7 +63,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   };
 
   const handleReset = () => {
-    if (!window.confirm('Сбросить весь прогресс и сохранённую сессию? Удаление необратимо. Сначала можно скачать экспорт прогресса. Банк вопросов сохранится.')) return;
+    if (!window.confirm('Сбросить весь прогресс и сохранённую сессию? Удаление необратимо. Банк вопросов сохранится.')) return;
     triggerHaptic('heavy');
     const reset = resetProgress();
     setProgress(reset);
@@ -73,18 +73,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
     <div className="space-y-3 w-full">
       {progress.migrationNotice && !migrationAcknowledged && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 p-3 text-xs text-amber-600 dark:text-amber-300">
-          <p className="flex-1 min-w-[200px]">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и ID ошибок. Исходные данные сохранены в экспорте.</p>
+          <p className="flex-1 min-w-[200px]">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и ID ошибок. Исходные данные сохранены в локальном резерве.</p>
           <button type="button" onClick={acknowledgeMigration} className="shrink-0 rounded-md border border-amber-500/50 px-3 py-1.5 font-semibold hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500">
             Понятно
           </button>
         </div>
       )}
-      {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки. Скачайте экспорт.</p>}
-      <button type="button" className="text-xs text-cyan-600 underline" onClick={() => {
-        const url = URL.createObjectURL(new Blob([exportProgress()], { type: 'application/json' }));
-        const link = document.createElement('a'); link.href = url; link.download = 'netops-progress.json'; link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }}>Скачать прогресс и резерв старых данных</button>
+      {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки.</p>}
       {/* Hero Readiness & Streak Card (Matching Mockup Bento Card) */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] border border-slate-200 dark:border-cyan-500/30 shadow-lg dark:shadow-2xl relative overflow-hidden transition-colors">
         {/* Subtle radial glow in dark mode */}
