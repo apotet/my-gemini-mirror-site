@@ -49,7 +49,8 @@ export function restoreReview(raw: string, epoch: string): ProgressSession | nul
       if (!q || typeof q.id !== 'string' || ids.has(q.id) || typeof q.text !== 'string' || typeof q.topic !== 'string' ||
           !Array.isArray(q.answers) || !q.answers.length || q.answers.some((a: unknown) => typeof a !== 'string') ||
           !Array.isArray(q.correct) || !q.correct.length || new Set(q.correct).size !== q.correct.length ||
-          q.correct.some((i: unknown) => !Number.isInteger(i) || Number(i) < 0 || Number(i) >= q.answers.length)) return null;
+          q.correct.some((i: unknown) => !Number.isInteger(i) || Number(i) < 0 || Number(i) >= q.answers.length) ||
+          (q.image !== undefined && typeof q.image !== 'string') || (q.imageAlt !== undefined && typeof q.imageAlt !== 'string')) return null;
       ids.add(q.id);
       const chosen = s.userAnswers[q.id];
       if (chosen !== undefined && (!Array.isArray(chosen) || new Set(chosen).size !== chosen.length ||

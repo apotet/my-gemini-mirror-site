@@ -93,5 +93,7 @@ assert.ok(!html.includes('Открыть связанный разбор:'), 'no
 assert.ok(html.includes('aria-pressed="true"'));
 assert.equal(render({ ...session, isCompleted: false }), '', 'actual review UI hidden until completion');
 assert.ok(render({ ...session, questions: [sni] }).includes('Открыть связанный разбор:'), 'mapped lesson visible');
+const photoHtml = render({ ...session, questions: [{ ...questions[0], image: 'assets/photos/lc-connector.webp', imageAlt: 'LC-коннектор' }] });
+assert.ok(photoHtml.includes('alt="LC-коннектор"') && photoHtml.includes('lc-connector.webp'), 'photo context preserved in review');
 assert.equal(store.export(), before, 'render does not record progress');
 console.log('OK: N1C ten-question review, strict single/multi sets, drafts, visibility, exact theory mapping, snapshot restore, no progress writes');

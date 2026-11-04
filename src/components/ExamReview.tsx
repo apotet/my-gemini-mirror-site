@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ProgressSession } from '../utils/examProgress';
 import { filteredReview, reviewTotals, type ReviewFilter } from '../utils/examReview';
+import { resolveImageUrl } from '../data/questionsData';
 
 interface Props {
   session: ProgressSession;
@@ -39,6 +40,7 @@ export function ExamReview({ session, onExit, onRetry, onNavigateToTheory }: Pro
             <span className="block mt-1">{row.question.text}</span>
           </summary>
           <div className="space-y-3 pt-4 break-words">
+            {row.question.image && <img src={resolveImageUrl(row.question.image)} alt={row.question.imageAlt || 'Иллюстрация к вопросу'} loading="lazy" className="max-w-full max-h-80 object-contain rounded-lg" />}
             <p className="text-sm">Ваш выбор{row.confirmed ? '' : ' (не подтверждён)'}: {row.chosen.length ? row.chosen.map(i => `${i + 1}. ${row.question.answers[i] ?? 'Недостоверный вариант'}`).join('; ') : 'Нет ответа'}</p>
             <p className="text-sm font-semibold">Правильный ответ: {row.question.correct.map(i => `${i + 1}. ${row.question.answers[i]}`).join('; ')}</p>
             <ul className="space-y-2 text-sm">
