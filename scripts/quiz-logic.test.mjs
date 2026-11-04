@@ -71,5 +71,6 @@ function findById(all, id) {
 assert(findById([{ id: 'x' }, { id: 'y' }], 'y')?.id === 'y', 'find id');
 assert(findById([{ id: 'x' }], 'z') === null, 'missing id');
 
+await import('./mixed-exam.test.mjs');
 console.log('OK: quiz-logic tests passed');
 process.exit(0);
