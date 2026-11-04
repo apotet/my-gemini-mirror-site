@@ -13,6 +13,9 @@ import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
 import { restoreSession, confirmAnswer, recordConfirmedAnswers, type ProgressSession } from '../utils/examProgress';
+import { ExamReview } from './ExamReview';
+import { getLessonForQuestion } from '../data/lessons';
+import { LAST_REVIEW_KEY, serializeReview, restoreReview } from '../utils/examReview';
 import { KnowledgeRadar } from './KnowledgeRadar';
 import { LivingOsiStack } from './LivingOsiStack';
 import { ZoomableImage } from './ZoomableImage';
@@ -48,9 +51,19 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   const [, refreshProgress] = useState(0);
   const [emptyMistakes, setEmptyMistakes] = useState(false);
   const [sessionWarning, setSessionWarning] = useState(false);
+  const [lastReview, setLastReview] = useState<ProgressSession | null>(null);
+  const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
+  const [reviewWarning, setReviewWarning] = useState(false);
+  const epochRef = useRef(getProgressEpoch());
   useEffect(() => subscribeProgress(() => {
     if (sessionRef.current && sessionRef.current.progressEpoch !== getProgressEpoch()) {
       sessionRef.current = null; setSession(null); setSelectedAnswers([]); setIsAnswerSubmitted(false);
+    }
+    const epoch = getProgressEpoch();
+    if (epochRef.current !== epoch) {
+      epochRef.current = epoch;
+      setLastReview(null); setReviewSession(null);
+      try { localStorage.removeItem(LAST_REVIEW_KEY); } catch { setReviewWarning(true); }
     }
     refreshProgress(value => value + 1);
   }), []);
@@ -60,12 +73,25 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
     try { localStorage.setItem('osi_active_session', JSON.stringify(next)); setSessionWarning(false); }
     catch { setSessionWarning(true); }
     recordConfirmedAnswers(next);
+    if (next.isCompleted) {
+      setLastReview(next);
+      try { localStorage.setItem(LAST_REVIEW_KEY, serializeReview(next)); setReviewWarning(false); }
+      catch { setReviewWarning(true); }
+    }
   };
 
   useEffect(() => {
     try {
+      const last = localStorage.getItem(LAST_REVIEW_KEY);
+      if (last) {
+        const restored = restoreReview(last, getProgressEpoch());
+        if (restored) setLastReview(restored);
+        else setReviewWarning(true);
+      }
       const saved = localStorage.getItem('osi_active_session');
       if (saved) {
+        const completed = restoreReview(JSON.stringify({ version: 1, session: JSON.parse(saved) }), getProgressEpoch());
+        if (completed) { setLastReview(completed); setReviewSession(completed); return; }
         const parsed = restoreSession(saved, ALL_QUESTIONS);
         if (!parsed) { retainProgressBackup('osi_active_session', saved); setSessionWarning(true); return; }
         if (parsed.progressEpoch !== getProgressEpoch()) return;
@@ -76,11 +102,12 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
         }
       }
     } catch {
-      // safe fallback
+      setReviewWarning(true);
     }
   }, []);
 
   const startNewQuiz = (customQuestions?: Question[]) => {
+    setReviewSession(null);
     const questions = customQuestions || getRandomQuestions(selectedMode, questionCount);
     if (!questions.length) { setEmptyMistakes(true); return; }
     const newSession: ProgressSession = {
@@ -161,10 +188,17 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   const lastMistakes = getMistakeQuestions();
   const progressStatus = getInitialProgress();
 
+  const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
+  if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
+    return <ExamReview session={reviewSession} onExit={() => setReviewSession(null)} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
+  }
+
   if (!session || !currentQuestion) {
     return (
       <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6">
         {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
+        {reviewWarning && <p role="status">Последний разбор не удалось прочитать или сохранить. Он может быть недоступен после reload.</p>}
+        {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
         <KnowledgeRadar
           mistakesCount={lastMistakes.length}
           totalQuestionsCount={ALL_QUESTIONS.length}
@@ -250,32 +284,10 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   }
 
   if (session.isCompleted) {
-    let correctCount = 0;
-    session.questions.forEach((q) => {
-      const userAns = session.userAnswers[q.id] || [];
-      const ok = userAns.length === q.correct.length && userAns.every((a) => q.correct.includes(a));
-      if (ok) correctCount += 1;
-    });
-    const total = session.questions.length;
-    const pct = total ? Math.round((correctCount / total) * 100) : 0;
-    return (
-      <div className="max-w-xl mx-auto space-y-5 pb-16">
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-6 text-center space-y-3">
-          <Award className="w-10 h-10 text-amber-400 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Экзамен завершён</h2>
-          <p className="text-3xl font-black text-cyan-600 dark:text-cyan-300">{pct}%</p>
-          <p className="text-sm text-slate-500">{correctCount} из {total} верно</p>
-          <div className="flex flex-wrap justify-center gap-2 pt-2">
-            <button type="button" onClick={handleExit} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold cursor-pointer">
-              На главную
-            </button>
-            <button type="button" onClick={() => startNewQuiz()} className="px-4 py-2 rounded-xl bg-cyan-500 text-white text-xs font-bold cursor-pointer">
-              Ещё раз
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="space-y-3">
+      {reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}
+      <ExamReview session={session} onExit={handleExit} onRetry={() => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />
+    </div>;
   }
 
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;
@@ -287,6 +299,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
         <button type="button" onClick={handleExit} className="hover:text-cyan-500 cursor-pointer">
           Выйти в меню
         </button>
+        {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-2 py-2 underline">Последний разбор</button>}
         <span className="font-mono">
           Вопрос {session.currentIndex + 1} из {session.questions.length}
         </span>
@@ -361,7 +374,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
               <HelpCircle className="w-3.5 h-3.5" /> Разбор
             </div>
             {currentQuestion.explanation}
-            {onNavigateToTheory && (
+            {onNavigateToTheory && getLessonForQuestion(currentQuestion.id) && (
               <button
                 type="button"
                 onClick={() => onNavigateToTheory(currentQuestion.id)}
@@ -400,3 +413,4 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
     </div>
   );
 };
+
