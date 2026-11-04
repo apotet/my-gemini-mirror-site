@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
-import { ExamView } from './components/ExamView';
+import { ExamView, type ExamViewHandle } from './components/ExamView';
 import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
 import { PracticeHub } from './components/PracticeHub';
 import { TheoryView } from './components/TheoryView';
@@ -21,6 +21,7 @@ function readStoredBool(key: string, fallback: boolean): boolean {
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
+  const examViewRef = useRef<ExamViewHandle>(null);
   const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => readStoredBool('osi_sound', false));
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
@@ -73,6 +74,15 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleTabChange = (tab: NavTab) => {
+    if (tab === 'exam' && activeTab === 'exam') examViewRef.current?.returnToParameters();
+    setActiveTab(tab);
+    if (tab !== 'theory') {
+      setTheoryQuestionId(null);
+      setTheoryFromExam(false);
+    }
+  };
+
   const handleReturnToExam = () => {
     setTheoryQuestionId(null);
     setTheoryFromExam(false);
@@ -92,13 +102,7 @@ export function App() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#07111f] dark:text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black transition-colors duration-150">
       <Navbar
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          if (tab !== 'theory') {
-            setTheoryQuestionId(null);
-            setTheoryFromExam(false);
-          }
-        }}
+        onTabChange={handleTabChange}
         isDark={isDark}
         onToggleTheme={() => setIsDark((v) => !v)}
         soundEnabled={soundEnabled}
@@ -108,7 +112,7 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+          <ExamView ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
             setActiveTab('theory');
@@ -139,13 +143,7 @@ export function App() {
 
       <MobileTabBar
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          if (tab !== 'theory') {
-            setTheoryQuestionId(null);
-            setTheoryFromExam(false);
-          }
-        }}
+        onTabChange={handleTabChange}
       />
 
       <CommandPalette
