@@ -45,7 +45,9 @@ export function ExamReview({ session, onExit, onRetry, onNavigateToTheory }: Pro
             <p className="text-sm font-semibold">Правильный ответ: {row.question.correct.map(i => `${i + 1}. ${row.question.answers[i]}`).join('; ')}</p>
             <ul className="space-y-2 text-sm">
               {row.question.answers.map((answer, i) => <li key={i} className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">
-                {i + 1}. {answer}{row.chosen.includes(i) && <strong> · Ваш выбор</strong>}{row.question.correct.includes(i) && <strong> · Правильно</strong>}
+                {i + 1}. {answer}
+                {row.chosen.includes(i) && <span className="ml-2 inline-flex items-center rounded-md border border-violet-400/50 bg-violet-500/10 px-2 py-0.5 align-middle text-[11px] font-bold text-violet-700 dark:text-violet-300">◆ Ваш выбор</span>}
+                {row.question.correct.includes(i) && <span className="ml-2 inline-flex items-center rounded-md border border-cyan-400/50 bg-cyan-500/10 px-2 py-0.5 align-middle text-[11px] font-bold text-cyan-700 dark:text-cyan-300">✓ Правильно</span>}
               </li>)}
             </ul>
             <p className="text-sm whitespace-pre-line">{row.explanation || 'Индивидуальное объяснение в сохранённом вопросе отсутствует.'}</p>
