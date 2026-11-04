@@ -261,8 +261,8 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         )}
       </div>
 
-      {/* Bento Action Cards: Mistakes Drill + Visual L1 (Exactly as in mockup) */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+      {/* Bento Action Cards: Mistakes Drill + Visual L1 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
         {/* Mistakes Review Mini Card */}
         <div
           onClick={() => {
@@ -280,11 +280,11 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             </div>
           </div>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-            вопросов на повтор · по 20 за сеанс
+            {mistakesCount > 0 ? 'вопросов на повтор · по 20 за сеанс' : 'ошибок пока нет'}
           </span>
         </div>
 
-        {/* Visual L1 Equipment Cards */}
+        {/* Visual L1 Equipment Card — improved clarity */}
         <div
           onClick={() => {
             triggerHaptic('light');
@@ -300,9 +300,19 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               {progress.visualAnswered}/{progress.visualTotal}
             </div>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-            разобрано
-          </span>
+          <div className="space-y-1.5 mt-1">
+            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+                style={{
+                  width: `${progress.visualTotal > 0 ? Math.round((progress.visualAnswered / progress.visualTotal) * 100) : 0}%`,
+                }}
+              />
+            </div>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans block">
+              Разобрано по фото оборудования
+            </span>
+          </div>
         </div>
       </div>
 
