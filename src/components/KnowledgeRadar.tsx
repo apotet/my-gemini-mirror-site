@@ -134,7 +134,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               </div>
             </div>
 
-            {/* Contextual Readiness Analysis */}
+            {/* Contextual Readiness Analysis — compact by default */}
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
@@ -148,13 +148,26 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               </div>
 
               <div className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
-                <p>{progress.readinessPercent === null ? 'Недостаточно данных: нужно 10 подтверждённых ответов.' : 'Доля верных среди подтверждённых ответов, не прогноз готовности.'}</p>
-                <p>Выборка: {progress.answeredCount} ответов, {progress.correctCount} верных.</p>
-                {progress.weakSpot && <button type="button" onClick={e => { e.stopPropagation(); handleLevelDrill(progress.weakSpot?.level); }}>
-                  Ниже точность: {progress.weakSpot.topic}
-                </button>}
-                {progress.strongSpot && <p>Выше точность: {progress.strongSpot.topic}</p>}
-                <p>Сравнение групп — от 10 ответов в каждой из двух групп.</p>
+                <p>
+                  {progress.readinessPercent === null
+                    ? 'Недостаточно данных: нужно 10 подтверждённых ответов.'
+                    : `Выборка: ${progress.answeredCount} ответов, ${progress.correctCount} верных.`}
+                </p>
+                {progress.weakSpot && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLevelDrill(progress.weakSpot?.level);
+                    }}
+                    className="text-left text-rose-600 dark:text-rose-300 hover:underline"
+                  >
+                    Слабее: {progress.weakSpot.topic}
+                  </button>
+                )}
+                {!showBreakdown && (
+                  <p className="text-slate-500 dark:text-slate-400">Нажмите, чтобы раскрыть по группам</p>
+                )}
               </div>
             </div>
           </div>
@@ -192,6 +205,9 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         {/* Interactive 7-Layer Mastery Breakdown Drawer */}
         {showBreakdown && (
           <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-3 animate-fade-in">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Доля верных среди подтверждённых ответов (не прогноз готовности). Сравнение групп — от 10 ответов в каждой.
+            </p>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-cyan-500" />
@@ -316,23 +332,29 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         </div>
       </div>
 
-      {/* A paused exam and a new exam are separate actions. */}
-      <button
-        onClick={() => {
-          triggerHaptic('heavy');
-          onStartExam();
-        }}
-        type="button"
-        className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400 text-slate-950 font-black text-sm sm:text-base hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(34,211,238,0.35)] cursor-pointer tracking-wide"
-      >
-        <Sparkles className="w-4 h-4 fill-slate-950" />
-        <span>{hasActiveSession ? 'Продолжить экзамен' : 'Начать экзамен'}</span>
-      </button>
-      {hasActiveSession && onStartNewExam && (
-        <button type="button" onClick={onStartNewExam} className="w-full rounded-xl border border-cyan-500/40 px-4 py-2.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">
-          Начать новый экзамен
+      {/* Primary / secondary exam actions — hierarchy from PR #8 preserved */}
+      <div className="space-y-2.5">
+        <button
+          onClick={() => {
+            triggerHaptic('heavy');
+            onStartExam();
+          }}
+          type="button"
+          className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400 text-slate-950 font-black text-sm sm:text-base hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(34,211,238,0.35)] cursor-pointer tracking-wide"
+        >
+          <Sparkles className="w-4 h-4 fill-slate-950" />
+          <span>{hasActiveSession ? 'Продолжить экзамен' : 'Начать экзамен'}</span>
         </button>
-      )}
+        {hasActiveSession && onStartNewExam && (
+          <button
+            type="button"
+            onClick={onStartNewExam}
+            className="w-full rounded-2xl border border-cyan-500/40 px-4 py-3 text-sm font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400 transition-colors"
+          >
+            Начать новый экзамен
+          </button>
+        )}
+      </div>
     </div>
   );
 };
