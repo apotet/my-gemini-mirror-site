@@ -33,6 +33,15 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   const [progress, setProgress] = useState<ProgressState>(getInitialProgress);
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false);
   const [showStreakModal, setShowStreakModal] = useState<boolean>(false);
+  const [migrationAcknowledged, setMigrationAcknowledged] = useState<boolean>(() => {
+    try { return localStorage.getItem('osi_progress_migration_ack_v4') === '1'; }
+    catch { return false; }
+  });
+  const acknowledgeMigration = () => {
+    setMigrationAcknowledged(true);
+    try { localStorage.setItem('osi_progress_migration_ack_v4', '1'); }
+    catch { /* The notice remains dismissible for this session. */ }
+  };
 
   useEffect(() => {
     const refresh = () => setProgress(getInitialProgress());
@@ -62,7 +71,14 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
 
   return (
     <div className="space-y-3 w-full">
-      {progress.migrationNotice && <p role="status" className="text-xs text-amber-600">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и id ошибок. Старые агрегаты и исходные данные сохранены в экспорте.</p>}
+      {progress.migrationNotice && !migrationAcknowledged && (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 p-3 text-xs text-amber-600 dark:text-amber-300">
+          <p className="flex-1 min-w-[200px]">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и ID ошибок. Исходные данные сохранены в экспорте.</p>
+          <button type="button" onClick={acknowledgeMigration} className="shrink-0 rounded-md border border-amber-500/50 px-3 py-1.5 font-semibold hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500">
+            Понятно
+          </button>
+        </div>
+      )}
       {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки. Скачайте экспорт.</p>}
       <button type="button" className="text-xs text-cyan-600 underline" onClick={() => {
         const url = URL.createObjectURL(new Blob([exportProgress()], { type: 'application/json' }));
