@@ -26,6 +26,7 @@ export default defineConfig(() => {
       },
     },
     server: {
+      allowedHosts: ['terminal.local'],
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },

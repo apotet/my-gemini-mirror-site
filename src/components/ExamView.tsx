@@ -36,11 +36,12 @@ import {
 
 interface ExamViewProps {
   soundEnabled: boolean;
+  onNavigateToLearning?: () => void;
   onNavigateToTheory?: (questionId: string) => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory, onNavigateToLearning }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [questionCount, setQuestionCount] = useState<number>(10);
@@ -190,7 +191,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
 
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <ExamReview session={reviewSession} onExit={() => setReviewSession(null)} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
+    return <ExamReview key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={() => setReviewSession(null)} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
   }
 
   if (!session || !currentQuestion) {
@@ -286,7 +287,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   if (session.isCompleted) {
     return <div className="space-y-3">
       {reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}
-      <ExamReview session={session} onExit={handleExit} onRetry={() => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />
+      <ExamReview key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />
     </div>;
   }
 
