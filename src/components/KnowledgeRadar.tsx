@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { triggerHaptic } from '../utils/haptics';
-import { getInitialProgress, ProgressState, resetProgress } from '../utils/userProgress';
+import { getInitialProgress, ProgressState, resetProgress, subscribeProgress, exportProgress } from '../utils/userProgress';
 import {
   Flame,
   Award,
@@ -30,26 +30,31 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   mistakesCount,
   totalQuestionsCount = 502,
 }) => {
-  const [progress, setProgress] = useState<ProgressState>(getInitialProgress());
+  const [progress, setProgress] = useState<ProgressState>(getInitialProgress);
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false);
   const [showStreakModal, setShowStreakModal] = useState<boolean>(false);
 
-  // Sync state whenever mistakes or localStorage changes
   useEffect(() => {
-    setProgress(getInitialProgress());
-  }, [mistakesCount]);
+    const refresh = () => setProgress(getInitialProgress());
+    const unsubscribe = subscribeProgress(refresh);
+    window.addEventListener('focus', refresh);
+    refresh();
+    return () => { unsubscribe(); window.removeEventListener('focus', refresh); };
+  }, []);
 
   // SVG Circular Gauge Math
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress.readinessPercent / 100) * circumference;
+  const strokeDashoffset = circumference - ((progress.readinessPercent ?? 0) / 100) * circumference;
 
-  const handleLevelDrill = (level: string) => {
+  const handleLevelDrill = (level?: string) => {
+    if (!level) return;
     triggerHaptic('medium');
     onStartExam(level);
   };
 
   const handleReset = () => {
+    if (!window.confirm('Сбросить весь прогресс и сохранённую сессию? Удаление необратимо. Сначала можно скачать экспорт прогресса. Банк вопросов сохранится.')) return;
     triggerHaptic('heavy');
     const reset = resetProgress();
     setProgress(reset);
@@ -57,6 +62,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
 
   return (
     <div className="space-y-3 w-full">
+      {progress.migrationNotice && <p role="status" className="text-xs text-amber-600">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и id ошибок. Старые агрегаты и исходные данные сохранены в экспорте.</p>}
+      {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки. Скачайте экспорт.</p>}
+      <button type="button" className="text-xs text-cyan-600 underline" onClick={() => {
+        const url = URL.createObjectURL(new Blob([exportProgress()], { type: 'application/json' }));
+        const link = document.createElement('a'); link.href = url; link.download = 'netops-progress.json'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }}>Скачать прогресс и резерв старых данных</button>
       {/* Hero Readiness & Streak Card (Matching Mockup Bento Card) */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] border border-slate-200 dark:border-cyan-500/30 shadow-lg dark:shadow-2xl relative overflow-hidden transition-colors">
         {/* Subtle radial glow in dark mode */}
@@ -70,7 +82,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               setShowBreakdown(!showBreakdown);
             }}
             className="flex items-center gap-4 cursor-pointer group"
-            title="Нажмите для просмотра интерактивного разбора по 7 уровням"
+            title="Точность подтверждённых ответов по учебным группам"
           >
             {/* Circular Gauge */}
             <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
@@ -102,7 +114,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
-                  {progress.readinessPercent}%
+                  {progress.readinessPercent === null ? '—' : `${progress.readinessPercent}%`}
                 </span>
               </div>
             </div>
@@ -111,7 +123,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
-                  Готовность к экзамену
+                  Точность ответов
                 </h2>
                 {showBreakdown ? (
                   <ChevronUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
@@ -121,39 +133,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               </div>
 
               <div className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLevelDrill(progress.weakSpot.level);
-                  }}
-                  className="flex items-center gap-1.5 cursor-pointer hover:underline"
-                  title="Нажмите, чтобы тренировать слабое место"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                  <span>
-                    Слабое место:{' '}
-                    <strong className="text-rose-600 dark:text-rose-300 font-semibold">
-                      {progress.weakSpot.topic}
-                    </strong>
-                  </span>
-                </div>
-
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLevelDrill(progress.strongSpot.level);
-                  }}
-                  className="flex items-center gap-1.5 cursor-pointer hover:underline"
-                  title="Нажмите, чтобы закрепить сильный навык"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>
-                    Сильнее всего:{' '}
-                    <strong className="text-emerald-600 dark:text-emerald-300 font-semibold">
-                      {progress.strongSpot.topic}
-                    </strong>
-                  </span>
-                </div>
+                <p>{progress.readinessPercent === null ? 'Недостаточно данных: нужно 10 подтверждённых ответов.' : 'Доля верных среди подтверждённых ответов, не прогноз готовности.'}</p>
+                <p>Выборка: {progress.answeredCount} ответов, {progress.correctCount} верных.</p>
+                {progress.weakSpot && <button type="button" onClick={e => { e.stopPropagation(); handleLevelDrill(progress.weakSpot?.level); }}>
+                  Ниже точность: {progress.weakSpot.topic}
+                </button>}
+                {progress.strongSpot && <p>Выше точность: {progress.strongSpot.topic}</p>}
+                <p>Сравнение групп — от 10 ответов в каждой из двух групп.</p>
               </div>
             </div>
           </div>
@@ -183,7 +169,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               <span className="text-amber-500">{progress.streakDays} дней подряд</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Каждый день регулярного решения 10 вопросов закрепляет переходы между уровнями модели OSI в долговременную память.
+              День засчитывается после одного подтверждённого ответа. Серия считается по локальным календарным датам; повтор в тот же день не добавляет дней.
             </p>
           </div>
         )}
@@ -194,13 +180,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-cyan-500" />
-                Карта мастерства по уровням OSI
+                Точность по учебным группам
               </span>
               <button
                 onClick={handleReset}
                 type="button"
                 className="text-[10px] text-slate-400 hover:text-rose-500 transition-colors font-mono flex items-center gap-1 cursor-pointer"
-                title="Сбросить историю для проверки изменения шкалы"
+                title="Необратимый сброс после подтверждения"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Сброс статистики</span>
@@ -209,8 +195,8 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {Object.values(progress.levels).map((lvl) => {
-                const isWeak = lvl.level === progress.weakSpot.level;
-                const isStrong = lvl.level === progress.strongSpot.level;
+                const isWeak = lvl.level === progress.weakSpot?.level;
+                const isStrong = lvl.level === progress.strongSpot?.level;
 
                 return (
                   <div
@@ -229,7 +215,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
                           {lvl.level} {lvl.name.split(' ')[0]}
                         </span>
                         <span className="font-mono font-bold text-[11px] text-cyan-600 dark:text-cyan-400">
-                          {lvl.masteryPercent}%
+                          {lvl.total >= 10 ? `${lvl.masteryPercent}%` : 'Мало данных'} · {lvl.total} отв.
                         </span>
                       </div>
 
@@ -239,7 +225,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
                           className={`h-full rounded-full transition-all duration-500 ${
                             isWeak ? 'bg-rose-500' : isStrong ? 'bg-emerald-500' : 'bg-cyan-500'
                           }`}
-                          style={{ width: `${lvl.masteryPercent}%` }}
+                          style={{ width: `${lvl.total >= 10 ? lvl.masteryPercent : 0}%` }}
                         />
                       </div>
                     </div>
@@ -275,11 +261,11 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               Работа над ошибками
             </span>
             <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400">
-              {mistakesCount > 0 ? mistakesCount : 14}
+              {mistakesCount}
             </div>
           </div>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-            вопросов на повтор
+            вопросов на повтор · по 20 за сеанс
           </span>
         </div>
 
@@ -296,7 +282,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               Фото L1
             </span>
             <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400">
-              26/40
+              {progress.visualAnswered}/{progress.visualTotal}
             </div>
           </div>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">

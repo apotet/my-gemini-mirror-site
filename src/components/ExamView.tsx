@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Question,
   QuizModeId,
-  QuizSession,
 } from '../types/quiz';
 import {
   ALL_QUESTIONS,
@@ -12,7 +11,8 @@ import {
 } from '../data/questionsData';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
-import { recordQuestionResult } from '../utils/userProgress';
+import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
+import { restoreSession, confirmAnswer, recordConfirmedAnswers, type ProgressSession } from '../utils/examProgress';
 import { KnowledgeRadar } from './KnowledgeRadar';
 import { LivingOsiStack } from './LivingOsiStack';
 import { ZoomableImage } from './ZoomableImage';
@@ -38,21 +38,39 @@ interface ExamViewProps {
 }
 
 export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory }) => {
-  const [session, setSession] = useState<QuizSession | null>(null);
+  const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [feedbackMode, setFeedbackMode] = useState<'instant' | 'exam'>('instant');
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState<boolean>(false);
-  const [mistakesOnlySession, setMistakesOnlySession] = useState<Question[] | null>(null);
+  const sessionRef = useRef<ProgressSession | null>(null);
+  const [, refreshProgress] = useState(0);
+  const [emptyMistakes, setEmptyMistakes] = useState(false);
+  const [sessionWarning, setSessionWarning] = useState(false);
+  useEffect(() => subscribeProgress(() => {
+    if (sessionRef.current && sessionRef.current.progressEpoch !== getProgressEpoch()) {
+      sessionRef.current = null; setSession(null); setSelectedAnswers([]); setIsAnswerSubmitted(false);
+    }
+    refreshProgress(value => value + 1);
+  }), []);
+  const saveSession = (next: ProgressSession) => {
+    sessionRef.current = next;
+    setSession(next);
+    try { localStorage.setItem('osi_active_session', JSON.stringify(next)); setSessionWarning(false); }
+    catch { setSessionWarning(true); }
+    recordConfirmedAnswers(next);
+  };
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('osi_active_session');
       if (saved) {
-        const parsed: QuizSession = JSON.parse(saved);
+        const parsed = restoreSession(saved, ALL_QUESTIONS);
+        if (!parsed) { retainProgressBackup('osi_active_session', saved); setSessionWarning(true); return; }
+        if (parsed.progressEpoch !== getProgressEpoch()) return;
         if (!parsed.isCompleted && parsed.questions && parsed.questions.length > 0) {
-          setSession(parsed);
+          saveSession(parsed);
           setSelectedAnswers(parsed.userAnswers[parsed.questions[parsed.currentIndex]?.id] || []);
           setIsAnswerSubmitted(parsed.submittedQuestions[parsed.questions[parsed.currentIndex]?.id] || false);
         }
@@ -62,27 +80,12 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
     }
   }, []);
 
-  useEffect(() => {
-    if (session?.isCompleted && session.questions) {
-      const mistakeIds: string[] = [];
-      session.questions.forEach((q) => {
-        const userAns = session.userAnswers[q.id] || [];
-        const isCorrect = userAns.length === q.correct.length && userAns.every((a) => q.correct.includes(a));
-        if (!isCorrect) mistakeIds.push(q.id);
-      });
-      if (mistakeIds.length > 0) {
-        try {
-          localStorage.setItem('osi_last_mistakes', JSON.stringify(mistakeIds));
-        } catch {
-          // safe fallback
-        }
-      }
-    }
-  }, [session?.isCompleted]);
-
   const startNewQuiz = (customQuestions?: Question[]) => {
     const questions = customQuestions || getRandomQuestions(selectedMode, questionCount);
-    const newSession: QuizSession = {
+    if (!questions.length) { setEmptyMistakes(true); return; }
+    const newSession: ProgressSession = {
+      attemptId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+      progressEpoch: getProgressEpoch(),
       questions,
       currentIndex: 0,
       userAnswers: {},
@@ -92,22 +95,17 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
       mode: selectedMode,
       feedbackMode,
     };
-    setSession(newSession);
+    saveSession(newSession);
     setSelectedAnswers([]);
     setIsAnswerSubmitted(false);
-    setMistakesOnlySession(null);
-    try {
-      localStorage.setItem('osi_active_session', JSON.stringify(newSession));
-    } catch {
-      // safe fallback
-    }
+    setEmptyMistakes(false);
   };
 
   const currentQuestion = session ? session.questions[session.currentIndex] : null;
   const isMultiSelect = currentQuestion ? currentQuestion.correct.length > 1 : false;
 
   const handleSelectAnswer = (index: number) => {
-    if (isAnswerSubmitted && session?.feedbackMode === 'instant') return;
+    if (isAnswerSubmitted) return;
     triggerHaptic('selection');
     if (soundEnabled) playClickSound();
     if (isMultiSelect) {
@@ -120,64 +118,36 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   };
 
   const handleSubmitAnswer = () => {
-    if (!session || !currentQuestion || selectedAnswers.length === 0) return;
-    const isCorrect =
-      selectedAnswers.length === currentQuestion.correct.length &&
-      selectedAnswers.every((a) => currentQuestion.correct.includes(a));
+    const current = sessionRef.current;
+    if (!current) return;
+    const updated = confirmAnswer(current, selectedAnswers);
+    if (updated === current) return;
+    const question = current.questions[current.currentIndex];
+    const isCorrect = selectedAnswers.length === question.correct.length && selectedAnswers.every(a => question.correct.includes(a));
     triggerHaptic(isCorrect ? 'success' : 'error');
-    if (soundEnabled) {
-      if (isCorrect) playSuccessSound();
-      else playErrorSound();
-    }
-    recordQuestionResult(currentQuestion.id, currentQuestion.topic, currentQuestion.group, isCorrect);
-    const updatedUserAnswers = {
-      ...session.userAnswers,
-      [currentQuestion.id]: selectedAnswers,
-    };
-    const updatedSubmitted = {
-      ...session.submittedQuestions,
-      [currentQuestion.id]: true,
-    };
+    if (soundEnabled) { if (isCorrect) playSuccessSound(); else playErrorSound(); }
+    saveSession(updated);
     setIsAnswerSubmitted(true);
-    const updatedSession: QuizSession = {
-      ...session,
-      userAnswers: updatedUserAnswers,
-      submittedQuestions: updatedSubmitted,
-    };
-    setSession(updatedSession);
-    try {
-      localStorage.setItem('osi_active_session', JSON.stringify(updatedSession));
-    } catch {
-      // safe fallback
-    }
   };
 
   const handleNext = () => {
-    if (!session) return;
+    if (!session || !currentQuestion || !session.submittedQuestions[currentQuestion.id]) return;
     const nextIndex = session.currentIndex + 1;
     if (nextIndex >= session.questions.length) {
-      const completed: QuizSession = { ...session, isCompleted: true };
-      setSession(completed);
-      try {
-        localStorage.setItem('osi_active_session', JSON.stringify(completed));
-      } catch {
-        // safe fallback
-      }
+      const completed: ProgressSession = { ...session, isCompleted: true };
+      saveSession(completed);
       return;
     }
     const nextQ = session.questions[nextIndex];
-    const updated: QuizSession = { ...session, currentIndex: nextIndex };
-    setSession(updated);
+    const updated: ProgressSession = { ...session, currentIndex: nextIndex };
+    saveSession(updated);
     setSelectedAnswers(session.userAnswers[nextQ.id] || []);
     setIsAnswerSubmitted(session.submittedQuestions[nextQ.id] || false);
-    try {
-      localStorage.setItem('osi_active_session', JSON.stringify(updated));
-    } catch {
-      // safe fallback
-    }
+
   };
 
   const handleExit = () => {
+    sessionRef.current = null;
     setSession(null);
     setSelectedAnswers([]);
     setIsAnswerSubmitted(false);
@@ -188,41 +158,27 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
     }
   };
 
-  const [lastMistakes, setLastMistakes] = useState<Question[]>([]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('osi_last_mistakes');
-      if (saved) {
-        const ids: string[] = JSON.parse(saved);
-        if (Array.isArray(ids)) {
-          const matched = ALL_QUESTIONS.filter((q) => ids.includes(q.id));
-          setLastMistakes(matched);
-        }
-      }
-    } catch {
-      // safe fallback
-    }
-  }, []);
+  const lastMistakes = getMistakeQuestions();
+  const progressStatus = getInitialProgress();
 
   if (!session || !currentQuestion) {
     return (
       <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6">
+        {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
         <KnowledgeRadar
           mistakesCount={lastMistakes.length}
           totalQuestionsCount={ALL_QUESTIONS.length}
           onStartExam={(levelFilter) => {
             if (levelFilter) {
-              const matched = ALL_QUESTIONS.filter(
-                (q) => q.topic.includes(levelFilter) || q.group.includes(levelFilter.toLowerCase())
-              );
+              const matched = ALL_QUESTIONS.filter(q => q.group === levelFilter);
               startNewQuiz(matched.length > 0 ? matched.slice(0, 10) : undefined);
             } else {
               startNewQuiz();
             }
           }}
           onReviewMistakes={() => {
-            const pool = lastMistakes.length > 0 ? lastMistakes : ALL_QUESTIONS.slice(0, 14);
+            const pool = getMistakeQuestions(20);
+            if (!pool.length) { setEmptyMistakes(true); return; }
             startNewQuiz(pool);
           }}
           onOpenVisualL1={() => {
@@ -231,6 +187,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
             startNewQuiz(visualPool.slice(0, questionCount));
           }}
         />
+        {emptyMistakes && <p role="status" className="text-sm text-slate-500">Ошибок на повторение нет. Новые ошибки появятся здесь; для освоения нужны два верных ответа подряд.</p>}
         <LivingOsiStack />
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -325,6 +282,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 pb-20">
+      {(sessionWarning || progressStatus.storageWarning) && <p role="alert">Не удалось сохранить данные. Не закрывайте вкладку; экспорт прогресса доступен в меню экзамена.</p>}
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <button type="button" onClick={handleExit} className="hover:text-cyan-500 cursor-pointer">
           Выйти в меню
