@@ -221,8 +221,10 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         <KnowledgeRadar
           mistakesCount={lastMistakes.length}
           totalQuestionsCount={ALL_QUESTIONS.length}
+          hasActiveSession={Boolean(session && !session.isCompleted)}
+          onStartNewExam={() => startNewQuiz()}
           onStartExam={(levelFilter) => {
-            if (sessionRef.current && !sessionRef.current.isCompleted) {
+            if (!levelFilter && sessionRef.current && !sessionRef.current.isCompleted) {
               setShowParameters(false);
               return;
             }
