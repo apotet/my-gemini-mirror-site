@@ -20,7 +20,7 @@ interface KnowledgeRadarProps {
   onStartNewExam?: () => void;
   hasActiveSession?: boolean;
   onReviewMistakes: () => void;
-  onOpenVisualL1: () => void;
+  onOpenVisualL1?: () => void;
   mistakesCount: number;
   totalQuestionsCount?: number;
 }
@@ -84,13 +84,11 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         </div>
       )}
       {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки.</p>}
-      {/* Hero Readiness & Streak Card (Matching Mockup Bento Card) */}
+      {/* Hero Readiness & Streak Card */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] border border-slate-200 dark:border-cyan-500/30 shadow-lg dark:shadow-2xl relative overflow-hidden transition-colors">
-        {/* Subtle radial glow in dark mode */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          {/* Circular Readiness Gauge & Text */}
           <div
             onClick={() => {
               triggerHaptic('selection');
@@ -99,10 +97,8 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             className="flex items-center gap-4 cursor-pointer group"
             title="Точность подтверждённых ответов по учебным группам"
           >
-            {/* Circular Gauge */}
             <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
               <svg className="w-20 h-20 -rotate-90 transform" viewBox="0 0 96 96">
-                {/* Background Ring */}
                 <circle
                   cx="48"
                   cy="48"
@@ -111,7 +107,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
                   strokeWidth="8"
                   fill="none"
                 />
-                {/* Progress Ring with Cyan Glow */}
                 <circle
                   cx="48"
                   cy="48"
@@ -134,7 +129,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
               </div>
             </div>
 
-            {/* Contextual Readiness Analysis — compact by default */}
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
@@ -172,7 +166,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             </div>
           </div>
 
-          {/* Streak indicator badge */}
           <div className="flex items-center gap-2 self-start sm:self-center">
             <button
               onClick={() => {
@@ -189,7 +182,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
           </div>
         </div>
 
-        {/* Streak Details Drawer */}
         {showStreakModal && (
           <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 animate-fade-in">
             <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
@@ -202,7 +194,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
           </div>
         )}
 
-        {/* Interactive 7-Layer Mastery Breakdown Drawer */}
         {showBreakdown && (
           <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-3 animate-fade-in">
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -250,7 +241,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
                         </span>
                       </div>
 
-                      {/* Bar */}
                       <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
@@ -277,58 +267,24 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         )}
       </div>
 
-      {/* Bento Action Cards: Mistakes Drill + Visual L1 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-        {/* Mistakes Review Mini Card */}
-        <div
-          onClick={() => {
-            triggerHaptic('medium');
-            onReviewMistakes();
-          }}
-          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#091524] border border-rose-300 dark:border-rose-500/30 hover:border-rose-400 dark:hover:border-rose-400/60 hover:bg-rose-50/50 dark:hover:bg-[#0b1a2d] transition-all cursor-pointer flex flex-col justify-between min-h-[96px] shadow-sm dark:shadow-lg dark:shadow-rose-950/20 group"
-        >
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-200 transition-colors block">
-              Работа над ошибками
-            </span>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400">
-              {mistakesCount}
-            </div>
-          </div>
+      {/* Mistakes card only — Photo L1 moved to quiz parameters */}
+      <div
+        onClick={() => {
+          triggerHaptic('medium');
+          onReviewMistakes();
+        }}
+        className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#091524] border border-rose-300 dark:border-rose-500/30 hover:border-rose-400 dark:hover:border-rose-400/60 hover:bg-rose-50/50 dark:hover:bg-[#0b1a2d] transition-all cursor-pointer flex items-center justify-between gap-4 min-h-[80px] shadow-sm dark:shadow-lg dark:shadow-rose-950/20 group"
+      >
+        <div className="space-y-0.5 min-w-0">
+          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-200 transition-colors block">
+            Работа над ошибками
+          </span>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
             {mistakesCount > 0 ? 'вопросов на повтор · по 20 за сеанс' : 'ошибок пока нет'}
           </span>
         </div>
-
-        {/* Visual L1 Equipment Card — improved clarity */}
-        <div
-          onClick={() => {
-            triggerHaptic('light');
-            onOpenVisualL1();
-          }}
-          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#091524] border border-cyan-300 dark:border-cyan-500/30 hover:border-cyan-400 dark:hover:border-cyan-400/60 hover:bg-cyan-50/50 dark:hover:bg-[#0b1a2d] transition-all cursor-pointer flex flex-col justify-between min-h-[96px] shadow-sm dark:shadow-lg dark:shadow-cyan-950/20 group"
-        >
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-200 transition-colors block">
-              Фото L1
-            </span>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400">
-              {progress.visualAnswered}/{progress.visualTotal}
-            </div>
-          </div>
-          <div className="space-y-1.5 mt-1">
-            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-cyan-500 transition-all duration-500"
-                style={{
-                  width: `${progress.visualTotal > 0 ? Math.round((progress.visualAnswered / progress.visualTotal) * 100) : 0}%`,
-                }}
-              />
-            </div>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans block">
-              Разобрано по фото оборудования
-            </span>
-          </div>
+        <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400 shrink-0">
+          {mistakesCount}
         </div>
       </div>
 
