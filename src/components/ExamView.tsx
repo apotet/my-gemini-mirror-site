@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle } from 'react';
 import {
   Question,
   QuizModeId,
@@ -34,14 +34,19 @@ import {
   BookOpen,
 } from 'lucide-react';
 
+export interface ExamViewHandle {
+  returnToParameters: () => void;
+}
+
 interface ExamViewProps {
+  ref?: React.Ref<ExamViewHandle>;
   soundEnabled: boolean;
   onNavigateToLearning?: () => void;
   onNavigateToTheory?: (questionId: string) => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTheory, onNavigateToLearning }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [questionCount, setQuestionCount] = useState<number>(10);
@@ -55,6 +60,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   const [lastReview, setLastReview] = useState<ProgressSession | null>(null);
   const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
   const [reviewWarning, setReviewWarning] = useState(false);
+  const [showParameters, setShowParameters] = useState(false);
   const epochRef = useRef(getProgressEpoch());
   useEffect(() => subscribeProgress(() => {
     if (sessionRef.current && sessionRef.current.progressEpoch !== getProgressEpoch()) {
@@ -108,9 +114,12 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   }, []);
 
   const startNewQuiz = (customQuestions?: Question[]) => {
-    setReviewSession(null);
+    if (sessionRef.current && !sessionRef.current.isCompleted &&
+      !window.confirm('Начать новый экзамен? Незавершённая попытка будет заменена.')) return;
     const questions = customQuestions || getRandomQuestions(selectedMode, questionCount);
     if (!questions.length) { setEmptyMistakes(true); return; }
+    setReviewSession(null);
+    setShowParameters(false);
     const newSession: ProgressSession = {
       attemptId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
       progressEpoch: getProgressEpoch(),
@@ -175,26 +184,35 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
   };
 
   const handleExit = () => {
-    sessionRef.current = null;
-    setSession(null);
-    setSelectedAnswers([]);
-    setIsAnswerSubmitted(false);
-    try {
-      localStorage.removeItem('osi_active_session');
-    } catch {
-      // safe fallback
+    setReviewSession(null);
+    setShowParameters(true);
+    // Keep a real unfinished attempt intact behind the parameters screen.
+    if (!sessionRef.current || sessionRef.current.isCompleted) {
+      sessionRef.current = null;
+      setSession(null);
+      setSelectedAnswers([]);
+      setIsAnswerSubmitted(false);
+      try { localStorage.removeItem('osi_active_session'); } catch { /* Safe fallback. */ }
     }
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
+
+  useImperativeHandle(ref, () => ({
+    returnToParameters: () => {
+      // Reselecting the tab during a live exam is deliberately a no-op.
+      if (reviewSession || session?.isCompleted) handleExit();
+    },
+  }));
 
   const lastMistakes = getMistakeQuestions();
   const progressStatus = getInitialProgress();
 
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <ExamReview key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={() => setReviewSession(null)} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
+    return <ExamReview key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
   }
 
-  if (!session || !currentQuestion) {
+  if (showParameters || !session || !currentQuestion) {
     return (
       <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6">
         {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
@@ -203,7 +221,13 @@ export const ExamView: React.FC<ExamViewProps> = ({ soundEnabled, onNavigateToTh
         <KnowledgeRadar
           mistakesCount={lastMistakes.length}
           totalQuestionsCount={ALL_QUESTIONS.length}
+          hasActiveSession={Boolean(session && !session.isCompleted)}
+          onStartNewExam={() => startNewQuiz()}
           onStartExam={(levelFilter) => {
+            if (!levelFilter && sessionRef.current && !sessionRef.current.isCompleted) {
+              setShowParameters(false);
+              return;
+            }
             if (levelFilter) {
               const matched = ALL_QUESTIONS.filter(q => q.group === levelFilter);
               startNewQuiz(matched.length > 0 ? matched.slice(0, 10) : undefined);
