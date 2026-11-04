@@ -61,6 +61,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
   const [reviewWarning, setReviewWarning] = useState(false);
   const [showParameters, setShowParameters] = useState(false);
+  const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[] } | null>(null);
   const epochRef = useRef(getProgressEpoch());
   useEffect(() => subscribeProgress(() => {
     if (sessionRef.current && sessionRef.current.progressEpoch !== getProgressEpoch()) {
@@ -113,9 +114,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     }
   }, []);
 
-  const startNewQuiz = (customQuestions?: Question[]) => {
-    if (sessionRef.current && !sessionRef.current.isCompleted &&
-      !window.confirm('Начать новый экзамен? Незавершённая попытка будет заменена.')) return;
+  const beginNewQuiz = (customQuestions?: Question[]) => {
     const questions = customQuestions || getRandomQuestions(selectedMode, questionCount);
     if (!questions.length) { setEmptyMistakes(true); return; }
     setReviewSession(null);
@@ -136,6 +135,14 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     setSelectedAnswers([]);
     setIsAnswerSubmitted(false);
     setEmptyMistakes(false);
+  };
+
+  const startNewQuiz = (customQuestions?: Question[]) => {
+    if (sessionRef.current && !sessionRef.current.isCompleted) {
+      setPendingNewQuiz({ questions: customQuestions });
+      return;
+    }
+    beginNewQuiz(customQuestions);
   };
 
   const currentQuestion = session ? session.questions[session.currentIndex] : null;
@@ -207,9 +214,42 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const lastMistakes = getMistakeQuestions();
   const progressStatus = getInitialProgress();
 
+  const replacementDialog = pendingNewQuiz && (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4" role="presentation">
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="replace-exam-title"
+        aria-describedby="replace-exam-description"
+        className="w-full max-w-md rounded-2xl border border-cyan-500/30 bg-white p-6 text-slate-900 shadow-2xl dark:bg-[#101e30] dark:text-slate-100 sm:p-7"
+      >
+        <h2 id="replace-exam-title" className="text-2xl font-bold leading-tight sm:text-3xl">Начать новый экзамен?</h2>
+        <p id="replace-exam-description" className="mt-4 text-lg leading-relaxed text-slate-700 dark:text-slate-200">
+          У тебя есть незавершённая попытка. Если начать новый экзамен, она будет заменена.
+        </p>
+        <div className="mt-7 grid gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              const request = pendingNewQuiz;
+              setPendingNewQuiz(null);
+              beginNewQuiz(request.questions);
+            }}
+            className="min-h-12 rounded-xl bg-cyan-400 px-4 py-3 text-base font-bold text-slate-950 hover:bg-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+          >Заменить попытку</button>
+          <button
+            type="button"
+            onClick={() => setPendingNewQuiz(null)}
+            className="min-h-12 rounded-xl border border-slate-400/50 px-4 py-3 text-base font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+          >Отмена, сохранить попытку</button>
+        </div>
+      </div>
+    </div>
+  );
+
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <ExamReview key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />;
+    return <><ExamReview key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
   }
 
   if (showParameters || !session || !currentQuestion) {
@@ -304,6 +344,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
             </button>
           </div>
         </div>
+        {replacementDialog}
       </div>
     );
   }
@@ -312,6 +353,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     return <div className="space-y-3">
       {reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}
       <ExamReview key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => startNewQuiz()} onNavigateToTheory={onNavigateToTheory} />
+      {replacementDialog}
     </div>;
   }
 
