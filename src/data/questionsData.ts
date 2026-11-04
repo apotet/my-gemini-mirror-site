@@ -2,6 +2,7 @@ import rawQuestions from './questions.json';
 import { EXTRA_QUESTIONS } from './questionsExtra';
 import { EXTRA_DIFFICULTY_QUESTIONS } from './questionsExtraDifficulty';
 import { Question, QuizMode, QuizModeId } from '../types/quiz';
+import { selectMixedQuestions } from './mixedExam';
 
 /** Base bank + expansion packs. Existing questions.json is never trimmed. */
 export const ALL_QUESTIONS: Question[] = [
@@ -111,8 +112,10 @@ export const QUIZ_MODES: QuizMode[] = [
 
 export function getRandomQuestions(
   modeId: QuizModeId,
-  count: number = 10
+  count: number = 10,
+  random: () => number = Math.random
 ): Question[] {
+  if (modeId === 'mixed' && count === 10) return selectMixedQuestions(ALL_QUESTIONS, random);
   let pool = ALL_QUESTIONS;
   if (modeId === 'mixed') {
     pool = ALL_QUESTIONS.filter((q) => q.group !== 'visual-l1');
@@ -120,9 +123,9 @@ export function getRandomQuestions(
     pool = ALL_QUESTIONS.filter((q) => q.group === modeId);
   }
 
-  const shuffled = [...pool];
+  const shuffled = [...new Map(pool.map(q => [q.id, q])).values()];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
