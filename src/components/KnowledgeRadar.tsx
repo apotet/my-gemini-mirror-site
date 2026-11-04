@@ -3,16 +3,11 @@ import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, ProgressState, resetProgress, subscribeProgress } from '../utils/userProgress';
 import {
   Flame,
-  Award,
   ChevronDown,
   ChevronUp,
-  ArrowRight,
   Sparkles,
-  Zap,
   Target,
   RotateCcw,
-  CheckCircle2,
-  Info,
 } from 'lucide-react';
 
 interface KnowledgeRadarProps {
@@ -30,9 +25,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   onStartNewExam,
   hasActiveSession = false,
   onReviewMistakes,
-  onOpenVisualL1,
   mistakesCount,
-  totalQuestionsCount = 502,
 }) => {
   const [progress, setProgress] = useState<ProgressState>(getInitialProgress);
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false);
@@ -55,10 +48,14 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
     return () => { unsubscribe(); window.removeEventListener('focus', refresh); };
   }, []);
 
-  // SVG Circular Gauge Math
-  const radius = 38;
+  const radius = 34;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - ((progress.readinessPercent ?? 0) / 100) * circumference;
+  const hasAccuracy = progress.readinessPercent !== null;
+  const towardAccuracy = Math.min(progress.answeredCount, 10);
+  const gaugePercent = hasAccuracy
+    ? progress.readinessPercent!
+    : (towardAccuracy / 10) * 100;
+  const strokeDashoffset = circumference - (gaugePercent / 100) * circumference;
 
   const handleLevelDrill = (level?: string) => {
     if (!level) return;
@@ -73,8 +70,28 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
     setProgress(reset);
   };
 
+  const helperLine = hasActiveSession
+    ? 'Продолжи с того места, где остановился'
+    : mistakesCount > 0
+      ? `${mistakesCount} ошибок ждут разбора`
+      : progress.streakDays > 0
+        ? `Серия ${progress.streakDays} дн. · не прерывай`
+        : '10 вопросов — и появится твоя точность';
+
+  const statusTitle = hasAccuracy
+    ? `Точность ${progress.readinessPercent}%`
+    : towardAccuracy > 0
+      ? `${towardAccuracy}/10 до точности`
+      : 'Точность появится после 10 ответов';
+
+  const statusSub = hasAccuracy
+    ? `${progress.answeredCount} ответов · ${progress.correctCount} верных`
+    : towardAccuracy > 0
+      ? `Ещё ${10 - towardAccuracy} подтверждённых ответов`
+      : 'Пройди короткую сессию';
+
   return (
-    <div className="space-y-3 w-full">
+    <div className="space-y-4 w-full">
       {progress.migrationNotice && !migrationAcknowledged && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 p-3 text-xs text-amber-600 dark:text-amber-300">
           <p className="flex-1 min-w-[200px]">Старый прогресс частично недостоверен: перенесены только проверяемые ответы и ID ошибок. Исходные данные сохранены в локальном резерве.</p>
@@ -84,178 +101,150 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         </div>
       )}
       {progress.storageWarning && <p role="alert" className="text-xs text-rose-600">Хранилище недоступно: изменения доступны в этой вкладке и могут потеряться после перезагрузки.</p>}
-      {/* Hero Readiness & Streak Card */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] border border-slate-200 dark:border-cyan-500/30 shadow-lg dark:shadow-2xl relative overflow-hidden transition-colors">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div
+      {/* Compact status strip */}
+      <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/25 bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] p-3.5 sm:p-4 shadow-lg dark:shadow-xl relative overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+          <button
+            type="button"
             onClick={() => {
               triggerHaptic('selection');
               setShowBreakdown(!showBreakdown);
             }}
-            className="flex items-center gap-4 cursor-pointer group"
-            title="Точность подтверждённых ответов по учебным группам"
+            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer group"
+            title="Точность по учебным группам"
           >
-            <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
-              <svg className="w-20 h-20 -rotate-90 transform" viewBox="0 0 96 96">
-                <circle
-                  cx="48"
-                  cy="48"
-                  r={radius}
-                  className="stroke-slate-200 dark:stroke-slate-800"
-                  strokeWidth="8"
-                  fill="none"
-                />
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 96 96">
+                <circle cx="48" cy="48" r={radius} className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="7" fill="none" />
                 <circle
                   cx="48"
                   cy="48"
                   r={radius}
                   className="stroke-cyan-500 dark:stroke-cyan-400 transition-all duration-1000 ease-out"
-                  strokeWidth="8"
+                  strokeWidth="7"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   fill="none"
-                  style={{
-                    filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.6))',
-                  }}
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.55))' }}
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
-                  {progress.readinessPercent === null ? '—' : `${progress.readinessPercent}%`}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm sm:text-base font-black font-mono text-slate-900 dark:text-white leading-none">
+                  {hasAccuracy ? `${progress.readinessPercent}%` : `${towardAccuracy}/10`}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-0.5">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
-                  Точность ответов
-                </h2>
+                <span className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+                  {statusTitle}
+                </span>
                 {showBreakdown ? (
-                  <ChevronUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  <ChevronUp className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-cyan-500" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
               </div>
-
-              <div className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
-                <p>
-                  {progress.readinessPercent === null
-                    ? 'Недостаточно данных: нужно 10 подтверждённых ответов.'
-                    : `Выборка: ${progress.answeredCount} ответов, ${progress.correctCount} верных.`}
-                </p>
-                {progress.weakSpot && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLevelDrill(progress.weakSpot?.level);
-                    }}
-                    className="text-left text-rose-600 dark:text-rose-300 hover:underline"
-                  >
-                    Слабее: {progress.weakSpot.topic}
-                  </button>
-                )}
-                {!showBreakdown && (
-                  <p className="text-slate-500 dark:text-slate-400">Нажмите, чтобы раскрыть по группам</p>
-                )}
-              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{statusSub}</p>
+              {progress.weakSpot && hasAccuracy && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLevelDrill(progress.weakSpot?.level);
+                  }}
+                  className="text-[11px] text-rose-600 dark:text-rose-300 hover:underline"
+                >
+                  Слабее: {progress.weakSpot.topic}
+                </button>
+              )}
             </div>
-          </div>
+          </button>
 
-          <div className="flex items-center gap-2 self-start sm:self-center">
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                setShowStreakModal(!showStreakModal);
-              }}
-              type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-cyan-950/80 dark:hover:bg-cyan-900 border border-slate-300 dark:border-cyan-400/40 text-cyan-700 dark:text-cyan-300 text-xs font-mono font-bold shadow-sm transition-all cursor-pointer active:scale-95"
-              title="Ваша непрерывная серия дней"
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
-              <span>Серия {progress.streakDays} дн.</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic('light');
+              setShowStreakModal(!showStreakModal);
+            }}
+            className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-cyan-950/70 border border-slate-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-300 text-[11px] font-mono font-bold"
+            title="Непрерывная серия дней"
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>{progress.streakDays}</span>
+          </button>
         </div>
 
         {showStreakModal && (
-          <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 animate-fade-in">
+          <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
             <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-              <span>🔥 Непрерывные занятия</span>
-              <span className="text-amber-500">{progress.streakDays} дней подряд</span>
+              <span>Непрерывные занятия</span>
+              <span className="text-amber-500">{progress.streakDays} дн.</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              День засчитывается после одного подтверждённого ответа. Серия считается по локальным календарным датам; повтор в тот же день не добавляет дней.
+              День засчитывается после одного подтверждённого ответа. Повтор в тот же день не добавляет дней.
             </p>
           </div>
         )}
 
         {showBreakdown && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/80 space-y-3 animate-fade-in">
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Доля верных среди подтверждённых ответов (не прогноз готовности). Сравнение групп — от 10 ответов в каждой.
-            </p>
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-cyan-500" />
-                Точность по учебным группам
+                По группам
               </span>
               <button
                 onClick={handleReset}
                 type="button"
-                className="text-[10px] text-slate-400 hover:text-rose-500 transition-colors font-mono flex items-center gap-1 cursor-pointer"
-                title="Необратимый сброс после подтверждения"
+                className="text-[10px] text-slate-400 hover:text-rose-500 font-mono flex items-center gap-1"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Сброс статистики</span>
+                Сброс
               </button>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {Object.values(progress.levels).map((lvl) => {
                 const isWeak = lvl.level === progress.weakSpot?.level;
                 const isStrong = lvl.level === progress.strongSpot?.level;
-
                 return (
                   <div
                     key={lvl.level}
-                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition-all ${
+                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs ${
                       isWeak
                         ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/40'
                         : isStrong
-                        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-500/40'
-                        : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-500/40'
+                          : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-1 gap-2">
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200 truncate">
                           {lvl.level} {lvl.name.split(' ')[0]}
                         </span>
-                        <span className="font-mono font-bold text-[11px] text-cyan-600 dark:text-cyan-400">
-                          {lvl.total >= 10 ? `${lvl.masteryPercent}%` : 'Мало данных'} · {lvl.total} отв.
+                        <span className="font-mono font-bold text-[11px] text-cyan-600 dark:text-cyan-400 shrink-0">
+                          {lvl.total >= 10 ? `${lvl.masteryPercent}%` : 'Мало'} · {lvl.total}
                         </span>
                       </div>
-
                       <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ${
+                          className={`h-full rounded-full ${
                             isWeak ? 'bg-rose-500' : isStrong ? 'bg-emerald-500' : 'bg-cyan-500'
                           }`}
                           style={{ width: `${lvl.total >= 10 ? lvl.masteryPercent : 0}%` }}
                         />
                       </div>
                     </div>
-
                     <button
                       onClick={() => handleLevelDrill(lvl.level)}
                       type="button"
-                      className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shrink-0 cursor-pointer transition-colors"
-                      title={`Тренировать уровень ${lvl.level}`}
+                      className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shrink-0"
                     >
                       Тест
                     </button>
@@ -267,49 +256,55 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
         )}
       </div>
 
-      {/* Mistakes card only — Photo L1 moved to quiz parameters */}
-      <div
-        onClick={() => {
-          triggerHaptic('medium');
-          onReviewMistakes();
-        }}
-        className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#091524] border border-rose-300 dark:border-rose-500/30 hover:border-rose-400 dark:hover:border-rose-400/60 hover:bg-rose-50/50 dark:hover:bg-[#0b1a2d] transition-all cursor-pointer flex items-center justify-between gap-4 min-h-[80px] shadow-sm dark:shadow-lg dark:shadow-rose-950/20 group"
-      >
-        <div className="space-y-0.5 min-w-0">
-          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-200 transition-colors block">
-            Работа над ошибками
-          </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-            {mistakesCount > 0 ? 'вопросов на повтор · по 20 за сеанс' : 'ошибок пока нет'}
-          </span>
+      {/* Mistakes — only strong when there is work */}
+      {mistakesCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => {
+            triggerHaptic('medium');
+            onReviewMistakes();
+          }}
+          className="w-full p-3.5 rounded-2xl border border-rose-400/50 dark:border-rose-500/40 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors flex items-center justify-between gap-3 text-left"
+        >
+          <div>
+            <div className="text-sm font-bold text-slate-900 dark:text-white">Работа над ошибками</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">по 20 за сеанс</div>
+          </div>
+          <div className="text-2xl font-black font-mono text-rose-600 dark:text-rose-300">{mistakesCount}</div>
+        </button>
+      ) : (
+        <div className="px-1 text-[11px] text-slate-500 dark:text-slate-500">
+          Ошибок на повтор пока нет
         </div>
-        <div className="text-2xl sm:text-3xl font-black font-mono text-cyan-600 dark:text-cyan-400 shrink-0">
-          {mistakesCount}
-        </div>
-      </div>
+      )}
 
-      {/* Primary / secondary exam actions — hierarchy from PR #8 preserved */}
-      <div className="space-y-2.5">
+      {/* Dominant CTA */}
+      <div className="space-y-2.5 pt-1">
         <button
           onClick={() => {
             triggerHaptic('heavy');
             onStartExam();
           }}
           type="button"
-          className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400 text-slate-950 font-black text-sm sm:text-base hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(34,211,238,0.35)] cursor-pointer tracking-wide"
+          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400 text-slate-950 font-black text-base hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-[0_0_28px_rgba(34,211,238,0.4)] cursor-pointer tracking-wide"
         >
           <Sparkles className="w-4 h-4 fill-slate-950" />
           <span>{hasActiveSession ? 'Продолжить экзамен' : 'Начать экзамен'}</span>
         </button>
+
         {hasActiveSession && onStartNewExam && (
           <button
             type="button"
             onClick={onStartNewExam}
-            className="w-full rounded-2xl border border-cyan-500/40 px-4 py-3 text-sm font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400 transition-colors"
+            className="w-full rounded-2xl border border-cyan-500/35 px-4 py-3 text-sm font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 transition-colors"
           >
             Начать новый экзамен
           </button>
         )}
+
+        <p className="text-center text-[12px] text-slate-500 dark:text-slate-400">
+          {helperLine}
+        </p>
       </div>
     </div>
   );
