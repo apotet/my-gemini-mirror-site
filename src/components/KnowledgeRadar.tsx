@@ -9,6 +9,17 @@ import {
   Sparkles,
   Target,
   RotateCcw,
+  Cable,
+  Tag,
+  AlertTriangle,
+  Radio,
+  Skull,
+  Route,
+  Stethoscope,
+  Shield,
+  Terminal,
+  Bug,
+  Siren,
 } from 'lucide-react';
 
 interface KnowledgeRadarProps {
@@ -60,7 +71,34 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   const percent = hasAccuracy ? progress.readinessPercent! : 0;
   const meme = hasAccuracy
     ? getOrAssignMemeTitle('home-status', percent)
-    : { title: 'Стажёр на пороге', comment: 'Ещё несколько ответов — и звание появится', setName: '' };
+    : { title: 'Стажёр на пороге', comment: 'Ещё несколько ответов — и звание появится', setName: '', set: 'career' };
+  const setIcons: Record<string, { Icon: typeof Flame; color: string; label: string }[]> = {
+    career: [
+      { Icon: Cable, color: 'text-cyan-400', label: 'Патч-корд' },
+      { Icon: Tag, color: 'text-amber-400', label: 'VLAN' },
+      { Icon: Route, color: 'text-cyan-300', label: 'Маршрут' },
+      { Icon: Radio, color: 'text-emerald-400', label: 'Ping' },
+    ],
+    diagnosis: [
+      { Icon: Stethoscope, color: 'text-rose-400', label: 'Диагноз' },
+      { Icon: AlertTriangle, color: 'text-amber-400', label: 'Симптом' },
+      { Icon: Radio, color: 'text-cyan-400', label: 'Ping' },
+      { Icon: Tag, color: 'text-violet-400', label: 'VLAN' },
+    ],
+    admin: [
+      { Icon: Terminal, color: 'text-cyan-400', label: 'Консоль' },
+      { Icon: Shield, color: 'text-emerald-400', label: 'Root' },
+      { Icon: Bug, color: 'text-amber-400', label: '404' },
+      { Icon: Tag, color: 'text-violet-400', label: 'VLAN' },
+    ],
+    apocalypse: [
+      { Icon: Skull, color: 'text-rose-400', label: 'Пациент ноль' },
+      { Icon: Siren, color: 'text-amber-400', label: 'Шторм' },
+      { Icon: AlertTriangle, color: 'text-rose-300', label: 'Петля' },
+      { Icon: Cable, color: 'text-cyan-400', label: 'Патч' },
+    ],
+  };
+  const icons = setIcons[meme.set] || setIcons.career;
   const pillOrder = ['l1-l2', 'l3', 'l4', 'l5-l7', 'tcpip', 'troubleshooting'];
   const pillLabel: Record<string, string> = { 'l1-l2': 'L1–L2', l3: 'L3', l4: 'L4', 'l5-l7': 'L5–L7', tcpip: 'TCP/IP', troubleshooting: 'CLI' };
   const pillColor = (pct: number, total: number) => {
@@ -119,6 +157,13 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/25 bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] p-3.5 sm:p-4 shadow-lg dark:shadow-xl relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
+        <div className="relative z-10 mb-3 flex items-center justify-center sm:justify-start gap-2.5">
+          {icons.map(({ Icon, color, label }) => (
+            <span key={label} title={label} className={`inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 ${color}`}>
+              <Icon className="h-4 w-4" aria-hidden="true" />
+            </span>
+          ))}
+        </div>
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <button
             type="button"
