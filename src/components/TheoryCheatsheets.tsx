@@ -62,14 +62,14 @@ export const TheoryCheatsheets: React.FC = () => {
         </div>
       </nav>
 
-      <div className="space-y-16 sm:space-y-20">
+      <div className="space-y-16 sm:space-y-20 pb-[55vh]">
         {LEVEL_NOTES.map((note) => (
           <section
             key={note.level}
             id={sectionId(note.level)}
             data-level={note.level}
             aria-labelledby={`${sectionId(note.level)}-heading`}
-            className="scroll-mt-36"
+            className="scroll-mt-40"
           >
             <div className="flex items-end gap-3 mb-4">
               <span className="text-4xl sm:text-5xl font-black tracking-tight text-cyan-400 leading-none">
