@@ -6,8 +6,10 @@ import { LESSON_TS_COPP_STORM } from './ts-copp-storm';
 import { LESSON_L2_ACCESS_AUTH } from './l2-access-auth';
 import { LESSON_L3_RPKI } from './l3-rpki';
 import { LESSON_L4_TCP_LOSS } from './l4-tcp-loss';
+import { LESSON_TCPIP_MODEL } from './tcpip-model';
+import { LESSON_OSI_PDU } from './osi-pdu';
 
-export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS];
+export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS, LESSON_TCPIP_MODEL, LESSON_OSI_PDU];
 
 export function getLesson(id: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
