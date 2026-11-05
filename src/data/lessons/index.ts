@@ -2,8 +2,9 @@ import { Lesson } from './types';
 import { LESSON_TLS_SNI } from './tls-sni';
 import { LESSON_L2_ACCESS_GUARD } from './l2-access-guard';
 import { LESSON_L3_VRRP } from './l3-vrrp';
+import { LESSON_TS_COPP_STORM } from './ts-copp-storm';
 
-export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP];
+export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM];
 
 export function getLesson(id: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
