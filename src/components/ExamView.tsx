@@ -63,6 +63,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
   const [reviewWarning, setReviewWarning] = useState(false);
   const [showParameters, setShowParameters] = useState(false);
+  const parametersRef = useRef<HTMLDivElement>(null);
   const [moreModesOpen, setMoreModesOpen] = useState(false);
   const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[] } | null>(null);
   const epochRef = useRef(getProgressEpoch());
@@ -207,7 +208,20 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
 
   useImperativeHandle(ref, () => ({
     returnToParameters: () => {
-      if (reviewSession || session?.isCompleted) handleExit();
+      if (reviewSession || session?.isCompleted) {
+        handleExit();
+        return;
+      }
+      if (showParameters || !session || !currentQuestion) {
+        // Wait for the navbar's mobile menu to close before measuring its height.
+        requestAnimationFrame(() => {
+          const target = parametersRef.current;
+          if (!target) return;
+          const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+          const top = window.scrollY + target.getBoundingClientRect().top - headerBottom - 12;
+          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        });
+      }
     },
   }));
 
@@ -245,7 +259,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         <KnowledgeRadar mistakesCount={lastMistakes.length} totalQuestionsCount={ALL_QUESTIONS.length} hasActiveSession={Boolean(session && !session.isCompleted)} onStartNewExam={() => startNewQuiz()} onStartExam={(levelFilter) => { if (!levelFilter && sessionRef.current && !sessionRef.current.isCompleted) { setShowParameters(false); return; } if (levelFilter) { const matched = ALL_QUESTIONS.filter(q => q.group === levelFilter); startNewQuiz(matched.length > 0 ? matched.slice(0, 10) : undefined); } else { startNewQuiz(); } }} onReviewMistakes={() => { const pool = getMistakeQuestions(20); if (!pool.length) { setEmptyMistakes(true); return; } startNewQuiz(pool); }} onOpenVisualL1={() => { setSelectedMode('visual-l1'); const visualPool = ALL_QUESTIONS.filter((q) => q.group === 'visual-l1'); startNewQuiz(visualPool.slice(0, questionCount)); }} />
         {emptyMistakes && <p role="status" className="text-sm text-slate-500">Ошибок на повторение нет. Новые ошибки появятся здесь; для освоения нужны два верных ответа подряд.</p>}
         <LivingOsiStack />
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 space-y-4">
+        <div ref={parametersRef} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><Layers className="w-4 h-4 text-cyan-500" />Параметры тестирования</h3>
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
