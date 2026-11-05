@@ -73,7 +73,9 @@ assert(findById([{ id: 'x' }], 'z') === null, 'missing id');
 
 await import('./mixed-exam.test.mjs');
 await import('./progress.test.mjs');
+await import('./answer-order.test.mjs');
 await import('./review.test.mjs');
 console.log('OK: quiz-logic tests passed');
 process.exit(0);
+
 
