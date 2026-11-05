@@ -30,7 +30,8 @@ function scoreLabel(percent: number): { text: string; tone: string } {
   if (percent >= 85) return { text: 'Отлично', tone: 'excellent' };
   if (percent >= 70) return { text: 'Хорошо', tone: 'good' };
   if (percent >= 50) return { text: 'Нормально', tone: 'ok' };
-  return { text: 'Ниже среднего', tone: 'low' };
+  if (percent >= 40) return { text: 'Ниже среднего', tone: 'low' };
+  return { text: 'Слабо', tone: 'weak' };
 }
 
 export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToTheory }: Props) {
