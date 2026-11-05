@@ -13,6 +13,7 @@ import {
   Search,
 } from 'lucide-react';
 import { TOTAL_QUESTION_COUNT } from '../data/questionsData';
+import { NetOpsLogo } from './NetOpsLogo';
 
 export type NavTab = 'exam' | 'theory' | 'ipv4' | 'practice' | 'osi';
 
@@ -58,17 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             className="flex items-center gap-2 sm:gap-2.5 text-left cursor-pointer group min-w-0"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-black text-slate-950 font-mono shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0">
-              7
-            </div>
-            <div className="min-w-0">
-              <div className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white truncate">
-                OSI & TCP/IP
-              </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-                {TOTAL_QUESTION_COUNT} вопроса · визуализаторы · CLI
-              </p>
-            </div>
+            <NetOpsLogo />
           </button>
         </div>
 
