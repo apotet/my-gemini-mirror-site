@@ -46,7 +46,7 @@ export const LESSON_TCPIP_MODEL: Lesson = {
       "body": "Одного IP-адреса недостаточно, чтобы различить несколько сетевых сервисов на одном узле. TCP и UDP используют номера портов для доставки данных подходящей конечной точке приложения.\n\nНапример, один сервер может принимать SSH на TCP 22 и HTTPS на TCP 443. TCP-соединение различают по адресам и портам обеих сторон; номер порта не заменяет IP-адрес, MAC-адрес или VLAN."
     }
   ],
-  "relatedQuestionIds": [],
+  "relatedQuestionIds": ["tcp-01", "tcp-02", "tcp-03", "tcpip-x01", "tcpip-x02", "tcpip-x05", "tcpip-x06", "tcpip-x15"],
   "sources": [
     "RFC 1122 — Requirements for Internet Hosts — Communication Layers"
   ]
