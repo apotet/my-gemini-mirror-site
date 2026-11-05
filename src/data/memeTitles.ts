@@ -58,6 +58,7 @@ export const MEME_SETS: Record<MemeSetId, { name: string; titles: MemeTitle[] }>
 
 export const MEME_SET_ORDER: MemeSetId[] = ['career', 'diagnosis', 'admin', 'apocalypse'];
 
+/** 0–19, 20–39, 40–59, 60–74, 75–89, 90–99, 100 */
 export function memeBand(percent: number): number {
   if (percent >= 100) return 6;
   if (percent >= 90) return 5;
@@ -71,9 +72,12 @@ export function memeBand(percent: number): number {
 const ROTATION_KEY = 'osi_meme_rotation_v1';
 const ASSIGN_KEY = 'osi_meme_assign_v1';
 
+function storage(): Storage | null {
+  try { return typeof localStorage === 'undefined' ? null : localStorage; } catch { return null; }
+}
 function readMap(key: string): Record<string, string> {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage()?.getItem(key);
     const value = raw ? JSON.parse(raw) : {};
     return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
@@ -81,6 +85,7 @@ function readMap(key: string): Record<string, string> {
   }
 }
 
+/** Stable title for this attempt. New attempts rotate sets. Refresh does not change it. */
 export function getOrAssignMemeTitle(attemptId: string, percent: number): MemeTitle & { set: MemeSetId; setName: string } {
   const band = memeBand(percent);
   const assigned = readMap(ASSIGN_KEY);
@@ -92,8 +97,8 @@ export function getOrAssignMemeTitle(attemptId: string, percent: number): MemeTi
     assigned[attemptId] = setId;
     rotation.next = String(next + 1);
     try {
-      localStorage.setItem(ASSIGN_KEY, JSON.stringify(assigned));
-      localStorage.setItem(ROTATION_KEY, JSON.stringify(rotation));
+      storage()?.setItem(ASSIGN_KEY, JSON.stringify(assigned));
+      storage()?.setItem(ROTATION_KEY, JSON.stringify(rotation));
     } catch { /* Title still works for this render. */ }
   }
   const set = MEME_SETS[setId];
