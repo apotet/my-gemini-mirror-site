@@ -15,7 +15,7 @@ import {
 import { TOTAL_QUESTION_COUNT } from '../data/questionsData';
 import { NetOpsLogo } from './NetOpsLogo';
 
-export type NavTab = 'exam' | 'theory' | 'ipv4' | 'practice' | 'osi';
+export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'osi';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -42,6 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'exam', label: 'Экзамен', icon: <Layers className="w-4 h-4" /> },
     { id: 'theory', label: 'Теория и разборы', icon: <BookOpen className="w-4 h-4 text-cyan-400" /> },
     { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
+    { id: 'ipv6', label: 'IPv6 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
     { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-indigo-400" /> },
   ];
 
