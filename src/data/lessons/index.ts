@@ -11,8 +11,11 @@ import { LESSON_OSI_PDU } from './osi-pdu';
 import { LESSON_L7_DNS } from './l7-dns';
 import { LESSON_L7_DHCP } from './l7-dhcp';
 import { LESSON_L4_TCP } from './l4-tcp';
+import { LESSON_L2_VLAN } from './l2-vlan';
+import { LESSON_L2_STP } from './l2-stp';
+import { LESSON_L2_ETHERNET } from './l2-ethernet';
 
-export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS, LESSON_TCPIP_MODEL, LESSON_OSI_PDU, LESSON_L7_DNS, LESSON_L7_DHCP, LESSON_L4_TCP];
+export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS, LESSON_TCPIP_MODEL, LESSON_OSI_PDU, LESSON_L7_DNS, LESSON_L7_DHCP, LESSON_L4_TCP, LESSON_L2_VLAN, LESSON_L2_STP, LESSON_L2_ETHERNET];
 
 export function getLesson(id: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
