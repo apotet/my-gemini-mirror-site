@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LEVEL_NOTES } from '../data/levelNotes';
 import { ZoomableImage } from './ZoomableImage';
 
@@ -6,7 +6,6 @@ const sectionId = (level: number) => `cheatsheet-l${level}`;
 
 export const TheoryCheatsheets: React.FC = () => {
   const [activeLevel, setActiveLevel] = useState(LEVEL_NOTES[0].level);
-  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const nodes = LEVEL_NOTES.map((n) => document.getElementById(sectionId(n.level))).filter(Boolean) as HTMLElement[];
@@ -26,11 +25,6 @@ export const TheoryCheatsheets: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const btn = navRef.current?.querySelector('[aria-current="location"]');
-    btn?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [activeLevel]);
-
   const scrollToLevel = (level: number) => {
     setActiveLevel(level);
     document.getElementById(sectionId(level))?.scrollIntoView({
@@ -46,7 +40,7 @@ export const TheoryCheatsheets: React.FC = () => {
         aria-label="Навигация по шпаргалкам L1–L7"
         className="fixed top-16 left-0 right-0 z-30 px-3 sm:px-6"
       >
-        <div ref={navRef} className="max-w-5xl mx-auto flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 pr-3 backdrop-blur-xl shadow-lg shadow-black/20">
+        <div className="max-w-5xl mx-auto flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 backdrop-blur-xl shadow-lg shadow-black/20">
           {LEVEL_NOTES.map((note) => (
             <a
               key={note.level}
@@ -56,10 +50,10 @@ export const TheoryCheatsheets: React.FC = () => {
                 event.preventDefault();
                 scrollToLevel(note.level);
               }}
-              className={`shrink-0 min-w-12 px-3 py-2 rounded-lg text-sm font-semibold text-center transition-colors ${
+              className={`flex-1 min-w-0 px-1 py-1.5 rounded-lg text-xs font-semibold text-center transition-colors ${
                 activeLevel === note.level
-                  ? 'bg-cyan-500 text-slate-950'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-cyan-400/90 text-slate-950'
+                  : 'text-slate-300/80 hover:bg-white/10'
               }`}
             >
               L{note.level}
