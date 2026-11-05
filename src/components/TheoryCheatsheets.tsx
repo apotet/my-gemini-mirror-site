@@ -19,7 +19,7 @@ export const TheoryCheatsheets: React.FC = () => {
         const level = Number(top?.dataset.level);
         if (level) setActiveLevel(level);
       },
-      { rootMargin: '-20% 0px -55% 0px', threshold: [0.15, 0.35, 0.6] }
+      { rootMargin: '-30% 0px -50% 0px', threshold: [0.1, 0.25, 0.5] }
     );
     nodes.forEach((n) => observer.observe(n));
     return () => observer.disconnect();
@@ -35,11 +35,12 @@ export const TheoryCheatsheets: React.FC = () => {
 
   return (
     <div>
-      <div className="sticky top-16 z-30 -mx-1 mb-6">
-        <nav
-          aria-label="Навигация по шпаргалкам L1–L7"
-          className="flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 backdrop-blur-xl"
-        >
+      <div className="h-14" aria-hidden />
+      <nav
+        aria-label="Навигация по шпаргалкам L1–L7"
+        className="fixed top-16 left-0 right-0 z-30 px-3 sm:px-6"
+      >
+        <div className="max-w-5xl mx-auto flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 backdrop-blur-xl shadow-lg shadow-black/20">
           {LEVEL_NOTES.map((note) => (
             <a
               key={note.level}
@@ -58,8 +59,8 @@ export const TheoryCheatsheets: React.FC = () => {
               L{note.level}
             </a>
           ))}
-        </nav>
-      </div>
+        </div>
+      </nav>
 
       <div className="space-y-16 sm:space-y-20">
         {LEVEL_NOTES.map((note) => (
@@ -68,8 +69,7 @@ export const TheoryCheatsheets: React.FC = () => {
             id={sectionId(note.level)}
             data-level={note.level}
             aria-labelledby={`${sectionId(note.level)}-heading`}
-            style={{ scrollMarginTop: 132 }}
-            className="scroll-mt-32"
+            className="scroll-mt-36"
           >
             <div className="flex items-end gap-3 mb-4">
               <span className="text-4xl sm:text-5xl font-black tracking-tight text-cyan-400 leading-none">
