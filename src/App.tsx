@@ -168,7 +168,7 @@ export function App() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
             <div className="font-bold text-slate-800 dark:text-slate-200">
-              OSI & TCP/IP Exam Trainer
+              NetOps
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {TOTAL_QUESTION_COUNT} практических вопросов, симуляции L2/L3 протоколов и CLI-терминал.
