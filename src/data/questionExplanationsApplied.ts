@@ -198,4 +198,81 @@ export const APPLIED_INDIVIDUAL_DEEP: Record<
     brief: 'OSI — роли/диагностика; TCP/IP — реальные протоколы стека.',
     deep: `Не запрет OSI и не «7 уровней у TCP/IP».`,
   },
+
+  'l12-ps01': {
+    brief: 'Violation shutdown переводит порт в err-disabled при лишнем MAC.',
+    deep: `Суть. Port-security ограничивает, какие MAC допустимы на access-порту. Режим violation говорит, что делать при нарушении.
+
+Shutdown. Порт уходит в err-disabled и перестаёт передавать трафик, пока его не восстановят (обычно shutdown / no shutdown после устранения причины).
+
+Protect и restrict порт не выключают: они отбрасывают кадры неизвестного MAC. Restrict ещё увеличивает счётчик и может слать уведомления.
+
+Пример. На порту maximum 1 и sticky. Подключили IP-телефон или второй ПК — второй MAC, порт в err-disabled.
+
+Ловушка. Искать обрыв кабеля или CRC, хотя порт просто защитился.`,
+    trap: 'Считать любой «мёртвый» порт физической неисправностью.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ps02': {
+    brief: 'Restrict блокирует неизвестный MAC и считает нарушения; protect только блокирует.',
+    deep: `Protect отбрасывает кадры с MAC вне списка, порт остаётся up, счётчик обычно не растёт.
+
+Restrict делает то же, но фиксирует нарушение: растёт security violation count, возможны syslog и SNMP.
+
+Shutdown — отдельный режим: порт в err-disabled.
+
+На практике restrict удобен, когда нужно видеть попытки подключения чужих устройств, не роняя порт.`,
+    trap: 'Путать restrict с shutdown.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ps03': {
+    brief: 'Sticky сам изучает MAC и пишет его в running-config.',
+    deep: `Без sticky MAC либо задают руками (static), либо он динамический и пропадает после перезагрузки или старения.
+
+Sticky учит первый допустимый MAC и добавляет команду в текущую конфигурацию. После write memory адрес сохранится.
+
+Это удобно на рабочих местах: не вбивать MAC вручную и всё же ограничить порт одним устройством.`,
+    trap: 'Думать, что sticky работает только на trunk.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ds01': {
+    brief: 'Без trusted на uplink ответы DHCP режутся: порты по умолчанию untrusted.',
+    deep: `После ip dhcp snooping и включения на VLAN клиентские порты считаются untrusted. На них блокируются ответы сервера (Offer/Ack).
+
+Uplink к настоящему DHCP-серверу или к relay нужно пометить ip dhcp snooping trust. Иначе клиенты не получат адрес, хотя сервер жив.
+
+Проверка: show ip dhcp snooping — какой VLAN включён и какие порты trusted.`,
+    trap: 'Искать проблему на сервере, не проверив trusted.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ds02': {
+    brief: 'Binding хранит MAC, IP, VLAN и порт выданной аренды.',
+    deep: `Когда клиент получает адрес через доверенный путь, коммутатор пишет привязку: MAC ↔ IP ↔ VLAN ↔ interface.
+
+Эта таблица — основа для Dynamic ARP Inspection и IP Source Guard: можно пускать только трафик, который совпадает с арендой.
+
+Смотреть: show ip dhcp snooping binding.`,
+    trap: 'Считать binding просто списком ACL.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ds03': {
+    brief: 'DHCP Snooping не даёт rogue-серверу раздать клиентам свой шлюз и DNS.',
+    deep: `Чужой DHCP в пользовательском VLAN может выдать «правильный» адрес, но свой шлюз или DNS. Трафик уйдёт к атакующему.
+
+Snooping пускает ответы сервера только с trusted-портов. На untrusted Offer/Ack отбрасываются.
+
+Это защита L2-доступа, не замена фильтрации на маршрутизаторе.`,
+    trap: 'Думать, что snooping ускоряет STP или меняет MTU.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
+  'l12-ds04': {
+    brief: 'Слишком низкий rate limit режет и легитимные Discover/Request.',
+    deep: `ip dhcp snooping limit rate ограничивает частоту DHCP-пакетов с клиентского порта. Это защита от DHCP-шторма.
+
+Если порог слишком мал, обычный ПК или несколько устройств за портом (телефон + ПК, или перезагрузка этажа) не получают адрес: пакеты дропаются до сервера.
+
+Симптом похож на «DHCP не работает», хотя сервер и trusted в порядке. Смотреть счётчики и rate на порту.`,
+    trap: 'Сразу винить сервер или VLAN, не проверив limit rate.',
+    next: 'Урок: Port Security и DHCP Snooping',
+  },
 };
