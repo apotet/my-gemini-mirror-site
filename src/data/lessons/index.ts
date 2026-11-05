@@ -8,8 +8,11 @@ import { LESSON_L3_RPKI } from './l3-rpki';
 import { LESSON_L4_TCP_LOSS } from './l4-tcp-loss';
 import { LESSON_TCPIP_MODEL } from './tcpip-model';
 import { LESSON_OSI_PDU } from './osi-pdu';
+import { LESSON_L7_DNS } from './l7-dns';
+import { LESSON_L7_DHCP } from './l7-dhcp';
+import { LESSON_L4_TCP } from './l4-tcp';
 
-export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS, LESSON_TCPIP_MODEL, LESSON_OSI_PDU];
+export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD, LESSON_L3_VRRP, LESSON_TS_COPP_STORM, LESSON_L2_ACCESS_AUTH, LESSON_L3_RPKI, LESSON_L4_TCP_LOSS, LESSON_TCPIP_MODEL, LESSON_OSI_PDU, LESSON_L7_DNS, LESSON_L7_DHCP, LESSON_L4_TCP];
 
 export function getLesson(id: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
