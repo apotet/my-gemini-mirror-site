@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { triggerHaptic } from '../utils/haptics';
+import { getOrAssignMemeTitle } from '../data/memeTitles';
 import { getInitialProgress, ProgressState, resetProgress, subscribeProgress } from '../utils/userProgress';
 import {
   Flame,
@@ -56,6 +57,18 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
     ? progress.readinessPercent!
     : (towardAccuracy / 10) * 100;
   const strokeDashoffset = circumference - (gaugePercent / 100) * circumference;
+  const percent = hasAccuracy ? progress.readinessPercent! : 0;
+  const meme = hasAccuracy
+    ? getOrAssignMemeTitle('home-status', percent)
+    : { title: 'Стажёр на пороге', comment: 'Ещё несколько ответов — и звание появится', setName: '' };
+  const pillOrder = ['l1-l2', 'l3', 'l4', 'l5-l7', 'tcpip', 'troubleshooting'];
+  const pillLabel: Record<string, string> = { 'l1-l2': 'L1–L2', l3: 'L3', l4: 'L4', 'l5-l7': 'L5–L7', tcpip: 'TCP/IP', troubleshooting: 'CLI' };
+  const pillColor = (pct: number, total: number) => {
+    if (total < 3) return 'bg-slate-600/70 text-slate-200';
+    if (pct < 50) return 'bg-rose-500 text-white';
+    if (pct < 75) return 'bg-amber-400 text-slate-900';
+    return 'bg-cyan-400 text-slate-900';
+  };
 
   const handleLevelDrill = (level?: string) => {
     if (!level) return;
@@ -106,77 +119,55 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/25 bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] p-3.5 sm:p-4 shadow-lg dark:shadow-xl relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <button
             type="button"
-            onClick={() => {
-              triggerHaptic('selection');
-              setShowBreakdown(!showBreakdown);
-            }}
-            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer group"
+            onClick={() => { triggerHaptic('selection'); setShowBreakdown(!showBreakdown); }}
+            className="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 self-start sm:self-center"
             title="Точность по учебным группам"
           >
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 96 96">
-                <circle cx="48" cy="48" r={radius} className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="7" fill="none" />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r={radius}
-                  className="stroke-cyan-500 dark:stroke-cyan-400 transition-all duration-1000 ease-out"
-                  strokeWidth="7"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  fill="none"
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.55))' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm sm:text-base font-black font-mono text-slate-900 dark:text-white leading-none">
-                  {hasAccuracy ? `${progress.readinessPercent}%` : `${towardAccuracy}/10`}
-                </span>
-              </div>
-            </div>
-
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
-                  {statusTitle}
-                </span>
-                {showBreakdown ? (
-                  <ChevronUp className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{statusSub}</p>
-              {progress.weakSpot && hasAccuracy && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLevelDrill(progress.weakSpot?.level);
-                  }}
-                  className="text-[11px] text-rose-600 dark:text-rose-300 hover:underline"
-                >
-                  Слабее: {progress.weakSpot.topic}
-                </button>
-              )}
-            </div>
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r={radius} className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="7" fill="none" />
+              <circle cx="48" cy="48" r={radius} className="stroke-cyan-500 dark:stroke-cyan-400 transition-all duration-1000 ease-out" strokeWidth="7" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" fill="none" />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-sm sm:text-base font-black font-mono text-slate-900 dark:text-white">
+              {hasAccuracy ? `${progress.readinessPercent}%` : `${towardAccuracy}/10`}
+            </span>
           </button>
+
+          <div className="min-w-0 flex-1 text-center sm:text-left">
+            <div className="text-lg sm:text-2xl font-black leading-tight tracking-tight">
+              <span className="text-amber-400">{meme.title.split(' ').slice(0, -1).join(' ') || meme.title}</span>{' '}
+              <span className="text-cyan-400">{meme.title.split(' ').slice(-1)}</span>
+            </div>
+            <p className="mt-0.5 text-[11px] sm:text-xs text-slate-400">• {meme.comment} •</p>
+            <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1.5">
+              {pillOrder.map((id) => {
+                const lvl = progress.levels[id];
+                if (!lvl) return null;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleLevelDrill(id)}
+                    className={`px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold ${pillColor(lvl.masteryPercent, lvl.total)}`}
+                    title={`${lvl.name}: ${lvl.total ? lvl.masteryPercent + '%' : 'мало данных'}`}
+                  >
+                    {pillLabel[id]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <button
             type="button"
-            onClick={() => {
-              triggerHaptic('light');
-              setShowStreakModal(!showStreakModal);
-            }}
-            className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-cyan-950/70 border border-slate-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-300 text-[11px] font-mono font-bold"
+            onClick={() => { triggerHaptic('light'); setShowStreakModal((v) => !v); }}
+            className="shrink-0 self-end sm:self-center flex flex-col items-center"
             title="Непрерывная серия дней"
           >
-            <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            <span>{progress.streakDays}</span>
+            <Flame className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 fill-orange-500" />
+            <span className="text-2xl sm:text-3xl font-black text-rose-500 leading-none">{progress.streakDays}</span>
           </button>
         </div>
 
