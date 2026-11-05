@@ -3,6 +3,7 @@ import { BookOpen, Layers, FileText, Table2, Library } from 'lucide-react';
 import { TheoryModels } from './TheoryModels';
 import { TheoryPorts } from './TheoryPorts';
 import { TheoryCheatsheets } from './TheoryCheatsheets';
+import { TheoryScenarios } from './TheoryScenarios';
 import { TheoryRazbory } from './TheoryRazbory';
 import { KnowledgeBase } from './KnowledgeBase';
 
@@ -14,7 +15,7 @@ interface TheoryViewProps {
   onClearInitialQuestion?: () => void;
 }
 
-type TheorySection = 'razbory' | 'knowledge' | 'models' | 'ports' | 'cheatsheets';
+type TheorySection = 'razbory' | 'knowledge' | 'models' | 'ports' | 'cheatsheets' | 'scenarios';
 
 const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = [
   { id: 'razbory', label: 'Разборы вопросов', icon: <BookOpen className="w-3.5 h-3.5" /> },
@@ -22,6 +23,7 @@ const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = 
   { id: 'models', label: 'OSI и TCP/IP', icon: <Layers className="w-3.5 h-3.5" /> },
   { id: 'ports', label: 'Порты', icon: <Table2 className="w-3.5 h-3.5" /> },
   { id: 'cheatsheets', label: 'Шпаргалки L1–L7', icon: <FileText className="w-3.5 h-3.5" /> },
+  { id: 'scenarios', label: 'Сценарии', icon: <FileText className="w-3.5 h-3.5" /> },
 ];
 
 export const TheoryView: React.FC<TheoryViewProps> = ({
@@ -90,6 +92,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       {section === 'models' && <TheoryModels />}
       {section === 'ports' && <TheoryPorts />}
       {section === 'cheatsheets' && <TheoryCheatsheets />}
+      {section === 'scenarios' && <TheoryScenarios />}
       {section === 'knowledge' && (
         <KnowledgeBase
           initialLessonId={lessonId}
