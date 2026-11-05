@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { ExamView, type ExamViewHandle } from './components/ExamView';
 import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
+import { Ipv6Trainer } from './components/Ipv6Trainer';
 import { PracticeHub } from './components/PracticeHub';
 import { TheoryView } from './components/TheoryView';
 import { MobileTabBar } from './components/MobileTabBar';
@@ -131,6 +132,7 @@ export function App() {
             }}
           />
         )}
+        {activeTab === 'ipv6' && <Ipv6Trainer />}
         {activeTab === 'ipv4' && (
           <Ipv4Trainer
             soundEnabled={soundEnabled}
