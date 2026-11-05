@@ -832,4 +832,94 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     difficulty: 'applied',
     family: 'lldp-med',
   },
+  {
+    "id": "l3-rpki01",
+    "group": "l3",
+    "topic": "L3 · RPKI",
+    "difficulty": "advanced",
+    "family": "rpki",
+    "text": "BGP Established, но часть соседей не принимает префикс. Почему?",
+    "answers": [
+      "RPKI Invalid: ASN или длина префикса не совпадает с ROA",
+      "нет LLDP",
+      "native VLAN mismatch",
+      "отключён STP"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Сессия BGP Established не гарантирует принятие каждого маршрута: сосед может отклонять RPKI Invalid своей импортной политикой. При наличии покрывающего ROA маршрут Invalid, если ни одна соответствующая авторизация не разрешает origin ASN и длину анонса в пределах maxLength."
+  },
+  {
+    "id": "ts-pfc01",
+    "group": "troubleshooting",
+    "topic": "Диагностика · PFC",
+    "difficulty": "advanced",
+    "family": "pfc",
+    "text": "Один перегруженный сервер тормозит чужие потоки того же приоритета. Что подозревать?",
+    "answers": [
+      "Priority Flow Control и congestion spreading",
+      "только ошибку DNS",
+      "неверный MTU на клиенте",
+      "отсутствие ARP"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "PFC приостанавливает передачу целого приоритета на линке, а не отдельного потока. При распространении обратного давления перегрузка может задерживать и другие потоки того же приоритета."
+  },
+  {
+    "id": "l4-fr01",
+    "group": "l4",
+    "topic": "L4 · TCP",
+    "difficulty": "applied",
+    "family": "tcp-retransmit",
+    "text": "Какой механизм TCP пересылает потерянный сегмент, не дожидаясь RTO?",
+    "answers": [
+      "Fast Retransmit по дублирующим ACK",
+      "Delayed ACK",
+      "Nagle",
+      "Window Scaling"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "В классическом TCP Fast Retransmit запускает повторную передачу после трёх дублирующих ACK, не дожидаясь истечения RTO. Delayed ACK, Nagle и Window Scaling решают другие задачи."
+  },
+  {
+    "id": "tcpip-ntp01",
+    "group": "tcpip",
+    "topic": "TCP/IP · NTP",
+    "difficulty": "applied",
+    "family": "ntp",
+    "text": "Почему NTP важен не только для часов на экране?",
+    "answers": [
+      "Иначе логи с разных устройств расходятся по времени",
+      "он выдаёт IP",
+      "он строит STP",
+      "он заменяет DNS"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "NTP синхронизирует часы устройств, чтобы события в логах можно было сопоставлять по времени. Выдачу IP, построение дерева STP и разрешение DNS-имён он не выполняет."
+  },
+  {
+    "id": "ts-linux01",
+    "group": "troubleshooting",
+    "topic": "Диагностика · Linux",
+    "difficulty": "applied",
+    "family": "linux-net",
+    "text": "ip addr add сработал, после перезагрузки адрес пропал. Почему?",
+    "answers": [
+      "Команда меняет только текущую конфигурацию ядра",
+      "IP всегда временный",
+      "DHCP обязателен",
+      "ARP не сохранился"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "ip addr add добавляет адрес в текущую конфигурацию интерфейса в ядре, но сам по себе не сохраняет настройку для следующей загрузки. Постоянный адрес задают через сетевой менеджер или конфигурацию, используемую дистрибутивом."
+  },
 ];
