@@ -1,7 +1,8 @@
 import { Lesson } from './types';
 import { LESSON_TLS_SNI } from './tls-sni';
+import { LESSON_L2_ACCESS_GUARD } from './l2-access-guard';
 
-export const LESSONS: Lesson[] = [LESSON_TLS_SNI];
+export const LESSONS: Lesson[] = [LESSON_TLS_SNI, LESSON_L2_ACCESS_GUARD];
 
 export function getLesson(id: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === id);
