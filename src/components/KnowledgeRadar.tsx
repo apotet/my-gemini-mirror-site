@@ -157,10 +157,10 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/25 bg-white dark:bg-gradient-to-br dark:from-[#0c1c2e] dark:via-[#091524] dark:to-[#07111f] p-3.5 sm:p-4 shadow-lg dark:shadow-xl relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 mb-3 flex items-center justify-center sm:justify-start gap-2.5">
-          {icons.map(({ Icon, color, label }) => (
-            <span key={label} title={label} className={`inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 ${color}`}>
-              <Icon className="h-4 w-4" aria-hidden="true" />
+        <div className="relative z-10 mb-3 flex items-center justify-center sm:justify-start gap-3 sm:gap-2.5">
+          {icons.map(({ Icon, color, label }, i) => (
+            <span key={label} title={label} className={`inline-flex h-12 w-12 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 ${color}${i === 0 ? ' animate-pulse' : ''}`} style={i === 0 ? { animationDuration: '2.8s' } : undefined}>
+              <Icon className="h-6 w-6 sm:h-4 sm:w-4" aria-hidden="true" />
             </span>
           ))}
         </div>
@@ -168,24 +168,24 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
           <button
             type="button"
             onClick={() => { triggerHaptic('selection'); setShowBreakdown(!showBreakdown); }}
-            className="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 self-start sm:self-center"
+            className="relative w-24 h-24 sm:w-16 sm:h-16 shrink-0 self-center"
             title="Точность по учебным группам"
           >
             <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
               <circle cx="48" cy="48" r={radius} className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="7" fill="none" />
               <circle cx="48" cy="48" r={radius} className="stroke-cyan-500 dark:stroke-cyan-400 transition-all duration-1000 ease-out" strokeWidth="7" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" fill="none" />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-sm sm:text-base font-black font-mono text-slate-900 dark:text-white">
+            <span className="absolute inset-0 flex items-center justify-center text-xl sm:text-base font-black font-mono text-slate-900 dark:text-white">
               {hasAccuracy ? `${progress.readinessPercent}%` : `${towardAccuracy}/10`}
             </span>
           </button>
 
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <div className="text-lg sm:text-2xl font-black leading-tight tracking-tight">
+            <div className="text-2xl sm:text-2xl font-black leading-tight tracking-tight">
               <span className="text-amber-400">{meme.title.split(' ').slice(0, -1).join(' ') || meme.title}</span>{' '}
               <span className="text-cyan-400">{meme.title.split(' ').slice(-1)}</span>
             </div>
-            <p className="mt-0.5 text-[11px] sm:text-xs text-slate-400">• {meme.comment} •</p>
+            <p className="mt-1 text-sm sm:text-xs text-slate-400">• {meme.comment} •</p>
             <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1.5">
               {pillOrder.map((id) => {
                 const lvl = progress.levels[id];
@@ -195,7 +195,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
                     key={id}
                     type="button"
                     onClick={() => handleLevelDrill(id)}
-                    className={`px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold ${pillColor(lvl.masteryPercent, lvl.total)}`}
+                    className={`px-2.5 py-1 sm:px-2 sm:py-0.5 rounded-md text-xs sm:text-[11px] font-bold ${pillColor(lvl.masteryPercent, lvl.total)}`}
                     title={`${lvl.name}: ${lvl.total ? lvl.masteryPercent + '%' : 'мало данных'}`}
                   >
                     {pillLabel[id]}
@@ -211,8 +211,8 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             className="shrink-0 self-end sm:self-center flex flex-col items-center"
             title="Непрерывная серия дней"
           >
-            <Flame className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 fill-orange-500" />
-            <span className="text-2xl sm:text-3xl font-black text-rose-500 leading-none">{progress.streakDays}</span>
+            <Flame className="w-10 h-10 sm:w-8 sm:h-8 text-orange-500 fill-orange-500" />
+            <span className="text-4xl sm:text-3xl font-black text-rose-500 leading-none">{progress.streakDays}</span>
           </button>
         </div>
 
