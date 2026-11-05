@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LEVEL_NOTES } from '../data/levelNotes';
 import { ZoomableImage } from './ZoomableImage';
 
@@ -6,6 +6,7 @@ const sectionId = (level: number) => `cheatsheet-l${level}`;
 
 export const TheoryCheatsheets: React.FC = () => {
   const [activeLevel, setActiveLevel] = useState(LEVEL_NOTES[0].level);
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const nodes = LEVEL_NOTES.map((n) => document.getElementById(sectionId(n.level))).filter(Boolean) as HTMLElement[];
@@ -25,6 +26,11 @@ export const TheoryCheatsheets: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const btn = navRef.current?.querySelector('[aria-current="location"]');
+    btn?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [activeLevel]);
+
   const scrollToLevel = (level: number) => {
     setActiveLevel(level);
     document.getElementById(sectionId(level))?.scrollIntoView({
@@ -40,7 +46,7 @@ export const TheoryCheatsheets: React.FC = () => {
         aria-label="Навигация по шпаргалкам L1–L7"
         className="fixed top-16 left-0 right-0 z-30 px-3 sm:px-6"
       >
-        <div className="max-w-5xl mx-auto flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 backdrop-blur-xl shadow-lg shadow-black/20">
+        <div ref={navRef} className="max-w-5xl mx-auto flex gap-1.5 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 dark:border-cyan-500/20 bg-white/95 dark:bg-[#07111f]/95 p-2 pr-3 backdrop-blur-xl shadow-lg shadow-black/20">
           {LEVEL_NOTES.map((note) => (
             <a
               key={note.level}
@@ -62,14 +68,14 @@ export const TheoryCheatsheets: React.FC = () => {
         </div>
       </nav>
 
-      <div className="space-y-16 sm:space-y-20 pb-[55vh]">
+      <div className="space-y-16 sm:space-y-20">
         {LEVEL_NOTES.map((note) => (
           <section
             key={note.level}
             id={sectionId(note.level)}
             data-level={note.level}
             aria-labelledby={`${sectionId(note.level)}-heading`}
-            className="scroll-mt-40"
+            className="scroll-mt-36"
           >
             <div className="flex items-end gap-3 mb-4">
               <span className="text-4xl sm:text-5xl font-black tracking-tight text-cyan-400 leading-none">
