@@ -42,6 +42,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
   const [progress, setProgress] = useState<ProgressState>(getInitialProgress);
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false);
   const [showStreakModal, setShowStreakModal] = useState<boolean>(false);
+  const [pulseIndex, setPulseIndex] = useState(() => Math.floor(Math.random() * 4));
   const [migrationAcknowledged, setMigrationAcknowledged] = useState<boolean>(() => {
     try { return localStorage.getItem('osi_progress_migration_ack_v4') === '1'; }
     catch { return false; }
@@ -159,7 +160,7 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
 
         <div className="relative z-10 mb-3 flex items-center justify-center sm:justify-start gap-3 sm:gap-2.5">
           {icons.map(({ Icon, color, label }, i) => (
-            <span key={label} title={label} className={`inline-flex h-12 w-12 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 ${color}${i === 0 ? ' animate-pulse' : ''}`} style={i === 0 ? { animationDuration: '2.8s' } : undefined}>
+            <span key={label} title={label} className={`inline-flex h-12 w-12 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/10 bg-black/30 ${color}${i === pulseIndex % icons.length ? ' animate-pulse' : ''}`} style={i === pulseIndex % icons.length ? { animationDuration: '2.8s' } : undefined}>
               <Icon className="h-6 w-6 sm:h-4 sm:w-4" aria-hidden="true" />
             </span>
           ))}
