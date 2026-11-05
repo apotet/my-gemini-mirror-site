@@ -185,3 +185,10 @@ main:has(.exam-review) { max-width: 1440px; }
   .review-actions { margin-left: 0; justify-content: flex-end; }
   .review-attempt { border-left: 0; padding-left: 0; }
 }
+
+.review-meme { display: flex; flex-direction: column; gap: 2px; max-width: 220px; margin-top: 4px; }
+.review-meme strong { font-size: 13px; font-weight: 750; line-height: 1.3; color: var(--review-cyan); }
+.review-meme span { font-size: 11px; line-height: 1.35; color: var(--review-muted); }
+@media (max-width: 700px) {
+  .review-meme { max-width: none; }
+}
