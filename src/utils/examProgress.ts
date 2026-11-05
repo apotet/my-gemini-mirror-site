@@ -1,7 +1,8 @@
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { getProgressEpoch, recordQuestionResult } from './userProgress';
+import { restoreOrderedQuestion, type AttemptAnswerOrder } from './answerOrder';
 
-export type ProgressSession = QuizSession & { attemptId?: string; progressEpoch?: string; legacySubmittedIds?: string[]; answerTimes?: Record<string, number> };
+export type ProgressSession = QuizSession & Partial<AttemptAnswerOrder> & { attemptId?: string; progressEpoch?: string; legacySubmittedIds?: string[]; answerTimes?: Record<string, number> };
 export function identifySession(session: ProgressSession): ProgressSession {
   return { ...session, legacySubmittedIds: session.legacySubmittedIds || (session.attemptId ? [] : Object.keys(session.submittedQuestions || {}).filter(id => session.submittedQuestions[id])),
     attemptId: session.attemptId || `legacy:${session.startTime}:${session.questions.map(q => q.id).join(',')}`,
@@ -20,11 +21,16 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         (saved.attemptId !== undefined && typeof saved.attemptId !== 'string') ||
         (saved.progressEpoch !== undefined && typeof saved.progressEpoch !== 'string') ||
         (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some((id: unknown) => typeof id !== 'string')))) return null;
+    // Versionless sessions predate shuffling: retain bank order and all chosen indices.
+    const ordered = saved.answerOrderVersion !== undefined;
+    if (ordered ? saved.answerOrderVersion !== 1 || !object(saved.answerOrders) : saved.answerOrders !== undefined) return null;
     const questions: Question[] = [];
-    for (const item of saved.questions as Array<{ id?: unknown } | null>) {
+    for (const item of saved.questions as Array<Question | null>) {
       const question = bank.find(q => q.id === item?.id);
       if (!question) return null;
-      questions.push(question);
+      const restored = ordered ? restoreOrderedQuestion(question, saved.answerOrders[question.id], item!) : question;
+      if (!restored) return null;
+      questions.push(restored);
     }
     if (new Set(questions.map(q => q.id)).size !== questions.length) return null;
     for (const q of questions) {
@@ -61,3 +67,4 @@ export function confirmAnswer(session: ProgressSession, chosen: number[], now = 
     answerTimes: { ...session.answerTimes, [q.id]: now },
     submittedQuestions: { ...session.submittedQuestions, [q.id]: true } };
 }
+

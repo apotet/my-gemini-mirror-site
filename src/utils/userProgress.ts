@@ -1,5 +1,6 @@
 import { ALL_QUESTIONS } from '../data/questionsData';
 import type { Question } from '../types/quiz';
+import { restoreOrderedQuestion } from './answerOrder';
 
 export const PROGRESS_KEY = 'osi_user_progress_v4';
 const LEGACY_KEYS = ['osi_user_progress_v3', 'osi_last_mistakes', 'osi_exam_history', 'osi_active_session'];
@@ -106,7 +107,12 @@ export function createProgressStore(bank: readonly Question[], storage: () => St
       const active = parse(model.backup.osi_active_session);
       if (Array.isArray(active?.questions) && object(active.submittedQuestions) && object(active.userAnswers)) {
         for (const item of active.questions) {
-          const question = byId.get(item?.id);
+          const bankQuestion = byId.get(item?.id);
+          const question = bankQuestion && (active.answerOrderVersion === undefined && active.answerOrders === undefined
+            ? bankQuestion
+            : active.answerOrderVersion === 1
+              ? restoreOrderedQuestion(bankQuestion, active.answerOrders?.[bankQuestion.id], item)
+              : null);
           const chosen = active.userAnswers[item?.id];
           if (!question || model.questions[question.id] || active.submittedQuestions[question.id] !== true ||
               !Array.isArray(chosen) || !chosen.length || new Set(chosen).size !== chosen.length ||
@@ -197,3 +203,4 @@ export const subscribeProgress = store.subscribe;
 export const resetProgress = store.reset;
 export const exportProgress = store.export;
 export const retainProgressBackup = store.retainBackup;
+
