@@ -172,11 +172,83 @@ export const Ipv6Trainer: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
+    <div className="max-w-5xl mx-auto space-y-5">
+      <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-5 sm:p-6">
+        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">Продолжение после IPv4</p>
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">Не учи IPv6 как стену из цифр</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Смотри на адрес как на восемь групп по 16 бит. В типичной LAN первые 64 бита — префикс сети, вторые 64 — идентификатор интерфейса.</p>
+        <div className="mt-4 border-l-4 border-amber-400 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+          <strong className="text-amber-400">Главная мысль:</strong> IPv6 — 128 бит = 8 групп × 16 бит. Одна hex-цифра = 4 бита. Поэтому одна группа из четырёх hex-цифр = 16 бит.
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4">
+          <h2 className="font-bold text-slate-900 dark:text-white mb-2">1. Увидь структуру /64</h2>
+          <p className="text-xs text-slate-500 mb-3 font-mono">2001:db8:1234:5678:abcd:ef01:2345:6789/64</p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {['2001','0db8','1234','5678'].map((g) => <span key={g} className="text-center font-mono text-xs font-bold rounded-lg py-2 bg-cyan-500/15 text-cyan-300">{g}</span>)}
+            {['abcd','ef01','2345','6789'].map((g) => <span key={g} className="text-center font-mono text-xs font-bold rounded-lg py-2 bg-blue-500/15 text-blue-300">{g}</span>)}
+          </div>
+          <p className="text-xs text-slate-500 mt-2"><span className="text-cyan-400">●</span> префикс /64 &nbsp; <span className="text-blue-400">●</span> интерфейс</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">/64 означает: первые четыре группы принадлежат сети. Это не «маска 255…», а длина префикса в битах.</p>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">2. Научись сокращать</h2>
+          <div className="rounded-xl bg-slate-950 p-3 text-xs font-mono space-y-1">
+            <div className="text-amber-300">2001:0db8:0000:0000:0000:0000:0000:0042</div>
+            <div className="text-slate-500">↓ убираем ведущие нули и одну самую длинную цепочку нулевых групп</div>
+            <div className="text-cyan-300">2001:db8::42</div>
+          </div>
+          <div className="rounded-xl bg-slate-950 p-3 text-xs font-mono space-y-1">
+            <div className="text-amber-300">fe80:0000:0000:0000:021c:7eff:fe12:3456</div>
+            <div className="text-slate-500">↓</div>
+            <div className="text-cyan-300">fe80::21c:7eff:fe12:3456</div>
+          </div>
+          <p className="text-xs text-slate-500">В канонической форме сжимаем самую длинную цепочку из двух и более нулевых групп; при равенстве — первую слева. :: используют только один раз.</p>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">3. Узнавай тип адреса</h2>
+          {[
+            ['2000::/3', 'Global Unicast. 2001:db8::/32 — документация, в интернете не маршрутизируют.'],
+            ['fe80::/10', 'Link-Local. Работает только в пределах канала.'],
+            ['fc00::/7', 'Unique Local. Внутренние адреса, ближе к частным IPv4.'],
+            ['ff00::/8', 'Multicast. Broadcast в IPv6 нет.'],
+            ['::1', 'Loopback, аналог 127.0.0.1.'],
+          ].map(([code, text]) => (
+            <div key={code} className="rounded-xl bg-slate-50 dark:bg-slate-950/50 p-2">
+              <code className="text-cyan-400 text-xs">{code}</code>
+              <p className="text-xs text-slate-600 dark:text-slate-300">{text}</p>
+            </div>
+          ))}
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">4–5. NDP, RA и SLAAC</h2>
+          <p className="text-xs text-slate-500">RS/RA и NS/NA относятся к NDP. DAD использует NS/NA. Это не отдельный следующий этап после SLAAC.</p>
+          {[
+            ['1', 'Link-Local', 'Интерфейс получает адрес из fe80::/10.'],
+            ['2', 'Router Advertisement', 'Роутер сообщает префикс сети и параметры.'],
+            ['3', 'SLAAC', 'Хост собирает адрес из префикса RA с флагом A. Перед использованием — DAD. DHCPv6 не обязателен.'],
+            ['4', 'NDP', 'Через ICMPv6 находит соседей и роутеры, задачи похожи на ARP.'],
+            ['5', 'Dual Stack', 'IPv4 и IPv6 часто работают параллельно на время перехода.'],
+          ].map(([n, title, text]) => (
+            <div key={n} className="flex gap-2">
+              <span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-950 text-xs font-bold grid place-items-center shrink-0">{n}</span>
+              <div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-white">{title}</div>
+                <p className="text-xs text-slate-500">{text}</p>
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+
       <div>
-        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">IPv6</p>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Тренажёр IPv6</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Сжатие, разворот, тип адреса, префикс /64 и базовые понятия.</p>
+        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">Тренировка · 10 заданий</p>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Закрепим без зубрёжки</h2>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
