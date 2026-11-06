@@ -7,20 +7,21 @@ import { Question } from '../types/quiz';
 export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
   // ─── L1–L2 advanced / hard applied ─────────────────────────
   {
-    id: 'l12-d01',
-    group: 'l1-l2',
-    topic: 'L2 · STP',
-    text: 'После включения RSTP один access-порт долго не пропускает трафик при подключении ПК. Что проверить в первую очередь?',
-    answers: [
-      'PortFast / edge port и наличие BPDUguard политики',
-      'Только OSPF hello timer',
-      'Только размер TCP window на ПК',
-      'Только MX-запись домена',
+    "id": "l12-d01",
+    "group": "l1-l2",
+    "topic": "L2 · STP",
+    "text": "После подключения ПК первые кадры начинают проходить лишь после последовательности Discarding → Learning → Forwarding. Задержка повторяется на нескольких портах рабочих мест, тогда как резервные межкоммутаторные связи сходятся быстро. С какой проверки настроек RSTP на портах ПК начать?",
+    "answers": [
+      "Проверить operational edge и политику BPDU Guard для конечного порта",
+      "Проверить события BPDU Guard и таймер восстановления err-disabled",
+      "Проверить роль Alternate и выбор резервного пути по Bridge ID",
+      "Проверить root path cost и приоритет порта на пути к корневому мосту"
     ],
-    correct: [0],
-    explanation:
-      'В RSTP порт без edge-конфигурации проходит negotiation/learning before forwarding (роли Root/Designated/Alternate и состояния Discarding/Learning/Forwarding). Для портов к эндпоинтам включают edge/PortFast, чтобы сразу форвардить; BPDUguard защищает от случайного свитча на access.',
-    difficulty: 'advanced',
+    "correct": [
+      0
+    ],
+    "explanation": "Для порта к конечному узлу сначала проверяют, распознаётся ли он как edge и допускает ли политика быстрый переход к передаче. BPDU Guard дополняет такое подключение защитой при появлении BPDU, но сам не ускоряет переходы состояний. Срабатывание Guard приводит к защитной блокировке, а выбор Alternate и root path cost решает задачу топологии, отличную от ожидания на порту ПК.",
+    "difficulty": "advanced"
   },
   {
     "id": "l12-d02",
@@ -40,19 +41,21 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     "difficulty": "advanced"
   },
   {
-    id: 'l12-d03',
-    group: 'l1-l2',
-    topic: 'L2 · Native VLAN',
-    text: 'На двух концах trunk native VLAN различается (10 vs 20). Какой риск?',
-    answers: [
-      'Утечка/смешение untagged-трафика и трудноуловимые L2-проблемы',
-      'Автоматическое выключение всех SFP',
-      'Обязательный отказ DHCP во всей AS',
-      'Блокировка только IPv6 RA',
+    "id": "l12-d03",
+    "group": "l1-l2",
+    "topic": "L2 · Native VLAN",
+    "text": "На trunk A—B разрешены VLAN 10 и 20. A: native VLAN 10, B: native VLAN 20; изначально native-кадры отправляются без тега. Рассматривается классификация на B кадра из VLAN 10, отправленного A. Какая пара результатов верна до и после включения на A тегирования native VLAN?",
+    "answers": [
+      "До изменения — VLAN 20; после — VLAN 10",
+      "До изменения — VLAN 10; после — VLAN 10",
+      "До изменения — VLAN 20; после — VLAN 20",
+      "До изменения — VLAN 10; после — VLAN 20"
     ],
-    correct: [0],
-    explanation: 'Native VLAN mismatch — классическая ошибка проектирования транков.',
-    difficulty: 'advanced',
+    "correct": [
+      0
+    ],
+    "explanation": "Сначала A отправляет кадр своей native VLAN 10 без тега, и B относит его к собственной native VLAN 20. После включения тегирования на A тот же трафик приходит с VID 10, который B использует для классификации в разрешённую VLAN 10. Это описывает обработку данных на приёме, а не универсальное исправление несогласованности: защитные механизмы и настройки обоих концов проверяют отдельно.",
+    "difficulty": "advanced"
   },
   {
     id: 'l12-d04',
