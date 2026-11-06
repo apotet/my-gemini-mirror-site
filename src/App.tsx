@@ -91,6 +91,11 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNavigateToIpv6 = () => {
+    setActiveTab('ipv6');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleNavigateToIpv4 = (prefix?: number, mode?: 'calc' | 'trainer') => {
     if (prefix) setIpv4InitialPrefix(prefix);
     if (mode === 'calc') setIpv4InitialSubTab('calculator');
@@ -126,6 +131,7 @@ export function App() {
             fromExam={theoryFromExam}
             onReturnToExam={handleReturnToExam}
             onNavigateToIpv4={handleNavigateToIpv4}
+            onNavigateToIpv6={handleNavigateToIpv6}
             onClearInitialQuestion={() => {
               setTheoryQuestionId(null);
               setTheoryFromExam(false);

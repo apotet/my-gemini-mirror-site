@@ -11,6 +11,7 @@ interface TheoryViewProps {
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
+  onNavigateToIpv6: () => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
 }
@@ -31,6 +32,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
   fromExam,
   onReturnToExam,
   onNavigateToIpv4,
+  onNavigateToIpv6,
   onClearInitialQuestion,
 }) => {
   const [section, setSection] = useState<TheorySection>('razbory');
@@ -107,6 +109,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
           fromExam={fromExam}
           onReturnToExam={onReturnToExam}
           onNavigateToIpv4={onNavigateToIpv4}
+          onNavigateToIpv6={onNavigateToIpv6}
           onClearInitialQuestion={onClearInitialQuestion}
           onOpenLesson={openLesson}
         />

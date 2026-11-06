@@ -20,6 +20,7 @@ interface Props {
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
+  onNavigateToIpv6: () => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
   onOpenLesson?: (lessonId: string, fromQuestionId?: string) => void;
@@ -30,6 +31,7 @@ export const TheoryRazbory: React.FC<Props> = ({
   fromExam,
   onReturnToExam,
   onNavigateToIpv4,
+  onNavigateToIpv6,
   onClearInitialQuestion,
   onOpenLesson,
 }) => {
@@ -218,6 +220,15 @@ export const TheoryRazbory: React.FC<Props> = ({
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold cursor-pointer"
           >
             Открыть IPv4-тренажёр
+          </button>
+        )}
+        {deep.ipv6Practice?.enabled && (
+          <button
+            type="button"
+            onClick={onNavigateToIpv6}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold cursor-pointer"
+          >
+            Открыть IPv6-тренажёр
           </button>
         )}
       </div>

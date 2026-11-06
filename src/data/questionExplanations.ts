@@ -21,6 +21,7 @@ export interface QuestionDeepDive {
     targetPrefix?: number;
     targetMode?: 'calc' | 'trainer';
   };
+  ipv6Practice?: { enabled: boolean };
   keyTakeaways: string[];
   nextStudy?: string;
 }
@@ -341,7 +342,7 @@ SNI нужен для нескольких HTTPS-сайтов на одном IP
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string }
+  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -383,6 +384,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: detectIpv4Practice(question),
+    ipv6Practice: individual?.ipv6Practice ? { enabled: true } : undefined,
     keyTakeaways: generateKeyTakeaways(question, category, correctText),
     nextStudy: individual?.next,
   };
