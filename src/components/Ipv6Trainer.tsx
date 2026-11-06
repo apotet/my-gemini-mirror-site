@@ -191,7 +191,7 @@ export const Ipv6Trainer: React.FC = () => {
             {['abcd','ef01','2345','6789'].map((g) => <span key={g} className="text-center font-mono text-xs font-bold rounded-lg py-2 bg-blue-500/15 text-blue-300">{g}</span>)}
           </div>
           <p className="text-xs text-slate-500 mt-2"><span className="text-cyan-400">●</span> префикс /64 &nbsp; <span className="text-blue-400">●</span> интерфейс</p>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">/64 означает: первые четыре группы принадлежат сети. Это не «маска 255…», а длина префикса в битах.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">/64 означает: первые четыре группы — сеть. Это не «маска 255…», а длина префикса в битах. На Ethernet LAN /64 типичен, но не единственный: на линк между роутерами бывает /127.</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
@@ -206,7 +206,8 @@ export const Ipv6Trainer: React.FC = () => {
             <div className="text-slate-500">↓</div>
             <div className="text-cyan-300">fe80::21c:7eff:fe12:3456</div>
           </div>
-          <p className="text-xs text-slate-500">В канонической форме сжимаем самую длинную цепочку из двух и более нулевых групп; при равенстве — первую слева. :: используют только один раз.</p>
+          <p className="text-xs text-slate-500">Сначала убираем ведущие нули в каждой группе. Потом самую длинную цепочку из двух и более нулей заменяем на ::. При равной длине берём первую слева. Одиночный ноль остаётся как 0: <span className="font-mono">2001:db8:0:1::9</span>. :: в адресе только один раз.</p>
+          <p className="text-xs text-slate-500">В <span className="font-mono">fe80::21c:7eff:fe12:3456</span> хвост когда-то собирали по modified EUI-64. Сейчас ОС чаще ставят стабильный приватный IID (RFC 7217) или временный (RFC 8981).</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
@@ -214,7 +215,7 @@ export const Ipv6Trainer: React.FC = () => {
           {[
             ['2000::/3', 'Global Unicast. 2001:db8::/32 — документация, в интернете не маршрутизируют.'],
             ['fe80::/10', 'Link-Local. Работает только в пределах канала.'],
-            ['fc00::/7', 'Unique Local. Внутренние адреса, ближе к частным IPv4.'],
+            ['fc00::/7', 'Unique Local. Внутренние адреса, ближе к частным IPv4. На практике почти всегда fd00::/8.'],
             ['ff00::/8', 'Multicast. Broadcast в IPv6 нет.'],
             ['::1', 'Loopback, аналог 127.0.0.1.'],
           ].map(([code, text]) => (
@@ -227,7 +228,7 @@ export const Ipv6Trainer: React.FC = () => {
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
           <h2 className="font-bold text-slate-900 dark:text-white">4–5. NDP, RA и SLAAC</h2>
-          <p className="text-xs text-slate-500">RS/RA и NS/NA относятся к NDP. DAD использует NS/NA. Это не отдельный следующий этап после SLAAC.</p>
+          <p className="text-xs text-slate-500">NDP — это зонтик. В него входят RS/RA (роутер) и NS/NA (соседи). DAD — это тоже NS/NA до начала использования адреса. Поэтому NDP не «следующий шаг после SLAAC», а механизм, который работает с самого начала.</p>
           {[
             ['1', 'Link-Local', 'Интерфейс получает адрес из fe80::/10.'],
             ['2', 'Router Advertisement', 'Роутер сообщает префикс сети и параметры.'],
