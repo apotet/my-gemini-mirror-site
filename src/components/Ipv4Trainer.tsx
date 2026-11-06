@@ -434,6 +434,38 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
         </div>
       </div>
 
+      <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-5 sm:p-6">
+        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">Смысл перед счётом</p>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">IPv4 — это 32 бита, не четыре случайных числа</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">Адрес <span className="font-mono">192.168.1.10</span> — четыре октета. Каждый октет — 8 бит, от 0 до 255. Маска говорит, какие биты относятся к сети, а какие к хосту.</p>
+        <div className="mt-4 border-l-4 border-amber-400 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+          <strong className="text-amber-500">Главная мысль:</strong> /24 и 255.255.255.0 — одна и та же граница. Единицы в маске всегда идут подряд слева. Поэтому 255.255.255.224 это /27, а не «случайный набор бит».
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">1. Где сеть, где хост</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">/24 значит: первые 24 бита сеть, последние 8 — хосты. В <span className="font-mono">10.1.1.0/24</span> меняется только последний октет: 10.1.1.0 — сеть, 10.1.1.255 — broadcast, хостам отдают 1–254.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Адрес сети и broadcast не выдают устройствам. Поэтому usable = 2<sup>host bits</sup> − 2.</p>
+        </section>
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">2. Шаг сети</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Шаг = 256 − последний ненулевой октет маски. /27 → 255.255.255.224 → 256 − 224 = 32. Сети: 0, 32, 64, 96…</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Адрес 10.0.0.50/27 лежит в сети 10.0.0.32. Следующая сеть начинается с 64. Broadcast этой сети — 63.</p>
+        </section>
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">3. Зачем резать сеть</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Меньший префикс — больше хостов и больше broadcast-домен. /24 на 200 устройств нормально. /16 на офис — нет: лишний шум и сложнее локализовать проблему.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Между VLAN нужен маршрутизатор. Коммутатор сам по себе пакет из одной подсети в другую не переведёт.</p>
+        </section>
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
+          <h2 className="font-bold text-slate-900 dark:text-white">4. Что проверять руками</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Сначала: адрес сети, broadcast, шлюз в той же подсети. Потом: маска на обоих концах совпадает. Если хосты «в одной сети» по IP, но маски разные, они не увидят друг друга напрямую.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Частные диапазоны: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. В интернет их выпускают через NAT.</p>
+        </section>
+      </div>
+
       {/* Sub-tab 1: Interactive Practice Trainer */}
       {subTab === 'practice' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
