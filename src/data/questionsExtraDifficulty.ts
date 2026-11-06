@@ -872,17 +872,17 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     "topic": "L3 · RPKI",
     "difficulty": "advanced",
     "family": "rpki",
-    "text": "BGP Established, но часть соседей не принимает префикс. Почему?",
+    "text": "В снимке валидатора перечислены все авторизации из ROA: 192.0.2.0/24, origin AS64500, maxLength 25; 198.51.100.0/24, origin AS64501, maxLength 24. Анонсы: A — 192.0.2.128/25 от AS64500; B — 192.0.2.0/24 от AS64501; C — 198.51.100.0/25 от AS64501; D — 203.0.113.0/24 от AS64502. Каковы результаты origin validation при этом снимке?",
     "answers": [
-      "RPKI Invalid: ASN или длина префикса не совпадает с ROA",
-      "нет LLDP",
-      "native VLAN mismatch",
-      "отключён STP"
+      "A Valid; B Invalid; C Invalid; D NotFound",
+      "A Invalid; B Valid; C Invalid; D NotFound",
+      "A Valid; B Invalid; C NotFound; D NotFound",
+      "A Valid; B Invalid; C Invalid; D Invalid"
     ],
     "correct": [
       0
     ],
-    "explanation": "Сессия BGP Established не гарантирует принятие каждого маршрута: сосед может отклонять RPKI Invalid своей импортной политикой. При наличии покрывающего ROA маршрут Invalid, если ни одна соответствующая авторизация не разрешает origin ASN и длину анонса в пределах maxLength."
+    "explanation": "A соответствует ASN и разрешённой длине /25, поэтому Valid. У B неверный origin, а у C длина /25 превышает maxLength 24 при наличии покрывающей авторизации — оба Invalid. Для D нет покрывающей авторизации, поэтому NotFound; эти состояния сами по себе не задают импортную политику соседа."
   },
   {
     "id": "ts-pfc01",
