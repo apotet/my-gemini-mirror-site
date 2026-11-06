@@ -172,10 +172,10 @@ export const Ipv6Trainer: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5">
+    <div className="font-sans max-w-5xl mx-auto space-y-5">
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-5 sm:p-6">
-        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">Продолжение после IPv4</p>
-        <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-2">Не учи IPv6 как стену из цифр</h1>
+        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">Продолжение после IPv4</p>
+        <h1 className="text-2xl sm:text-4xl text-slate-900 dark:text-white mt-2 font-sans font-bold">Не учи IPv6 как стену из цифр</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Смотри на адрес как на восемь групп по 16 бит. В типичной LAN первые 64 бита — префикс сети, вторые 64 — идентификатор интерфейса.</p>
         <div className="mt-4 border-l-4 border-amber-400 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
           <strong className="text-amber-400">Главная мысль:</strong> IPv6 — 128 бит = 8 групп × 16 бит. Одна hex-цифра = 4 бита. Поэтому одна группа из четырёх hex-цифр = 16 бит.
@@ -184,7 +184,7 @@ export const Ipv6Trainer: React.FC = () => {
 
       <div className="grid md:grid-cols-2 gap-3">
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4">
-          <h2 className="font-bold text-slate-900 dark:text-white mb-2">1. Увидь структуру /64</h2>
+          <h2 className="text-slate-900 dark:text-white mb-2 font-sans font-bold">1. Увидь структуру /64</h2>
           <p className="text-xs text-slate-500 mb-3 font-mono">2001:db8:1234:5678:abcd:ef01:2345:6789/64</p>
           <div className="grid grid-cols-4 gap-1.5">
             {['2001','0db8','1234','5678'].map((g) => <span key={g} className="text-center font-mono text-xs font-bold rounded-lg py-2 bg-cyan-500/15 text-cyan-300">{g}</span>)}
@@ -195,23 +195,23 @@ export const Ipv6Trainer: React.FC = () => {
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
-          <h2 className="font-bold text-slate-900 dark:text-white">2. Научись сокращать</h2>
-          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-mono space-y-1">
-            <div className="text-amber-600 dark:text-amber-300">2001:0db8:0000:0000:0000:0000:0000:0042</div>
+          <h2 className="text-slate-900 dark:text-white font-sans font-bold">2. Научись сокращать</h2>
+          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-sans space-y-1">
+            <div className="text-amber-600 dark:text-amber-300 font-mono">2001:0db8:0000:0000:0000:0000:0000:0042</div>
             <div className="text-slate-500">↓ убираем ведущие нули и одну самую длинную цепочку нулевых групп</div>
-            <div className="text-cyan-700 dark:text-cyan-300">2001:db8::42</div>
+            <div className="text-cyan-700 dark:text-cyan-300 font-mono">2001:db8::42</div>
           </div>
-          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-mono space-y-1">
-            <div className="text-amber-600 dark:text-amber-300">fe80:0000:0000:0000:021c:7eff:fe12:3456</div>
+          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-sans space-y-1">
+            <div className="text-amber-600 dark:text-amber-300 font-mono">fe80:0000:0000:0000:021c:7eff:fe12:3456</div>
             <div className="text-slate-500">↓</div>
-            <div className="text-cyan-700 dark:text-cyan-300">fe80::21c:7eff:fe12:3456</div>
+            <div className="text-cyan-700 dark:text-cyan-300 font-mono">fe80::21c:7eff:fe12:3456</div>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-300">Сначала убираем ведущие нули в каждой группе. Потом самую длинную цепочку из двух и более нулей заменяем на ::. При равной длине берём первую слева. Одиночный ноль остаётся как 0: <span className="font-mono">2001:db8:0:1::9</span>. :: в адресе только один раз.</p>
           <p className="text-sm text-slate-600 dark:text-slate-300">В <span className="font-mono">fe80::21c:7eff:fe12:3456</span> хвост когда-то собирали по modified EUI-64. Сейчас ОС чаще ставят стабильный приватный IID (RFC 7217) или временный (RFC 8981).</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
-          <h2 className="font-bold text-slate-900 dark:text-white">3. Узнавай тип адреса</h2>
+          <h2 className="text-slate-900 dark:text-white font-sans font-bold">3. Узнавай тип адреса</h2>
           {[
             ['2000::/3', 'Global Unicast. 2001:db8::/32 — документация, в интернете не маршрутизируют.'],
             ['fe80::/10', 'Link-Local. Работает только в пределах канала.'],
@@ -220,14 +220,14 @@ export const Ipv6Trainer: React.FC = () => {
             ['::1', 'Loopback, аналог 127.0.0.1.'],
           ].map(([code, text]) => (
             <div key={code} className="rounded-xl bg-slate-50 dark:bg-slate-950/50 p-2">
-              <code className="text-cyan-400 text-xs">{code}</code>
+              <code className="text-cyan-400 text-xs font-mono">{code}</code>
               <p className="text-xs text-slate-600 dark:text-slate-300">{text}</p>
             </div>
           ))}
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
-          <h2 className="font-bold text-slate-900 dark:text-white">4–5. NDP, RA и SLAAC</h2>
+          <h2 className="text-slate-900 dark:text-white font-sans font-bold">4–5. NDP, RA и SLAAC</h2>
           <p className="text-xs text-slate-500">NDP — это зонтик. В него входят RS/RA (роутер) и NS/NA (соседи). DAD — это тоже NS/NA до начала использования адреса. Поэтому NDP не «следующий шаг после SLAAC», а механизм, который работает с самого начала.</p>
           {[
             ['1', 'Link-Local', 'Интерфейс получает адрес из fe80::/10.'],
@@ -239,7 +239,7 @@ export const Ipv6Trainer: React.FC = () => {
             <div key={n} className="flex gap-2">
               <span className="w-6 h-6 rounded-full bg-cyan-500 text-slate-950 text-xs font-bold grid place-items-center shrink-0">{n}</span>
               <div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-white">{title}</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{title}</div>
                 <p className="text-xs text-slate-500">{text}</p>
               </div>
             </div>
@@ -248,8 +248,8 @@ export const Ipv6Trainer: React.FC = () => {
       </div>
 
       <div>
-        <p className="text-xs font-semibold tracking-widest text-cyan-400 uppercase">Тренировка · 10 заданий</p>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Закрепим без зубрёжки</h2>
+        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">Тренировка · 10 заданий</p>
+        <h2 className="text-xl text-slate-900 dark:text-white font-sans font-bold">Закрепим без зубрёжки</h2>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -258,7 +258,7 @@ export const Ipv6Trainer: React.FC = () => {
             key={item.id}
             type="button"
             onClick={() => startMode(item.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${mode === item.id ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${mode === item.id ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
           >
             {item.label}
           </button>
@@ -270,7 +270,7 @@ export const Ipv6Trainer: React.FC = () => {
       </div>
 
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-4 sm:p-5 space-y-4">
-        <div className="flex justify-between text-xs text-slate-500">
+        <div className="flex justify-between text-xs text-slate-500 font-bold">
           <span>{done ? 'Подход завершён' : `Задание ${index + 1} из ${TOTAL}`}</span>
           <span>{correct} верно</span>
         </div>
@@ -281,7 +281,7 @@ export const Ipv6Trainer: React.FC = () => {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {correct >= 8 ? 'Основные конструкции IPv6 уже читаются.' : 'Вернись к сжатию и /64 и сделай ещё один подход.'}
             </p>
-            <button type="button" onClick={() => startMode(mode)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-semibold text-sm">
+            <button type="button" onClick={() => startMode(mode)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">
               <RotateCcw className="w-4 h-4" /> Ещё 10
             </button>
           </div>
@@ -317,8 +317,8 @@ export const Ipv6Trainer: React.FC = () => {
               <div className={`flex gap-2 rounded-xl p-3 text-sm ${ok ? 'bg-emerald-500/10 text-emerald-300' : 'bg-rose-500/10 text-rose-300'}`}>
                 {ok ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 shrink-0 mt-0.5" />}
                 <div>
-                  <div className="font-semibold">{ok ? 'Верно' : 'Не совсем'}</div>
-                  {!ok && <div className="font-mono text-xs mt-1 break-all">{task.answer}</div>}
+                  <div className="font-bold">{ok ? 'Верно' : 'Не совсем'}</div>
+                  {!ok && <div className={`text-xs mt-1 break-all ${task.input ? 'font-mono' : 'font-sans'}`}>{task.answer}</div>}
                   <p className="mt-1 text-slate-600 dark:text-slate-300">{task.e}</p>
                 </div>
               </div>
@@ -326,9 +326,9 @@ export const Ipv6Trainer: React.FC = () => {
 
             <div className="flex gap-2">
               {!checked ? (
-                <button type="button" onClick={check} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-semibold text-sm">Проверить</button>
+                <button type="button" onClick={check} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">Проверить</button>
               ) : (
-                <button type="button" onClick={next} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-semibold text-sm">Дальше</button>
+                <button type="button" onClick={next} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">Дальше</button>
               )}
             </div>
           </>

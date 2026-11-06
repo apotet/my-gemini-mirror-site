@@ -40,7 +40,7 @@ export const TheoryCheatsheets: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="font-sans">
       <div className="h-14" aria-hidden />
       <nav aria-label="Навигация по шпаргалкам L1–L7" className="fixed top-16 left-0 right-0 z-30 px-3 sm:px-6">
         <div ref={navRef} className="max-w-5xl mx-auto flex gap-1 rounded-xl border border-white/10 dark:border-cyan-500/15 bg-[#07111f]/55 p-1 backdrop-blur-md">
@@ -53,7 +53,7 @@ export const TheoryCheatsheets: React.FC = () => {
                 event.preventDefault();
                 scrollToLevel(note.level);
               }}
-              className={`flex-1 min-w-0 px-1 py-1.5 rounded-lg text-xs font-semibold text-center transition-colors ${
+              className={`flex-1 min-w-0 px-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${
                 activeLevel === note.level
                   ? 'bg-cyan-400/90 text-slate-950'
                   : 'text-slate-300/80 hover:bg-white/10'
@@ -75,8 +75,8 @@ export const TheoryCheatsheets: React.FC = () => {
             className="scroll-mt-40"
           >
             <div className="flex items-end gap-3 mb-4">
-              <span className="text-4xl sm:text-5xl font-black tracking-tight text-cyan-400 leading-none">L{note.level}</span>
-              <h2 id={`${sectionId(note.level)}-heading`} className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white pb-1">
+              <span className="text-4xl sm:text-5xl font-bold tracking-tight text-cyan-400 leading-none">L{note.level}</span>
+              <h2 id={`${sectionId(note.level)}-heading`} className="text-lg sm:text-xl text-slate-900 dark:text-white pb-1 font-sans font-bold">
                 {note.title.replace(/^L\d\s·\s/, '')}
               </h2>
             </div>
