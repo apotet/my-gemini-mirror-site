@@ -26,9 +26,9 @@ const { renderToStaticMarkup } = await import('react-dom/server');
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 
 const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d01', 'l12-d05',
-  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28'];
+  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27'];
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-ospf']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -44,7 +44,7 @@ assert.equal(ospfMeaningOnly.deepAnalysis.split(/\n\s*\n/).length, 3);
 assert.equal(ospfMeaningOnly.professional, undefined, 'no invented professional OSPF text');
 
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-ospf']) {
+for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -85,4 +85,4 @@ target.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { thr
 setStudyTextMode('professional');
 assert.equal(getStudyTextMode(), 'professional', 'storage-denied fallback still works in the tab');
 delete globalThis.window;
-console.log('PASS: four pilot lessons/seventeen dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
+console.log('PASS: five pilot lessons/twenty dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
