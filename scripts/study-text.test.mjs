@@ -26,9 +26,9 @@ const { renderToStaticMarkup } = await import('react-dom/server');
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 
 const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d01', 'l12-d05',
-  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27'];
+  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27', 'l57-x02', 'ts-x03', 'l4-d04', 'l57-d03', 'new-ts-dns'];
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf', 'l7-dns']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -43,8 +43,16 @@ assert.ok(ospfMeaningOnly.hasIndividualDeep);
 assert.equal(ospfMeaningOnly.deepAnalysis.split(/\n\s*\n/).length, 3);
 assert.equal(ospfMeaningOnly.professional, undefined, 'no invented professional OSPF text');
 
+const dnsMeaningOnlyIds = ["l4-07","l7-04","gen-port-6","gen-transport-6","gen-osi-a-19","new-l7-dns","tcpip-x25","l57-x01","l57-x11","l57-x13","l57-x20","ts-pack1-05","ts-pack1-06","ts-pack1-20","gen-diag-12","tcpip-x12"];
+for (const id of dnsMeaningOnlyIds) {
+  const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
+  assert.ok(deep.hasIndividualDeep, id);
+  assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, 3);
+  assert.equal(deep.professional, undefined, 'no invented professional DNS text: ' + id);
+}
+
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf']) {
+for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf', 'l7-dns']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -53,7 +61,7 @@ const otherLesson = LESSONS.find(l => !l.professional);
 assert.ok(!render(LessonView, { lesson: otherLesson, onBack() {} }).includes('Стиль объяснения'));
 const missingHtml = render(TheoryRazbory, { ...theoryProps, initialQuestionId: 'review-dot1x-19' });
 assert.ok(!missingHtml.includes('Стиль объяснения'));
-for (const id of [...ids, 'review-dot1x-19', 'review-ospf-26']) {
+for (const id of [...ids, 'review-dot1x-19', 'review-ospf-26', ...dnsMeaningOnlyIds]) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
   const session = { questions: [q], currentIndex: 0, userAnswers: { [id]: q.correct }, submittedQuestions: { [id]: true },
     startTime: Date.now(), isCompleted: true, mode: 'mixed', feedbackMode: 'exam', difficulty: 'beginner' };
@@ -85,4 +93,4 @@ target.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { thr
 setStudyTextMode('professional');
 assert.equal(getStudyTextMode(), 'professional', 'storage-denied fallback still works in the tab');
 delete globalThis.window;
-console.log('PASS: five pilot lessons/twenty dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
+console.log('PASS: six pilot lessons/twenty-five dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
