@@ -1,7 +1,24 @@
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { getProgressEpoch, recordQuestionResult } from './userProgress';
 
-export type ProgressSession = QuizSession & { attemptId?: string; progressEpoch?: string; legacySubmittedIds?: string[]; answerTimes?: Record<string, number> };
+export type ProgressSession = QuizSession & { attemptId?: string; progressEpoch?: string; legacySubmittedIds?: string[]; answerTimes?: Record<string, number>; answerOrders?: Record<string, number[]> };
+
+/** Shuffle copies once per attempt; order entries map displayed indices to bank indices. */
+export function prepareAttemptQuestions(source: readonly Question[], random = Math.random): Pick<ProgressSession, 'questions' | 'answerOrders'> {
+  const answerOrders: Record<string, number[]> = {};
+  const questions = source.map(question => {
+    const order = question.answers.map((_, index) => index);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    answerOrders[question.id] = order;
+    return { ...question, answers: order.map(index => question.answers[index]),
+      correct: order.flatMap((index, displayed) => question.correct.includes(index) ? [displayed] : []) };
+  });
+  return { questions, answerOrders };
+}
+
 export function identifySession(session: ProgressSession): ProgressSession {
   return { ...session, legacySubmittedIds: session.legacySubmittedIds || (session.attemptId ? [] : Object.keys(session.submittedQuestions || {}).filter(id => session.submittedQuestions[id])),
     attemptId: session.attemptId || `legacy:${session.startTime}:${session.questions.map(q => q.id).join(',')}`,
@@ -20,11 +37,24 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         (saved.attemptId !== undefined && typeof saved.attemptId !== 'string') ||
         (saved.progressEpoch !== undefined && typeof saved.progressEpoch !== 'string') ||
         (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some((id: unknown) => typeof id !== 'string')))) return null;
+    if (saved.answerOrders !== undefined && !object(saved.answerOrders)) return null;
     const questions: Question[] = [];
-    for (const item of saved.questions as Array<{ id?: unknown } | null>) {
+    for (const item of saved.questions as Array<{ id?: unknown; answers?: unknown; correct?: unknown } | null>) {
       const question = bank.find(q => q.id === item?.id);
       if (!question) return null;
-      questions.push(question);
+      if (saved.answerOrders === undefined) {
+        // Old attempts used bank order. Never shuffle an answer already selected there.
+        questions.push(question);
+      } else {
+        const order = saved.answerOrders[question.id];
+        if (!Array.isArray(order) || order.length !== question.answers.length || new Set(order).size !== order.length ||
+            order.some(index => !Number.isInteger(index) || index < 0 || index >= question.answers.length)) return null;
+        const answers = order.map(index => question.answers[index]);
+        const correct = order.flatMap((index, displayed) => question.correct.includes(index) ? [displayed] : []);
+        // Reject bank drift/corrupt snapshots instead of silently changing saved answer meaning.
+        if (JSON.stringify(item?.answers) !== JSON.stringify(answers) || JSON.stringify(item?.correct) !== JSON.stringify(correct)) return null;
+        questions.push({ ...question, answers, correct });
+      }
     }
     if (new Set(questions.map(q => q.id)).size !== questions.length) return null;
     for (const q of questions) {

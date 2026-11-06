@@ -12,7 +12,7 @@ import {
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
-import { restoreSession, confirmAnswer, recordConfirmedAnswers, type ProgressSession } from '../utils/examProgress';
+import { prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers, type ProgressSession } from '../utils/examProgress';
 import { ExamReview } from './ExamReview';
 import { getLessonForQuestion } from '../data/lessons';
 import { LAST_REVIEW_KEY, serializeReview, restoreReview } from '../utils/examReview';
@@ -126,7 +126,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     const newSession: ProgressSession = {
       attemptId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
       progressEpoch: getProgressEpoch(),
-      questions,
+      ...prepareAttemptQuestions(questions),
       currentIndex: 0,
       userAnswers: {},
       submittedQuestions: {},
