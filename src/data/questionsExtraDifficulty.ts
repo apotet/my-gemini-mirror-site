@@ -58,19 +58,21 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     "difficulty": "advanced"
   },
   {
-    id: 'l12-d04',
-    group: 'l1-l2',
-    topic: 'L1 · Оптика',
-    text: 'Rx на SFP −28 dBm при чувствительности модуля −18 dBm. Линк нестабилен. Что верно?',
-    answers: [
-      'Мощность на приёмнике слишком низкая — потери линии/стыков или дальность/тип волокна',
-      'Это перегрузка приёмника (too hot)',
-      'Нужно только увеличить TCP MSS',
-      'Проблема только в DNS TTL',
+    "id": "l12-d04",
+    "group": "l1-l2",
+    "topic": "L1 · Оптика",
+    "text": "У пары модулей Tx находится в диапазоне от −5 до −1 dBm. Потери волокна — 6 dB, соединений суммарно — 2 dB; нижний допустимый Rx — −15 dBm, верхний — −3 dBm. Проект требует ещё 3 dB запаса относительно нижнего порога. Какая оценка бюджета верна?",
+    "answers": [
+      "Rx от −13 до −9 dBm; запас по нижнему порогу 2 dB вместо 3",
+      "Rx от −13 до −9 dBm; превышен верхний допустимый уровень",
+      "Rx от −11 до −7 dBm; запас по нижнему порогу 4 dB вместо 3",
+      "Rx от −7 до −3 dBm; запас по нижнему порогу 8 dB вместо 3"
     ],
-    correct: [0],
-    explanation: 'Слишком слабый Rx — бюджет потерь; overloading бывает при слишком высоком Rx.',
-    difficulty: 'advanced',
+    "correct": [
+      0
+    ],
+    "explanation": "Суммарные потери равны 8 dB, поэтому ожидаемый Rx находится между −13 и −9 dBm. В худшем случае до нижнего порога остаётся 2 dB, то есть проектному резерву не хватает 1 dB, хотя сама чувствительность ещё не нарушена. Верхний ожидаемый уровень −9 dBm ниже предела −3 dBm, поэтому перегрузка не объясняет недостаток бюджета.",
+    "difficulty": "advanced"
   },
   {
     "id": "l12-d05",
@@ -605,116 +607,130 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
 
   // ─── L2 · Port Security + DHCP Snooping (channel pack) ─────
   {
-    id: 'l12-ps01',
-    group: 'l1-l2',
-    topic: 'L2 · Port Security',
-    text: 'На access-порту включён port-security с violation shutdown. Подключили устройство со вторым MAC. Что обычно происходит?',
-    answers: [
-      'Порт переходит в err-disabled',
-      'Порт молча отбрасывает только broadcast',
-      'Коммутатор перезагружается',
-      'VLAN порта автоматически меняется на native',
+    "id": "l12-ps01",
+    "group": "l1-l2",
+    "topic": "L2 · Port Security",
+    "text": "На трёх access-портах разрешён один secure MAC. При появлении второго источника на A прекращается передача и от разрешённого узла до ручного восстановления; на B разрешённый узел работает, кадры нарушителя теряются и счётчик растёт; на C разрешённый узел работает, кадры нарушителя теряются без роста счётчика. Как сопоставить режимы Cisco port-security?",
+    "answers": [
+      "A — shutdown; B — restrict; C — protect",
+      "A — restrict; B — shutdown; C — protect",
+      "A — shutdown; B — protect; C — restrict",
+      "A — protect; B — restrict; C — shutdown"
     ],
-    correct: [0],
-    explanation: 'В режиме shutdown нарушение лимита MAC переводит порт в err-disabled. Protect только блокирует, restrict ещё считает.',
-    difficulty: 'applied',
-    family: 'port-security',
+    "correct": [
+      0
+    ],
+    "explanation": "Shutdown останавливает работу порта при нарушении, поэтому соответствует A. Restrict сохраняет передачу разрешённого источника, отбрасывает нарушающий трафик и учитывает нарушения; protect отбрасывает его без такого учёта. Так различаются B и C: один факт потери кадров нового MAC ещё не определяет режим.",
+    "difficulty": "applied",
+    "family": "port-security"
   },
   {
-    id: 'l12-ps02',
-    group: 'l1-l2',
-    topic: 'L2 · Port Security',
-    text: 'Чем режим restrict отличается от protect в port-security?',
-    answers: [
-      'Тоже блокирует неизвестный MAC, но ещё считает нарушения и может слать syslog/SNMP',
-      'Сразу переводит порт в err-disabled',
-      'Разрешает любые MAC без ограничений',
-      'Меняет native VLAN на порту',
+    "id": "l12-ps02",
+    "group": "l1-l2",
+    "topic": "L2 · Port Security",
+    "text": "На порту Cisco настроены maximum 1 и violation restrict, единственный secure MAC уже изучен. Syslog и SNMP-уведомления о нарушениях включены. Приходит кадр с другого Source MAC. Какое сочетание обработки и наблюдений ожидается?",
+    "answers": [
+      "Кадр отброшен; разрешённый MAC работает; счётчик и уведомления активны",
+      "Кадр отброшен; разрешённый MAC работает; счётчик и уведомления не меняются",
+      "Порт блокируется для обоих MAC; счётчик растёт, уведомления активны",
+      "Новый MAC обучается и кадр проходит; счётчик растёт, уведомления активны"
     ],
-    correct: [0],
-    explanation: 'Protect отбрасывает кадры неизвестного MAC. Restrict делает то же и увеличивает счётчик нарушений, часто с уведомлениями.',
-    difficulty: 'applied',
-    family: 'port-security',
+    "correct": [
+      0
+    ],
+    "explanation": "Restrict отбрасывает кадры источника сверх лимита и увеличивает счётчик нарушений, сохраняя работу разрешённого узла. При включённых уведомлениях нарушение также отражается в средствах оповещения, с учётом их ограничений частоты. Потеря трафика без учёта соответствует protect, а блокировка всего порта — shutdown; restrict не освобождает место для нового MAC автоматически.",
+    "difficulty": "applied",
+    "family": "port-security"
   },
   {
-    id: 'l12-ps03',
-    group: 'l1-l2',
-    topic: 'L2 · Port Security',
-    text: 'Что делает sticky в port-security?',
-    answers: [
-      'Изучает MAC и записывает его в running-config',
-      'Требует вводить каждый MAC только вручную',
-      'Навсегда выключает порт после первого кадра',
-      'Работает только на trunk-портах',
+    "id": "l12-ps03",
+    "group": "l1-l2",
+    "topic": "L2 · Port Security",
+    "text": "Для нового рабочего места MAC заранее не известен. Нужно автоматически закрепить первый разрешённый адрес за портом и сохранить это ограничение после перезагрузки без ручного ввода адреса. Какой порядок действий в Cisco port-security соответствует задаче?",
+    "answers": [
+      "Включить sticky; дождаться обучения; сохранить running-config в startup-config",
+      "Включить dynamic learning; дождаться обучения; сохранить running-config в startup-config",
+      "Включить sticky; сохранить running-config в startup-config; затем обучить адрес",
+      "Ввести static secure MAC вручную; затем сохранить running-config в startup-config"
     ],
-    correct: [0],
-    explanation: 'Sticky учит MAC на порту и добавляет его в текущую конфигурацию, чтобы не задавать адрес руками.',
-    difficulty: 'beginner',
-    family: 'port-security',
+    "correct": [
+      0
+    ],
+    "explanation": "Sticky автоматически превращает изученный адрес в запись текущей конфигурации, которую затем нужно сохранить. Обычные dynamic secure MAC не становятся постоянными строками startup-config из-за одного сохранения конфигурации. Сохранение до обучения ещё не содержит адреса, а ручной static secure MAC не выполняет требование автоматического закрепления.",
+    "difficulty": "beginner",
+    "family": "port-security"
   },
   {
-    id: 'l12-ds01',
-    group: 'l1-l2',
-    topic: 'L2 · DHCP Snooping',
-    text: 'После включения DHCP Snooping клиенты перестали получать адреса. Что чаще всего забыли?',
-    answers: [
-      'Пометить uplink к DHCP-серверу или relay как trusted',
-      'Выключить STP на всех портах',
-      'Сменить native VLAN на 1',
-      'Отключить LLDP',
+    "id": "l12-ds01",
+    "group": "l1-l2",
+    "topic": "L2 · DHCP Snooping",
+    "text": "DHCP Snooping включили для VLAN 20, оставив настройки snooping интерфейсов по умолчанию. Клиентские запросы входят через P1 и P2, ответы штатного сервера или relay приходят через U. Какое изменение разрешит эти ответы, сохранив проверку клиентских портов?",
+    "answers": [
+      "Назначить trusted порту U, а порты P1 и P2 оставить untrusted",
+      "Включить добавление Option 82, сохранив исходное доверие портов",
+      "Повысить rate limit на U, сохранив исходное доверие портов",
+      "Создать binding для клиента P1, сохранив исходное доверие портов"
     ],
-    correct: [0],
-    explanation: 'После включения порты по умолчанию untrusted: ответы сервера режутся. Uplink к серверу или relay нужно пометить trusted.',
-    difficulty: 'applied',
-    family: 'dhcp-snooping',
+    "correct": [
+      0
+    ],
+    "explanation": "Порты по умолчанию untrusted, и серверные DHCP-сообщения на таком входе отбрасываются. Доверенным делают проверенный путь к серверу или relay, поэтому здесь нужен U, а клиентские порты остаются untrusted. Option 82, ограничение частоты и клиентский binding решают другие задачи и не разрешают серверный ответ на недоверенном входе.",
+    "difficulty": "applied",
+    "family": "dhcp-snooping"
   },
   {
-    id: 'l12-ds02',
-    group: 'l1-l2',
-    topic: 'L2 · DHCP Snooping',
-    text: 'Что хранит binding-таблица DHCP Snooping?',
-    answers: [
-      'MAC, IP, VLAN и порт',
-      'Только DNS-имя клиента',
-      'Только список ACL',
-      'Только скорость порта',
+    "id": "l12-ds02",
+    "group": "l1-l2",
+    "topic": "L2 · DHCP Snooping",
+    "text": "Клиент с MAC C отправил запрос через порт P в VLAN 20. DHCP ACK пришёл через uplink U от сервера с MAC S: выдан адрес X, шлюз в Option 3 — G. Какой основной набор соответствует binding этого клиента после завершения обмена?",
+    "answers": [
+      "MAC C; IPv4 X; VLAN 20; интерфейс P",
+      "MAC S; IPv4 X; VLAN 20; интерфейс P",
+      "MAC C; IPv4 G; VLAN 20; интерфейс P",
+      "MAC C; IPv4 X; VLAN 20; интерфейс U"
     ],
-    correct: [0],
-    explanation: 'Binding связывает MAC, выданный IP, VLAN и интерфейс. Эту таблицу используют DAI и IP Source Guard.',
-    difficulty: 'beginner',
-    family: 'dhcp-snooping',
+    "correct": [
+      0
+    ],
+    "explanation": "Binding связывает клиента с выданным ему адресом и местом подключения: MAC C, IPv4 X, VLAN 20 и порт P. MAC сервера и шлюз из DHCP-опции не являются идентификаторами этой клиентской привязки. U — путь поступления ответа, а не клиентский интерфейс; в таблице могут также храниться срок аренды и тип записи.",
+    "difficulty": "beginner",
+    "family": "dhcp-snooping"
   },
   {
-    id: 'l12-ds03',
-    group: 'l1-l2',
-    topic: 'L2 · DHCP Snooping',
-    text: 'Зачем включать DHCP Snooping на пользовательском VLAN?',
-    answers: [
-      'Чтобы клиенты не получили шлюз и DNS от чужого DHCP-сервера',
-      'Чтобы ускорить сходимость STP',
-      'Чтобы отключить ARP',
-      'Чтобы увеличить MTU на порту',
+    "id": "l12-ds03",
+    "group": "l1-l2",
+    "topic": "L2 · DHCP Snooping",
+    "text": "Для VLAN 20 в DHCP Snooping порт U доверенный, пользовательский P — недоверенный. В захвате два Offer: первый вошёл на U, второй на P; у обоих одинаковый Server Identifier и корректный transaction ID ожидающего клиента. Как должна сработать проверка серверных сообщений?",
+    "answers": [
+      "Пропустить серверный Offer с U, а серверный Offer с P отбросить",
+      "Пропустить оба серверных Offer по совпавшему Server Identifier",
+      "Отбросить оба серверных Offer до создания binding для клиента",
+      "Пропустить серверный Offer с P, где ранее вошёл запрос клиента"
     ],
-    correct: [0],
-    explanation: 'DHCP Snooping блокирует ответы DHCP на untrusted-портах и защищает от rogue DHCP.',
-    difficulty: 'applied',
-    family: 'dhcp-snooping',
+    "correct": [
+      0
+    ],
+    "explanation": "Для серверного сообщения важен доверенный входной порт, а не самозаявленный Server Identifier. Поэтому Offer с U допускается, а ответ с клиентского P блокируется, даже если поля похожи на штатный ответ. Binding появляется в ходе завершения аренды и не должен требоваться для пропуска первого корректного Offer с доверенного пути.",
+    "difficulty": "applied",
+    "family": "dhcp-snooping"
   },
   {
-    id: 'l12-ds04',
-    group: 'l1-l2',
-    topic: 'L2 · DHCP Snooping',
-    text: 'На клиентском порту стоит слишком низкий ip dhcp snooping limit rate. Чем это грозит?',
-    answers: [
-      'Легитимные Discover и Request могут отбрасываться',
-      'Порт всегда станет trunk',
-      'Отключится OSPF на ядре',
-      'Сменится MAC самого коммутатора',
+    "id": "l12-ds04",
+    "group": "l1-l2",
+    "topic": "L2 · DHCP Snooping",
+    "text": "На Cisco Catalyst под IOS XE в VLAN с DHCP Snooping клиентскому порту задан limit rate 5 пакетов/с. При загрузке группы устройств измеренный входящий DHCP-поток превысил этот порог. Какое действие штатной защиты порта нужно учитывать на этой платформе?",
+    "answers": [
+      "Порт перейдёт в err-disabled с остановкой обычного трафика",
+      "Избыточные DHCP отбрасываются, а порт сохраняет передачу данных",
+      "Весь DHCP блокируется до конца аренды, а обычный трафик работает",
+      "Избыточные DHCP ставятся в очередь до следующего окна лимита"
     ],
-    correct: [0],
-    explanation: 'Rate limit защищает от шторма DHCP, но слишком низкий порог режет и обычные запросы клиентов.',
-    difficulty: 'advanced',
-    family: 'dhcp-snooping',
+    "correct": [
+      0
+    ],
+    "explanation": "На указанной платформе превышение DHCP Snooping rate limit вызывает защитное err-disable с причиной dhcp-rate-limit. Это останавливает передачу через порт, а не ограничивается потерей нескольких DHCP-пакетов; состояние и причину проверяют на интерфейсе и в журнале. Порог рассчитывают с учётом легитимных всплесков, поскольку ожидание очереди или окончания аренды не является механизмом этой защиты.",
+    "difficulty": "advanced",
+    "family": "dhcp-snooping"
   },
 
   // ─── L3 · VRRP ─────────────────────────────────────────────
@@ -815,31 +831,40 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
     family: 'storm-control',
   },
   {
-    id: 'l12-dot1x01',
-    group: 'l1-l2',
-    topic: 'L2 · 802.1X',
-    text: 'Что проходит на порту до успешной аутентификации?',
-    answers: ['EAPOL', 'весь IP-трафик', 'только BGP', 'только DHCP всегда'],
-    correct: [0],
-    explanation: 'До Access-Accept обычный трафик блокируется, EAPOL между клиентом и коммутатором проходит.',
-    difficulty: 'applied',
-    family: 'dot1x',
+    "id": "l12-dot1x01",
+    "group": "l1-l2",
+    "topic": "L2 · 802.1X",
+    "text": "Порт работает в закрытом режиме 802.1X: обычный доступ выдаётся после успешной авторизации, отдельного предварительного IP-доступа нет. ПК получил от коммутатора запрос идентичности EAP с Identifier 7. Какой следующий ответ ПК продолжит аутентификацию до открытия обычного доступа?",
+    "answers": [
+      "EAPOL с EAP-Response/Identity и Identifier 7",
+      "EAPOL с EAP-Request/Identity и Identifier 7",
+      "EAPOL с EAP-Success и Identifier 7",
+      "RADIUS Access-Request от ПК с Identifier 7"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Supplicant отвечает на запрос идентичности сообщением EAP-Response/Identity с тем же Identifier, переданным в EAPOL. Такой обмен разрешён до открытия controlled port, иначе начальная аутентификация не состоялась бы. Запрос и итог EAP-Success исходят со стороны аутентификации, а RADIUS Access-Request к серверу формирует authenticator, не ПК.",
+    "difficulty": "applied",
+    "family": "dot1x"
   },
   {
-    id: 'l12-lldp01',
-    group: 'l1-l2',
-    topic: 'L2 · LLDP-MED',
-    text: 'IP-телефон сам ушёл в Voice VLAN, порт access для ПК. Как?',
-    answers: [
-      'Коммутатор передал политику через LLDP-MED',
-      'STP назначил VLAN',
-      'DHCP Option 82 создал VLAN',
-      'телефон всегда игнорирует VLAN',
+    "id": "l12-lldp01",
+    "group": "l1-l2",
+    "topic": "L2 · LLDP-MED",
+    "text": "Телефон подключён к порту с нетегированным трафиком ПК. В момент загрузки он получает кадр на 01:80:c2:00:00:0e с EtherType 0x88cc; организационный TLV имеет OUI 00:12:bb, subtype 2 и параметры tagged=1, VLAN 30, priority 5, DSCP 46. После этого голосовой трафик идёт с VID 30. Какой источник настройки соответствует кадру?",
+    "answers": [
+      "LLDP-MED Network Policy",
+      "CDP Voice VLAN Advertisement",
+      "DHCP vendor-specific VLAN option",
+      "Локальная Voice VLAN телефона"
     ],
-    correct: [0],
-    explanation: 'LLDP-MED передаёт Voice VLAN, 802.1p и DSCP. VLAN должен уже существовать, IP телефон не получает.',
-    difficulty: 'applied',
-    family: 'lldp-med',
+    "correct": [
+      0
+    ],
+    "explanation": "EtherType 0x88cc указывает на LLDP, а OUI 00:12:bb и subtype 2 соответствуют LLDP-MED Network Policy. Политика может сообщить телефону Voice VLAN и параметры приоритета, не выдавая IP-адрес и не создавая VLAN на коммутаторе. CDP имеет другой формат обмена, а DHCP и локальная настройка не объясняют получение показанного TLV.",
+    "difficulty": "applied",
+    "family": "lldp-med"
   },
   {
     "id": "l3-rpki01",
