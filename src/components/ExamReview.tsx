@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Circle, Diamond, Info, RotateCcw, XCircle } from 'lucide-react';
+import type { Question } from '../types/quiz';
+import { getQuestionDeepDive } from '../data/questionExplanations';
 import type { ProgressSession } from '../utils/examProgress';
 import { filteredReview, reviewTotals, type ReviewFilter } from '../utils/examReview';
 import { resolveImageUrl } from '../data/questionsData';
@@ -33,6 +35,31 @@ function scoreLabel(percent: number): { text: string; tone: string } {
   if (percent >= 50) return { text: 'Нормально', tone: 'ok' };
   if (percent >= 40) return { text: 'Ниже среднего', tone: 'low' };
   return { text: 'Слабо', tone: 'weak' };
+}
+
+function EngineeringReview({ question }: { question: Question }) {
+  const [expanded, setExpanded] = useState(false);
+  const contentId = useId();
+  const deepDive = getQuestionDeepDive(question);
+  if (!deepDive.hasIndividualDeep) return null;
+
+  const isLong = deepDive.deepAnalysis.length > 600;
+  return (
+    <div className="review-explanation">
+      <BookOpen className="review-explanation-icon" aria-hidden="true" />
+      <div className="review-explanation-text">
+        <h4>Инженерный разбор</h4>
+        <p>{deepDive.briefAnswer}</p>
+        <div id={contentId} className="review-engineering-body" data-collapsed={isLong && !expanded}>
+          {deepDive.deepAnalysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+        </div>
+        {isLong && <button type="button" className="review-button review-engineering-toggle"
+          aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded(current => !current)}>
+          {expanded ? 'Свернуть разбор' : 'Читать полный разбор'}
+        </button>}
+      </div>
+    </div>
+  );
 }
 
 export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToTheory }: Props) {
@@ -170,6 +197,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
                 <div className="review-explanation-text"><h4>Почему так</h4><p>{row.explanation || 'Индивидуальное объяснение в сохранённом вопросе отсутствует.'}</p></div>
                 {row.lesson && onNavigateToTheory && <button type="button" onClick={() => onNavigateToTheory(row.question.id)} className="review-button review-lesson" aria-label={`Разобрать подробнее: ${row.lesson.title}`}><BookOpen aria-hidden="true" /><span>Разобрать подробнее<span className="review-lesson-title">{row.lesson.title}</span></span></button>}
               </div>
+              <EngineeringReview question={row.question} />
             </div>
           </details>
         ))}

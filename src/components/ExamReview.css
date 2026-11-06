@@ -192,3 +192,12 @@ main:has(.exam-review) { max-width: 1440px; }
 @media (max-width: 700px) {
   .review-meme { max-width: none; }
 }
+
+.review-engineering-body { margin-top: 12px; }
+.review-engineering-body p + p { margin-top: 12px; }
+.review-engineering-toggle { display: none; margin-top: 12px; }
+
+@media (max-width: 700px) {
+  .review-engineering-body[data-collapsed="true"] { display: none; }
+  .review-engineering-toggle { display: inline-flex; }
+}
