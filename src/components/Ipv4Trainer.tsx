@@ -434,21 +434,6 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3">
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4">
-          <h2 className="font-bold text-slate-900 dark:text-white mb-2">Зачем маска</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">IPv4 — 32 бита, четыре числа от 0 до 255. Маска говорит, где кончается сеть и начинается хост. /24 значит: первые 24 бита сеть, последние 8 — хосты.</p>
-        </section>
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4">
-          <h2 className="font-bold text-slate-900 dark:text-white mb-2">Префикс и точка</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">/24 и 255.255.255.0 — одно и то же. В маске единицы идут подряд слева. Поэтому 255.255.255.224 это /27, а не «случайные биты».</p>
-        </section>
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4">
-          <h2 className="font-bold text-slate-900 dark:text-white mb-2">Шаг сети</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">Шаг = 256 − последний ненулевой октет маски. /27 → 224 → шаг 32. Сети: 0, 32, 64… Адрес сети и broadcast не выдают хостам.</p>
-        </section>
-      </div>
-
       {/* Sub-tab 1: Interactive Practice Trainer */}
       {subTab === 'practice' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
