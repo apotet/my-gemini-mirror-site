@@ -175,7 +175,7 @@ export const Ipv6Trainer: React.FC = () => {
     <div className="font-sans max-w-5xl mx-auto space-y-5">
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-5 sm:p-6">
         <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">Продолжение после IPv4</p>
-        <h1 className="text-2xl sm:text-4xl text-slate-900 dark:text-white mt-2 font-sans font-bold">Не учи IPv6 как стену из цифр</h1>
+        <h1 className="text-2xl sm:text-3xl text-slate-900 dark:text-white mt-2 font-sans font-bold">Не учи IPv6 как стену из цифр</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Смотри на адрес как на восемь групп по 16 бит. В типичной LAN первые 64 бита — префикс сети, вторые 64 — идентификатор интерфейса.</p>
         <div className="mt-4 border-l-4 border-amber-400 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
           <strong className="text-amber-400">Главная мысль:</strong> IPv6 — 128 бит = 8 групп × 16 бит. Одна hex-цифра = 4 бита. Поэтому одна группа из четырёх hex-цифр = 16 бит.

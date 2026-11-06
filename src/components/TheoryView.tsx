@@ -65,7 +65,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
   return (
     <div className="font-sans space-y-5 max-w-5xl mx-auto pb-16">
       <div className="p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-[#091524] space-y-3">
-        <h1 className="text-xl text-slate-900 dark:text-white flex items-center gap-2 font-sans font-bold">
+        <h1 className="text-2xl sm:text-3xl text-slate-900 dark:text-white flex items-center gap-2 font-sans font-bold">
           <BookOpen className="w-5 h-5 text-cyan-500" />
           Теория и разборы
         </h1>

@@ -98,7 +98,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
   return (
     <section aria-label="Разбор завершённого экзамена" className="exam-review">
       <header className="review-overview">
-        <h2>Итоги экзамена</h2>
+        <h2 className="text-2xl sm:text-3xl font-sans font-bold">Итоги экзамена</h2>
         <div className="review-overview-body">
           <div className="review-score-wrap">
             <div className="review-score-ring" aria-hidden="true">

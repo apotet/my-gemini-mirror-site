@@ -375,7 +375,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
               <Calculator className="w-3.5 h-3.5" />
               IPv4 без магии · Считаем подсети в уме
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight font-sans font-bold">
+            <h1 className="text-2xl sm:text-3xl text-white tracking-tight font-sans font-bold">
               Интерактивный тренажёр IPv4 и CIDR
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
