@@ -375,7 +375,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
               <Calculator className="w-3.5 h-3.5" />
               IPv4 без магии · Считаем подсети в уме
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
               Интерактивный тренажёр IPv4 и CIDR
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
@@ -518,7 +518,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
                   </span>
                 </div>
 
-                <h2 className="text-lg sm:text-xl font-black text-white leading-relaxed">
+                <h2 className="text-lg sm:text-xl font-extrabold text-white leading-relaxed">
                   {currentTask.question}
                 </h2>
 
@@ -746,7 +746,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
                     onClick={() => toggleBit(idx)}
                     type="button"
                     title={`Бит веса ${bitWeights[idx]}: кликните для установки маски до этой позиции`}
-                    className={`w-full aspect-square rounded-xl flex items-center justify-center font-mono font-black text-base sm:text-xl border transition-all cursor-pointer ${
+                    className={`w-full aspect-square rounded-xl flex items-center justify-center font-mono font-extrabold text-base sm:text-xl border transition-all cursor-pointer ${
                       b === 1
                         ? 'bg-cyan-500 border-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/30 scale-105'
                         : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500'
@@ -771,7 +771,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
 
               <div className="p-3 rounded-xl bg-slate-900/60 border border-cyan-500/30">
                 <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Десятичный октет</span>
-                <div className="text-2xl font-black text-white font-mono">{decimalValue}</div>
+                <div className="text-2xl font-extrabold text-white font-mono">{decimalValue}</div>
                 <span className="text-[10px] text-cyan-300 block mt-0.5">Значение маски</span>
               </div>
 
