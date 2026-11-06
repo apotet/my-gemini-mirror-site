@@ -196,18 +196,18 @@ export const Ipv6Trainer: React.FC = () => {
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
           <h2 className="font-bold text-slate-900 dark:text-white">2. Научись сокращать</h2>
-          <div className="rounded-xl bg-slate-950 p-3 text-xs font-mono space-y-1">
-            <div className="text-amber-300">2001:0db8:0000:0000:0000:0000:0000:0042</div>
+          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-mono space-y-1">
+            <div className="text-amber-600 dark:text-amber-300">2001:0db8:0000:0000:0000:0000:0000:0042</div>
             <div className="text-slate-500">↓ убираем ведущие нули и одну самую длинную цепочку нулевых групп</div>
-            <div className="text-cyan-300">2001:db8::42</div>
+            <div className="text-cyan-700 dark:text-cyan-300">2001:db8::42</div>
           </div>
-          <div className="rounded-xl bg-slate-950 p-3 text-xs font-mono space-y-1">
-            <div className="text-amber-300">fe80:0000:0000:0000:021c:7eff:fe12:3456</div>
+          <div className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-sm font-mono space-y-1">
+            <div className="text-amber-600 dark:text-amber-300">fe80:0000:0000:0000:021c:7eff:fe12:3456</div>
             <div className="text-slate-500">↓</div>
-            <div className="text-cyan-300">fe80::21c:7eff:fe12:3456</div>
+            <div className="text-cyan-700 dark:text-cyan-300">fe80::21c:7eff:fe12:3456</div>
           </div>
-          <p className="text-xs text-slate-500">Сначала убираем ведущие нули в каждой группе. Потом самую длинную цепочку из двух и более нулей заменяем на ::. При равной длине берём первую слева. Одиночный ноль остаётся как 0: <span className="font-mono">2001:db8:0:1::9</span>. :: в адресе только один раз.</p>
-          <p className="text-xs text-slate-500">В <span className="font-mono">fe80::21c:7eff:fe12:3456</span> хвост когда-то собирали по modified EUI-64. Сейчас ОС чаще ставят стабильный приватный IID (RFC 7217) или временный (RFC 8981).</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Сначала убираем ведущие нули в каждой группе. Потом самую длинную цепочку из двух и более нулей заменяем на ::. При равной длине берём первую слева. Одиночный ноль остаётся как 0: <span className="font-mono">2001:db8:0:1::9</span>. :: в адресе только один раз.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">В <span className="font-mono">fe80::21c:7eff:fe12:3456</span> хвост когда-то собирали по modified EUI-64. Сейчас ОС чаще ставят стабильный приватный IID (RFC 7217) или временный (RFC 8981).</p>
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 p-4 space-y-2">
