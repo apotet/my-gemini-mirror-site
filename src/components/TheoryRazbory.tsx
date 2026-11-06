@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_QUESTIONS, TOTAL_QUESTION_COUNT, resolveImageUrl } from '../data/questionsData';
 import { getQuestionDeepDive } from '../data/questionExplanations';
 import { getLessonForQuestion } from '../data/lessons';
+import { StudyTextToggle } from './StudyTextToggle';
+import { useStudyTextMode } from '../utils/studyTextMode';
 import { ZoomableImage } from './ZoomableImage';
 import {
   BookOpen,
@@ -35,6 +37,7 @@ export const TheoryRazbory: React.FC<Props> = ({
   onClearInitialQuestion,
   onOpenLesson,
 }) => {
+  const [textMode, setTextMode] = useStudyTextMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
@@ -90,6 +93,11 @@ export const TheoryRazbory: React.FC<Props> = ({
     const q = ALL_QUESTIONS.find((item) => item.id === qId);
     if (!q) return null;
     const deep = getQuestionDeepDive(q);
+    const professional = textMode === 'professional' ? deep.professional : undefined;
+    const brief = professional?.brief ?? deep.briefAnswer;
+    const engineering = professional?.deep ?? deep.engineeringDeep ?? deep.deepAnalysis;
+    const trap = professional ? professional.trap : deep.commonTrap;
+    const nextStudy = professional ? professional.next : deep.nextStudy;
     const correctSet = new Set(q.correct);
     const showEngineering = !!deepOpen[qId];
     const isAdvanced = q.difficulty === 'advanced' || deep.hasIndividualDeep;
@@ -138,7 +146,7 @@ export const TheoryRazbory: React.FC<Props> = ({
             )}
           </div>
           <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line break-words">
-            {deep.briefAnswer}
+            {brief}
           </p>
         </div>
 
@@ -161,11 +169,13 @@ export const TheoryRazbory: React.FC<Props> = ({
             </button>
             {showEngineering && (
               <div className="px-4 pb-4 space-y-3 border-t border-slate-200 dark:border-slate-800">
+                {deep.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+                {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words pt-3">
-                  {deep.engineeringDeep || deep.deepAnalysis}
+                  {engineering}
                 </p>
-                {deep.nextStudy && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {deep.nextStudy}</p>
+                {nextStudy && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {nextStudy}</p>
                 )}
                 {onOpenLesson && getLessonForQuestion(q.id) && (
                   <button
@@ -181,12 +191,12 @@ export const TheoryRazbory: React.FC<Props> = ({
           </div>
         )}
 
-        {deep.commonTrap && (
+        {trap && (
           <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 space-y-1.5">
             <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 font-sans flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" /> Типичная ошибка
             </div>
-            <p className="text-sm text-amber-900 dark:text-amber-100/90 leading-relaxed break-words">{deep.commonTrap}</p>
+            <p className="text-sm text-amber-900 dark:text-amber-100/90 leading-relaxed break-words">{trap}</p>
           </div>
         )}
 

@@ -1,5 +1,5 @@
 import { Question } from '../types/quiz';
-import { APPLIED_INDIVIDUAL_DEEP } from './questionExplanationsApplied';
+import { APPLIED_INDIVIDUAL_DEEP, type ProfessionalExplanation } from './questionExplanationsApplied';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -10,6 +10,7 @@ export interface QuestionDeepDive {
   coreConcept: string;
   deepAnalysis: string;
   engineeringDeep?: string;
+  professional?: ProfessionalExplanation;
   hasIndividualDeep: boolean;
   commonTrap: string;
   practicalTip?: string;
@@ -29,13 +30,20 @@ export interface QuestionDeepDive {
 /** Hand-authored deep dives for advanced IDs (no generic L1–L7 paste). */
 const ADVANCED_INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string }
+  { brief: string; deep: string; trap?: string; next?: string; professional?: ProfessionalExplanation }
 > = {
   'l12-d01': {
     "brief": "Сначала проверьте, распознаётся ли подключение компьютера как конечное и настроена ли защита от появления другого коммутатора.",
     "deep": "Компьютер подключается как конечный узел, но порт сначала проходит этапы ожидания, как будто за ним может находиться продолжение сети. Отсюда задержка первых кадров при каждом подключении. Сначала нужно проверить, действительно ли порт работает в режиме для конечного устройства, а не менять параметры резервных связей между коммутаторами.\n\nВ RSTP такой режим называется edge; у Cisco для него используют настройку PortFast. Фактическое состояние operational edge позволяет быстро перейти к Forwarding, не ожидая обычной процедуры включения межкоммутаторного пути. BPDU Guard — отдельная защита: если на защищённом порту появляются служебные сообщения BPDU от подключённого коммутатора, она отключает порт; на Catalyst это обычно err-disabled. В выводе show spanning-tree interface … detail проверяют именно действующее edge-состояние, а в журнале — события защиты.\n\nТаймер восстановления после BPDU Guard важен при уже случившемся защитном отключении, но не объясняет сам по себе показанную последовательность перехода к передаче. Alternate, Bridge ID и стоимость пути к корню относятся к выбору путей в топологии, а не к первому ожиданию на каждом порту компьютера. Сам Guard переход не ускоряет: быстрый старт обеспечивает edge, а защита ограничивает риск подключения коммутатора вместо конечного узла.",
     "trap": "Приписывать быстрый старт защите BPDU Guard или включать режим конечного порта на межкоммутаторных связях без проверки назначения.",
-    "next": "CLI Lab: VLAN/trunk; теория STP/RSTP"
+    "next": "CLI Lab: VLAN/trunk; теория STP/RSTP",
+    "professional": {
+      "brief": "Проверить edge/PortFast на access и политику BPDU Guard: без edge RSTP не форвардит сразу.",
+      "deep": "Суть. Access к ПК не должен ждать полной сходимости как uplink.\n\nМеханизм RSTP. Роли Root/Designated/Alternate/Backup; состояния Discarding → Learning → Forwarding. Edge-порт (PortFast) сразу переходит к forwarding для data plane, продолжая слушать BPDU.\n\nПочему «долго». Без edge порт ведёт себя как часть топологии: negotiation и learning задерживают пользовательский трафик на секунды.\n\nДиагностика. show spanning-tree interface … detail; edge/portfast status; нет ли BPDU с access (тогда Guard ошибёт порт — это правильно).\n\nЛовушка. Путать состояния classic STP (Listening/Learning 15s) с RSTP: цифры и термины другие, идея edge — та же.\n\nПроверка. После edge+guard ПК получает DHCP/ARP сразу; при подключении свитча на access — errdisable/guard.",
+      "trap": "Описывать RSTP исключительно терминами classic STP Listening 15s без edge.",
+      "next": "CLI Lab: VLAN/trunk; теория STP/RSTP",
+      "sourceCommit": "c60b93022f9d47d9d09e3f525bbb8cb177887c14"
+    }
   },
   'l12-d02': {
     brief: "S1 маршрутизирует из VLAN 30 в VLAN 10; к S2 кадр идёт в VLAN 10, без обязательного переноса VLAN 30.",
@@ -73,7 +81,12 @@ B относит нетегированный кадр к собственной
   'l12-d05': {
     "brief": "Две независимые передающие линии образуют петлю: копии широковещательного запроса продолжают возвращаться и занимать каналы.",
     "deep": "Коммутатор получает запрос для всех соседей и отправляет его по обеим линиям. На другой стороне каждая копия пересылается через оставшуюся линию и возвращается обратно. Пока все порты продолжают передавать данные, копии совершают новые обходы и создают лишнюю нагрузку вместо однократной доставки.\n\nЭто петля Ethernet: широковещательный ARP Request распространяется обычной рассылкой flooding через остальные передающие порты той же VLAN. У Ethernet-кадра нет уменьшаемого при каждом таком переходе счётчика, который остановил бы обход; IP TTL к этой пересылке не применяется. Протокол STP/RSTP мог бы оставить одну связь резервной, но в билете все четыре порта продолжают пересылку.\n\nFCS проверяет целостность кадра, а не хранит историю уже полученных копий, поэтому совпадение контрольной суммы не устраняет петлю. Обучение MAC источника не ограничивает рассылку широковещательного кадра одним выходом. Распределение по хэшу относится к настроенному агрегату, например согласованному через LACP; две независимые линии из условия таким агрегатом не являются.",
-    "trap": "Ожидать подавления дублей по контрольной сумме или поведения агрегата от двух независимо работающих линий."
+    "trap": "Ожидать подавления дублей по контрольной сумме или поведения агрегата от двух независимо работающих линий.",
+    "professional": {
+      "brief": "Без STP broadcast/unknown unicast зацикливаются; IP TTL Ethernet storm не останавливает.",
+      "deep": "Ethernet не декрементирует TTL. Петля размножает flood до насыщения каналов.\nНужны STP/RSTP/MSTP, storm-control, разумный дизайн без L2-колец без защиты.",
+      "sourceCommit": "c60b93022f9d47d9d09e3f525bbb8cb177887c14"
+    }
   },
   'l12-d06': {
     brief: 'CAM full → больше unknown unicast flood (и риск mac-flooding атак).',
@@ -338,7 +351,7 @@ SNI нужен для нескольких HTTPS-сайтов на одном IP
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean }
+  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -374,6 +387,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     coreConcept: `Правильный ответ: «${correctText}». Тема: ${question.topic}.`,
     deepAnalysis,
     engineeringDeep,
+    professional: individual?.professional,
     hasIndividualDeep: Boolean(individual),
     commonTrap: individual?.trap || detectCommonTrap(question),
     practicalTip: question.remember || getPracticalTip(category),

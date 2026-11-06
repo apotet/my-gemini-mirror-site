@@ -1,5 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Circle, Diamond, Info, RotateCcw, XCircle } from 'lucide-react';
+import { StudyTextToggle } from './StudyTextToggle';
+import { useStudyTextMode } from '../utils/studyTextMode';
 import type { Question } from '../types/quiz';
 import { getQuestionDeepDive } from '../data/questionExplanations';
 import type { ProgressSession } from '../utils/examProgress';
@@ -38,20 +40,26 @@ function scoreLabel(percent: number): { text: string; tone: string } {
 }
 
 function EngineeringReview({ question }: { question: Question }) {
+  const [textMode, setTextMode] = useStudyTextMode();
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
   const deepDive = getQuestionDeepDive(question);
   if (!deepDive.hasIndividualDeep) return null;
 
-  const isLong = deepDive.deepAnalysis.length > 600;
+  const professional = textMode === 'professional' ? deepDive.professional : undefined;
+  const brief = professional?.brief ?? deepDive.briefAnswer;
+  const analysis = professional?.deep ?? deepDive.deepAnalysis;
+  const isLong = analysis.length > 600;
   return (
     <div className="review-explanation">
       <BookOpen className="review-explanation-icon" aria-hidden="true" />
       <div className="review-explanation-text">
         <h4>Инженерный разбор</h4>
-        <p>{deepDive.briefAnswer}</p>
+        {deepDive.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+        {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
+        <p>{brief}</p>
         <div id={contentId} className="review-engineering-body" data-collapsed={isLong && !expanded}>
-          {deepDive.deepAnalysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+          {analysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
         </div>
         {isLong && <button type="button" className="review-button review-engineering-toggle"
           aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded(current => !current)}>
