@@ -25,9 +25,10 @@ const { default: React } = await import('react');
 const { renderToStaticMarkup } = await import('react-dom/server');
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 
-const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d01', 'l12-d05'];
+const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d01', 'l12-d05',
+  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6'];
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -38,7 +39,7 @@ for (const id of ids) {
 assert.equal(getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === 'review-dot1x-19')).professional, undefined, 'MISSING history stays missing');
 
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-stp']) {
+for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -79,4 +80,4 @@ target.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { thr
 setStudyTextMode('professional');
 assert.equal(getStudyTextMode(), 'professional', 'storage-denied fallback still works in the tab');
 delete globalThis.window;
-console.log('PASS: two pilot lessons/seven deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
+console.log('PASS: three pilot lessons/fifteen deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
