@@ -82,8 +82,43 @@ await build({ stdin: { contents: `
 `, resolveDir: process.cwd(), sourcefile: 'review-ui.ts' }, bundle: true, platform: 'node', format: 'esm',
   external: ['react', 'react-dom/server', 'lucide-react'], outfile, logLevel: 'silent' });
 const { render } = await import(pathToFileURL(outfile).href);
-const html = render(session);
-assert.equal((html.match(/<details/g) || []).length, 10, 'all ten compact review cards');
+// The current UI starts on mistakes when the attempt has any. This fixture has
+// one wrong answer, seven correct answers and two unconfirmed answers.
+const defaultHtml = render(session);
+assert.equal((defaultHtml.match(/<details\b/g) || []).length, 1, 'default mistakes filter shows the one wrong answer');
+assert.ok(defaultHtml.includes('Показано 1 из 10'));
+assert.ok(defaultHtml.includes('Вопрос 2</span>'), 'default card is the wrong question, not the first question');
+
+function renderWithFilter(session, filter) {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  const key = `osi_review_view:${session.attemptId || session.startTime}`;
+  try {
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: {
+      getItem(requestedKey) {
+        return requestedKey === key ? JSON.stringify({ filter, open: [] }) : null;
+      },
+    } });
+    return render(session);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'sessionStorage', previous);
+    else delete globalThis.sessionStorage;
+  }
+}
+
+// Exercise the real component with each saved filter, including all unanswered
+// drafts. Checking question texts catches both omitted and duplicated cards.
+for (const [filter, indexes] of [
+  ['all', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]],
+  ['wrong', [2]],
+  ['correct', [0, 1, 5, 6, 7, 8, 9]],
+]) {
+  const filteredHtml = renderWithFilter(session, filter);
+  assert.equal((filteredHtml.match(/<details\b/g) || []).length, indexes.length, filter + ': card count');
+  assert.deepEqual([...filteredHtml.matchAll(/class="review-question-text">([^<]*)<\/span>/g)].map(match => match[1]),
+    indexes.map(index => questions[index].text), filter + ': exact questions in order');
+  assert.ok(filteredHtml.includes(`Показано ${indexes.length} из 10`), filter + ': visible total');
+}
+const html = renderWithFilter(session, 'all');
 assert.ok(html.includes('Правильный ответ:'));
 assert.ok(html.includes('Ваш выбор'));
 assert.ok(html.includes('Индивидуальное объяснение 0'));
