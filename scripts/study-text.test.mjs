@@ -46,7 +46,7 @@ for (const id of diagnosticSkippedIds) {
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-method']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-copp-storm', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -136,8 +136,20 @@ for (const id of tlsMeaningOnlyIds) {
   assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, 3, id);
   assert.equal(deep.professional, undefined, id);
 }
+// CoPP/storm explanations already have both styles; keep them connected.
+for (const id of ['l12-copp01', 'l12-storm01']) {
+  const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
+  assert.ok(deep.professional?.deep, id);
+  assert.doesNotMatch(deep.deepAnalysis.split(/\n\s*\n/)[0], /CoPP|CPP|storm[ -]?control/i);
+}
+const coppLesson = LESSONS.find(l => l.id === 'ts-copp-storm');
+for (const block of coppLesson.blocks) {
+  assert.equal(block.body.split(/\n\s*\n/).length, 3, block.heading);
+  assert.doesNotMatch(block.body.split(/\n\s*\n/)[0], /CoPP|CPP|storm[ -]?control/i);
+}
+
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-method']) {
+for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-copp-storm', 'ts-method']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
