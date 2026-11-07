@@ -143,7 +143,7 @@ assert.equal(batch.mistakes(20).length, 20); assert.equal(batch.mistakes().lengt
 const staleEpoch = batch.load().epoch;
 const zero = batch.reset(); assert.equal(zero.answeredCount, 0); assert.equal(zero.mistakesCount, 0); assert.equal(zero.streakDays, 0);
 assert.equal(batch.record(a.id, false, 'stale', staleEpoch), false, 'old session cannot undo reset');
-assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 617, 'reset leaves bank intact');
+assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 657, 'reset leaves bank intact');
 migrated.reset();
 for (const key of ['osi_user_progress_v3', 'osi_last_mistakes', 'osi_exam_history', 'osi_active_session']) assert.equal(legacy.getItem(key), null);
 assert.equal(createProgressStore(ALL_QUESTIONS, () => legacy, () => now).summary().answeredCount, 0);

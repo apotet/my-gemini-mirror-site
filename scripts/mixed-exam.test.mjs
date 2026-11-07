@@ -31,7 +31,7 @@ function verify(questions) {
   return counts;
 }
 
-assert.equal(ALL_QUESTIONS.length, 617, 'test the complete current bank');
+assert.equal(ALL_QUESTIONS.length, 657, 'test the complete current bank');
 const totals = Object.fromEntries(MIXED_GROUPS.map(group => [group, { min: 2, max: 0, total: 0 }]));
 const signatures = new Set();
 let storageReads = 0;
