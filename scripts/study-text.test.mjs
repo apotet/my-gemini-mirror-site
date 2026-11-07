@@ -33,6 +33,8 @@ const tcpipModelDualIds = ["tcp-03", "tcp-06", "review-osi-34", "tcpip-x09", "tc
 ids.push(...tcpipModelDualIds);
 const pduDualIds = ["l2-01", "k-09", "k-10", "tcpip-x20", "tcpip-x11", "new-tcpip-trailer"];
 ids.push(...pduDualIds);
+const tcpLossDualIds = ["l4-09", "new-l4-retransmit", "gen-osi-a-13"];
+ids.push(...tcpLossDualIds);
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
@@ -41,7 +43,7 @@ for (const id of diagnosticSkippedIds) {
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -72,7 +74,7 @@ for (const id of dhcpMeaningOnlyIds) {
   assert.equal(deep.professional, undefined, 'no invented professional DHCP text: ' + id);
 }
 
-const tcpMeaningOnlyIds = ["l4-02", "l4-03", "l4-08", "l4-09", "new-l4-retransmit", "l4-x01", "l4-x02", "l4-x06", "gen-osi-a-13", "tcpip-x22"];
+const tcpMeaningOnlyIds = ["l4-02", "l4-03", "l4-08", "l4-x01", "l4-x02", "l4-x06", "tcpip-x22"];
 for (const id of tcpMeaningOnlyIds) {
   const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
   assert.ok(deep.hasIndividualDeep, id);
@@ -126,7 +128,7 @@ for (const id of ['gen-osi-a-12', 'k-06', 'k-07', 'k-08', 'tcpip-x04', 'tcpip-x1
 }
 
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']) {
+for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
