@@ -35,6 +35,9 @@ const pduDualIds = ["l2-01", "k-09", "k-10", "tcpip-x20", "tcpip-x11", "new-tcpi
 ids.push(...pduDualIds);
 const tcpLossDualIds = ["l4-09", "new-l4-retransmit", "gen-osi-a-13"];
 ids.push(...tcpLossDualIds);
+const tlsDualIds = ["l57-x12", "l57-x18"];
+ids.push(...tlsDualIds);
+const tlsMeaningOnlyIds = ["new-l7-tls", "l57-x05", "l57-x06"];
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
@@ -43,7 +46,7 @@ for (const id of diagnosticSkippedIds) {
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -127,8 +130,14 @@ for (const id of ['gen-osi-a-12', 'k-06', 'k-07', 'k-08', 'tcpip-x04', 'tcpip-x1
   assert.equal(deep.professional, undefined, id);
 }
 
+for (const id of tlsMeaningOnlyIds) {
+  const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
+  assert.ok(deep.hasIndividualDeep, id);
+  assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, 3, id);
+  assert.equal(deep.professional, undefined, id);
+}
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'ts-method']) {
+for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-method']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -137,7 +146,7 @@ const otherLesson = LESSONS.find(l => !l.professional);
 assert.ok(!render(LessonView, { lesson: otherLesson, onBack() {} }).includes('Стиль объяснения'));
 const missingHtml = render(TheoryRazbory, { ...theoryProps, initialQuestionId: 'review-dot1x-19' });
 assert.ok(!missingHtml.includes('Стиль объяснения'));
-for (const id of [...ids, 'review-dot1x-19', 'review-ospf-26', ...dnsMeaningOnlyIds, ...dhcpMeaningOnlyIds, ...tcpMeaningOnlyIds, ...arpMeaningOnlyIds, ...ipv6MeaningOnlyIds, ...qosMeaningOnlyIds, ...ethernetMeaningOnlyIds]) {
+for (const id of [...ids, ...tlsMeaningOnlyIds, 'review-dot1x-19', 'review-ospf-26', ...dnsMeaningOnlyIds, ...dhcpMeaningOnlyIds, ...tcpMeaningOnlyIds, ...arpMeaningOnlyIds, ...ipv6MeaningOnlyIds, ...qosMeaningOnlyIds, ...ethernetMeaningOnlyIds]) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
   const session = { questions: [q], currentIndex: 0, userAnswers: { [id]: q.correct }, submittedQuestions: { [id]: true },
     startTime: Date.now(), isCompleted: true, mode: 'mixed', feedbackMode: 'exam', difficulty: 'beginner' };
