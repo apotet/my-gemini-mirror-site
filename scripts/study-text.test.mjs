@@ -29,6 +29,8 @@ const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d0
   'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27', 'l57-x02', 'ts-x03', 'l4-d04', 'l57-d03', 'new-ts-dns', 'tcpip-x24', 'l57-x07', 'l57-x08', 'l57-d05', 'l12-ds01', 'l12-ds02', 'l12-ds03', 'l12-ds04', "l4-10", "l4-fr01", "l4-d01", "l4-d02", "l4-d05", "l4-d06", "tr-06", "tr-08", "l3-03", "l2-10", "l2-11", "new-l3-arp-scope", "new-l3-next-hop", "gen-diag-9", "ts-x09", "l3-d07", "gen-diag-4", "review-ndp-1", "review-ndp-3", "review-slaac-4", "review-slaac-5", "review-slaac-6", "l3-d06"];
 const diagnosticDualIds = ["tr-01","tr-02","tr-04","tr-09","tr-11","tr-12","gen-diag-0","gen-diag-2","gen-diag-5","gen-diag-10","gen-diag-13","new-ts-mtu","new-ts-duplex","review-lldp-8","review-dot1x-20","review-syslog-25","review-poe-30","review-osi-35","ts-x01","ts-x02","ts-x06","ts-x07","ts-x08","ts-x10","ts-x11","ts-x13","ts-d01","ts-d02","ts-d03","ts-d04","ts-d05","ts-d06","ts-d07","ts-d08","l12-copp01","l12-storm01","ts-pfc01","ts-linux01","l1-03","l1-04","l1-06","tcpip-d02","tcpip-d04","l57-d01","l57-d02"];
 ids.push(...diagnosticDualIds, 'l12-ps01', 'l12-ps02', 'l12-ps03', 'review-qos-22', 'l12-x06', 'tcpip-d05', 'l3-vrrp01', 'l3-vrrp02', 'l3-vrrp03', 'l3-vrrp04', 'l3-rpki01', "l1-01", "l1-02", "l1-05", "l2-04", "gen-osi-a-3", "gen-osi-a-4", "k-11", "l12-x05", "l12-d06", "tcpip-x06", "tcp-05", "new-tcpip-router");
+const tcpipModelDualIds = ["tcp-03", "tcp-06", "review-osi-34", "tcpip-x09", "tcpip-x28", "tcpip-d03", "tcpip-d01", "tcpip-x26"];
+ids.push(...tcpipModelDualIds);
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
@@ -37,7 +39,7 @@ for (const id of diagnosticSkippedIds) {
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'ts-method']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'tcpip-model', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -108,8 +110,15 @@ for (const id of ethernetMeaningOnlyIds) {
   assert.equal(deep.professional, undefined, 'no invented professional Ethernet text: ' + id);
 }
 
+// Model questions without an individual explanation remain absent.
+for (const id of ['tcp-01', 'tcp-02', 'tcp-04', 'tcp-08', 'tcpip-x01', 'tcpip-x02', 'tcpip-x03', 'tcpip-x04', 'tcpip-x05', 'tcpip-x13', 'tcpip-x15', 'k-05', 'k-06', 'k-07', 'new-tcpip-payload']) {
+  const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
+  assert.equal(deep.hasIndividualDeep, false, id);
+  assert.equal(deep.professional, undefined, id);
+}
+
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'ts-method']) {
+for (const id of ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l7-dhcp', 'l7-dns', 'tcpip-model', 'ts-method']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -150,4 +159,4 @@ target.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { thr
 setStudyTextMode('professional');
 assert.equal(getStudyTextMode(), 'professional', 'storage-denied fallback still works in the tab');
 delete globalThis.window;
-console.log('PASS: fifteen pilot lessons/124 dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
+console.log('PASS: study text lessons and dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
