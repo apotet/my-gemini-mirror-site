@@ -26,9 +26,9 @@ const { renderToStaticMarkup } = await import('react-dom/server');
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 
 const ids = ['l12-lldp01', 'l12-dot1x01', 'l2-09', 'l12-x01', 'l12-x02', 'l12-d01', 'l12-d05',
-  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27', 'l57-x02', 'ts-x03', 'l4-d04', 'l57-d03', 'new-ts-dns', 'tcpip-x24', 'l57-x07', 'l57-x08', 'l57-d05', 'l12-ds01', 'l12-ds02', 'l12-ds03', 'l12-ds04', "l4-10", "l4-fr01", "l4-d01", "l4-d02", "l4-d05", "l4-d06", "tr-06", "tr-08"];
+  'l2-06', 'l2-07', 'l2-08', 'eth-vlan-benefits', 'l12-x08', 'l12-d03', 'gen-osi-a-5', 'gen-osi-a-6', 'review-ospf-27', 'review-ospf-28', 'l3-15', 'l3-d05', 'tcpip-x27', 'l57-x02', 'ts-x03', 'l4-d04', 'l57-d03', 'new-ts-dns', 'tcpip-x24', 'l57-x07', 'l57-x08', 'l57-d05', 'l12-ds01', 'l12-ds02', 'l12-ds03', 'l12-ds04', "l4-10", "l4-fr01", "l4-d01", "l4-d02", "l4-d05", "l4-d06", "tr-06", "tr-08", "l3-03", "l2-10", "l2-11", "new-l3-arp-scope", "new-l3-next-hop", "gen-diag-9", "ts-x09", "l3-d07"];
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf', 'l4-tcp', 'l7-dhcp', 'l7-dns']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-nat', 'l3-ospf', 'l4-tcp', 'l7-dhcp', 'l7-dns']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
@@ -67,8 +67,16 @@ for (const id of tcpMeaningOnlyIds) {
   assert.equal(deep.professional, undefined, 'no invented professional TCP text: ' + id);
 }
 
+const arpMeaningOnlyIds = ["tcpip-x10","ts-pack1-04"];
+for (const id of arpMeaningOnlyIds) {
+  const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
+  assert.ok(deep.hasIndividualDeep, id);
+  assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, 3);
+  assert.equal(deep.professional, undefined, 'no invented professional ARP text: ' + id);
+}
+
 const theoryProps = { onNavigateToIpv4() {}, onNavigateToIpv6() {} };
-for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-nat', 'l3-ospf', 'l4-tcp', 'l7-dhcp', 'l7-dns']) {
+for (const id of ['l2-access-auth', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-nat', 'l3-ospf', 'l4-tcp', 'l7-dhcp', 'l7-dns']) {
   const l = LESSONS.find(l => l.id === id), html = render(LessonView, { lesson: l, onBack() {} });
   assert.ok(html.includes('Стиль объяснения') && html.includes('По делу'));
   assert.ok(html.includes(l.blocks[0].heading), 'default is meaning, including base');
@@ -77,7 +85,7 @@ const otherLesson = LESSONS.find(l => !l.professional);
 assert.ok(!render(LessonView, { lesson: otherLesson, onBack() {} }).includes('Стиль объяснения'));
 const missingHtml = render(TheoryRazbory, { ...theoryProps, initialQuestionId: 'review-dot1x-19' });
 assert.ok(!missingHtml.includes('Стиль объяснения'));
-for (const id of [...ids, 'review-dot1x-19', 'review-ospf-26', ...dnsMeaningOnlyIds, ...dhcpMeaningOnlyIds, ...tcpMeaningOnlyIds]) {
+for (const id of [...ids, 'review-dot1x-19', 'review-ospf-26', ...dnsMeaningOnlyIds, ...dhcpMeaningOnlyIds, ...tcpMeaningOnlyIds, ...arpMeaningOnlyIds]) {
   const q = ALL_QUESTIONS.find(q => q.id === id);
   const session = { questions: [q], currentIndex: 0, userAnswers: { [id]: q.correct }, submittedQuestions: { [id]: true },
     startTime: Date.now(), isCompleted: true, mode: 'mixed', feedbackMode: 'exam', difficulty: 'beginner' };
@@ -109,4 +117,4 @@ target.sessionStorage = { getItem() { throw Error('blocked'); }, setItem() { thr
 setStudyTextMode('professional');
 assert.equal(getStudyTextMode(), 'professional', 'storage-denied fallback still works in the tab');
 delete globalThis.window;
-console.log('PASS: eight pilot lessons/forty-one dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
+console.log('PASS: nine pilot lessons/forty-nine dual deep dives, MISSING toggle hidden, default meaning, tab persistence, review UI preserved');
