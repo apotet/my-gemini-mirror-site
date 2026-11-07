@@ -2,17 +2,19 @@ import React, { useMemo, useState } from 'react';
 import { Lesson } from '../data/lessons/types';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
+import { LessonTermTags } from './LessonTermTags';
 import { SniDiagram } from './SniDiagram';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
 interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
+  onOpenLesson?: (lessonId: string) => void;
   onOpenQuestion?: (questionId: string) => void;
   returnQuestionId?: string | null;
 }
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenQuestion, returnQuestionId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
   const [copied, setCopied] = useState<string | null>(null);
@@ -62,6 +64,9 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenQu
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lesson.title}</h2>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{content.summary}</p>
+        {lesson.id === 'l2-ethernet' ? (
+          <LessonTermTags key={textMode} terms={content.terms} onOpenLesson={onOpenLesson} />
+        ) : (
         <div className="flex flex-wrap gap-1.5 pt-1">
           {content.terms.map((t) => (
             <span key={t} className="px-2 py-0.5 rounded-lg text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -69,6 +74,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenQu
             </span>
           ))}
         </div>
+        )}
       </header>
 
       {lesson.diagram === 'sni' && <SniDiagram />}

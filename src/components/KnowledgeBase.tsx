@@ -67,7 +67,12 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   if (lesson) {
     return (
       <LessonView
+        key={lesson.id}
         lesson={lesson}
+        onOpenLesson={id => {
+          setOpenId(id);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         returnQuestionId={returnQuestionId}
         onOpenQuestion={onOpenQuestion}
         onBack={() => {
