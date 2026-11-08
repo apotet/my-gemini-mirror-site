@@ -60,7 +60,7 @@ function EngineeringReview({ question }: { question: Question }) {
         {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
         <p><GlossaryText key={textMode} enabled={!professional}>{brief}</GlossaryText></p>
         <div id={contentId} className="review-engineering-body" data-collapsed={isLong && !expanded}>
-          {analysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+          {analysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}><GlossaryText key={textMode} enabled={!professional}>{paragraph}</GlossaryText></p>)}
         </div>
         {isLong && <button type="button" className="review-button review-engineering-toggle"
           aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded(current => !current)}>
