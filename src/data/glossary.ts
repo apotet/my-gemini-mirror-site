@@ -1209,7 +1209,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "SNAT": ["Source Network Address Translation", "Трансляция адреса источника", true],
   "NAPT": ["Network Address and Port Translation", "Трансляция адресов и портов", true],
   "NAT overload": ["Port Address Translation", "Трансляция адресов и портов", false],
-  "TC": ["TrunCation", "Усечение сообщения", true, "В DNS этот флаг указывает, что ответ был усечён и получен не целиком."],
+  "TC": ["Truncated", "Усечение сообщения", true, "В DNS этот флаг указывает, что ответ был усечён и получен не целиком."],
   "OSPF": ["Open Shortest Path First", "Протокол выбора кратчайшего пути", true, "Внутри автономной системы рассчитывает маршруты по общей базе состояний связей."],
   "DHCP": ["Dynamic Host Configuration Protocol", "Протокол динамической настройки узла", true, "Автоматически выдаёт устройству адрес и другие сетевые параметры."],
   "OTDR": ["Optical Time Domain Reflectometer", "Оптический рефлектометр", true, "По отражениям световых импульсов определяет расстояние до событий на волокне."],
