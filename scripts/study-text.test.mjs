@@ -17,7 +17,7 @@ await build({ stdin: { contents: `
   export { ExamReview } from './src/components/ExamReview';
 `, resolveDir: root, sourcefile: 'study-text-tests.ts' },
   bundle: true, platform: 'node', format: 'esm', outfile,
-  external: ['react', 'react-dom/server', 'lucide-react'], logLevel: 'silent' });
+  external: ['react-dom', 'react', 'react-dom/server', 'lucide-react'], logLevel: 'silent' });
 const api = await import(pathToFileURL(outfile).href);
 const { ALL_QUESTIONS, LESSONS, getQuestionDeepDive, getStudyTextMode, setStudyTextMode, STUDY_TEXT_MODE_KEY,
   LessonView, TheoryRazbory, ExamReview } = api;
