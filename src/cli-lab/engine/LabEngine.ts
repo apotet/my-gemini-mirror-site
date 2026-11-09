@@ -88,46 +88,30 @@ export class LabEngine {
       return true;
     });
 
-    const nextSet = new Set<string>();
-    const phraseCandidates: string[] = [];
+    // Complete exactly one CLI keyword per Tab press. Command arguments (VLAN ID,
+    // IP, interface name) are not part of the static keyword completion.
+    const nextTokens = Array.from(new Set(
+      available
+        .filter((spec) => tokens.length < spec.match.length)
+        .map((spec) => spec.match[tokens.length])
+        .filter((word) => word.startsWith(partial))
+    )).sort();
 
-    for (const spec of available) {
-      if (tokens.length >= spec.match.length) continue;
-      const rest = spec.match.slice(tokens.length);
-      if (rest.length === 0) continue;
-      if (partial && !rest[0].startsWith(partial)) continue;
-      nextSet.add(rest[0]);
-      phraseCandidates.push([...tokens, ...rest].join(' '));
-    }
-
-    const nextTokens = Array.from(nextSet).sort();
-    const uniquePhrases = Array.from(new Set(phraseCandidates)).sort();
-
-    if (uniquePhrases.length === 1) {
-      return { completed: uniquePhrases[0] + ' ', candidates: uniquePhrases };
-    }
-
+    const base = tokens.join(' ');
+    const prefix = base ? base + ' ' : '';
     if (nextTokens.length === 1) {
-      const base = tokens.join(' ');
-      return {
-        completed: (base ? base + ' ' : '') + nextTokens[0] + ' ',
-        candidates: nextTokens,
-      };
+      return { completed: prefix + nextTokens[0] + ' ', candidates: nextTokens };
     }
 
     if (nextTokens.length > 1) {
-      let lcp = nextTokens[0];
-      for (const t of nextTokens.slice(1)) {
+      let common = nextTokens[0];
+      for (const word of nextTokens.slice(1)) {
         let i = 0;
-        while (i < lcp.length && i < t.length && lcp[i] === t[i]) i++;
-        lcp = lcp.slice(0, i);
+        while (i < common.length && i < word.length && common[i] === word[i]) i++;
+        common = common.slice(0, i);
       }
-      if (lcp.length > partial.length) {
-        const base = tokens.join(' ');
-        return {
-          completed: (base ? base + ' ' : '') + lcp,
-          candidates: nextTokens,
-        };
+      if (common.length > partial.length) {
+        return { completed: prefix + common, candidates: nextTokens };
       }
       return { candidates: nextTokens };
     }
