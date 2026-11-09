@@ -7,6 +7,8 @@ import { CommandSpec, DeviceState, DeviceMode } from './types';
  */
 const keywordDescriptions: Record<string, string> = {
   access: 'Access-port characteristics',
+  add: 'Add VLANs without replacing the current allowed list',
+  all: 'Permit all VLANs (1-4094)',
   address: 'Configure IPv4 address',
   allowed: 'Set permitted trunk VLANs',
   brief: 'Brief summary',
@@ -26,7 +28,9 @@ const keywordDescriptions: Record<string, string> = {
   mode: 'Select switchport mode',
   name: 'Set VLAN name',
   no: 'Negate a command',
+  none: 'Permit no VLANs on this trunk',
   reload: 'Simulated device reload',
+  remove: 'Remove VLANs from the current allowed list',
   route: 'Static routes / route display',
   run: 'Running configuration (abbreviation)',
   'running-config': 'Current configuration',
@@ -50,7 +54,9 @@ const argumentHelp: Record<string, { name: string; detail: string }> = {
   'cisco.vlan_name': { name: 'WORD', detail: 'VLAN name' },
   'cisco.interface': { name: 'INTERFACE', detail: 'Interface name, e.g. Fa0/24' },
   'cisco.switchport_access_vlan': { name: '<1-4094>', detail: 'Access VLAN identifier' },
-  'cisco.switchport_trunk_allowed_vlan': { name: '<vlan-list>', detail: 'Allowed VLAN IDs, e.g. 10,20' },
+  'cisco.switchport_trunk_allowed_vlan': { name: '<vlan-list>', detail: 'Replace allowed VLANs, e.g. 10,20' },
+  'cisco.switchport_trunk_allowed_vlan_add': { name: '<vlan-list>', detail: 'VLANs to add (e.g. 20 or 10,20)' },
+  'cisco.switchport_trunk_allowed_vlan_remove': { name: '<vlan-list>', detail: 'VLANs to remove (e.g. 20 or 10,20)' },
   'cisco.ip_address': { name: 'A.B.C.D', detail: 'IPv4 address, followed by subnet mask' },
   'cisco.ip_route': { name: 'A.B.C.D', detail: 'Destination network, mask and next hop' },
   'cisco.show_interfaces': { name: 'INTERFACE', detail: 'Interface name, e.g. Fa0/24' },
@@ -106,7 +112,7 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
       const arg = argumentHelp[spec.id];
       if (arg) items.set(arg.name, arg.detail);
       // These commands can be submitted as-is.
-      if (!arg && spec.id !== 'cisco.do') items.set('<cr>', 'Execute command');
+      if (!arg && spec.id !== 'cisco.do' && spec.id !== 'cisco.switchport_trunk_allowed_vlan') items.set('<cr>', 'Execute command');
     }
   }
 
@@ -138,7 +144,7 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
       items.set('<cr>', 'Select VLAN');
     } else if (/^switchport access vlan\s+\d+$/.test(joined) && +completed[3] >= 1 && +completed[3] <= 4094) {
       items.set('<cr>', 'Assign access VLAN');
-    } else if (/^switchport trunk allowed vlan\s+[\d,-]+$/.test(joined)) {
+    } else if (/^switchport trunk allowed vlan\s+(?:(?:add|remove)\s+)?\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/.test(joined)) {
       items.set('<cr>', 'Set allowed VLANs');
     }
   }
