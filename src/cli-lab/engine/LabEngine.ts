@@ -1,3 +1,4 @@
+import { contextualHelp } from './ContextualHelp';
 import { initializeStartupConfigs } from './ConfigPersistence';
 import { evaluateGoals } from './GoalEvaluator';
 import {
@@ -133,9 +134,15 @@ export class LabEngine {
     return { candidates: [] };
   }
 
+  /** Context-sensitive ? help, read-only and available independent of scenario. */
+  help(line: string): string {
+    return contextualHelp(this.commands, activeDevice(this.state), line.endsWith('?') ? line : line + '?');
+  }
+
   execute(line: string): CommandResult {
     const trimmed = line.trim();
     if (!trimmed) return { output: '' };
+    if (trimmed.endsWith('?')) return { output: this.help(line) };
 
     const tokens = trimmed.split(/\s+/);
     const device = activeDevice(this.state);

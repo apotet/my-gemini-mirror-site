@@ -219,6 +219,18 @@ export const CliLabShell: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === '?') {
+      // Cisco contextual help appears immediately without Enter and does not
+      // modify the input line, running configuration, or command history.
+      e.preventDefault();
+      const prompt = engine.getPrompt();
+      const help = engine.help(input + '?');
+      setHistory((h) => [...h,
+        { type: 'input', prompt, text: input + '?' },
+        { type: 'output', text: help },
+      ]);
+      return;
+    }
     if (e.key === 'Tab') {
       e.preventDefault();
       const result = engine.complete(input);
@@ -275,6 +287,11 @@ export const CliLabShell: React.FC = () => {
         ? [{ type: 'output' as const, text: result.output, error: result.error }]
         : []),
     ]);
+    if (line.trim().endsWith('?')) {
+      requestAnimationFrame(() => inputRef.current?.focus());
+      setInput(line.slice(0, -1));
+      return;
+    }
     setCmdHistory((prev) => {
       if (prev[prev.length - 1] === line) return prev;
       return [...prev, line].slice(-80);
