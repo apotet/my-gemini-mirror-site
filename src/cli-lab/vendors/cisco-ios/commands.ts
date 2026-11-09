@@ -1,4 +1,5 @@
 import { formatAllowedVlans } from './trunkCommands';
+import { commandFor } from '../../engine/CommandResolution';
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
@@ -370,31 +371,19 @@ const baseCommands: CommandSpec[] = [
       const savedPriv = device.privilege;
       device.modeCtx = { mode: 'privileged' };
       device.privilege = 15;
-      const lower = rest.map((t) => t.toLowerCase());
-      let best: (typeof ciscoIosCommands)[number] | undefined;
-      let bestLen = 0;
-      for (const spec of ciscoIosCommands) {
-        if (spec.id === 'cisco.do') continue;
-        const m = spec.match;
-        if (m.length > lower.length) continue;
-        let ok = true;
-        for (let i = 0; i < m.length; i++) {
-          if (m[i] !== lower[i]) {
-            ok = false;
-            break;
-          }
-        }
-        if (ok && m.length >= bestLen) {
-          best = spec;
-          bestLen = m.length;
-        }
+      const resolved = commandFor(ciscoIosCommands.filter(s => s.id !== 'cisco.do'), rest, 'privileged', 15);
+      if (resolved.ambiguous) {
+        device.modeCtx = savedMode;
+        device.privilege = savedPriv;
+        return { output: '% Ambiguous command: ' + resolved.ambiguous.join(', '), error: true };
       }
+      const best = resolved.spec;
       if (!best) {
         device.modeCtx = savedMode;
         device.privilege = savedPriv;
         return { output: profile.messages.invalid, error: true };
       }
-      const result = best.handler(rest, state, device, profile);
+      const result = best.handler(resolved.tokens, state, device, profile);
       if (result.state) {
         const d = result.state.devices[result.state.activeDeviceId];
         if (d) {

@@ -1,4 +1,5 @@
 import { CommandSpec, DeviceState, DeviceMode } from './types';
+import { resolveKeywords } from './CommandResolution';
 
 /**
  * Cisco-like contextual CLI help. The tree is built from executable command specs
@@ -99,6 +100,14 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
 
   const items = new Map<string, string>();
   const specs = available(commands, mode, privilege);
+  // Resolve already typed unique abbreviations, but keep the trailing partial
+  // keyword untouched so '?' still lists its possible expansions.
+  const resolved = resolveKeywords(specs, completed, mode, privilege);
+  if (resolved.ambiguous) {
+    for (const word of resolved.ambiguous) items.set(word, keywordDescriptions[word] ?? 'CLI keyword');
+    return format(items);
+  }
+  completed = resolved.tokens.map(token => token.toLowerCase());
 
   for (const spec of specs) {
     const path = spec.match;
