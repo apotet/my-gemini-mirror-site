@@ -49,6 +49,7 @@ function showInterfaces(tokens: string[], state: NetworkState, device: DeviceSta
   if (tokens.length === 2) {
     return { output: Object.values(device.interfaces).map(i => describe(state, device, i)).join('\n\n') };
   }
+  if (tokens.length === 4 && tokens[3].toLowerCase() === 'switchport') return showSwitchport(tokens, state, device);
   if (tokens.length !== 3) return { output: '% Invalid input detected. Use show interfaces [interface-name]', error: true };
   const name = normalizeName(tokens[2]);
   const iface = device.interfaces[name];
@@ -122,13 +123,5 @@ export const ciscoInterfaceShowCommands: CommandSpec[] = [
   {
     id: 'cisco.show_interface', match: ['show', 'interface'],
     modes: ['exec', 'privileged'], handler: showInterfaces,
-  },
-  {
-    id: 'cisco.show_interface_switchport', match: ['show', 'interfaces'],
-    modes: ['exec', 'privileged'],
-    handler: (tokens, state, device) =>
-      tokens.length === 4 && tokens[3].toLowerCase() === 'switchport'
-        ? showSwitchport(tokens, state, device)
-        : showInterfaces(tokens, state, device),
   },
 ];
