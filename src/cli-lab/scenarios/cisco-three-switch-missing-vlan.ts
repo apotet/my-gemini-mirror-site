@@ -46,9 +46,11 @@ const pathGoal: Scenario['goals'][number] = {
 };
 
 export const ciscoThreeSwitchMissingVlanScenario: Scenario = {
-  id: 'cisco-three-switch-missing-vlan10',
-  title: 'Три коммутатора · потерянный VLAN',
-  description: 'SW1 Fa0/24 ↔ SW2 Fa0/23, SW2 Fa0/24 ↔ SW3 Fa0/23. На SW1 и SW3 устройства в VLAN 10 не могут связаться. Trunk на всех узлах разрешает VLAN 10. Найдите причину на транзитном коммутаторе и устраните её. Проверяется конфигурационный L2-путь, не ICMP.',
+  id: 'cisco-three-switch-l2-diagnostics',
+  title: 'Три коммутатора · нет связи',
+  description: 'SW1 Fa0/24 ↔ SW2 Fa0/23, SW2 Fa0/24 ↔ SW3 Fa0/23. Устройства в VLAN 10 на краях сети потеряли L2-связность. Проверьте конфигурацию и состояние всех трёх коммутаторов, определите причину и восстановите путь. Проверяется модель L2-конфигурации, не ICMP.',
+  diagnostic: true,
+  publicGoalLabels: ['Восстановить L2-путь VLAN 10 между крайними устройствами', 'Сохранить исправленную конфигурацию'],
   vendor: 'cisco-ios',
   concepts: ['vlan', 'trunk', 'diagnostics', 'multi-device', 'l2-path'],
   difficulty: 2,
@@ -57,15 +59,15 @@ export const ciscoThreeSwitchMissingVlanScenario: Scenario = {
   steps: [
     {
       id: 'investigate-and-fix',
-      instruction: 'Сравните show vlan brief и show interfaces trunk на SW1, SW2 и SW3. Найдите, почему VLAN 10 не проходит от SW1 к SW3, и исправьте транзитный SW2.',
+      instruction: 'Определите, на каком участке нарушена связность VLAN 10. Сравните состояние интерфейсов, VLAN и trunk на SW1, SW2 и SW3; затем устраните найденную причину.',
       explanation: 'Allowed VLAN на trunk ещё не означает, что VLAN существует и активен на промежуточном коммутаторе.',
-      hint: 'Используйте переключатель консолей. На SW2 проверьте show vlan brief, затем в режиме config создайте недостающий VLAN.',
+      hint: 'Алгоритм: 1) Проверьте show interfaces status на каждом узле. 2) Сравните show vlan brief и show interfaces trunk. 3) Найдите расхождение на пути SW1 → SW3. 4) Исправьте только то, что подтверждено диагностикой.',
       accept: [pathGoal],
     },
     {
       id: 'save-repair',
-      instruction: 'Путь восстановлен. Сохраните исправление на SW2, чтобы оно не потерялось при перезагрузке.',
-      hint: 'Выберите SW2 → end → copy running-config startup-config (или write memory)',
+      instruction: 'Путь восстановлен. Сохраните конфигурацию на устройстве, где выполняли исправление.',
+      hint: 'На устройстве с изменениями: end → copy running-config startup-config (или write memory). Проверить можно через show startup-config.',
       explanation: 'Оперативная конфигурация работает сразу, но сохранение — отдельное действие.',
       accept: [{ type: 'config.saved', device: 'sw2' }],
     },
