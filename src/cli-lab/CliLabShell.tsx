@@ -262,13 +262,11 @@ export const CliLabShell: React.FC = () => {
     setInput('');
     setTick((t) => t + 1);
 
-    if (labMode !== 'exam') {
-      refreshGoals();
-    }
+    refreshGoals();
 
     tryAdvanceLearnStep();
 
-    if (labMode === 'task' || labMode === 'exam' || labMode === 'drill') {
+    if (labMode === 'task' || labMode === 'drill') {
       const g = engine.checkGoals(scenario.goals);
       if (g.allPassed) {
         setCompleted(true);
@@ -280,10 +278,9 @@ export const CliLabShell: React.FC = () => {
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
-  const modes: LabMode[] = ['learn', 'drill', 'task', 'exam'];
+  const modes: LabMode[] = ['learn', 'drill', 'task'];
   void tick;
   const currentStep = steps[stepIndex];
-  const showGoalsLive = labMode !== 'exam' || completed;
 
   return (
     <div
@@ -486,7 +483,7 @@ export const CliLabShell: React.FC = () => {
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
                 Цели
               </div>
-              {(labMode === 'task' || labMode === 'exam' || labMode === 'drill') && (
+              {(labMode === 'task' || labMode === 'drill') && (
                 <button
                   type="button"
                   onClick={runCheck}
@@ -497,19 +494,11 @@ export const CliLabShell: React.FC = () => {
               )}
             </div>
             <ul className="space-y-1.5">
-              {(showGoalsLive
-                ? goalResults?.results ??
-                  scenario.goals.map((g) => ({
-                    predicate: g,
-                    passed: false,
-                    detail: goalLabel(g),
-                  }))
-                : scenario.goals.map((g) => ({
-                    predicate: g,
-                    passed: false,
-                    detail: goalLabel(g),
-                  }))
-              ).map((r, i) => (
+              {(goalResults?.results ?? scenario.goals.map((g) => ({
+                predicate: g,
+                passed: false,
+                detail: goalLabel(g),
+              }))).map((r, i) => (
                 <li
                   key={i}
                   className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
@@ -535,8 +524,7 @@ export const CliLabShell: React.FC = () => {
             <p>
               <span className="font-mono text-cyan-600 dark:text-cyan-400">learn</span> — пошагово с
               подсказками · <span className="font-mono text-cyan-600 dark:text-cyan-400">drill</span> —
-              свободная практика · <span className="font-mono text-cyan-600 dark:text-cyan-400">task</span>/
-              <span className="font-mono text-cyan-600 dark:text-cyan-400">exam</span> — только цели,
+              свободная практика · <span className="font-mono text-cyan-600 dark:text-cyan-400">task</span> — только цели,
               проверка по кнопке или автоматически.
             </p>
             <p className="mt-2">
