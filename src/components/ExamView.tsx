@@ -20,7 +20,6 @@ import { ExamReview } from './ExamReview';
 import { getLessonForQuestion } from '../data/lessons';
 import { LAST_REVIEW_KEY, serializeReview, restoreReview } from '../utils/examReview';
 import { KnowledgeRadar } from './KnowledgeRadar';
-import { LivingOsiStack } from './LivingOsiStack';
 import { ZoomableImage } from './ZoomableImage';
 import {
   CheckCircle2,
@@ -47,12 +46,11 @@ interface ExamViewProps {
   ref?: React.Ref<ExamViewHandle>;
   soundEnabled: boolean;
   onNavigateToLearning?: () => void;
-  onNavigateToPractice?: () => void;
   onNavigateToTheory?: (questionId: string) => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning, onNavigateToPractice }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExamDifficulty>('beginner');
@@ -309,7 +307,6 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
           startNewQuiz(ALL_QUESTIONS.filter(q => q.group === 'visual-l1'), questionCount, 'visual-l1');
         }} />
         {emptyMistakes && <p role="status" className="text-sm text-slate-500">Ошибок на повторение нет. Новые ошибки появятся здесь; для освоения нужны два верных ответа подряд.</p>}
-        <LivingOsiStack onOpenNetwork={onNavigateToPractice} />
         <div ref={parametersRef} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><Layers className="w-4 h-4 text-cyan-500" />Параметры тестирования</h3>
           <div className="space-y-3">
