@@ -9,7 +9,7 @@ export type VendorId =
   | 'siemens-scalance'
   | 'linux-host';
 
-export type LabMode = 'learn' | 'drill' | 'task' | 'exam';
+export type LabMode = 'learn' | 'drill' | 'task';
 
 export type DeviceMode =
   | 'exec'
