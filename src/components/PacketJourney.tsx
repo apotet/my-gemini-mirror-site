@@ -1,400 +1,594 @@
-import React, { useState } from 'react';
-import {
-  Play,
-  RotateCcw,
-  ChevronRight,
-  ChevronLeft,
-  CheckCircle2,
-  Info,
-  Server,
-  Laptop,
-  ArrowRight,
-} from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 
-interface JourneyStep {
-  title: string;
-  location: string;
-  stageName: string;
-  description: string;
-  activeDevice: 'pc' | 'switch' | 'router' | 'server';
-  frame: {
-    srcMac: string;
-    dstMac: string;
-    etherType: string;
-    srcIp: string;
-    dstIp: string;
-    ttl: number;
-    payload: string;
-  };
-  note: string;
+type ViewId = 'scheme' | 'hops' | 'node';
+type DeviceId = 'pc' | 'sw' | 'r1' | 'srv';
+
+interface Frame {
+  srcMac: string;
+  dstMac: string;
+  srcIp: string;
+  dstIp: string;
+  ttl: number;
+  payload: string;
 }
 
-const JOURNEY_STEPS: JourneyStep[] = [
-  {
-    title: 'Шаг 1: Формирование ICMP Echo Request на ПК',
-    location: 'ПК (192.168.1.10)',
-    stageName: 'L3 / L2 Проверка маршрута и ARP',
-    description:
-      'Пользователь вводит `ping 192.168.2.20`. ПК сверяет адрес назначения со своей маской /24. 192.168.2.20 находится в другой подсети! Значит пакет должен быть направлен на шлюз по умолчанию (192.168.1.1).',
-    activeDevice: 'pc',
-    frame: {
-      srcMac: '00:11:22:AA:BB:10',
-      dstMac: '00:11:22:GW:01:01 (MAC шлюза)',
-      etherType: '0x0800 (IPv4)',
-      srcIp: '192.168.1.10',
-      dstIp: '192.168.2.20',
-      ttl: 64,
-      payload: 'ICMP Echo Request (type 8, code 0)',
+interface Hop {
+  id: string;
+  device: DeviceId;
+  label: string;
+  title: string;
+  what: string;
+  note: string;
+  frame: Frame;
+  changed?: string[];
+}
+
+const PC = {
+  ip: '192.168.1.10',
+  mask: '255.255.255.0',
+  prefix: 24,
+  gw: '192.168.1.1',
+  mac: '00:11:22:AA:BB:10',
+};
+const GW_MAC = '00:11:22:GW:01:01';
+const SRV = { ip: '192.168.2.20', mac: '00:11:22:SR:20:20' };
+const LOCAL = { ip: '192.168.1.50', mac: '00:11:22:PC:50:50' };
+
+const VIEW_KEY = 'packet-journey-view';
+
+function inSubnet(ip: string): boolean {
+  const parts = ip.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)) return false;
+  return parts[0] === 192 && parts[1] === 168 && parts[2] === 1;
+}
+
+function isIp(ip: string): boolean {
+  const parts = ip.split('.').map(Number);
+  return parts.length === 4 && parts.every((n) => !Number.isNaN(n) && n >= 0 && n <= 255);
+}
+
+function buildHops(dest: string): Hop[] | null {
+  if (!isIp(dest)) return null;
+
+  if (dest === PC.ip) {
+    return [
+      {
+        id: 'self',
+        device: 'pc',
+        label: 'PC',
+        title: 'Локальный адрес',
+        what: 'Пакет не покидает хост. ОС отвечает сама.',
+        note: 'Ping на свой IP не идёт в сеть.',
+        frame: {
+          srcMac: PC.mac,
+          dstMac: PC.mac,
+          srcIp: PC.ip,
+          dstIp: dest,
+          ttl: 64,
+          payload: 'ICMP Echo Request (local)',
+        },
+      },
+    ];
+  }
+
+  if (inSubnet(dest)) {
+    const dstMac = dest === LOCAL.ip ? LOCAL.mac : '??:??:??:??:??:??';
+    return [
+      {
+        id: 'pc-onlink',
+        device: 'pc',
+        label: 'PC',
+        title: 'Та же подсеть',
+        what: `${dest} в 192.168.1.0/24. Next-hop не нужен, ARP за MAC получателя.`,
+        note: 'Dst IP и Dst MAC оба принадлежат целевому хосту. Шлюз не используется.',
+        frame: {
+          srcMac: PC.mac,
+          dstMac,
+          srcIp: PC.ip,
+          dstIp: dest,
+          ttl: 64,
+          payload: 'ICMP Echo Request',
+        },
+        changed: ['Dst MAC = MAC получателя, не шлюза'],
+      },
+      {
+        id: 'sw-onlink',
+        device: 'sw',
+        label: 'SW',
+        title: 'Коммутация L2',
+        what: 'Коммутатор учит Src MAC и форвардит по CAM. Заголовки не меняет.',
+        note: 'L2 не смотрит IP.',
+        frame: {
+          srcMac: PC.mac,
+          dstMac,
+          srcIp: PC.ip,
+          dstIp: dest,
+          ttl: 64,
+          payload: 'ICMP Echo Request',
+        },
+        changed: ['ничего'],
+      },
+      {
+        id: 'host',
+        device: 'srv',
+        label: 'Host',
+        title: 'Ответ',
+        what: 'Хост принимает кадр, отвечает Echo Reply. Обратный путь симметричный.',
+        note: 'На обратном пути Src/Dst IP и MAC меняются местами.',
+        frame: {
+          srcMac: dstMac,
+          dstMac: PC.mac,
+          srcIp: dest,
+          dstIp: PC.ip,
+          ttl: 64,
+          payload: 'ICMP Echo Reply',
+        },
+        changed: ['Src/Dst IP и MAC поменялись местами'],
+      },
+    ];
+  }
+
+  if (dest === SRV.ip || dest.startsWith('192.168.2.') || dest === '10.0.0.1') {
+    const unreachable = dest === '10.0.0.1';
+    const hops: Hop[] = [
+      {
+        id: 'pc',
+        device: 'pc',
+        label: 'PC',
+        title: 'Другая подсеть',
+        what: `${dest} не в /24. Next-hop = шлюз ${PC.gw}. ARP за MAC шлюза.`,
+        note: 'Dst IP — цель. Dst MAC — шлюз.',
+        frame: {
+          srcMac: PC.mac,
+          dstMac: GW_MAC,
+          srcIp: PC.ip,
+          dstIp: dest,
+          ttl: 64,
+          payload: 'ICMP Echo Request',
+        },
+        changed: ['Dst MAC = MAC шлюза'],
+      },
+      {
+        id: 'sw',
+        device: 'sw',
+        label: 'SW',
+        title: 'Коммутация к шлюзу',
+        what: 'SW учит MAC ПК и форвардит кадр на порт роутера. Заголовки те же.',
+        note: 'Коммутатор не меняет IP и MAC.',
+        frame: {
+          srcMac: PC.mac,
+          dstMac: GW_MAC,
+          srcIp: PC.ip,
+          dstIp: dest,
+          ttl: 64,
+          payload: 'ICMP Echo Request',
+        },
+        changed: ['ничего'],
+      },
+      {
+        id: 'r1',
+        device: 'r1',
+        label: 'R1',
+        title: unreachable ? 'Нет маршрута' : 'Маршрутизация',
+        what: unreachable
+          ? 'R1 снимает L2, смотрит таблицу: маршрута к 10.0.0.1 нет. ICMP Network Unreachable.'
+          : 'R1 снимает L2, TTL−1, longest prefix match, новая L2 к серверу.',
+        note: unreachable
+          ? 'Пакет дальше не идёт.'
+          : 'IP получателя не менялся. MAC уже сервера.',
+        frame: {
+          srcMac: unreachable ? GW_MAC : '00:11:22:R1:02:01',
+          dstMac: unreachable ? PC.mac : SRV.mac,
+          srcIp: unreachable ? PC.gw : PC.ip,
+          dstIp: dest,
+          ttl: unreachable ? 64 : 63,
+          payload: unreachable ? 'ICMP Network Unreachable' : 'ICMP Echo Request',
+        },
+        changed: unreachable ? ['ответ Unreachable с GW'] : ['TTL 64→63', 'новый Dst MAC сервера'],
+      },
+    ];
+    if (!unreachable) {
+      hops.push({
+        id: 'srv',
+        device: 'srv',
+        label: 'Srv',
+        title: 'Сервер',
+        what: 'Сервер принимает кадр, отвечает Echo Reply. Обратный путь через тот же шлюз.',
+        note: 'Reply: Src IP сервера, Dst IP ПК.',
+        frame: {
+          srcMac: SRV.mac,
+          dstMac: '00:11:22:R1:02:01',
+          srcIp: SRV.ip,
+          dstIp: PC.ip,
+          ttl: 64,
+          payload: 'ICMP Echo Reply',
+        },
+        changed: ['Src/Dst IP поменялись'],
+      });
+    }
+    return hops;
+  }
+
+  return [
+    {
+      id: 'noroute',
+      device: 'pc',
+      label: 'PC',
+      title: 'Нет маршрута',
+      what: `ПК не знает, куда слать ${dest}. Нет on-link и нет default route match в этой модели.`,
+      note: 'Destination host unreachable.',
+      frame: {
+        srcMac: PC.mac,
+        dstMac: '—',
+        srcIp: PC.ip,
+        dstIp: dest,
+        ttl: 64,
+        payload: 'не отправлен',
+      },
     },
-    note: 'Обратите внимание: IP получателя — это сервер (192.168.2.20), но MAC получателя — это шлюз по умолчанию (маршрутизатор), а не сервер!',
-  },
-  {
-    title: 'Шаг 2: Коммутация кадра на Switch L2',
-    location: 'Коммутатор LAN (L2)',
-    stageName: 'L2 Коммутация по MAC-таблице',
-    description:
-      'Кадр поступает на порт Fa0/1 коммутатора. Коммутатор запоминает source MAC (00:11:22:AA:BB:10 -> порт Fa0/1) в таблице CAM. Затем смотрит destination MAC (шлюз) и пересылает кадр в порт Gi0/1 к маршрутизатору.',
-    activeDevice: 'switch',
-    frame: {
-      srcMac: '00:11:22:AA:BB:10',
-      dstMac: '00:11:22:GW:01:01',
-      etherType: '0x0800 (IPv4)',
-      srcIp: '192.168.1.10',
-      dstIp: '192.168.2.20',
-      ttl: 64,
-      payload: 'ICMP Echo Request',
-    },
-    note: 'Коммутатор L2 не меняет IP и MAC заголовки! Он лишь передаёт неизменный кадр на соответствующий порт.',
-  },
-  {
-    title: 'Шаг 3: Маршрутизация на Router L3',
-    location: 'Маршрутизатор (R1)',
-    stageName: 'L3 Маршрутизация & Декремент TTL',
-    description:
-      'Маршрутизатор принимает кадр на eth0, снимает заголовок Ethernet L2. В заголовке IPv4 он уменьшает TTL на 1 (64 -> 63) и пересчитывает контрольную сумму IPv4 Checksum. Смотрит таблицу маршрутизации: 192.168.2.0/24 доступна через интерфейс eth1.',
-    activeDevice: 'router',
-    frame: {
-      srcMac: '00:11:22:GW:02:01 (eth1 маршрутизатора)',
-      dstMac: '00:11:22:SR:20:20 (MAC сервера)',
-      etherType: '0x0800 (IPv4)',
-      srcIp: '192.168.1.10',
-      dstIp: '192.168.2.20',
-      ttl: 63,
-      payload: 'ICMP Echo Request',
-    },
-    note: 'Ключевой закон сетей: при прохождении через каждый L3-маршрутизатор IP-адреса остаются прежними, а L2 MAC-адреса полностью перезаписываются!',
-  },
-  {
-    title: 'Шаг 4: Приём пакета сервером и ответ',
-    location: 'Сервер (192.168.2.20)',
-    stageName: 'L3/L4 Приём ICMP Echo Request',
-    description:
-      'Сервер сверяет destination MAC и destination IP — совпадает! ОС сервера принимает ICMP Echo Request (type 8) и формирует ответ ICMP Echo Reply (type 0). IP-адреса источника и получателя меняются местами.',
-    activeDevice: 'server',
-    frame: {
-      srcMac: '00:11:22:SR:20:20',
-      dstMac: '00:11:22:GW:02:01',
-      etherType: '0x0800 (IPv4)',
-      srcIp: '192.168.2.20',
-      dstIp: '192.168.1.10',
-      ttl: 64,
-      payload: 'ICMP Echo Reply (type 0, code 0)',
-    },
-    note: 'Сервер отправляет ответ обратно на шлюз 192.168.2.1 со своим начальным TTL (обычно 64 в Linux или 128 в Windows).',
-  },
-  {
-    title: 'Шаг 5: Обратная маршрутизация и доставка на ПК',
-    location: 'ПК (192.168.1.10)',
-    stageName: 'Успешный Ping (Echo Reply)',
-    description:
-      'Маршрутизатор R1 снова уменьшает TTL (64 -> 63), перезаписывает MAC на (Src: 00:11:22:GW:01:01, Dst: 00:11:22:AA:BB:10) и доставляет ответ через коммутатор на ПК. В терминале отображается: "64 bytes from 192.168.2.20: icmp_seq=1 ttl=63 time=2.14 ms".',
-    activeDevice: 'pc',
-    frame: {
-      srcMac: '00:11:22:GW:01:01',
-      dstMac: '00:11:22:AA:BB:10',
-      etherType: '0x0800 (IPv4)',
-      srcIp: '192.168.2.20',
-      dstIp: '192.168.1.10',
-      ttl: 63,
-      payload: 'ICMP Echo Reply [OK]',
-    },
-    note: 'Круг замкнулся! Весь путь занял несколько миллисекунд.',
-  },
-];
+  ];
+}
+
+function loadView(): ViewId {
+  try {
+    const v = localStorage.getItem(VIEW_KEY);
+    if (v === 'scheme' || v === 'hops' || v === 'node') return v;
+  } catch {
+    /* ignore */
+  }
+  return 'scheme';
+}
 
 export const PacketJourney: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const step = JOURNEY_STEPS[currentStep];
+  const [view, setView] = useState<ViewId>(loadView);
+  const [lines, setLines] = useState<string[]>([
+    'Введите ping <ip>. Пример: ping 192.168.2.20',
+    'Также: arp -a · ipconfig · help',
+  ]);
+  const [input, setInput] = useState('');
+  const [hops, setHops] = useState<Hop[] | null>(null);
+  const [hopIndex, setHopIndex] = useState(0);
+  const [node, setNode] = useState<DeviceId>('pc');
+  const [arp, setArp] = useState<Record<string, string>>({});
+  const inputRef = useRef<HTMLInputElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
 
-  const handleNext = () => {
-    if (currentStep < JOURNEY_STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+  useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_KEY, view);
+    } catch {
+      /* ignore */
     }
-  };
+  }, [view]);
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
+  }, [lines]);
+
+  const hop = hops?.[hopIndex] ?? null;
+
+  const push = (text: string) => setLines((prev) => [...prev, text]);
+
+  const run = (raw: string) => {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    push(`PC> ${cmd}`);
+    const [head, arg] = cmd.split(/\s+/);
+    const h = head.toLowerCase();
+
+    if (h === 'help' || h === '?') {
+      push('ping <ip> · arp -a · ipconfig · clear');
+      return;
     }
+    if (h === 'clear') {
+      setLines([]);
+      setHops(null);
+      setHopIndex(0);
+      return;
+    }
+    if (h === 'ipconfig' || h === 'ifconfig') {
+      push(`IP ${PC.ip}/${PC.prefix}  mask ${PC.mask}`);
+      push(`GW ${PC.gw}  MAC ${PC.mac}`);
+      return;
+    }
+    if (h === 'arp') {
+      const entries = Object.entries(arp);
+      if (entries.length === 0) push('ARP cache empty');
+      else entries.forEach(([ip, mac]) => push(`${ip}  ${mac}`));
+      return;
+    }
+    if (h === 'ping') {
+      if (!arg || !isIp(arg)) {
+        push('Usage: ping <ipv4>');
+        return;
+      }
+      const next = buildHops(arg);
+      if (!next) {
+        push('Некорректный адрес');
+        return;
+      }
+      if (inSubnet(arg) && arg !== PC.ip) setArp((prev) => ({ ...prev, [arg]: LOCAL.mac }));
+      else if (!inSubnet(arg)) setArp((prev) => ({ ...prev, [PC.gw]: GW_MAC }));
+      setHops(next);
+      setHopIndex(0);
+      setNode(next[0].device);
+      const last = next[next.length - 1];
+      if (last.frame.payload.includes('Unreachable') || last.frame.payload === 'не отправлен') {
+        push(`Reply from ${PC.gw}: Destination host unreachable`);
+      } else if (arg === PC.ip) {
+        push(`Reply from ${PC.ip}: time<1ms`);
+      } else {
+        push(`Reply from ${arg}: time=12ms`);
+      }
+      return;
+    }
+    push(`Unknown command: ${head}`);
   };
 
-  const handleReset = () => {
-    setCurrentStep(0);
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    run(input);
+    setInput('');
+    inputRef.current?.focus();
   };
+
+  const devices: { id: DeviceId; title: string; sub: string }[] = useMemo(
+    () => [
+      { id: 'pc', title: 'PC', sub: PC.ip },
+      { id: 'sw', title: 'SW', sub: 'L2' },
+      { id: 'r1', title: 'R1', sub: '.1.1 / .2.1' },
+      { id: 'srv', title: 'Srv', sub: SRV.ip },
+    ],
+    [],
+  );
+
+  const topology = (
+    <div className="flex items-center justify-between gap-1 text-[11px]">
+      {devices.map((d, i) => (
+        <React.Fragment key={d.id}>
+          <button
+            type="button"
+            onClick={() => setNode(d.id)}
+            className={`flex-1 p-2 rounded-xl border text-center cursor-pointer ${
+              hop?.device === d.id
+                ? 'border-cyan-400 bg-slate-900'
+                : 'border-slate-700 bg-slate-900/60'
+            }`}
+          >
+            <div className="font-semibold">{d.title}</div>
+            <div className="text-slate-400">{d.sub}</div>
+          </button>
+          {i < devices.length - 1 && (
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  const terminal = (
+    <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex flex-col min-h-[180px]">
+      <div className="px-3 py-1.5 text-[10px] font-mono text-slate-500 border-b border-slate-800">PC</div>
+      <div ref={logRef} className="flex-1 p-3 text-xs font-mono space-y-0.5 overflow-auto max-h-48">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className={
+              line.startsWith('PC>')
+                ? 'text-slate-200'
+                : line.startsWith('Reply')
+                  ? 'text-emerald-300'
+                  : 'text-slate-400'
+            }
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={onSubmit} className="flex items-center gap-1 px-3 py-2 border-t border-slate-800">
+        <span className="text-slate-500 text-xs font-mono">{'PC>'}</span>
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="ping 192.168.2.20"
+          className="flex-1 bg-transparent text-xs font-mono text-slate-100 outline-none"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+        />
+      </form>
+    </div>
+  );
+
+  const inspector = hop ? (
+    <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3 text-xs space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-semibold text-white">{hop.title}</div>
+        <div className="text-[10px] font-mono text-slate-500">
+          {hopIndex + 1}/{hops?.length ?? 1}
+        </div>
+      </div>
+      <p className="text-slate-300 leading-relaxed">{hop.what}</p>
+      <div className="p-2 rounded-lg bg-blue-950/40 border border-blue-500/30 font-mono text-[11px] space-y-0.5">
+        <div>Src MAC: {hop.frame.srcMac}</div>
+        <div>Dst MAC: <span className="text-cyan-300">{hop.frame.dstMac}</span></div>
+        <div>Src IP: {hop.frame.srcIp}</div>
+        <div>Dst IP: {hop.frame.dstIp}</div>
+        <div>TTL: <span className="text-amber-300">{hop.frame.ttl}</span></div>
+        <div>{hop.frame.payload}</div>
+      </div>
+      {hop.changed && hop.changed.length > 0 && (
+        <div className="text-slate-400">Изменилось: {hop.changed.join(' · ')}</div>
+      )}
+      <div className="text-slate-400">{hop.note}</div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setHopIndex((i) => Math.max(0, i - 1))}
+          className="px-2 py-1 rounded-lg bg-slate-800 text-slate-200 text-[11px] cursor-pointer"
+        >
+          <ChevronLeft className="w-3.5 h-3.5 inline" /> назад
+        </button>
+        <button
+          type="button"
+          onClick={() => setHopIndex((i) => Math.min((hops?.length ?? 1) - 1, i + 1))}
+          className="px-2 py-1 rounded-lg bg-cyan-500 text-slate-950 text-[11px] font-semibold cursor-pointer"
+        >
+          дальше <ChevronRight className="w-3.5 h-3.5 inline" />
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3 text-xs text-slate-400">
+      Введите ping, чтобы увидеть путь. Попробуйте:
+      <div className="mt-2 space-y-1 font-mono text-cyan-300">
+        <button type="button" onClick={() => run('ping 192.168.2.20')} className="block cursor-pointer">
+          ping 192.168.2.20
+        </button>
+        <button type="button" onClick={() => run('ping 192.168.1.50')} className="block cursor-pointer">
+          ping 192.168.1.50
+        </button>
+        <button type="button" onClick={() => run('ping 10.0.0.1')} className="block cursor-pointer">
+          ping 10.0.0.1
+        </button>
+      </div>
+    </div>
+  );
+
+  const hopsView = (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-xs">
+        <span className="px-2 py-1 rounded-full bg-cyan-500 text-slate-950 font-semibold text-[10px]">пакет</span>
+        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-cyan-400"
+            style={{ width: hops ? `${((hopIndex + 1) / hops.length) * 100}%` : '0%' }}
+          />
+        </div>
+        <span className="text-slate-400">{hop ? `${hop.label}` : '—'}</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px] text-center">
+        {(hops ?? [{ id: 'wait', label: 'ожидание', device: 'pc' as DeviceId }]).map((h, i) => (
+          <button
+            key={h.id}
+            type="button"
+            onClick={() => hops && setHopIndex(i)}
+            className={`p-2 rounded-lg border ${
+              i === hopIndex ? 'border-cyan-400 bg-slate-900' : 'border-slate-700 bg-slate-900/50'
+            }`}
+          >
+            {h.label}
+          </button>
+        ))}
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {terminal}
+        {inspector}
+      </div>
+    </div>
+  );
+
+  const nodeHop = hops?.find((h) => h.device === node) ?? hop;
+  const nodeView = (
+    <div className="space-y-3">
+      <div className="flex gap-1.5 text-xs overflow-x-auto">
+        {devices.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            onClick={() => setNode(d.id)}
+            className={`px-3 py-1.5 rounded-lg shrink-0 cursor-pointer ${
+              node === d.id ? 'bg-cyan-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'
+            }`}
+          >
+            {d.title}
+          </button>
+        ))}
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {terminal}
+        <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3 text-xs space-y-2">
+          <div className="font-semibold">На {node.toUpperCase()}</div>
+          {nodeHop && nodeHop.device === node ? (
+            <>
+              <p className="text-slate-300">{nodeHop.what}</p>
+              <div className="font-mono text-[11px] text-slate-300">
+                Dst MAC: {nodeHop.frame.dstMac}
+                <br />
+                Dst IP: {nodeHop.frame.dstIp}
+                <br />
+                TTL: {nodeHop.frame.ttl}
+              </div>
+            </>
+          ) : (
+            <p className="text-slate-400">На этом узле в текущем ping нет события. Смените адрес или вид.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="p-6 rounded-2xl glass-panel border border-cyan-500/20 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-              Интерактивная симуляция
-            </span>
-            <h2 className="text-2xl font-black tracking-tight text-white mt-1">
-              Путь сетевого пакета: от ПК до Сервера
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Пошаговая визуализация работы протоколов L2/L3: ARP, Ethernet, MAC-таблица, IP-маршрутизация и TTL
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              type="button"
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-              title="Назад"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="font-mono text-xs px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-cyan-300 font-bold">
-              {currentStep + 1} / {JOURNEY_STEPS.length}
-            </span>
-            <button
-              onClick={handleNext}
-              disabled={currentStep === JOURNEY_STEPS.length - 1}
-              type="button"
-              className="p-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 font-bold transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-              title="Далее"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleReset}
-              type="button"
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-              title="Сброс"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
+    <div className="space-y-3 max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <div className="text-[10px] font-mono text-cyan-300 uppercase tracking-wider">Интерактивная симуляция</div>
+          <h2 className="text-lg sm:text-xl font-bold text-white">Путь пакета</h2>
         </div>
-
-        {/* Step progress pills */}
-        <div className="grid grid-cols-5 gap-2 mt-6">
-          {JOURNEY_STEPS.map((s, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentStep(idx)}
-              type="button"
-              className={`py-2 px-2 text-center rounded-lg text-[11px] font-semibold transition-all border ${
-                idx === currentStep
-                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-sm shadow-cyan-500/30'
-                  : idx < currentStep
-                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-400'
-                  : 'bg-slate-900/40 border-slate-800 text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              Шаг {idx + 1}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-xl bg-slate-900 border border-slate-800 p-0.5 self-start">
+            {(
+              [
+                ['scheme', 'Схема'],
+                ['hops', 'Хопы'],
+                ['node', 'Узел'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setView(id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                  view === id ? 'bg-cyan-500 text-slate-950' : 'text-slate-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setHops(null);
+              setHopIndex(0);
+              setLines(['Введите ping <ip>.']);
+            }}
+            className="p-2 rounded-lg bg-slate-800 text-slate-300 cursor-pointer"
+            title="Сброс"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* Network Topology Visualizer */}
-      <div className="p-6 rounded-2xl glass-panel border border-cyan-500/20 shadow-xl overflow-hidden">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-          <Info className="w-4 h-4 text-cyan-400" />
-          Топология сети и текущее положение пакета
-        </h3>
-
-        <div className="relative py-8 px-4 rounded-xl bg-[#07111f] border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Node 1: PC */}
-          <div
-            className={`flex flex-col items-center p-4 rounded-xl border transition-all ${
-              step.activeDevice === 'pc'
-                ? 'bg-cyan-950/60 border-cyan-400 shadow-lg shadow-cyan-500/30 scale-105'
-                : 'bg-slate-900/60 border-slate-800 opacity-60'
-            }`}
-          >
-            <div className="p-3 rounded-full bg-cyan-500/20 text-cyan-300 mb-2">
-              <Laptop className="w-7 h-7" />
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-3 sm:p-4 space-y-3">
+        {view === 'scheme' && (
+          <>
+            <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <span>Топология</span>
+              <span className="text-cyan-300">{hop ? `пакет на ${hop.label}` : 'ожидание команды'}</span>
             </div>
-            <span className="font-bold text-xs text-white">ПК Клиент</span>
-            <span className="text-[10px] font-mono text-cyan-400">192.168.1.10/24</span>
-            <span className="text-[9px] font-mono text-slate-400">MAC: 00:11:22:AA:BB:10</span>
-          </div>
-
-          <div className="text-slate-600 font-mono text-xs flex flex-col items-center">
-            <span>LAN 1</span>
-            <ArrowRight className="w-5 h-5 text-cyan-500/50 hidden md:block" />
-          </div>
-
-          {/* Node 2: Switch */}
-          <div
-            className={`flex flex-col items-center p-4 rounded-xl border transition-all ${
-              step.activeDevice === 'switch'
-                ? 'bg-blue-950/60 border-blue-400 shadow-lg shadow-blue-500/30 scale-105'
-                : 'bg-slate-900/60 border-slate-800 opacity-60'
-            }`}
-          >
-            <div className="p-3 rounded-full bg-blue-500/20 text-blue-300 mb-2">
-              <div className="w-7 h-7 flex items-center justify-center font-bold text-xs">L2 SW</div>
+            {topology}
+            <div className="grid sm:grid-cols-2 gap-3">
+              {terminal}
+              {inspector}
             </div>
-            <span className="font-bold text-xs text-white">Коммутатор</span>
-            <span className="text-[10px] font-mono text-blue-400">VLAN 1 Default</span>
-            <span className="text-[9px] font-mono text-slate-400">Таблица CAM</span>
-          </div>
-
-          <div className="text-slate-600 font-mono text-xs flex flex-col items-center">
-            <span>Trunk / Link</span>
-            <ArrowRight className="w-5 h-5 text-cyan-500/50 hidden md:block" />
-          </div>
-
-          {/* Node 3: Router */}
-          <div
-            className={`flex flex-col items-center p-4 rounded-xl border transition-all ${
-              step.activeDevice === 'router'
-                ? 'bg-purple-950/60 border-purple-400 shadow-lg shadow-purple-500/30 scale-105'
-                : 'bg-slate-900/60 border-slate-800 opacity-60'
-            }`}
-          >
-            <div className="p-3 rounded-full bg-purple-500/20 text-purple-300 mb-2">
-              <div className="w-7 h-7 flex items-center justify-center font-bold text-xs">L3 RT</div>
-            </div>
-            <span className="font-bold text-xs text-white">Маршрутизатор R1</span>
-            <span className="text-[10px] font-mono text-purple-400">192.168.1.1 ↔ 192.168.2.1</span>
-            <span className="text-[9px] font-mono text-slate-400">Шлюз Default Gateway</span>
-          </div>
-
-          <div className="text-slate-600 font-mono text-xs flex flex-col items-center">
-            <span>LAN 2</span>
-            <ArrowRight className="w-5 h-5 text-cyan-500/50 hidden md:block" />
-          </div>
-
-          {/* Node 4: Server */}
-          <div
-            className={`flex flex-col items-center p-4 rounded-xl border transition-all ${
-              step.activeDevice === 'server'
-                ? 'bg-emerald-950/60 border-emerald-400 shadow-lg shadow-emerald-500/30 scale-105'
-                : 'bg-slate-900/60 border-slate-800 opacity-60'
-            }`}
-          >
-            <div className="p-3 rounded-full bg-emerald-500/20 text-emerald-300 mb-2">
-              <Server className="w-7 h-7" />
-            </div>
-            <span className="font-bold text-xs text-white">Сервер</span>
-            <span className="text-[10px] font-mono text-emerald-400">192.168.2.20/24</span>
-            <span className="text-[9px] font-mono text-slate-400">MAC: 00:11:22:SR:20:20</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Frame / Packet Inspector */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Step description */}
-        <div className="p-6 rounded-2xl glass-panel border border-cyan-500/20 shadow-xl space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-md bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-bold font-mono">
-              {step.stageName}
-            </span>
-            <span className="text-xs text-slate-400 font-mono">
-              Локация: <span className="text-slate-200 font-bold">{step.location}</span>
-            </span>
-          </div>
-
-          <h3 className="text-lg font-bold text-white">{step.title}</h3>
-          <p className="text-sm text-slate-300 leading-relaxed">{step.description}</p>
-
-          <div className="p-4 rounded-xl bg-amber-950/30 border-l-4 border-amber-400 text-xs text-amber-200/90 leading-relaxed">
-            <strong className="block text-amber-300 font-bold mb-1">Важно для экзамена:</strong>
-            {step.note}
-          </div>
-
-          <div className="pt-2 flex gap-3">
-            <button
-              onClick={handleNext}
-              disabled={currentStep === JOURNEY_STEPS.length - 1}
-              type="button"
-              className="py-3 px-6 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs hover:brightness-110 transition-all flex items-center gap-2 min-h-[48px] cursor-pointer shadow-lg shadow-cyan-500/20"
-            >
-              Следующий шаг
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Packet Headers Inspector */}
-        <div className="p-6 rounded-2xl glass-panel border border-cyan-500/20 shadow-xl space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center justify-between">
-            <span>Анализатор заголовков кадра (Wireshark View)</span>
-            <span className="font-mono text-[10px] text-slate-400">Captured in transit</span>
-          </h3>
-
-          <div className="space-y-2 text-xs font-mono">
-            {/* L2 Layer */}
-            <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 space-y-1">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-wide">
-                L2: Ethernet II Frame
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-slate-300">
-                <div>
-                  <span className="text-slate-500">Src MAC:</span> {step.frame.srcMac}
-                </div>
-                <div>
-                  <span className="text-slate-500">Dst MAC:</span> {step.frame.dstMac}
-                </div>
-              </div>
-              <div className="text-slate-400 text-[11px]">
-                <span className="text-slate-500">EtherType:</span> {step.frame.etherType}
-              </div>
-            </div>
-
-            {/* L3 Layer */}
-            <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-1">
-              <div className="text-[10px] font-bold text-purple-300 uppercase tracking-wide">
-                L3: Internet Protocol Version 4 (IPv4)
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-slate-300">
-                <div>
-                  <span className="text-slate-500">Src IP:</span> {step.frame.srcIp}
-                </div>
-                <div>
-                  <span className="text-slate-500">Dst IP:</span> {step.frame.dstIp}
-                </div>
-              </div>
-              <div className="flex gap-4 text-slate-400 text-[11px]">
-                <div>
-                  <span className="text-slate-500">TTL:</span>{' '}
-                  <span className="font-bold text-purple-300">{step.frame.ttl}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500">Protocol:</span> 1 (ICMP)
-                </div>
-              </div>
-            </div>
-
-            {/* L4 Payload */}
-            <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 space-y-1">
-              <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wide">
-                L4/L7 Payload: ICMP
-              </div>
-              <div className="text-slate-200">{step.frame.payload}</div>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
+        {view === 'hops' && hopsView}
+        {view === 'node' && nodeView}
       </div>
     </div>
   );
