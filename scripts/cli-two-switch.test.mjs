@@ -69,4 +69,29 @@ engine.selectDevice('sw2');
 assert.equal(engine.getState().devices.sw2.modeCtx.mode, 'config-vlan', 'device mode preserved');
 engine.selectDevice('sw1');
 assert.equal(engine.getState().devices.sw1.modeCtx.mode, 'privileged', 'independent CLI mode preserved');
+// Real CLI commands must produce the same topology result.
+const live = new LabEngine(ciscoIosProfile, ciscoIosCommands, fresh());
+const configure = (id) => {
+  assert.equal(live.selectDevice(id), true);
+  for (const command of [
+    'enable', 'configure terminal', 'vlan 10', 'exit',
+    'interface fa0/1', 'switchport mode access', 'switchport access vlan 10',
+    'no shutdown', 'exit', 'interface fa0/24', 'switchport mode trunk',
+    'switchport trunk allowed vlan 10', 'no shutdown', 'end',
+  ]) {
+    const out = live.execute(command);
+    assert.equal(out.error, undefined, id + ': ' + command + ': ' + out.output);
+  }
+};
+configure('sw1');
+assert.equal(live.checkGoals(scenario.goals).allPassed, false);
+configure('sw2');
+assert.equal(live.checkGoals(scenario.goals).allPassed, true);
+live.execute('configure terminal');
+live.execute('interface fa0/24');
+live.execute('shutdown');
+assert.equal(live.checkGoals(scenario.goals).allPassed, false, 'shutdown after completion invalidates path');
+live.execute('no shutdown');
+assert.equal(live.checkGoals(scenario.goals).allPassed, true, 'repair restores path');
+console.log('PASS: CLI commands configure both switches and confirm/revoke VLAN path');
 console.log('PASS: multi-switch console isolation and 12 positive/negative VLAN reachability cases');
