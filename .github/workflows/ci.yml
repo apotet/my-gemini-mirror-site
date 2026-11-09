@@ -49,6 +49,9 @@ jobs:
       - name: Diagnostic Learn no-spoiler regression
         run: node scripts/cli-diagnostic-hints.test.mjs
 
+      - name: Selective trunk VLAN diagnostics regression
+        run: node scripts/cli-trunk-diagnostics.test.mjs
+
       - name: Cisco IOS running/startup persistence regression
         run: node scripts/cli-persistence.test.mjs
 
