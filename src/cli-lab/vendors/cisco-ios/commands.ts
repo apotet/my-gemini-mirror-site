@@ -2,6 +2,7 @@ import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../eng
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
 import { ciscoTrunkCommands } from './trunkCommands';
+import { ciscoInterfaceShowCommands } from './showInterfaceCommands';
 import { ciscoPersistenceCommands } from './persistenceCommands';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
@@ -432,6 +433,7 @@ export const ciscoIosCommands: CommandSpec[] = [
   ...ciscoL3Commands,
   ...ciscoTrunkCommands,
   ...ciscoPersistenceCommands,
+  ...ciscoInterfaceShowCommands,
 ];
 
 function normalizeIfaceName(raw: string): string {
