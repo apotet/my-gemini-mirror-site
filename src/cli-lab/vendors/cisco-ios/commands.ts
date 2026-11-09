@@ -1,3 +1,4 @@
+import { formatAllowedVlans } from './trunkCommands';
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
@@ -334,8 +335,8 @@ const baseCommands: CommandSpec[] = [
         }
         if (iface.switchport?.mode === 'trunk') {
           lines.push(' switchport mode trunk');
-          if (iface.switchport.trunkAllowed?.length) {
-            lines.push(` switchport trunk allowed vlan ${iface.switchport.trunkAllowed.join(',')}`);
+          if (iface.switchport.trunkAllowed !== undefined) {
+            lines.push(` switchport trunk allowed vlan ${formatAllowedVlans(iface.switchport.trunkAllowed)}`);
           }
         }
         lines.push(iface.adminUp ? ' no shutdown' : ' shutdown');
