@@ -138,7 +138,7 @@ export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }> = (
               ? <LivingOsiStack onOpenNetwork={() => setJourneyView('network')} />
               : <PacketJourney />}
           </section>
-        )
+        )}
         {activeSimulator === 'vlan' && <VlanSimulator />}
         {activeSimulator === 'protocols' && <ProtocolSimulators />}
         {activeSimulator === 'cli' && <CliLabShell />}
