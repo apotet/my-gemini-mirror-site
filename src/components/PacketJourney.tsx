@@ -356,6 +356,29 @@ export const PacketJourney: React.FC = () => {
             </div>
           </div>
 
+          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-4 z-30 rounded-xl border border-cyan-500/40 bg-slate-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] p-3 space-y-3" aria-label="Управление путём пакета">
+            <label htmlFor="ping-journey-scrub" className="block text-xs font-bold text-slate-300">
+              Прогресс — двигай бегунок, чтобы вернуться к любому моменту
+            </label>
+            <input id="ping-journey-scrub" type="range" min="0" max={EVENTS.length - 1} step="1" value={step}
+              onChange={e => go(Number(e.target.value))} disabled={detective}
+              className="w-full accent-cyan-400 disabled:opacity-40" />
+            <div className="flex flex-wrap items-center gap-2 justify-between">
+              <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
+                className="min-h-11 px-4 rounded-xl bg-slate-800 border border-slate-600 text-slate-100 font-semibold disabled:opacity-30">
+                <ChevronLeft className="w-4 h-4 inline" /> Назад
+              </button>
+              <button type="button" onClick={restart}
+                className="min-h-11 px-3 rounded-xl border border-slate-600 text-slate-300" aria-label="Начать ping заново">
+                <RotateCcw className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
+                className="min-h-11 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
+                Следующий шаг <ChevronRight className="w-4 h-4 inline" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-400">{detective ? 'В режиме проверки надо ответить на вопрос, прежде чем двигаться дальше.' : 'Автопереходов нет: ты сам задаёшь скорость движения пакета.'}</p>
+          </div>
           <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-4 sm:p-5 space-y-3">
             <h3 className="text-lg font-black text-white">{current.title}</h3>
             <p className="text-base text-slate-100 leading-relaxed">
@@ -423,29 +446,6 @@ export const PacketJourney: React.FC = () => {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-700 bg-slate-900/75 p-3 space-y-3">
-            <label htmlFor="ping-journey-scrub" className="block text-xs font-bold text-slate-300">
-              Прогресс — двигай бегунок, чтобы вернуться к любому моменту
-            </label>
-            <input id="ping-journey-scrub" type="range" min="0" max={EVENTS.length - 1} step="1" value={step}
-              onChange={e => go(Number(e.target.value))} disabled={detective}
-              className="w-full accent-cyan-400 disabled:opacity-40" />
-            <div className="flex flex-wrap items-center gap-2 justify-between">
-              <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
-                className="min-h-11 px-4 rounded-xl bg-slate-800 border border-slate-600 text-slate-100 font-semibold disabled:opacity-30">
-                <ChevronLeft className="w-4 h-4 inline" /> Назад
-              </button>
-              <button type="button" onClick={restart}
-                className="min-h-11 px-3 rounded-xl border border-slate-600 text-slate-300" aria-label="Начать ping заново">
-                <RotateCcw className="w-4 h-4" />
-              </button>
-              <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
-                className="min-h-11 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
-                Следующий шаг <ChevronRight className="w-4 h-4 inline" />
-              </button>
-            </div>
-            <p className="text-xs text-slate-400">{detective ? 'В режиме проверки надо ответить на вопрос, прежде чем двигаться дальше.' : 'Автопереходов нет: ты сам задаёшь скорость движения пакета.'}</p>
-          </div>
         </>
       ) : (
         <div className="rounded-2xl border border-slate-700 bg-[#0b1929] p-4 sm:p-6 space-y-4">
