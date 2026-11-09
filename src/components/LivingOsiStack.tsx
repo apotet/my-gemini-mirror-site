@@ -186,6 +186,8 @@ const LEVELS = OSI_STACK_DATA;
 const SOURCE_IP = '192.168.1.10';
 const SOURCE_MAC = '02:00:00:00:01:10';
 const GATEWAY_MAC = '02:00:00:00:01:01';
+const ROUTER_WAN_MAC = '02:00:00:00:02:01';
+const SERVER_MAC = '02:00:00:00:02:20';
 
 function packetBlocks(level: number, scenario: ScenarioId): PacketBlock[] {
   const result: PacketBlock[] = [{ label: SCENARIOS[scenario].application, kind: 'payload' }];
@@ -204,7 +206,7 @@ function packetBlocks(level: number, scenario: ScenarioId): PacketBlock[] {
   return result;
 }
 
-function layerDetails(level: number, scenario: ScenarioId) {
+function layerDetails(level: number, scenario: ScenarioId, direction: Direction) {
   const s = SCENARIOS[scenario];
   const isPing = scenario === 'ping';
   const common = {
@@ -265,7 +267,47 @@ function layerDetails(level: number, scenario: ScenarioId) {
       fields: [['Среда', 'Ethernet · пример проводного соединения'], ['Что передаётся', 'Биты и сигналы'], ['Добавленный заголовок', 'Нет']],
     },
   };
-  return common[level as keyof typeof common];
+  const base = common[level as keyof typeof common];
+  if (direction === 'down') return base;
+  const receivingMeaning: Record<number, string> = {
+    1: 'Сетевая карта принимает сигналы и восстанавливает Ethernet-кадр. Заголовок Bits не появляется.',
+    2: 'Конечный сервер проверяет FCS, снимает Ethernet-обёртку и передаёт IP-пакет выше. MAC здесь уже адреса последнего перехода.',
+    3: 'Сервер проверяет IP-адрес назначения и передаёт полезную нагрузку TCP/UDP или обработчику ICMP. После одного маршрутизатора TTL равен 63.',
+    4: isPing ? 'Отдельного TCP/UDP нет: ICMP Echo Request обрабатывает сетевой стек.' : 'Транспортный протокол проверяет порт назначения, снимает свой заголовок и передаёт данные выше.',
+    5: 'Обработка сеансового контекста зависит от приложения. Универсальный Session-заголовок снимать не нужно.',
+    6: scenario === 'https' ? 'TLS проверяет и расшифровывает данные. HTTP-запрос становится доступным приложению.' : 'Отдельного заголовка представления не было — снимать нечего.',
+    7: 'Приложение получило полезную нагрузку. Передача по стеку завершена.',
+  };
+  if (level === 2) return {
+    ...base,
+    meaning: receivingMeaning[level],
+    professional: 'Это последний Ethernet-hop, а не исходный кадр ПК → шлюз. После маршрутизатора L2-заголовок формируется заново, IP-адреса без NAT остаются прежними.',
+    fields: [['Src MAC', ROUTER_WAN_MAC + ' · роутер'], ['Dst MAC', SERVER_MAC + ' · сервер'], ['EtherType', '0x0800 · IPv4'], ['FCS', 'Проверяется при приёме']],
+  };
+  if (level === 3) return {
+    ...base,
+    meaning: receivingMeaning[level],
+    professional: 'Маршрутизатор уменьшил исходный TTL 64 на 1. На конечном хосте IPv4 передаёт данные обработчику, определяемому полем Protocol: 6/TCP, 17/UDP, 1/ICMP.',
+    fields: [['Src IPv4', SOURCE_IP], ['Dst IPv4', s.destination], ['TTL у сервера', '63'], ['Protocol', isPing ? '1 · ICMP' : s.protocol === 'TCP' ? '6 · TCP' : '17 · UDP']],
+  };
+  return { ...base, meaning: receivingMeaning[level] };
+}
+
+function visibleBlocks(level: number, scenario: ScenarioId, direction: Direction): PacketBlock[] {
+  if (direction === 'down') return packetBlocks(level, scenario);
+  if (level === 1) return packetBlocks(2, scenario);
+  if (level === 3 && scenario === 'ping') {
+    return [{ label: 'ICMP', kind: 'icmp' }, { label: SCENARIOS[scenario].application, kind: 'payload' }];
+  }
+  return packetBlocks(Math.min(7, level + 1), scenario);
+}
+
+function pduForLevel(level: number, scenario: ScenarioId, direction: Direction): string {
+  if (direction === 'down') return pduAt(level, scenario);
+  if (level === 1) return 'Кадр';
+  if (level === 2) return 'IP-пакет';
+  if (level === 3) return scenario === 'ping' ? 'ICMP' : scenario === 'dns' ? 'UDP-датаграмма' : 'TCP-сегмент';
+  return 'Данные';
 }
 
 function pduAt(level: number, scenario: ScenarioId): string {
@@ -307,8 +349,8 @@ export const LivingOsiStack: React.FC<LivingOsiStackProps> = ({
   const [reducedMotion, setReducedMotion] = useState(false);
   const layerId = direction === 'down' ? 7 - step : 1 + step;
   const layer = LEVELS.find((item) => item.id === layerId) || LEVELS[0];
-  const details = layerDetails(layerId, scenario);
-  const blocks = packetBlocks(layerId, scenario);
+  const details = layerDetails(layerId, scenario, direction);
+  const blocks = visibleBlocks(layerId, scenario, direction);
   const last = step === 6;
 
   useEffect(() => {
@@ -428,7 +470,7 @@ export const LivingOsiStack: React.FC<LivingOsiStackProps> = ({
                   </span>
                   <span className="flex items-center gap-2 shrink-0">
                     {selected && <span className="w-2 h-2 rounded-full bg-cyan-500" aria-hidden="true" />}
-                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">{pduAt(item.id, scenario)}</span>
+                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">{pduForLevel(item.id, scenario, direction)}</span>
                   </span>
                 </button>
               );
@@ -469,7 +511,7 @@ export const LivingOsiStack: React.FC<LivingOsiStackProps> = ({
         <div className="min-w-0 rounded-2xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/25 p-3 sm:p-4 space-y-3 lg:sticky lg:top-20">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-base font-bold text-slate-900 dark:text-white">{layer.level} · {layer.name}</h3>
-            <span className="text-xs text-cyan-700 dark:text-cyan-300 font-semibold">{pduAt(layerId, scenario)}</span>
+            <span className="text-xs text-cyan-700 dark:text-cyan-300 font-semibold">{pduForLevel(layerId, scenario, direction)}</span>
           </div>
           <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 dark:bg-slate-900 p-1" aria-label="Вид объяснения">
             {([
