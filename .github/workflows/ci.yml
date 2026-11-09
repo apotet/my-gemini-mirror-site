@@ -43,6 +43,9 @@ jobs:
       - name: Three-switch VLAN fault regression
         run: node scripts/cli-three-switch.test.mjs
 
+      - name: Diagnostic Learn no-spoiler regression
+        run: node scripts/cli-diagnostic-hints.test.mjs
+
       - name: Cisco IOS running/startup persistence regression
         run: node scripts/cli-persistence.test.mjs
 
