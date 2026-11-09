@@ -60,6 +60,13 @@ export interface RouteEntry {
   metric?: number;
 }
 
+export interface SavedDeviceConfig {
+  hostname: string;
+  interfaces: Record<string, InterfaceState>;
+  vlans: Record<number, VlanState>;
+  routes: RouteEntry[];
+}
+
 export interface DeviceState {
   id: string;
   hostname: string;
@@ -69,6 +76,7 @@ export interface DeviceState {
   interfaces: Record<string, InterfaceState>;
   vlans: Record<number, VlanState>;
   routes: RouteEntry[];
+  startupConfig?: SavedDeviceConfig;
 }
 
 export interface NetworkLink {
@@ -103,6 +111,7 @@ export type GoalPredicate =
   | { type: 'if.trunkAllowed'; device: string; ifName: string; vlans: number[] }
   | { type: 'mode'; device: string; modes: DeviceMode[] }
   | { type: 'privilege'; device: string; min: number }
+  | { type: 'config.saved'; device: string }
   | { type: 'l2.vlanReachable'; vlanId: number; fromDevice: string; fromIf: string; toDevice: string; toIf: string };
 
 export interface GoalCheckResult {
