@@ -1,618 +1,492 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight, RotateCcw, Eye, EyeOff, Network, ShieldCheck } from 'lucide-react';
 
-const mac = {
-  pc: '02:00:00:00:01:10',
-  lan: '02:00:00:00:01:01',
-  wan: '02:00:00:00:02:01',
-  server: '02:00:00:00:02:20',
-  broadcast: 'ff:ff:ff:ff:ff:ff',
-};
-const ip = { pc: '192.168.1.10', lan: '192.168.1.1', wan: '192.168.2.1', server: '192.168.2.20' };
-
+/**
+ * A single event = one cable traversal OR one device-local processing action.
+ * Never combine PC→switch→router into a single animation step.
+ * IP addresses survive forwarding (there is no NAT here); Ethernet headers
+ * are rebuilt by the router, not by the L2 switch.
+ */
 type NodeId = 'pc' | 'switch' | 'router' | 'server';
-type Frame = {
-  Ethernet: { source: string; destination: string; type: string };
-  ARP: { operation: string; senderIP: string; senderMAC: string; targetIP: string; targetMAC: string } | null;
-  IP: { source: string; destination: string; TTL: number } | null;
-  ICMP: { type: number } | null;
+type PacketKind = 'arp-req' | 'arp-reply' | 'icmp-req' | 'icmp-reply';
+type Packet = {
+  kind: PacketKind;
+  srcMac: string;
+  dstMac: string;
+  srcIp?: string;
+  dstIp?: string;
+  ttl?: number;
+  arpSenderIp?: string;
+  arpTargetIp?: string;
 };
-
-function arp(src: keyof typeof mac, dst: keyof typeof mac, target: keyof typeof ip, reply = false): Frame {
-  return {
-    Ethernet: { source: mac[src], destination: reply ? mac[dst] : mac.broadcast, type: '0x0806' },
-    ARP: {
-      operation: reply ? 'Reply' : 'Request',
-      senderIP: ip[src as keyof typeof ip],
-      senderMAC: mac[src],
-      targetIP: ip[target],
-      targetMAC: reply ? mac[dst] : '00:00:00:00:00:00',
-    },
-    IP: null,
-    ICMP: null,
-  };
-}
-function echo(src: keyof typeof mac, dst: keyof typeof mac, reverse = false, routed = false): Frame {
-  return {
-    Ethernet: { source: mac[src], destination: mac[dst], type: '0x0800' },
-    ARP: null,
-    IP: {
-      source: reverse ? ip.server : ip.pc,
-      destination: reverse ? ip.pc : ip.server,
-      TTL: routed ? 63 : 64,
-    },
-    ICMP: { type: reverse ? 0 : 8 },
-  };
-}
-
-const icons = {
-  pc: 'M-25-22h50v32h-50z M0 10v12 M-15 23h30',
-  switch: 'M-29-12h58v28h-58z M-20 0h8 M-5 0h8 M10 0h8 M-20 8h8 M-5 8h8 M10 8h8',
-  router: 'M-27-17h54v36h-54z M-17-6h34 M-12-11l-5 5 5 5 M12 1l5-7-5-5 M-17 10h34',
-  server: 'M-22-28h44v55h-44z M-16-16h32 M-16-4h32 M-16 8h32 M12 19h4',
-};
-
-interface Step {
+type Challenge = { prompt: string; options: [string, string, string]; correct: number; why: string };
+type Event = {
   title: string;
-  text: string;
-  frame: Frame | null;
-  active: NodeId;
-  say: string[];
-  route: NodeId[];
-  question?: { prompt: string; nodes: Partial<Record<NodeId, number>>; correct: number };
-  cache?: string;
-  changed?: Array<'srcMac' | 'dstMac' | 'ttl'>;
-}
+  from: NodeId;
+  to: NodeId;
+  summary: string;
+  detail: string;
+  packet?: Packet;
+  note?: string;
+  challenge?: Challenge;
+};
 
-const STEPS: Step[] = [
+const IPS = { pc: '192.168.1.10', routerLan: '192.168.1.1', routerWan: '192.168.2.1', server: '192.168.2.20' };
+const MACS = {
+  pc: '02:00:00:00:01:10', routerLan: '02:00:00:00:01:01',
+  routerWan: '02:00:00:00:02:01', server: '02:00:00:00:02:20',
+  all: 'ff:ff:ff:ff:ff:ff',
+};
+const NAMES: Record<NodeId, string> = { pc: 'ПК', switch: 'Коммутатор', router: 'Маршрутизатор', server: 'Сервер' };
+const IP_SHORT: Record<NodeId, string> = { pc: IPS.pc, switch: 'L2 · VLAN 1', router: IPS.routerLan + ' / ' + IPS.routerWan, server: IPS.server };
+
+function arpRequest(sender: 'pc' | 'routerWan', target: 'routerLan' | 'server'): Packet {
+  return {
+    kind: 'arp-req', srcMac: MACS[sender], dstMac: MACS.all,
+    arpSenderIp: IPS[sender], arpTargetIp: IPS[target],
+  };
+}
+function arpReply(sender: 'routerLan' | 'server', target: 'pc' | 'routerWan'): Packet {
+  return {
+    kind: 'arp-reply', srcMac: MACS[sender], dstMac: MACS[target],
+    arpSenderIp: IPS[sender], arpTargetIp: IPS[target],
+  };
+}
+function icmp(srcMac: keyof typeof MACS, dstMac: keyof typeof MACS, reply: boolean, ttl: number): Packet {
+  return {
+    kind: reply ? 'icmp-reply' : 'icmp-req', srcMac: MACS[srcMac], dstMac: MACS[dstMac],
+    srcIp: reply ? IPS.server : IPS.pc,
+    dstIp: reply ? IPS.pc : IPS.server,
+    ttl,
+  };
+}
+const requestLan = icmp('pc', 'routerLan', false, 64);
+const requestWan = icmp('routerWan', 'server', false, 63);
+const replyWan = icmp('server', 'routerWan', true, 64);
+const replyLan = icmp('routerLan', 'pc', true, 63);
+
+/** Deliberately separate the switch ingress and switch egress events. */
+const EVENTS: Event[] = [
   {
-    title: 'Выбор маршрута',
-    text: 'ПК сравнивает /24: сервер вне 192.168.1.0/24. Следующий узел — шлюз 192.168.1.1. ARP-кэши пусты.',
-    frame: null,
-    active: 'pc',
-    say: ['Сервер в другой подсети.', 'Нужен MAC шлюза.'],
-    route: [],
+    title: 'ПК готовит ping', from: 'pc', to: 'pc',
+    summary: 'Ты на ПК. Нужно проверить связь с сервером 192.168.2.20.',
+    detail: 'ПК сравнивает сеть назначения со своей 192.168.1.0/24. Сервер находится в другой подсети. Передавать кадр нужно своему шлюзу 192.168.1.1, но его MAC пока неизвестен.',
+    note: 'Пакет ещё никуда не отправлен. Начинаем именно с ПК.',
   },
   {
-    title: 'Кто знает шлюз?',
-    text: 'ПК запрашивает MAC шлюза, а не сервера. Коммутатор раздаёт broadcast в LAN; маршрутизатор не передаёт ARP в другую подсеть.',
-    frame: arp('pc', 'lan', 'lan'),
-    active: 'pc',
-    say: ['Кто знает MAC шлюза?', 'ARP-запрос всем в LAN.'],
-    route: ['pc', 'switch', 'router'],
-    cache: 'ARP ПК → 02:00:00:00:01:10',
-    question: { prompt: 'Чей MAC нужно узнать? Нажми устройство.', nodes: { router: 0, server: 1 }, correct: 0 },
+    title: 'ПК → коммутатор', from: 'pc', to: 'switch',
+    summary: 'ПК отправляет ARP-запрос: «Кто имеет IP 192.168.1.1?»',
+    detail: 'ARP — это отдельный Ethernet-кадр с широковещательным MAC назначения. Он не содержит IPv4-пакета с ICMP. ПК узнаёт MAC своего шлюза, а не сервера.',
+    packet: arpRequest('pc', 'routerLan'),
   },
   {
-    title: 'ARP-ответ шлюза',
-    text: 'Шлюз изучил отправителя запроса. ПК принимает unicast-ответ и сохраняет MAC шлюза.',
-    frame: arp('lan', 'pc', 'pc', true),
-    active: 'router',
-    say: ['Я — шлюз. Вот мой MAC.'],
-    route: ['router', 'switch', 'pc'],
+    title: 'Коммутатор принимает ARP', from: 'switch', to: 'switch',
+    summary: 'Кадр дошёл до коммутатора. Он обрабатывает его, прежде чем пересылать дальше.',
+    detail: 'Коммутатор изучает исходный MAC ПК и порт, с которого пришёл кадр. Поскольку MAC назначения широковещательный, кадр нужно передать через остальные порты той же VLAN.',
+    packet: arpRequest('pc', 'routerLan'),
+    challenge: {
+      prompt: 'Кадр пришёл на switch с MAC назначения FF:FF:FF:FF:FF:FF. Что делать?',
+      options: ['Отправить только серверу', 'Разослать по остальным портам VLAN', 'Отбросить кадр'],
+      correct: 1,
+      why: 'Broadcast передаётся по VLAN, кроме входного порта. При этом коммутатор изучает исходный MAC ПК.',
+    },
   },
   {
-    title: 'Echo Request до шлюза',
-    text: 'Ethernet адресован следующему узлу. IP назначения остаётся адресом сервера. Коммутатор передаёт кадр без изменения TTL.',
-    frame: echo('pc', 'lan'),
-    active: 'pc',
-    say: ['Кадр шлюзу.', 'IP-пакет — серверу.'],
-    route: ['pc', 'switch', 'router'],
-    question: { prompt: 'Кому отправить кадр? Нажми устройство.', nodes: { router: 0, server: 1 }, correct: 0 },
+    title: 'Коммутатор → маршрутизатор', from: 'switch', to: 'router',
+    summary: 'Коммутатор передаёт ARP-запрос на порт маршрутизатора.',
+    detail: 'Коммутатор не меняет MAC-адреса в кадре и не уменьшает TTL. Маршрутизатор видит: запрашивают IP его LAN-интерфейса 192.168.1.1.',
+    packet: arpRequest('pc', 'routerLan'),
   },
   {
-    title: 'Маршрутизатор ищет сервер',
-    text: 'Входной Ethernet снят. Есть connected маршрут 192.168.2.0/24; TTL пакета уменьшается 64 → 63. Для нового кадра нужен MAC сервера.',
-    frame: arp('wan', 'server', 'server'),
-    active: 'router',
-    say: ['Снимаю Ethernet. TTL 64 → 63.', 'Теперь нужен MAC сервера.'],
-    route: ['router', 'server'],
+    title: 'Маршрутизатор → коммутатор', from: 'router', to: 'switch',
+    summary: 'Шлюз отвечает: «192.168.1.1 — это я. Вот мой MAC».',
+    detail: 'Ответ ARP — unicast на MAC ПК. Маршрутизатор также может запомнить IP и MAC ПК из ARP-запроса. ARP не пересылается в сеть сервера.',
+    packet: arpReply('routerLan', 'pc'),
   },
   {
-    title: 'ARP-ответ сервера',
-    text: 'Сервер изучил MAC своего шлюза из ARP-запроса. Маршрутизатор сохраняет MAC сервера.',
-    frame: arp('server', 'wan', 'wan', true),
-    active: 'server',
-    say: ['Это мой IP. Вот мой MAC.'],
-    route: ['server', 'router'],
+    title: 'Коммутатор → ПК', from: 'switch', to: 'pc',
+    summary: 'Ответ ARP возвращается на ПК тем же маршрутом.',
+    detail: 'Коммутатор уже знает порт ПК из предыдущего запроса. ПК запоминает соответствие: 192.168.1.1 → MAC LAN-интерфейса маршрутизатора.',
+    packet: arpReply('routerLan', 'pc'),
+    note: 'Теперь ПК может сформировать Ethernet-кадр для ICMP Echo Request.',
   },
   {
-    title: 'Доставка запроса',
-    text: 'Новый Ethernet: MAC выходного интерфейса → MAC сервера. IP source/destination сохранены: NAT нет. TTL 63.',
-    frame: echo('wan', 'server', false, true),
-    active: 'router',
-    say: ['Новый Ethernet, те же IP.', 'Отправляю серверу: TTL 63.'],
-    route: ['router', 'server'],
-    changed: ['srcMac', 'dstMac', 'ttl'],
-    question: { prompt: 'Какой TTL получит сервер?', nodes: {}, correct: 0 },
+    title: 'ПК → коммутатор', from: 'pc', to: 'switch',
+    summary: 'Вот теперь ПК отправляет ICMP Echo Request.',
+    detail: 'Внутри Ethernet-кадра лежит IPv4-пакет, внутри него — ICMP Echo Request (type 8). MAC назначения — шлюз. IP назначения — сервер. TCP и UDP в обычном ping не участвуют.',
+    packet: requestLan,
   },
   {
-    title: 'Echo Reply к шлюзу',
-    text: 'Сервер создаёт новый ответ с TTL 64, type 0. Обратный default маршрут через 192.168.2.1; MAC уже известен.',
-    frame: echo('server', 'wan', true),
-    active: 'server',
-    say: ['Ping получен. Ответ шлюзу.', 'Новый пакет: TTL 64.'],
-    route: ['server', 'router'],
-    changed: ['srcMac', 'dstMac'],
+    title: 'Коммутатор принимает ICMP', from: 'switch', to: 'switch',
+    summary: 'Коммутатор видит MAC шлюза, а не IP сервера.',
+    detail: 'Коммутатор использует свою MAC-таблицу и пересылает кадр через нужный порт. Ethernet- и IP-заголовки остаются прежними, TTL всё ещё 64.',
+    packet: requestLan,
   },
   {
-    title: 'Ответ через коммутатор к ПК',
-    text: 'Connected маршрут 192.168.1.0/24. Новый Ethernet к ПК, TTL ответа 63. ARP ПК уже известен. ПК получает Echo Reply.',
-    frame: echo('lan', 'pc', true, true),
-    active: 'pc',
-    say: ['Ответ в LAN. TTL 64 → 63.', 'ПК получает Echo Reply.'],
-    route: ['router', 'switch', 'pc'],
-    changed: ['srcMac', 'dstMac', 'ttl'],
+    title: 'Коммутатор → маршрутизатор', from: 'switch', to: 'router',
+    summary: 'ICMP-запрос приходит на LAN-интерфейс маршрутизатора.',
+    detail: 'Путь ПК → коммутатор → маршрутизатор полностью виден. Следующая операция — обработка IP-пакета маршрутизатором, а не мгновенный перелёт на сервер.',
+    packet: requestLan,
+  },
+  {
+    title: 'Маршрутизатор обрабатывает пакет', from: 'router', to: 'router',
+    summary: 'Маршрутизатор снимает входной Ethernet и ищет маршрут к 192.168.2.20.',
+    detail: 'Сеть 192.168.2.0/24 подключена к WAN напрямую. TTL уменьшится с 64 до 63 при пересылке. Для нового Ethernet-кадра нужен MAC сервера; ARP-кэш WAN сейчас пуст.',
+    packet: requestLan,
+    note: 'Исходный IP-пакет ожидает разрешения ARP. На линии в данный момент полетит именно ARP, а не ping.',
+    challenge: {
+      prompt: 'Перед пересылкой через маршрутизатор что произойдёт с TTL?',
+      options: ['Останется 64', 'Увеличится до 65', 'Уменьшится до 63'],
+      correct: 2,
+      why: 'Каждый маршрутизатор уменьшает TTL IPv4-пакета на 1. Коммутатор этого не делает.',
+    },
+  },
+  {
+    title: 'Маршрутизатор → сервер', from: 'router', to: 'server',
+    summary: 'Маршрутизатор рассылает ARP-запрос в сети 192.168.2.0/24.',
+    detail: 'Это уже другая Ethernet-сеть. R1 спрашивает MAC для IP 192.168.2.20. ICMP-запрос пока ждёт на маршрутизаторе.',
+    packet: arpRequest('routerWan', 'server'),
+  },
+  {
+    title: 'Сервер → маршрутизатор', from: 'server', to: 'router',
+    summary: 'Сервер отвечает на ARP и сообщает свой MAC.',
+    detail: 'R1 узнаёт MAC сервера из ответа и может отправить сохранённый ICMP-запрос в новом Ethernet-кадре.',
+    packet: arpReply('server', 'routerWan'),
+  },
+  {
+    title: 'Маршрутизатор → сервер', from: 'router', to: 'server',
+    summary: 'Echo Request доставлен серверу в НОВОМ Ethernet-кадре.',
+    detail: 'На выходе R1 MAC отправителя стал MAC WAN-интерфейса, MAC получателя — MAC сервера. IPv4-адреса ПК и сервера не изменились; TTL теперь 63.',
+    packet: requestWan,
+    note: 'Сравни с шагом «ПК → коммутатор»: IP те же, а внешняя Ethernet-обёртка другая.',
+  },
+  {
+    title: 'Сервер → маршрутизатор', from: 'server', to: 'router',
+    summary: 'Сервер создаёт новый ICMP Echo Reply (type 0).',
+    detail: 'Новый пакет: источник 192.168.2.20, назначение 192.168.1.10, начальный TTL 64. Обратный next-hop — R1 192.168.2.1. MAC шлюза сервер узнал ранее из ARP-запроса.',
+    packet: replyWan,
+  },
+  {
+    title: 'Маршрутизатор обрабатывает ответ', from: 'router', to: 'router',
+    summary: 'Маршрутизатор выбирает маршрут обратно к ПК.',
+    detail: 'Connected-маршрут в 192.168.1.0/24. R1 уменьшает TTL ответа 64 → 63, использует известный MAC ПК и готовит новый Ethernet-кадр в LAN.',
+    packet: replyWan,
+  },
+  {
+    title: 'Маршрутизатор → коммутатор', from: 'router', to: 'switch',
+    summary: 'Echo Reply уходит через LAN-интерфейс к ПК.',
+    detail: 'Новый Ethernet-кадр адресован MAC ПК. IPv4 source/destination остались адресами сервера и ПК. TTL 63.',
+    packet: replyLan,
+  },
+  {
+    title: 'Коммутатор → ПК', from: 'switch', to: 'pc',
+    summary: 'Коммутатор доставляет Echo Reply на порт ПК.',
+    detail: 'Коммутатор отправляет кадр по MAC-таблице, не меняя TTL. ПК принимает ICMP Echo Reply. Ping успешен.',
+    packet: replyLan,
+  },
+  {
+    title: 'Ping выполнен', from: 'pc', to: 'pc',
+    summary: 'ПК получил ответ. Полный путь пройден — без прыжков через устройства.',
+    detail: 'ARP нужен для узнавания MAC следующего узла. Повторный ping может обходиться без новых ARP-запросов, пока записи ARP-кэшей действительны.',
+    note: 'Учебный сценарий без задержек и реальной отправки пакетов.',
   },
 ];
 
-const TERMS: Record<string, string> = {
-  ARP: 'ARP узнаёт MAC локального следующего узла по его IPv4. Запрос не проходит через маршрутизатор.',
-  MAC: 'MAC — адрес интерфейса в Ethernet-кадре. На каждом маршрутизируемом участке заголовок создаётся заново.',
-  TTL: 'TTL — оставшееся число переходов. Маршрутизатор уменьшает его на 1; коммутатор — нет.',
-  Подсеть: 'При /24 первые три октета — сетевая часть. 192.168.1 и 192.168.2 различаются: нужен шлюз.',
-  Ethernet: 'Ethernet-кадр несёт пакет по одному L2-сегменту к MAC следующего узла.',
-};
-
-const desktop = { pc: [100, 145], switch: [350, 145], router: [625, 145], server: [890, 145] } as const;
-const mobile = { pc: [70, 70], switch: [70, 175], router: [70, 280], server: [70, 400] } as const;
-const names = { pc: 'ПК', switch: 'Коммутатор', router: 'Маршрутизатор', server: 'Сервер' };
-const subs: Record<NodeId, string[]> = {
-  pc: ['192.168.1.10 /24', 'шлюз 192.168.1.1'],
-  switch: ['Одна VLAN · L2'],
-  router: ['LAN 192.168.1.1 /24', 'WAN 192.168.2.1 /24'],
-  server: ['192.168.2.20 /24', 'шлюз 192.168.2.1'],
-};
-
-function useNarrow() {
-  const [narrow, setNarrow] = useState(typeof window !== 'undefined' && window.innerWidth < 640);
+function useMobile(): boolean {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 680);
   useEffect(() => {
-    const on = () => setNarrow(window.innerWidth < 640);
-    window.addEventListener('resize', on);
-    return () => window.removeEventListener('resize', on);
+    const onResize = () => setMobile(window.innerWidth < 680);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
-  return narrow;
+  return mobile;
 }
 
-const FAULTS = {
-  mask: {
-    title: 'Случай 1 · маска',
-    text: 'Ping не доходит. ПК фактически 192.168.1.10/16, по плану /24. Сервер ошибочно считается on-link, ARP сервера без ответа.',
-    stop: 'pc' as NodeId,
-    fix: 'Исправить маску на /24',
-    explain: 'После /24 сервер вне подсети, next-hop — шлюз.',
-  },
-  gateway: {
-    title: 'Случай 2 · шлюз',
-    text: 'Маска верная, но шлюз не задан. Маршрута к 192.168.2.20 нет, кадр не уходит.',
-    stop: 'pc' as NodeId,
-    fix: 'Задать шлюз 192.168.1.1',
-    explain: 'Default gateway указывает next-hop для чужой подсети.',
-  },
+const ICONS: Record<NodeId, string> = {
+  pc: 'M-21-16h42v26h-42z M-26 16h52 M-7 10v6 M7 10v6',
+  switch: 'M-24-13h48v28h-48z M-17-3h11 M0-3h11 M-17 7h11 M0 7h11',
+  router: 'M-23-16h46v32h-46z M-12-7h24 M-12 7h24 M-7-12l-5 5 5 5 M7 2l5 5-5 5',
+  server: 'M-19-27h38v54h-38z M-13-13h26 M-13 0h26 M-13 13h26',
 };
+const desktopPoints: Record<NodeId, [number, number]> = { pc: [90, 90], switch: [345, 90], router: [650, 90], server: [910, 90] };
+const mobilePoints: Record<NodeId, [number, number]> = { pc: [48, 63], switch: [48, 182], router: [48, 310], server: [48, 443] };
+
+function displayMac(address: string): string {
+  if (address === MACS.pc) return 'MAC ПК';
+  if (address === MACS.routerLan) return 'MAC R1 LAN';
+  if (address === MACS.routerWan) return 'MAC R1 WAN';
+  if (address === MACS.server) return 'MAC сервера';
+  return 'Broadcast (всем)';
+}
+function packetKind(p: Packet): string {
+  if (p.kind === 'arp-req') return 'ARP Request';
+  if (p.kind === 'arp-reply') return 'ARP Reply';
+  if (p.kind === 'icmp-req') return 'ICMP Echo Request';
+  return 'ICMP Echo Reply';
+}
+
+const FAULTS = [
+  { id: 'mask', name: 'Случай 1', symptom: 'ПК 192.168.1.10/16 пытается ping 192.168.2.20. В ARP видно: «Who has 192.168.2.20?». Ответа нет.',
+    options: ['Неисправен DNS', 'Неправильная маска ПК', 'Неверный TTL'], correct: 1, fix: 'Поставить маску /24',
+    why: 'С маской /16 ПК ошибочно считает сервер локальным и пытается узнать его MAC напрямую вместо отправки пакета шлюзу.' },
+  { id: 'gateway', name: 'Случай 2', symptom: 'ПК 192.168.1.10/24. Ping 192.168.2.20: «Network unreachable». В таблице маршрутов нет default route.',
+    options: ['Отсутствует шлюз по умолчанию', 'Сервер не знает MAC ПК', 'Сломан коммутатор'], correct: 0, fix: 'Указать шлюз 192.168.1.1',
+    why: 'Назначение не входит в 192.168.1.0/24, поэтому ПК нужен маршрут через шлюз. Без него пакет не сможет уйти из ПК.' },
+] as const;
 
 export const PacketJourney: React.FC = () => {
-  const narrow = useNarrow();
-  const points = narrow ? mobile : desktop;
-  const [mode, setMode] = useState<'learn' | 'fix'>('learn');
+  const mobile = useMobile();
+  const points = mobile ? mobilePoints : desktopPoints;
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [term, setTerm] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [fault, setFault] = useState<'mask' | 'gateway'>('mask');
-  const [fixed, setFixed] = useState<string[]>([]);
-  const [fixMsg, setFixMsg] = useState('');
-  const current = STEPS[step];
-  const hasNodeQuestion = current.question && Object.keys(current.question.nodes).length > 0;
-  const answered = playing || !current.question || answers[step] !== undefined;
-  const choice = answers[step];
+  const [mode, setMode] = useState<'learn' | 'fix'>('learn');
+  const [detective, setDetective] = useState(false);
+  const [answer, setAnswer] = useState<Record<number, number>>({});
+  const [details, setDetails] = useState(false);
+  const [faultIndex, setFaultIndex] = useState(0);
+  const [faultAnswer, setFaultAnswer] = useState<number | null>(null);
+  const [faultFixed, setFaultFixed] = useState(false);
+  const current = EVENTS[step];
+  const challenge = detective ? current.challenge : undefined;
+  const choice = answer[step];
+  const solved = !challenge || choice === challenge.correct;
+  const from = points[current.from];
+  const to = points[current.to];
+  const travel = current.from !== current.to;
+  const track = 'M' + from[0] + ' ' + from[1] + ' L' + to[0] + ' ' + to[1];
+  const fault = FAULTS[faultIndex];
 
-  const packetLabel = useMemo(() => {
-    const f = current.frame;
-    if (!f) return null;
-    if (f.ARP?.operation === 'Request') return 'ARP ?';
-    if (f.ARP?.operation === 'Reply') return 'ARP ✓';
-    if (f.ICMP?.type === 8) return 'ping →';
-    return 'reply ←';
-  }, [current]);
-
-  const motionPath = current.route.map((id) => points[id]).map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]} ${p[1]}`).join(' ');
-  const bubbleAt = points[current.active];
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setPlaying(true), 400);
-    return () => window.clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    if (!playing || mode !== 'learn') return;
-    if (step >= STEPS.length - 1) {
-      setPlaying(false);
-      return;
-    }
-    const t = window.setTimeout(() => setStep((s) => Math.min(STEPS.length - 1, s + 1)), 2200);
-    return () => window.clearTimeout(t);
-  }, [playing, step, mode]);
-
-  const startPing = () => {
-    setAnswers({});
-    setStep(0);
-    setPlaying(true);
-    setMode('learn');
+  const go = (n: number) => {
+    setStep(Math.max(0, Math.min(EVENTS.length - 1, n)));
   };
-  const pause = () => setPlaying(false);
+  const restart = () => {
+    setStep(0);
+    setAnswer({});
+  };
 
   return (
-    <div className="space-y-3 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <section className="mx-auto max-w-5xl space-y-4" aria-label="Путь пакета через сеть">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[10px] font-mono text-cyan-300 uppercase tracking-wider">Обучение</div>
-          <h2 className="text-lg sm:text-xl font-bold text-white">Отправь ping на сервер</h2>
+          <div className="text-[11px] text-cyan-400 font-mono font-bold uppercase tracking-wider">Сетевая практика · ICMP</div>
+          <h2 className="text-xl sm:text-2xl font-black text-white">Отправь ping на сервер</h2>
+          <p className="text-xs sm:text-sm text-slate-400">Один шаг — одно действие или один участок кабеля. Никакой телепортации.</p>
         </div>
-        <div className="flex rounded-xl bg-slate-900 border border-slate-800 p-0.5 self-start">
-          {(
-            [
-              ['learn', 'Разобраться'],
-              ['fix', 'Исправить'],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setMode(id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                mode === id ? 'bg-cyan-500 text-slate-950' : 'text-slate-300'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex rounded-xl bg-slate-900 border border-slate-700 p-1">
+          <button type="button" aria-pressed={mode === 'learn'} onClick={() => setMode('learn')}
+            className={'px-3 py-2 rounded-lg text-sm font-semibold ' + (mode === 'learn' ? 'bg-cyan-500 text-slate-950' : 'text-slate-300')}>
+            Разобраться
+          </button>
+          <button type="button" aria-pressed={mode === 'fix'} onClick={() => setMode('fix')}
+            className={'px-3 py-2 rounded-lg text-sm font-semibold ' + (mode === 'fix' ? 'bg-cyan-500 text-slate-950' : 'text-slate-300')}>
+            Исправить
+          </button>
         </div>
       </div>
 
-      {mode === 'learn' && (
+      {mode === 'learn' ? (
         <>
-          <div className="rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 font-mono text-xs space-y-0.5">
-            <div className="text-slate-500">PC</div>
-            <div className="text-slate-200">{"PC>"} ping 192.168.2.20</div>
-            {step > 0 && <div className="text-slate-400">{current.title}</div>}
-            {step === STEPS.length - 1 && !playing && (
-              <div className="text-emerald-300">Reply from 192.168.2.20: time=12ms</div>
-            )}
-            {playing && <div className="text-cyan-300">идёт… можно остановить и разобрать</div>}
-          </div>
-          <div className="rounded-2xl border border-slate-800 bg-[#0d1b2b] p-2 sm:p-3">
-            <svg
-              viewBox={narrow ? '0 0 330 470' : '0 0 1000 300'}
-              className="w-full h-auto"
-              role="img"
-              aria-label="ПК — коммутатор — маршрутизатор — сервер"
-            >
-              <rect
-                x="5"
-                y="5"
-                width={narrow ? 320 : 622}
-                height={narrow ? 250 : 282}
-                rx="18"
-                fill="#35d0c80a"
-                stroke="#35d0c855"
-                strokeDasharray="5 5"
-              />
-              <rect
-                x={narrow ? 5 : 638}
-                y={narrow ? 260 : 5}
-                width={narrow ? 320 : 357}
-                height={narrow ? 200 : 282}
-                rx="18"
-                fill="#5da9ff0a"
-                stroke="#5da9ff55"
-                strokeDasharray="5 5"
-              />
-              <text x="18" y="25" fill="#7ce8d4" fontSize="12">
-                LAN · 192.168.1.0/24
-              </text>
-              <text x={narrow ? 18 : 700} y={narrow ? 280 : 25} fill="#7ce8d4" fontSize="12">
-                192.168.2.0/24
-              </text>
-
+          <div className="rounded-2xl border border-cyan-500/25 bg-[#0b1929] p-3 sm:p-5 space-y-3 overflow-hidden">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 text-sm font-semibold text-cyan-200">
+                <Network className="w-4 h-4" aria-hidden="true" /> Карта сети
+              </div>
+              <button type="button" onClick={() => { setDetective((d) => !d); setAnswer({}); }}
+                aria-pressed={detective}
+                className={'px-3 py-2 rounded-lg text-xs border font-semibold ' + (detective
+                  ? 'border-amber-400 text-amber-200 bg-amber-400/10' : 'border-slate-600 text-slate-300')}>
+                {detective ? 'Режим: проверяю себя' : 'Режим: изучаю'}
+              </button>
+            </div>
+            <svg className="w-full h-auto" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
+              role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
+              <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 595} height={mobile ? 265 : 145}
+                rx="15" fill="#164e6314" stroke="#22d3ee55" strokeDasharray="5 5" />
+              <rect x={mobile ? 8 : 625} y={mobile ? 285 : 20} width={mobile ? 322 : 360} height={mobile ? 206 : 145}
+                rx="15" fill="#1d4ed814" stroke="#60a5fa55" strokeDasharray="5 5" />
+              <text x={mobile ? 145 : 30} y={mobile ? 26 : 37} fontSize="12" fill="#67e8f9">LAN · 192.168.1.0/24</text>
+              <text x={mobile ? 145 : 705} y={mobile ? 304 : 37} fontSize="12" fill="#93c5fd">LAN · 192.168.2.0/24</text>
               {(['pc', 'switch', 'router'] as const).map((id, i) => {
-                const to = (['switch', 'router', 'server'] as const)[i];
-                const a = points[id];
-                const b = points[to];
-                const active = current.route.includes(id) && current.route.includes(to);
-                return (
-                  <path
-                    key={id}
-                    d={`M${a[0]} ${a[1]} L${b[0]} ${b[1]}`}
-                    fill="none"
-                    stroke={active ? '#35d0c8' : '#41617d'}
-                    strokeWidth="3"
-                  />
-                );
+                const dest = (['switch', 'router', 'server'] as const)[i];
+                const a = points[id]; const b = points[dest];
+                const active = (current.from === id && current.to === dest) || (current.from === dest && current.to === id);
+                return <line key={id} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}
+                  stroke={active ? '#22d3ee' : '#49657d'} strokeWidth={active ? 5 : 3}
+                  strokeLinecap="round" opacity={active ? 1 : 0.75} />;
               })}
-
-              {(Object.keys(points) as NodeId[]).map((id) => {
+              {(['pc', 'switch', 'router', 'server'] as const).map(id => {
                 const [x, y] = points[id];
-                const active = current.active === id;
-                const clickable = hasNodeQuestion && current.question?.nodes[id] !== undefined && choice === undefined;
-                const picked = choice !== undefined && current.question?.nodes[id] === choice;
-                const ok = current.question?.nodes[id] === current.question?.correct;
+                const selected = current.from === id || current.to === id;
                 return (
-                  <g
-                    key={id}
-                    transform={`translate(${x} ${y})`}
-                    onClick={() => {
-                      if (playing) setPlaying(false);
-                      if (clickable && current.question?.nodes[id] !== undefined) {
-                        setAnswers((prev) => ({ ...prev, [step]: current.question!.nodes[id]! }));
-                      }
-                    }}
-                    style={{ cursor: clickable ? 'pointer' : 'default' }}
-                  >
-                    <path
-                      d={icons[id]}
-                      fill={active ? '#16494e' : '#102b40'}
-                      stroke={clickable ? '#fbbf24' : active ? '#35d0c8' : '#a4bed4'}
-                      strokeWidth="2"
-                      strokeDasharray={clickable ? '4 3' : undefined}
-                    />
-                    <text x={narrow ? 43 : 0} y={narrow ? -16 : 52} textAnchor={narrow ? 'start' : 'middle'} fill="#e7f2fc" fontSize="13">
-                      {names[id]}
-                    </text>
-                    {subs[id].map((line, i) => (
-                      <text
-                        key={line}
-                        x={narrow ? 43 : 0}
-                        y={narrow ? 2 + i * 13 : 68 + i * 13}
-                        textAnchor={narrow ? 'start' : 'middle'}
-                        fill="#a8b7c7"
-                        fontSize="11"
-                      >
-                        {line}
-                      </text>
-                    ))}
-                    {picked && (
-                      <text y="-40" textAnchor="middle" fill={ok ? '#4ade80' : '#fb7185'} fontSize="12" fontWeight="700">
-                        {ok ? 'верно' : 'нет'}
-                      </text>
-                    )}
+                  <g key={id} transform={'translate(' + x + ' ' + y + ')'}>
+                    <circle r="31" fill={selected ? '#0e7490' : '#172f45'} stroke={selected ? '#67e8f9' : '#64748b'} strokeWidth="2.5" />
+                    <path d={ICONS[id]} stroke="#dbeafe" strokeWidth="2.4" strokeLinejoin="round" fill="none" />
+                    <text x={mobile ? 46 : 0} y={mobile ? -2 : 51} fill="#f8fafc" fontSize={mobile ? 13 : 15}
+                      fontWeight="700" textAnchor={mobile ? 'start' : 'middle'}>{NAMES[id]}</text>
+                    <text x={mobile ? 46 : 0} y={mobile ? 15 : 68} fill="#a3b4c8" fontSize={mobile ? 10 : 12}
+                      textAnchor={mobile ? 'start' : 'middle'}>{IP_SHORT[id]}</text>
                   </g>
                 );
               })}
-
-              {current.cache && !narrow && (
-                <text x={points.router[0]} y={points.router[1] + 100} textAnchor="middle" fill="#a6e4c8" fontSize="10">
-                  {current.cache}
-                </text>
-              )}
-
-              {step === 0 && (
-                <text x={narrow ? 18 : 280} y={narrow ? 230 : 275} fill="#fbbf24" fontSize="12">
-                  192.168.1 ≠ 192.168.2 → шлюз
-                </text>
-              )}
-
-              {step > 0 && (
-                <g>
-                  <rect
-                    x={narrow ? 110 : Math.max(8, bubbleAt[0] - 110)}
-                    y={narrow ? Math.max(30, bubbleAt[1] - 70) : 40}
-                    width="200"
-                    height={current.say.length * 17 + 14}
-                    rx="9"
-                    fill="#153d43"
-                    stroke="#35d0c8"
-                  />
-                  {current.say.map((t, i) => (
-                    <text
-                      key={t}
-                      x={(narrow ? 110 : Math.max(8, bubbleAt[0] - 110)) + 8}
-                      y={(narrow ? Math.max(30, bubbleAt[1] - 70) : 40) + 19 + i * 17}
-                      fill="#e6fffc"
-                      fontSize="12"
-                    >
-                      {t}
-                    </text>
-                  ))}
-                </g>
-              )}
-
-              {packetLabel && motionPath && (
-                <g>
-                  <path id="pkt-path" d={motionPath} fill="none" stroke="none" />
+              {travel ? (
+                <g key={'travel-' + step}>
+                  <path id="packet-hop-path" d={track} fill="none" stroke="none"/>
                   <g>
-                    <rect
-                      x="-32"
-                      y="-12"
-                      width="64"
-                      height="24"
-                      rx={packetLabel.startsWith('ARP ?') ? 3 : 12}
-                      fill={packetLabel.startsWith('ARP ?') ? '#fbbf24' : packetLabel.startsWith('ARP') ? '#a5a2ff' : '#35d0c8'}
-                      stroke="#07111f"
-                      strokeWidth="2"
-                    />
-                    <text x="0" y="4" textAnchor="middle" fill="#07111f" fontSize="10" fontWeight="800">
-                      {packetLabel}
+                    <rect x="-34" y="-14" width="68" height="28" rx="12" fill={current.packet?.kind.startsWith('arp') ? '#fbbf24' : '#34d399'} stroke="#051220" strokeWidth="2" />
+                    <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#081525">
+                      {current.packet?.kind.startsWith('arp') ? 'ARP' : 'ICMP'}
                     </text>
-                    <animateMotion key={`${step}-${narrow ? 'm' : 'd'}`} dur="0.9s" fill="freeze" path={motionPath} />
+                    <animateMotion key={'move-' + step + (mobile ? '-m' : '-d')} dur="1.7s" path={track} fill="freeze" />
                   </g>
+                </g>
+              ) : (
+                <g transform={'translate(' + (to[0] + (mobile ? 0 : 0)) + ' ' + (to[1] - 38) + ')'}>
+                  <rect x="-35" y="-13" width="70" height="26" rx="11" fill="#fbbf24" />
+                  <text x="0" y="4" fontSize="10" fontWeight="800" fill="#0f172a" textAnchor="middle">
+                    {current.packet ? 'Обработка' : 'Старт'}
+                  </text>
                 </g>
               )}
             </svg>
-
-            <div className="flex flex-wrap items-center gap-2 mt-2 px-1">
-              {!playing ? (
-                <button type="button" onClick={startPing} className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 text-sm font-semibold cursor-pointer">
-                  <Play className="w-4 h-4 inline" /> Запустить ping
-                </button>
-              ) : (
-                <button type="button" onClick={pause} className="px-3 py-2 rounded-xl bg-amber-400 text-slate-950 text-sm font-semibold cursor-pointer">
-                  <Pause className="w-4 h-4 inline" /> Остановить и разобрать
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  pause();
-                  setStep((s) => Math.max(0, s - 1));
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-sm cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4 inline" /> Назад
-              </button>
-              <button
-                type="button"
-                disabled={!answered}
-                onClick={() => {
-                  pause();
-                  setStep((s) => Math.min(STEPS.length - 1, s + 1));
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-sm cursor-pointer disabled:opacity-40"
-              >
-                Следующий шаг <ChevronRight className="w-4 h-4 inline" />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  pause();
-                  setStep(0);
-                  setAnswers({});
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4 inline" /> Начать заново
-              </button>
-              <span className="sm:ml-auto text-xs text-slate-400 font-mono">
-                {playing ? 'авто' : 'вручную'} · {step + 1} / {STEPS.length} · {current.title}
+            <div className="flex justify-between items-center gap-2 text-xs sm:text-sm text-slate-200 flex-wrap">
+              <span className="font-semibold"><span className="text-amber-300">{NAMES[current.from]}</span>
+                <span className="px-2 text-cyan-400">{travel ? '→' : '·'}</span>
+                <span className="text-cyan-200">{travel ? NAMES[current.to] : 'обработка на месте'}</span>
               </span>
+              <span className="font-mono text-slate-400">{step + 1} / {EVENTS.length}</span>
             </div>
           </div>
 
-          {current.question && !hasNodeQuestion && (
-            <div className="rounded-xl border-l-4 border-amber-400 bg-amber-400/5 p-3 space-y-2">
-              <div className="text-sm font-semibold">{current.question.prompt}</div>
-              <div className="flex gap-1.5">
-                {['63', '64', '62'].map((opt, i) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => setAnswers((prev) => ({ ...prev, [step]: i }))}
-                    className={`px-3 py-1.5 rounded-lg text-xs border cursor-pointer ${
-                      choice === i && i === 0
-                        ? 'border-emerald-400 bg-emerald-950/40'
-                        : choice === i
-                          ? 'border-rose-400 bg-rose-950/40'
-                          : 'border-slate-700 bg-slate-900'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
+          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-4 sm:p-5 space-y-3">
+            <h3 className="text-lg font-black text-white">{current.title}</h3>
+            <p className="text-base text-slate-100 leading-relaxed">
+              {challenge && !solved ? 'Устройство получило данные. Прими решение и посмотри, что произойдёт.' : current.summary}
+            </p>
+            {challenge && !solved ? (
+              <div className="space-y-3 rounded-xl border border-amber-500/50 bg-amber-400/5 p-3">
+                <p className="text-sm font-semibold text-amber-100">{challenge.prompt}</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {challenge.options.map((option, i) => (
+                    <button type="button" key={option} onClick={() => setAnswer(prev => ({ ...prev, [step]: i }))}
+                      className={'min-h-12 rounded-xl px-3 py-2 text-sm text-left font-semibold border ' +
+                        (choice === i ? 'border-rose-400 bg-rose-900/40 text-rose-100' : 'border-slate-600 bg-slate-800 text-slate-100 hover:border-cyan-400')}>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                {choice !== undefined && choice !== challenge.correct && <p role="status" className="text-sm text-rose-300">Не совсем. Проверь, какую роль играет это устройство, и попробуй ещё раз.</p>}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-slate-300 leading-relaxed">{current.detail}</p>
+            )}
+            {challenge && solved && <p className="text-sm text-emerald-300 flex gap-2"><ShieldCheck className="h-4 w-4 flex-none mt-0.5" /> {challenge.why}</p>}
+            {current.note && (!challenge || solved) && <p className="rounded-lg border-l-4 border-cyan-400 bg-cyan-950/30 px-3 py-2 text-sm text-cyan-100">{current.note}</p>}
 
-          {hasNodeQuestion && choice === undefined && (
-            <p className="text-sm text-amber-300 px-1">{current.question!.prompt}</p>
-          )}
-
-          {current.frame && (
-            <div className="rounded-2xl border border-slate-800 p-3 sm:p-4 space-y-3">
-              <h3 className="text-sm font-bold">
-                {current.frame.ARP
-                  ? `ARP · ${current.frame.ARP.operation === 'Request' ? 'запрос · broadcast' : 'ответ · unicast'}`
-                  : `ICMP · ${current.frame.ICMP?.type === 8 ? 'Echo Request' : 'Echo Reply'}`}
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-                {(
-                  [
-                    ['MAC откуда', current.frame.Ethernet.source, current.changed?.includes('srcMac')],
-                    ['MAC куда', current.frame.Ethernet.destination, current.changed?.includes('dstMac')],
-                    ['IP откуда', current.frame.IP?.source ?? '— (ARP без IP)', false],
-                    ['IP куда', current.frame.IP?.destination ?? '— (ARP без IP)', false],
-                    ['TTL', String(current.frame.IP?.TTL ?? '— (ARP без IP)'), current.changed?.includes('ttl')],
-                  ] as const
-                ).map(([label, value, changed]) => (
-                  <div key={label}>
-                    <div className="text-slate-500 mb-1">{label}</div>
-                    <div className={`font-mono break-all ${changed ? 'text-amber-300' : 'text-slate-100'}`}>{value}</div>
-                    {changed && <div className="text-[10px] text-amber-400">изменилось</div>}
-                    {!changed && current.frame?.IP && label.startsWith('IP') && (
-                      <div className="text-[10px] text-emerald-400">без изменений</div>
-                    )}
+            {current.packet && (!challenge || solved) && (
+              <div className="space-y-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Что несёт кадр</div>
+                <div className="rounded-2xl border-2 border-amber-400/70 bg-amber-400/10 p-3 space-y-2">
+                  <div className="font-bold text-amber-200 text-sm">Ethernet · внешняя упаковка</div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><span className="block text-[11px] text-slate-400">MAC откуда</span><span className="font-semibold text-white">{displayMac(current.packet.srcMac)}</span></div>
+                    <div><span className="block text-[11px] text-slate-400">MAC куда</span><span className="font-semibold text-white">{displayMac(current.packet.dstMac)}</span></div>
                   </div>
-                ))}
+                  {current.packet.kind.startsWith('arp') ? (
+                    <div className="rounded-xl border-2 border-violet-400/60 bg-violet-500/10 p-3 text-sm">
+                      <div className="font-bold text-violet-200">{packetKind(current.packet)} · внутри Ethernet, без IPv4</div>
+                      <p className="mt-1 text-slate-200">Sender IP: {current.packet.arpSenderIp}</p>
+                      <p className="text-slate-200">Target IP: {current.packet.arpTargetIp}</p>
+                      <p className="text-xs text-slate-400 mt-1">Это поля ARP, а не IP-заголовок.</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border-2 border-emerald-400/70 bg-emerald-500/10 p-3 space-y-2">
+                      <div className="font-bold text-emerald-200 text-sm">IPv4 · внутренняя упаковка</div>
+                      <p className="text-xs sm:text-sm text-slate-200">{current.packet.srcIp} → {current.packet.dstIp}</p>
+                      <p className="text-sm font-semibold text-emerald-200">TTL: {current.packet.ttl}</p>
+                      <div className="rounded-lg border-2 border-cyan-400/70 bg-cyan-500/15 px-3 py-2 text-sm font-bold text-cyan-100">
+                        {packetKind(current.packet)} · полезная нагрузка
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button type="button" onClick={() => setDetails(v => !v)}
+                  aria-expanded={details}
+                  className="inline-flex items-center gap-2 px-2 py-2 text-xs text-cyan-300 font-semibold">
+                  {details ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {details ? 'Скрыть настоящие MAC' : 'Показать настоящие MAC'}
+                </button>
+                {details && <div className="rounded-lg bg-slate-950 px-3 py-2 font-mono text-[11px] sm:text-xs text-slate-300 break-all" role="region" aria-label="Поля Ethernet">
+                  <div>Source: {current.packet.srcMac}</div>
+                  <div>Destination: {current.packet.dstMac}</div>
+                  <div>EtherType: {current.packet.kind.startsWith('arp') ? '0x0806 (ARP)' : '0x0800 (IPv4)'}</div>
+                </div>}
               </div>
-              <p className="text-sm text-slate-300">{current.text}</p>
-            </div>
-          )}
-          {!current.frame && <p className="text-sm text-slate-300 px-1">{current.text}</p>}
-        </>
-      )}
+            )}
+          </div>
 
-      {mode === 'fix' && (
-        <div className="rounded-2xl border border-slate-800 bg-[#0d1b2b] p-3 sm:p-4 space-y-3">
-          <div className="flex gap-1.5">
-            {(Object.keys(FAULTS) as Array<keyof typeof FAULTS>).map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => {
-                  setFault(id);
-                  setFixMsg('');
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs cursor-pointer ${
-                  fault === id ? 'bg-cyan-500 text-slate-950 font-semibold' : 'bg-slate-800 text-slate-300'
-                }`}
-              >
-                {FAULTS[id].title}
-                {fixed.includes(id) ? ' ✓' : ''}
+          <div className="rounded-xl border border-slate-700 bg-slate-900/75 p-3 space-y-3">
+            <label htmlFor="ping-journey-scrub" className="block text-xs font-bold text-slate-300">
+              Прогресс — двигай бегунок, чтобы вернуться к любому моменту
+            </label>
+            <input id="ping-journey-scrub" type="range" min="0" max={EVENTS.length - 1} step="1" value={step}
+              onChange={e => go(Number(e.target.value))} disabled={detective}
+              className="w-full accent-cyan-400 disabled:opacity-40" />
+            <div className="flex flex-wrap items-center gap-2 justify-between">
+              <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
+                className="min-h-11 px-4 rounded-xl bg-slate-800 border border-slate-600 text-slate-100 font-semibold disabled:opacity-30">
+                <ChevronLeft className="w-4 h-4 inline" /> Назад
+              </button>
+              <button type="button" onClick={restart}
+                className="min-h-11 px-3 rounded-xl border border-slate-600 text-slate-300" aria-label="Начать ping заново">
+                <RotateCcw className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
+                className="min-h-11 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
+                Следующий шаг <ChevronRight className="w-4 h-4 inline" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-400">{detective ? 'В режиме проверки надо ответить на вопрос, прежде чем двигаться дальше.' : 'Автопереходов нет: ты сам задаёшь скорость движения пакета.'}</p>
+          </div>
+        </>
+      ) : (
+        <div className="rounded-2xl border border-slate-700 bg-[#0b1929] p-4 sm:p-6 space-y-4">
+          <h3 className="text-lg font-black text-white">Сетевой детектив</h3>
+          <p className="text-sm text-slate-300">Сначала симптомы, потом диагноз. Готового решения на кнопке больше нет.</p>
+          <div className="flex flex-wrap gap-2">
+            {FAULTS.map((item, i) => (
+              <button key={item.id} type="button" onClick={() => { setFaultIndex(i); setFaultAnswer(null); setFaultFixed(false); }}
+                className={'rounded-lg px-3 py-2 text-sm font-semibold border ' + (faultIndex === i
+                  ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'bg-slate-800 border-slate-600 text-slate-200')}>
+                {item.name}
               </button>
             ))}
           </div>
-          <p className="text-sm text-slate-300">{FAULTS[fault].text}</p>
-          <p className="text-xs text-rose-300">Остановка: {names[FAULTS[fault].stop]}</p>
-          <button
-            type="button"
-            onClick={() => {
-              if (!fixed.includes(fault)) setFixed((prev) => [...prev, fault]);
-              setFixMsg(FAULTS[fault].explain);
-            }}
-            className="px-3 py-2 rounded-xl bg-cyan-600 text-white text-sm font-semibold cursor-pointer"
-          >
-            {FAULTS[fault].fix}
-          </button>
-          {fixMsg && <p className="text-sm text-emerald-300">{fixMsg}</p>}
-          {fixed.includes(fault) && (
-            <button
-              type="button"
-              onClick={() => {
-                setMode('learn');
-                setStep(0);
-              }}
-              className="text-xs text-cyan-300 underline cursor-pointer"
-            >
-              Проиграть исправный обмен
-            </button>
+          <div className="rounded-xl bg-slate-950 p-4 text-sm text-slate-200 space-y-2">
+            <strong className="text-white">Наблюдение</strong>
+            <p>{fault.symptom}</p>
+          </div>
+          <p className="font-semibold text-slate-100">Что нужно проверить и исправить?</p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {fault.options.map((option, i) => (
+              <button key={option} type="button" onClick={() => { setFaultAnswer(i); setFaultFixed(false); }}
+                className={'min-h-12 rounded-xl p-3 border text-left text-sm font-semibold ' + (faultAnswer === i
+                  ? 'border-cyan-400 bg-cyan-900/30 text-cyan-100' : 'border-slate-700 bg-slate-900 text-slate-200')}>
+                {option}
+              </button>
+            ))}
+          </div>
+          {faultAnswer !== null && faultAnswer !== fault.correct && <p className="text-sm text-rose-300" role="status">Пока не то. Сверь симптомы с настройками маршрутизации ПК.</p>}
+          {faultAnswer === fault.correct && (
+            <div className="space-y-3 rounded-xl border border-emerald-600/50 bg-emerald-950/20 p-4">
+              <p className="text-sm text-emerald-200">{fault.why}</p>
+              <button type="button" onClick={() => setFaultFixed(true)}
+                className="min-h-11 rounded-lg bg-emerald-500 text-slate-950 px-4 font-bold">
+                {fault.fix}
+              </button>
+              {faultFixed && <p role="status" className="text-sm text-emerald-300">Настройка исправлена в учебном сценарии. Теперь повторный ping пойдёт через шлюз. <button type="button" className="underline font-bold" onClick={() => { setMode('learn'); restart(); }}>Посмотреть путь</button></p>}
+            </div>
           )}
         </div>
       )}
-
-      <div className="flex flex-wrap gap-1.5">
-        {Object.keys(TERMS).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTerm(term === t ? null : t)}
-            className={`px-2 py-1 rounded-lg text-[11px] border cursor-pointer ${
-              term === t ? 'border-cyan-400 text-cyan-200' : 'border-slate-700 text-slate-400'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      {term && <p className="text-xs text-slate-300">{TERMS[term]}</p>}
-    </div>
+    </section>
   );
 };
