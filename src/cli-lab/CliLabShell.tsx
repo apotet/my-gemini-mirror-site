@@ -210,8 +210,10 @@ export const CliLabShell: React.FC = () => {
         type: 'system',
         text: result.allPassed
           ? `✓ ${scenario.successMessage}`
-          : `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей.\n` +
-            result.results.map((r) => `${r.passed ? '✓' : '✗'} ${r.detail}`).join('\n'),
+          : scenario.diagnostic
+            ? `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей. Продолжайте диагностику по всем узлам: статус портов, VLAN, trunk и сохранение изменений.`
+            : `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей.\n` +
+              result.results.map((r) => `${r.passed ? '✓' : '✗'} ${r.detail}`).join('\n'),
       },
     ]);
   };
@@ -543,7 +545,7 @@ export const CliLabShell: React.FC = () => {
                   ) : (
                     <Circle className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                   )}
-                  <span>{r.detail}</span>
+                  <span>{scenario.diagnostic && scenario.publicGoalLabels?.[i] ? scenario.publicGoalLabels[i] : r.detail}</span>
                 </li>
               ))}
             </ul>
