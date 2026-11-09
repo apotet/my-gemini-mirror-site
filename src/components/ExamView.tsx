@@ -67,7 +67,8 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const [lastReview, setLastReview] = useState<ProgressSession | null>(null);
   const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
   const [reviewWarning, setReviewWarning] = useState(false);
-  const [showParameters, setShowParameters] = useState(false);
+  // Always enter the exam through its menu; a restored attempt stays available via Continue.
+  const [showParameters, setShowParameters] = useState(true);
   const parametersRef = useRef<HTMLDivElement>(null);
   const [moreModesOpen, setMoreModesOpen] = useState(false);
   const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[]; count: number; mode: QuizModeId } | null>(null);
@@ -108,7 +109,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       const saved = localStorage.getItem('osi_active_session');
       if (saved) {
         const completed = restoreReview(JSON.stringify({ version: 1, session: JSON.parse(saved) }), getProgressEpoch());
-        if (completed) { setLastReview(completed); setReviewSession(completed); return; }
+        if (completed) { setLastReview(completed); return; }
         const parsed = restoreSession(saved, ALL_QUESTIONS);
         if (!parsed) { retainProgressBackup('osi_active_session', saved); setSessionWarning(true); return; }
         if (parsed.progressEpoch !== getProgressEpoch()) return;
