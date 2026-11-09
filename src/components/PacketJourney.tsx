@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react';
 
 const mac = {
   pc: '02:00:00:00:01:10',
@@ -198,12 +198,13 @@ export const PacketJourney: React.FC = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [term, setTerm] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
   const [fault, setFault] = useState<'mask' | 'gateway'>('mask');
   const [fixed, setFixed] = useState<string[]>([]);
   const [fixMsg, setFixMsg] = useState('');
   const current = STEPS[step];
   const hasNodeQuestion = current.question && Object.keys(current.question.nodes).length > 0;
-  const answered = current.question ? answers[step] !== undefined : true;
+  const answered = playing || !current.question || answers[step] !== undefined;
   const choice = answers[step];
 
   const packetLabel = useMemo(() => {
@@ -217,6 +218,29 @@ export const PacketJourney: React.FC = () => {
 
   const motionPath = current.route.map((id) => points[id]).map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]} ${p[1]}`).join(' ');
   const bubbleAt = points[current.active];
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setPlaying(true), 400);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!playing || mode !== 'learn') return;
+    if (step >= STEPS.length - 1) {
+      setPlaying(false);
+      return;
+    }
+    const t = window.setTimeout(() => setStep((s) => Math.min(STEPS.length - 1, s + 1)), 2200);
+    return () => window.clearTimeout(t);
+  }, [playing, step, mode]);
+
+  const startPing = () => {
+    setAnswers({});
+    setStep(0);
+    setPlaying(true);
+    setMode('learn');
+  };
+  const pause = () => setPlaying(false);
 
   return (
     <div className="space-y-3 max-w-5xl mx-auto">
@@ -248,6 +272,15 @@ export const PacketJourney: React.FC = () => {
 
       {mode === 'learn' && (
         <>
+          <div className="rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 font-mono text-xs space-y-0.5">
+            <div className="text-slate-500">PC</div>
+            <div className="text-slate-200">{"PC>"} ping 192.168.2.20</div>
+            {step > 0 && <div className="text-slate-400">{current.title}</div>}
+            {step === STEPS.length - 1 && !playing && (
+              <div className="text-emerald-300">Reply from 192.168.2.20: time=12ms</div>
+            )}
+            {playing && <div className="text-cyan-300">идёт… можно остановить и разобрать</div>}
+          </div>
           <div className="rounded-2xl border border-slate-800 bg-[#0d1b2b] p-2 sm:p-3">
             <svg
               viewBox={narrow ? '0 0 330 470' : '0 0 1000 300'}
@@ -309,6 +342,7 @@ export const PacketJourney: React.FC = () => {
                     key={id}
                     transform={`translate(${x} ${y})`}
                     onClick={() => {
+                      if (playing) setPlaying(false);
                       if (clickable && current.question?.nodes[id] !== undefined) {
                         setAnswers((prev) => ({ ...prev, [step]: current.question!.nodes[id]! }));
                       }
@@ -407,20 +441,40 @@ export const PacketJourney: React.FC = () => {
             </svg>
 
             <div className="flex flex-wrap items-center gap-2 mt-2 px-1">
-              <button type="button" onClick={() => setStep((s) => Math.max(0, s - 1))} className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-sm cursor-pointer">
+              {!playing ? (
+                <button type="button" onClick={startPing} className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 text-sm font-semibold cursor-pointer">
+                  <Play className="w-4 h-4 inline" /> Запустить ping
+                </button>
+              ) : (
+                <button type="button" onClick={pause} className="px-3 py-2 rounded-xl bg-amber-400 text-slate-950 text-sm font-semibold cursor-pointer">
+                  <Pause className="w-4 h-4 inline" /> Остановить и разобрать
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  pause();
+                  setStep((s) => Math.max(0, s - 1));
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-sm cursor-pointer"
+              >
                 <ChevronLeft className="w-4 h-4 inline" /> Назад
               </button>
               <button
                 type="button"
                 disabled={!answered}
-                onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
-                className="px-3 py-2 rounded-xl bg-cyan-600 text-white text-sm font-semibold cursor-pointer disabled:opacity-40"
+                onClick={() => {
+                  pause();
+                  setStep((s) => Math.min(STEPS.length - 1, s + 1));
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-sm cursor-pointer disabled:opacity-40"
               >
                 Следующий шаг <ChevronRight className="w-4 h-4 inline" />
               </button>
               <button
                 type="button"
                 onClick={() => {
+                  pause();
                   setStep(0);
                   setAnswers({});
                 }}
@@ -429,7 +483,7 @@ export const PacketJourney: React.FC = () => {
                 <RotateCcw className="w-4 h-4 inline" /> Начать заново
               </button>
               <span className="sm:ml-auto text-xs text-slate-400 font-mono">
-                {step + 1} / {STEPS.length} · {current.title}
+                {playing ? 'авто' : 'вручную'} · {step + 1} / {STEPS.length} · {current.title}
               </span>
             </div>
           </div>
