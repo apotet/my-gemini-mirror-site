@@ -518,7 +518,7 @@ export const CliLabShell: React.FC = () => {
               </p>
               <button
                 type="button"
-                onClick={() => setHintOpen((v) => !v)}
+                onClick={() => { setHintOpen((v) => !v); focusCliInput(); }}
                 className="text-xs text-cyan-700 dark:text-cyan-300 flex items-center gap-1 cursor-pointer"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
