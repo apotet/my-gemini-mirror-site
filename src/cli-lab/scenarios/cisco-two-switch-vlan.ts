@@ -66,7 +66,21 @@ export const ciscoTwoSwitchVlanScenario: Scenario = {
       explanation: 'Оба конца trunk готовы, VLAN 10 проходит между access-портами по конфигурационной модели.',
       accept: [goal],
     },
+    {
+      id: 'save-sw1',
+      instruction: 'L2-путь работает. Теперь сохраните конфигурацию SW1 в startup-config.',
+      hint: 'Выберите SW1 → end (если в config) → copy running-config startup-config',
+      explanation: 'Без сохранения изменения running-config могут быть потеряны после перезагрузки.',
+      accept: [{ type: 'config.saved', device: 'sw1' }],
+    },
+    {
+      id: 'save-sw2',
+      instruction: 'Сохраните конфигурацию SW2. Можно использовать write memory.',
+      hint: 'Выберите SW2 → end (если в config) → write memory',
+      explanation: 'Сохранение выполняется отдельно на каждом коммутаторе.',
+      accept: [{ type: 'config.saved', device: 'sw2' }],
+    },
   ],
-  goals: [goal],
-  successMessage: 'Путь VLAN 10 между SW1 Fa0/1 и SW2 Fa0/1 подтверждён по настройкам обоих устройств и линка. Это не эмуляция ping.',
+  goals: [goal, { type: 'config.saved', device: 'sw1' }, { type: 'config.saved', device: 'sw2' }],
+  successMessage: 'Путь VLAN 10 подтверждён по конфигурации и настройки обоих коммутаторов сохранены в startup-config. Ping не эмулируется.',
 };
