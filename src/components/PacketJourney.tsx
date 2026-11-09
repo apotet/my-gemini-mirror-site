@@ -31,22 +31,22 @@ type Event = {
   challenge?: Challenge;
 };
 
-const IPS = { pc: '192.168.1.10', routerLan: '192.168.1.1', routerWan: '192.168.2.1', server: '192.168.2.20' };
+const IPS = { pc: '192.168.1.10', routerLan1: '192.168.1.1', routerLan2: '192.168.2.1', server: '192.168.2.20' };
 const MACS = {
-  pc: '02:00:00:00:01:10', routerLan: '02:00:00:00:01:01',
-  routerWan: '02:00:00:00:02:01', server: '02:00:00:00:02:20',
+  pc: '02:00:00:00:01:10', routerLan1: '02:00:00:00:01:01',
+  routerLan2: '02:00:00:00:02:01', server: '02:00:00:00:02:20',
   all: 'ff:ff:ff:ff:ff:ff',
 };
 const NAMES: Record<NodeId, string> = { pc: 'ПК', switch: 'Коммутатор', router: 'Маршрутизатор', server: 'Сервер' };
-const IP_SHORT: Record<NodeId, string> = { pc: IPS.pc, switch: 'L2 · VLAN 1', router: IPS.routerLan + ' / ' + IPS.routerWan, server: IPS.server };
+const IP_SHORT: Record<NodeId, string> = { pc: IPS.pc, switch: 'L2 · VLAN 1', router: IPS.routerLan1 + ' / ' + IPS.routerLan2, server: IPS.server };
 
-function arpRequest(sender: 'pc' | 'routerWan', target: 'routerLan' | 'server'): Packet {
+function arpRequest(sender: 'pc' | 'routerLan2', target: 'routerLan1' | 'server'): Packet {
   return {
     kind: 'arp-req', srcMac: MACS[sender], dstMac: MACS.all,
     arpSenderIp: IPS[sender], arpTargetIp: IPS[target],
   };
 }
-function arpReply(sender: 'routerLan' | 'server', target: 'pc' | 'routerWan'): Packet {
+function arpReply(sender: 'routerLan1' | 'server', target: 'pc' | 'routerLan2'): Packet {
   return {
     kind: 'arp-reply', srcMac: MACS[sender], dstMac: MACS[target],
     arpSenderIp: IPS[sender], arpTargetIp: IPS[target],
@@ -60,10 +60,10 @@ function icmp(srcMac: keyof typeof MACS, dstMac: keyof typeof MACS, reply: boole
     ttl,
   };
 }
-const requestLan = icmp('pc', 'routerLan', false, 64);
-const requestWan = icmp('routerWan', 'server', false, 63);
-const replyWan = icmp('server', 'routerWan', true, 64);
-const replyLan = icmp('routerLan', 'pc', true, 63);
+const requestLan = icmp('pc', 'routerLan1', false, 64);
+const requestLan2 = icmp('routerLan2', 'server', false, 63);
+const replyLan2 = icmp('server', 'routerLan2', true, 64);
+const replyLan = icmp('routerLan1', 'pc', true, 63);
 
 /** Deliberately separate the switch ingress and switch egress events. */
 const EVENTS: Event[] = [
@@ -77,13 +77,13 @@ const EVENTS: Event[] = [
     title: 'ПК → коммутатор', from: 'pc', to: 'switch',
     summary: 'ПК отправляет ARP-запрос: «Кто имеет IP 192.168.1.1?»',
     detail: 'ARP — это отдельный Ethernet-кадр с широковещательным MAC назначения. Он не содержит IPv4-пакета с ICMP. ПК узнаёт MAC своего шлюза, а не сервера.',
-    packet: arpRequest('pc', 'routerLan'),
+    packet: arpRequest('pc', 'routerLan1'),
   },
   {
     title: 'Коммутатор принимает ARP', from: 'switch', to: 'switch',
     summary: 'Кадр дошёл до коммутатора. Он обрабатывает его, прежде чем пересылать дальше.',
     detail: 'Коммутатор изучает исходный MAC ПК и порт, с которого пришёл кадр. Поскольку MAC назначения широковещательный, кадр нужно передать через остальные порты той же VLAN.',
-    packet: arpRequest('pc', 'routerLan'),
+    packet: arpRequest('pc', 'routerLan1'),
     challenge: {
       prompt: 'Кадр пришёл на switch с MAC назначения FF:FF:FF:FF:FF:FF. Что делать?',
       options: ['Отправить только серверу', 'Разослать по остальным портам VLAN', 'Отбросить кадр'],
@@ -94,20 +94,20 @@ const EVENTS: Event[] = [
   {
     title: 'Коммутатор → маршрутизатор', from: 'switch', to: 'router',
     summary: 'Коммутатор передаёт ARP-запрос на порт маршрутизатора.',
-    detail: 'Коммутатор не меняет MAC-адреса в кадре и не уменьшает TTL. Маршрутизатор видит: запрашивают IP его LAN-интерфейса 192.168.1.1.',
-    packet: arpRequest('pc', 'routerLan'),
+    detail: 'Коммутатор не меняет MAC-адреса в кадре и не уменьшает TTL. Маршрутизатор видит: запрашивают IP его интерфейса LAN 1 (192.168.1.1).',
+    packet: arpRequest('pc', 'routerLan1'),
   },
   {
     title: 'Маршрутизатор → коммутатор', from: 'router', to: 'switch',
     summary: 'Шлюз отвечает: «192.168.1.1 — это я. Вот мой MAC».',
     detail: 'Ответ ARP — unicast на MAC ПК. Маршрутизатор также может запомнить IP и MAC ПК из ARP-запроса. ARP не пересылается в сеть сервера.',
-    packet: arpReply('routerLan', 'pc'),
+    packet: arpReply('routerLan1', 'pc'),
   },
   {
     title: 'Коммутатор → ПК', from: 'switch', to: 'pc',
     summary: 'Ответ ARP возвращается на ПК тем же маршрутом.',
-    detail: 'Коммутатор уже знает порт ПК из предыдущего запроса. ПК запоминает соответствие: 192.168.1.1 → MAC LAN-интерфейса маршрутизатора.',
-    packet: arpReply('routerLan', 'pc'),
+    detail: 'Коммутатор уже знает порт ПК из предыдущего запроса. ПК запоминает соответствие: 192.168.1.1 → MAC интерфейса LAN 1 маршрутизатора.',
+    packet: arpReply('routerLan1', 'pc'),
     note: 'Теперь ПК может сформировать Ethernet-кадр для ICMP Echo Request.',
   },
   {
@@ -124,14 +124,14 @@ const EVENTS: Event[] = [
   },
   {
     title: 'Коммутатор → маршрутизатор', from: 'switch', to: 'router',
-    summary: 'ICMP-запрос приходит на LAN-интерфейс маршрутизатора.',
+    summary: 'ICMP-запрос приходит на интерфейс LAN 1 маршрутизатора.',
     detail: 'Путь ПК → коммутатор → маршрутизатор полностью виден. Следующая операция — обработка IP-пакета маршрутизатором, а не мгновенный перелёт на сервер.',
     packet: requestLan,
   },
   {
     title: 'Маршрутизатор обрабатывает пакет', from: 'router', to: 'router',
     summary: 'Маршрутизатор снимает входной Ethernet и ищет маршрут к 192.168.2.20.',
-    detail: 'Сеть 192.168.2.0/24 подключена к WAN напрямую. TTL уменьшится с 64 до 63 при пересылке. Для нового Ethernet-кадра нужен MAC сервера; ARP-кэш WAN сейчас пуст.',
+    detail: 'Маршрутизатор видит непосредственно подключённую сеть 192.168.2.0/24 через интерфейс LAN 2 (192.168.2.1). При пересылке TTL уменьшится с 64 до 63. Для нового Ethernet-кадра нужен MAC сервера, но ARP-кэш интерфейса LAN 2 пока пуст.',
     packet: requestLan,
     note: 'Исходный IP-пакет ожидает разрешения ARP. На линии в данный момент полетит именно ARP, а не ping.',
     challenge: {
@@ -145,36 +145,36 @@ const EVENTS: Event[] = [
     title: 'Маршрутизатор → сервер', from: 'router', to: 'server',
     summary: 'Маршрутизатор рассылает ARP-запрос в сети 192.168.2.0/24.',
     detail: 'Это уже другая Ethernet-сеть. R1 спрашивает MAC для IP 192.168.2.20. ICMP-запрос пока ждёт на маршрутизаторе.',
-    packet: arpRequest('routerWan', 'server'),
+    packet: arpRequest('routerLan2', 'server'),
   },
   {
     title: 'Сервер → маршрутизатор', from: 'server', to: 'router',
     summary: 'Сервер отвечает на ARP и сообщает свой MAC.',
     detail: 'R1 узнаёт MAC сервера из ответа и может отправить сохранённый ICMP-запрос в новом Ethernet-кадре.',
-    packet: arpReply('server', 'routerWan'),
+    packet: arpReply('server', 'routerLan2'),
   },
   {
     title: 'Маршрутизатор → сервер', from: 'router', to: 'server',
     summary: 'Echo Request доставлен серверу в НОВОМ Ethernet-кадре.',
-    detail: 'На выходе R1 MAC отправителя стал MAC WAN-интерфейса, MAC получателя — MAC сервера. IPv4-адреса ПК и сервера не изменились; TTL теперь 63.',
-    packet: requestWan,
+    detail: 'На выходе R1 MAC отправителя стал MAC интерфейса LAN 2, MAC получателя — MAC сервера. IPv4-адреса ПК и сервера не изменились; TTL теперь 63.',
+    packet: requestLan2,
     note: 'Сравни с шагом «ПК → коммутатор»: IP те же, а внешняя Ethernet-обёртка другая.',
   },
   {
     title: 'Сервер → маршрутизатор', from: 'server', to: 'router',
     summary: 'Сервер создаёт новый ICMP Echo Reply (type 0).',
     detail: 'Новый пакет: источник 192.168.2.20, назначение 192.168.1.10, начальный TTL 64. Обратный next-hop — R1 192.168.2.1. MAC шлюза сервер узнал ранее из ARP-запроса.',
-    packet: replyWan,
+    packet: replyLan2,
   },
   {
     title: 'Маршрутизатор обрабатывает ответ', from: 'router', to: 'router',
     summary: 'Маршрутизатор выбирает маршрут обратно к ПК.',
-    detail: 'Connected-маршрут в 192.168.1.0/24. R1 уменьшает TTL ответа 64 → 63, использует известный MAC ПК и готовит новый Ethernet-кадр в LAN.',
-    packet: replyWan,
+    detail: 'Connected-маршрут в 192.168.1.0/24. R1 уменьшает TTL ответа 64 → 63, использует известный MAC ПК и готовит новый Ethernet-кадр в LAN 1.',
+    packet: replyLan2,
   },
   {
     title: 'Маршрутизатор → коммутатор', from: 'router', to: 'switch',
-    summary: 'Echo Reply уходит через LAN-интерфейс к ПК.',
+    summary: 'Echo Reply уходит через интерфейс LAN 1 к ПК.',
     detail: 'Новый Ethernet-кадр адресован MAC ПК. IPv4 source/destination остались адресами сервера и ПК. TTL 63.',
     packet: replyLan,
   },
@@ -213,8 +213,8 @@ const mobilePoints: Record<NodeId, [number, number]> = { pc: [48, 63], switch: [
 
 function displayMac(address: string): string {
   if (address === MACS.pc) return 'MAC ПК';
-  if (address === MACS.routerLan) return 'MAC R1 LAN';
-  if (address === MACS.routerWan) return 'MAC R1 WAN';
+  if (address === MACS.routerLan1) return 'MAC R1 LAN 1';
+  if (address === MACS.routerLan2) return 'MAC R1 LAN 2';
   if (address === MACS.server) return 'MAC сервера';
   return 'Broadcast (всем)';
 }
@@ -299,12 +299,12 @@ export const PacketJourney: React.FC = () => {
             </div>
             <svg className="w-full h-auto" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
               role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
-              <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 595} height={mobile ? 265 : 145}
+              <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 635} height={mobile ? 302 : 145}
                 rx="15" fill="#164e6314" stroke="#22d3ee55" strokeDasharray="5 5" />
-              <rect x={mobile ? 8 : 625} y={mobile ? 285 : 20} width={mobile ? 322 : 360} height={mobile ? 206 : 145}
+              <rect x={mobile ? 8 : 650} y={mobile ? 310 : 20} width={mobile ? 322 : 335} height={mobile ? 181 : 145}
                 rx="15" fill="#1d4ed814" stroke="#60a5fa55" strokeDasharray="5 5" />
-              <text x={mobile ? 145 : 30} y={mobile ? 26 : 37} fontSize="12" fill="#67e8f9">LAN · 192.168.1.0/24</text>
-              <text x={mobile ? 145 : 705} y={mobile ? 304 : 37} fontSize="12" fill="#93c5fd">LAN · 192.168.2.0/24</text>
+              <text x={mobile ? 145 : 30} y={mobile ? 26 : 37} fontSize="12" fill="#67e8f9">LAN 1 · 192.168.1.0/24</text>
+              <text x={mobile ? 145 : 755} y={mobile ? 354 : 37} fontSize="12" fill="#93c5fd">LAN 2 · 192.168.2.0/24</text>
               {(['pc', 'switch', 'router'] as const).map((id, i) => {
                 const dest = (['switch', 'router', 'server'] as const)[i];
                 const a = points[id]; const b = points[dest];
