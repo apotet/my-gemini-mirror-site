@@ -31,6 +31,9 @@ jobs:
       - name: Quiz logic unit tests
         run: npm run test:logic
 
+      - name: CLI Tab regression tests
+        run: node scripts/cli-tab.test.mjs
+
       - name: Typecheck
         run: npm run lint
 
