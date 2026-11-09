@@ -79,6 +79,12 @@ export const CliLabShell: React.FC = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const stepIndexRef = useRef(0);
 
+  // Toolbar buttons take DOM focus; return it to the CLI input after layout updates.
+  // Keep the existing input text and caret intact when only changing layout.
+  const focusCliInput = () => {
+    requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+  };
+
   const engine = useMemo(() => {
     return new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   }, [scenario]);
@@ -301,7 +307,7 @@ export const CliLabShell: React.FC = () => {
           {fullscreen && (
             <button
               type="button"
-              onClick={() => setSidebarCollapsed((v) => !v)}
+              onClick={() => { setSidebarCollapsed((v) => !v); focusCliInput(); }}
               aria-pressed={sidebarCollapsed}
               className="rounded-lg border border-cyan-600/60 px-2.5 py-1 text-[11px] font-bold text-cyan-300 hover:bg-cyan-900/40"
             >
@@ -312,7 +318,7 @@ export const CliLabShell: React.FC = () => {
             <button
               key={m}
               type="button"
-              onClick={() => setLabMode(m)}
+              onClick={() => { setLabMode(m); focusCliInput(); }}
               className={
                 labMode === m
                   ? 'px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide cursor-pointer bg-cyan-500 text-slate-950'
@@ -330,7 +336,7 @@ export const CliLabShell: React.FC = () => {
           <button
             key={s.id}
             type="button"
-            onClick={() => setScenarioId(s.id)}
+            onClick={() => { setScenarioId(s.id); focusCliInput(); }}
             className={
               scenarioId === s.id
                 ? 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-cyan-500 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 cursor-pointer'
@@ -366,7 +372,7 @@ export const CliLabShell: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setFullscreen((v) => !v)}
+                onClick={() => { setFullscreen((v) => !v); focusCliInput(); }}
                 className="inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
                 title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
               >
