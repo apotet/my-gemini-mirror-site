@@ -3,7 +3,7 @@ import { Navbar, NavTab } from './components/Navbar';
 import { ExamView, type ExamViewHandle } from './components/ExamView';
 import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
 import { Ipv6Trainer } from './components/Ipv6Trainer';
-import { PracticeHub, type PracticeSimulator } from './components/PracticeHub';
+import { PracticeHub } from './components/PracticeHub';
 import { TheoryView } from './components/TheoryView';
 import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
@@ -22,7 +22,6 @@ function readStoredBool(key: string, fallback: boolean): boolean {
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
-  const [practiceInitialSimulator, setPracticeInitialSimulator] = useState<PracticeSimulator>('cli');
   const examViewRef = useRef<ExamViewHandle>(null);
   const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => readStoredBool('osi_sound', false));
@@ -119,11 +118,7 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToPractice={() => {
-            setPracticeInitialSimulator('journey');
-            setActiveTab('practice');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }} onNavigateToLearning={() => {
+          <ExamView ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
             setActiveTab('theory');
@@ -151,7 +146,7 @@ export function App() {
             initialSubTab={ipv4InitialSubTab}
           />
         )}
-        {activeTab === 'practice' && <PracticeHub initialSimulator={practiceInitialSimulator} />}
+        {activeTab === 'practice' && <PracticeHub />}
       </main>
 
       <MobileTabBar
