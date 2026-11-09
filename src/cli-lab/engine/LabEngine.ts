@@ -55,6 +55,13 @@ export class LabEngine {
     this.state = state;
   }
 
+  /** Switch console target without resetting either device's mode/configuration. */
+  selectDevice(deviceId: string): boolean {
+    if (!this.state.devices[deviceId]) return false;
+    this.state = { ...this.state, activeDeviceId: deviceId };
+    return true;
+  }
+
   getPrompt(): string {
     return this.profile.prompt(activeDevice(this.state));
   }
