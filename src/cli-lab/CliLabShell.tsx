@@ -7,6 +7,7 @@ import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
+import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -30,10 +31,13 @@ const SCENARIOS: Scenario[] = [
   ciscoVlanAccessScenario,
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
+  ciscoTwoSwitchVlanScenario,
 ];
 
 function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
+    case 'l2.vlanReachable':
+      return `VLAN ${g.vlanId}: ${g.fromDevice} ${g.fromIf} ↔ ${g.toDevice} ${g.toIf} (L2-путь)`;
     case 'vlan.exists':
       return `VLAN ${g.vlanId}${g.name ? ` (${g.name})` : ''}`;
     case 'if.accessVlan':
@@ -70,6 +74,7 @@ export const CliLabShell: React.FC = () => {
   const [completed, setCompleted] = useState(false);
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
   const [tick, setTick] = useState(0);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(scenario.initialState.activeDeviceId);
   const [fullscreen, setFullscreen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
@@ -112,6 +117,7 @@ export const CliLabShell: React.FC = () => {
     setInput('');
     setHistIndex(null);
     setTick((t) => t + 1);
+    setSelectedDeviceId(scenario.initialState.activeDeviceId);
     inputRef.current?.focus();
   };
 
@@ -133,6 +139,15 @@ export const CliLabShell: React.FC = () => {
     window.addEventListener('keydown', onEsc);
     return () => window.removeEventListener('keydown', onEsc);
   }, [fullscreen]);
+
+  const switchConsole = (id: string) => {
+    if (!engine.selectDevice(id)) return;
+    setSelectedDeviceId(id);
+    setInput('');
+    setHistIndex(null);
+    setHistory((h) => [...h, { type: 'system', text: `— Консоль ${engine.getState().devices[id].hostname} —` }]);
+    focusCliInput();
+  };
 
   const steps = scenario.steps ?? [];
 
@@ -344,6 +359,22 @@ export const CliLabShell: React.FC = () => {
           </button>
         ))}
       </div>
+
+      {Object.keys(engine.getState().devices).length > 1 && (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Выбор консоли устройства">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Консоль:</span>
+          {Object.values(engine.getState().devices).map((device) => (
+            <button key={device.id} type="button" onClick={() => switchConsole(device.id)}
+              aria-pressed={selectedDeviceId === device.id}
+              className={selectedDeviceId === device.id
+                ? 'rounded-lg border border-cyan-500 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-700 dark:text-cyan-200'
+                : 'rounded-lg border border-slate-400/40 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300'}>
+              {device.hostname}
+            </button>
+          ))}
+          <span className="text-xs text-slate-500 dark:text-slate-400">Fa0/24 ↔ Fa0/24 · конфигурационная модель L2</span>
+        </div>
+      )}
 
       <div
         className={
