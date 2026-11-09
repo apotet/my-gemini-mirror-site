@@ -8,6 +8,7 @@ import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
+import { ciscoThreeSwitchMissingVlanScenario } from './scenarios/cisco-three-switch-missing-vlan';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -32,6 +33,7 @@ const SCENARIOS: Scenario[] = [
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
   ciscoTwoSwitchVlanScenario,
+  ciscoThreeSwitchMissingVlanScenario,
 ];
 
 function goalLabel(g: Scenario['goals'][number]): string {
@@ -372,7 +374,7 @@ export const CliLabShell: React.FC = () => {
               {device.hostname}
             </button>
           ))}
-          <span className="text-xs text-slate-500 dark:text-slate-400">Fa0/24 ↔ Fa0/24 · конфигурационная модель L2</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">{engine.getState().links.map((link) => `${link.a.toUpperCase()} ${link.aIf.replace('FastEthernet', 'Fa')} ↔ ${link.b.toUpperCase()} ${link.bIf.replace('FastEthernet', 'Fa')}`).join(' · ')} · модель конфигурации L2</span>
         </div>
       )}
 
