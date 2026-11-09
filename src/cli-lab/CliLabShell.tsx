@@ -110,7 +110,7 @@ export const CliLabShell: React.FC = () => {
     const intro = `${scenario.title}\n${scenario.description}\n\nVendor: ${ciscoIosProfile.displayName} (documented subset).\nType ? for commands. Tab completes. ↑↓ — history. Mode: ${labMode}`;
     const stepLine =
       labMode === 'learn' && first
-        ? `\n—— Шаг 1 / ${scenario.steps!.length} ——\n${first.instruction}${first.hint ? `\nПодсказка: ${first.hint}` : ''}`
+        ? `\n—— Шаг 1 / ${scenario.steps!.length} ——\n${first.instruction}`
         : '';
     setHistory([{ type: 'system', text: intro + stepLine }]);
     setStepIndex(0);
@@ -186,9 +186,7 @@ export const CliLabShell: React.FC = () => {
 
     const nextStep = steps[next];
     const nextLine = nextStep
-      ? `\n—— Шаг ${next + 1} / ${steps.length} ——\n${nextStep.instruction}${
-          nextStep.hint ? `\nПодсказка: ${nextStep.hint}` : ''
-        }`
+      ? `\n—— Шаг ${next + 1} / ${steps.length} ——\n${nextStep.instruction}`
       : '';
     stepIndexRef.current = next;
     setStepIndex(next);
