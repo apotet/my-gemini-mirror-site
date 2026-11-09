@@ -15,7 +15,8 @@ const {LabEngine,ciscoIosCommands,ciscoIosProfile,ciscoTwoSwitchVlanScenario}=li
 const engine=new LabEngine(ciscoIosProfile,ciscoIosCommands,structuredClone(ciscoTwoSwitchVlanScenario.initialState));
 const run=line=>engine.execute(line);
 assert.equal(run('show').error,true,'show alone is incomplete');
-assert.match(run('show ?').output,/interfaces status/);
+assert.match(run('show ?').output,/interfaces/);
+assert.match(run('show interfaces ?').output,/status/);
 assert.match(run('show interfaces').output,/FastEthernet0\/24 is administratively down/);
 assert.match(run('show interfaces Fa0\/1').output,/FastEthernet0\/1 is administratively down/);
 assert.match(run('show interface Fa0\/24').output,/FastEthernet0\/24 is administratively down/);
