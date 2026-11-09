@@ -40,6 +40,8 @@ function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
     case 'l2.vlanReachable':
       return `VLAN ${g.vlanId}: ${g.fromDevice} ${g.fromIf} ↔ ${g.toDevice} ${g.toIf} (L2-путь)`;
+    case 'config.saved':
+      return `${g.device.toUpperCase()}: конфигурация сохранена`;
     case 'vlan.exists':
       return `VLAN ${g.vlanId}${g.name ? ` (${g.name})` : ''}`;
     case 'if.accessVlan':

@@ -15,7 +15,7 @@ export { ciscoIosProfile } from './src/cli-lab/vendors/cisco-ios/profile.ts';`,
 const mod = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
 const { LabEngine, ciscoThreeSwitchMissingVlanScenario: scenario, ciscoIosCommands, ciscoIosProfile } = mod;
 const engine = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
-const ok = () => engine.checkGoals(scenario.goals).allPassed;
+const ok = () => engine.checkGoals([scenario.goals[0]]).allPassed;
 const run = (commands) => {
   for (const cmd of commands) {
     const result = engine.execute(cmd);
@@ -54,4 +54,8 @@ remotePortDown.devices.sw3.interfaces['FastEthernet0/1'].adminUp = false;
 assert.equal(new LabEngine(ciscoIosProfile, ciscoIosCommands, remotePortDown).checkGoals(scenario.goals).allPassed, false, 'remote access port disabled');
 assert.equal(engine.selectDevice('sw1'), true);
 assert.equal(engine.getState().devices.sw2.vlans[10].active, true, 'SW2 config persists on console switch');
+assert.equal(engine.checkGoals(scenario.goals).allPassed, false, 'unsaved repair must not complete scenario');
+engine.selectDevice('sw2');
+run(['end', 'copy running-config startup-config']);
+assert.equal(engine.checkGoals(scenario.goals).allPassed, true, 'saved SW2 repair completes scenario');
 console.log('PASS: Cisco 3-switch missing VLAN, repair and negative topology cases');

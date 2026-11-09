@@ -1,3 +1,4 @@
+import { initializeStartupConfigs } from './ConfigPersistence';
 import { evaluateGoals } from './GoalEvaluator';
 import {
   CommandResult,
@@ -45,14 +46,16 @@ export class LabEngine {
     private profile: VendorProfile,
     private commands: CommandSpec[],
     private state: NetworkState
-  ) {}
+  ) {
+    this.state = initializeStartupConfigs(state);
+  }
 
   getState(): NetworkState {
     return this.state;
   }
 
   setState(state: NetworkState) {
-    this.state = state;
+    this.state = initializeStartupConfigs(state);
   }
 
   /** Switch console target without resetting either device's mode/configuration. */
@@ -67,7 +70,7 @@ export class LabEngine {
   }
 
   reset(initial: NetworkState) {
-    this.state = cloneState(initial);
+    this.state = initializeStartupConfigs(cloneState(initial));
   }
 
   /**

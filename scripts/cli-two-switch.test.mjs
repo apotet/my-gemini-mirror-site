@@ -35,7 +35,7 @@ trunk(s, 'sw1');
 assert.equal(path(s), false, 'only SW1 cannot pass');
 trunk(s, 'sw2');
 assert.equal(path(s), true, 'both ends configured pass');
-assert.equal(evaluateGoals(s, scenario.goals).allPassed, true);
+assert.equal(evaluateGoals(s, [scenario.goals[0]]).allPassed, true);
 for (const [name, breakIt] of [
   ['physical link down', s => { s.links[0].up = false; }],
   ['SW1 uplink disabled', s => { port(s, 'sw1', 'FastEthernet0/24').adminUp = false; }],
@@ -84,14 +84,22 @@ const configure = (id) => {
   }
 };
 configure('sw1');
-assert.equal(live.checkGoals(scenario.goals).allPassed, false);
+assert.equal(live.checkGoals([scenario.goals[0]]).allPassed, false);
 configure('sw2');
-assert.equal(live.checkGoals(scenario.goals).allPassed, true);
+assert.equal(live.checkGoals([scenario.goals[0]]).allPassed, true);
 live.execute('configure terminal');
 live.execute('interface fa0/24');
 live.execute('shutdown');
-assert.equal(live.checkGoals(scenario.goals).allPassed, false, 'shutdown after completion invalidates path');
+assert.equal(live.checkGoals([scenario.goals[0]]).allPassed, false, 'shutdown after completion invalidates path');
 live.execute('no shutdown');
-assert.equal(live.checkGoals(scenario.goals).allPassed, true, 'repair restores path');
+assert.equal(live.checkGoals([scenario.goals[0]]).allPassed, true, 'repair restores path');
+// Saving is a per-device operation and required for full scenario completion.
+assert.equal(live.checkGoals(scenario.goals).allPassed, false, 'configured but unsaved is not complete');
+live.execute('end');
+assert.equal(live.execute('copy running-config startup-config').error, undefined);
+assert.equal(live.checkGoals(scenario.goals).allPassed, false, 'SW1 also requires save');
+live.selectDevice('sw1');
+assert.equal(live.execute('write memory').error, undefined);
+assert.equal(live.checkGoals(scenario.goals).allPassed, true, 'both saved');
 console.log('PASS: CLI commands configure both switches and confirm/revoke VLAN path');
 console.log('PASS: multi-switch console isolation and 12 positive/negative VLAN reachability cases');
