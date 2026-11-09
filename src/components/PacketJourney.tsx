@@ -298,7 +298,7 @@ export const PacketJourney: React.FC = () => {
               </button>
             </div>
             <svg className="w-full h-auto" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
-              role="img" aria-label="ПК, коммутатор, маршрутизатор и сервер. На текущем этапе: ' + current.title">
+              role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
               <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 595} height={mobile ? 265 : 145}
                 rx="15" fill="#164e6314" stroke="#22d3ee55" strokeDasharray="5 5" />
               <rect x={mobile ? 8 : 625} y={mobile ? 285 : 20} width={mobile ? 322 : 360} height={mobile ? 206 : 145}
