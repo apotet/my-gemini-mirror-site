@@ -2,6 +2,7 @@ import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../eng
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
 import { ciscoTrunkCommands } from './trunkCommands';
+import { ciscoPersistenceCommands } from './persistenceCommands';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   return {
@@ -413,7 +414,7 @@ const baseCommands: CommandSpec[] = [
       const m = device.modeCtx.mode;
       const map: Record<string, string> = {
         exec: 'enable  show  ?',
-        privileged: 'configure terminal  show  show ip route  show interfaces trunk  disable  ?',
+        privileged: 'configure terminal  show  show ip route  show interfaces trunk  show startup-config  copy running-config startup-config  write memory  reload  disable  ?',
         config: 'hostname  vlan  interface  ip route  do show …  exit  end  ?',
         'config-if':
           'ip address  switchport …  shutdown  no shutdown  do show …  exit  end  ?',
@@ -430,6 +431,7 @@ export const ciscoIosCommands: CommandSpec[] = [
   ...baseCommands,
   ...ciscoL3Commands,
   ...ciscoTrunkCommands,
+  ...ciscoPersistenceCommands,
 ];
 
 function normalizeIfaceName(raw: string): string {
