@@ -37,6 +37,9 @@ jobs:
       - name: Two-switch VLAN path regression
         run: node scripts/cli-two-switch.test.mjs
 
+      - name: Three-switch VLAN fault regression
+        run: node scripts/cli-three-switch.test.mjs
+
       - name: Typecheck
         run: npm run lint
 
