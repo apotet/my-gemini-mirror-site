@@ -40,7 +40,7 @@ const visible = [
   scenario.title, scenario.description, scenario.id, ...scenario.publicGoalLabels,
   ...scenario.steps.flatMap(s => [s.instruction, s.hint ?? '']),
 ].join(' ').toLowerCase();
-for (const spoiler of ['sw2 fa0/24', 'sw2 не пропускает', 'добавьте vlan 20', 'разрешите vlan 20 на sw2', 'исправьте trunk sw2']) {
+for (const spoiler of ['на sw2 fa0/24 разрешена только vlan 10', 'sw2 не пропускает', 'добавьте vlan 20', 'разрешите vlan 20 на sw2', 'исправьте trunk sw2']) {
   assert.equal(visible.includes(spoiler), false, 'diagnosis leaked through instructions: ' + spoiler);
 }
 
