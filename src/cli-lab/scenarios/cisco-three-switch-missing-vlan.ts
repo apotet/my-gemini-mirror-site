@@ -18,13 +18,12 @@ function makeSwitch(id: string, hasAccess: boolean): DeviceState {
         : { mode: 'trunk', trunkAllowed: [10] },
     };
   }
+  const vlans: DeviceState['vlans'] = { 1: { id: 1, name: 'default', active: true } };
+  if (id !== 'sw2') vlans[10] = { id: 10, name: 'USERS', active: true };
   return {
     id, hostname: id.toUpperCase(), vendor: 'cisco-ios', privilege: 0,
     modeCtx: { mode: 'exec' }, interfaces,
-    vlans: {
-      1: { id: 1, name: 'default', active: true },
-      ...(id !== 'sw2' ? { 10: { id: 10, name: 'USERS', active: true } } : {}),
-    }, routes: [],
+    vlans, routes: [],
   };
 }
 
