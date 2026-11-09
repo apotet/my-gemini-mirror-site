@@ -78,6 +78,10 @@ export class LabEngine {
     const tokens = endsWithSpace ? parts : parts.slice(0, -1);
     const partial = endsWithSpace ? '' : (parts[parts.length - 1] ?? '').toLowerCase();
 
+    // An empty prefix is not a request to invent the next command keyword.
+    // In particular, repeated Tab presses must never construct a command.
+    if (!partial) return { candidates: [] };
+
     const available = this.commands.filter((spec) => {
       if (!spec.modes.includes(mode)) return false;
       if (spec.minPrivilege != null && priv < spec.minPrivilege) return false;
