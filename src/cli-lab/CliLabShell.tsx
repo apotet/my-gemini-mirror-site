@@ -9,6 +9,7 @@ import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
 import { ciscoThreeSwitchMissingVlanScenario } from './scenarios/cisco-three-switch-missing-vlan';
+import { ciscoTwoSwitchTrunkDiagnosticScenario } from './scenarios/cisco-two-switch-trunk-diagnostics';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -34,6 +35,7 @@ const SCENARIOS: Scenario[] = [
   ciscoL3GatewayScenario,
   ciscoTwoSwitchVlanScenario,
   ciscoThreeSwitchMissingVlanScenario,
+  ciscoTwoSwitchTrunkDiagnosticScenario,
 ];
 
 function goalLabel(g: Scenario['goals'][number]): string {
