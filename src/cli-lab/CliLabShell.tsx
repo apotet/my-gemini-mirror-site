@@ -282,7 +282,7 @@ export const CliLabShell: React.FC = () => {
     <div
       className={
         fullscreen
-          ? 'fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-sm p-4 sm:p-6 overflow-auto space-y-4'
+          ? 'fixed inset-0 z-[60] h-[100dvh] w-screen bg-slate-950 p-3 sm:p-4 overflow-hidden flex flex-col gap-3'
           : 'space-y-4 max-w-5xl mx-auto'
       }
     >
@@ -334,14 +334,14 @@ export const CliLabShell: React.FC = () => {
       <div
         className={
           fullscreen
-            ? 'grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto'
+            ? 'grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 gap-3 w-full overflow-y-auto lg:overflow-hidden'
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
         <div
           className={
             fullscreen
-              ? 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[calc(100vh-10rem)]'
+              ? 'lg:col-span-3 rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[55dvh] lg:min-h-0 lg:h-full'
               : 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]'
           }
         >
@@ -354,7 +354,7 @@ export const CliLabShell: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setFullscreen((v) => !v)}
-                className="hidden sm:inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
+                className="inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
                 title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
               >
                 {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -372,7 +372,7 @@ export const CliLabShell: React.FC = () => {
 
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto p-3 font-mono text-[12px] leading-relaxed space-y-1"
+            className={`flex-1 min-h-0 overflow-y-auto p-3 font-mono leading-relaxed space-y-1 ${fullscreen ? 'text-[14px] sm:text-base' : 'text-[12px]'}`}
           >
             {history.map((h, i) => (
               <div
@@ -427,7 +427,7 @@ export const CliLabShell: React.FC = () => {
           </form>
         </div>
 
-        <div className="space-y-3">
+        <div className={fullscreen ? 'space-y-3 lg:overflow-y-auto lg:min-h-0 lg:pr-1' : 'space-y-3'}>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
