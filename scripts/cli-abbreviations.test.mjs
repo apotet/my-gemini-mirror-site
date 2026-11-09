@@ -36,6 +36,7 @@ const help = cmd => {
 run('en');
 run('conf t');
 assert.match(help('int ?'), /INTERFACE/);
+assert.equal(e.complete('int').completed, 'interface ');
 run('int fa0/24');
 assert.match(help('sw mo ?'), /access/);
 assert.match(help('sw tr al vl ?'), /add/);
@@ -43,7 +44,6 @@ assert.match(help('sw tr al vl add ?'), /vlan-list/);
 assert.match(help('do sh ?'), /interfaces/);
 assert.match(help('do sh interfaces ?'), /trunk/);
 assert.match(help('do sh int ?'), /interface/);
-assert.equal(e.complete('int').completed, 'interface ');
 assert.equal(e.complete('sw mo a').completed, 'sw mo access ');
 assert.equal(e.complete('sw tr al vl a').completed, undefined, 'add vs all must remain ambiguous');
 assert.deepEqual(e.complete('sw tr al vl a').candidates, ['add', 'all']);
