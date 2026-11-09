@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
 import { PacketJourney } from './PacketJourney';
-import { LivingOsiStack } from './LivingOsiStack';
 import { VlanSimulator } from './VlanSimulator';
 import { ProtocolSimulators } from './ProtocolSimulators';
 import { CliLabShell } from '../cli-lab/CliLabShell';
@@ -20,8 +19,8 @@ const PRACTICE_ITEMS: PracticeItem[] = [
   {
     id: 'journey',
     title: 'Путь пакета',
-    badge: 'L2–L7',
-    subtitle: 'Путь PDU через OSI и реальная передача ping через устройства',
+    badge: 'ARP / ICMP',
+    subtitle: 'Пошаговый ping от ПК через коммутатор и маршрутизатор к серверу',
     icon: <Activity className="w-4 h-4 text-cyan-400" />,
   },
   {
@@ -62,7 +61,6 @@ function iconWrapClass(isActive: boolean): string {
 
 export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }> = ({ initialSimulator = 'cli' }) => {
   const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>(initialSimulator);
-  const [journeyView, setJourneyView] = useState<'osi' | 'network'>('osi');
 
   return (
     <div className="space-y-6">
@@ -88,10 +86,7 @@ export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }> = (
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveSimulator(item.id);
-                  if (item.id === 'journey') setJourneyView('osi');
-                }}
+                onClick={() => setActiveSimulator(item.id)}
                 type="button"
                 className={cardClass(isActive)}
               >
@@ -112,33 +107,7 @@ export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }> = (
       </div>
 
       <div className="animate-fade-in">
-        {activeSimulator === 'journey' && (
-          <section aria-label="Путь пакета" className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-[#091524] p-3 sm:p-4">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1">Путь пакета</h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-3">
-                Сначала исследуй инкапсуляцию, затем посмотри, как кадры и IP-пакеты проходят через узлы сети.
-              </p>
-              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Представление пути пакета">
-                <button type="button" aria-pressed={journeyView === 'osi'} onClick={() => setJourneyView('osi')}
-                  className={'min-h-11 rounded-xl px-2 py-2 text-xs sm:text-sm font-semibold cursor-pointer border ' + (journeyView === 'osi'
-                    ? 'bg-cyan-500 border-cyan-500 text-slate-950'
-                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200')}>
-                  Внутри устройства · OSI
-                </button>
-                <button type="button" aria-pressed={journeyView === 'network'} onClick={() => setJourneyView('network')}
-                  className={'min-h-11 rounded-xl px-2 py-2 text-xs sm:text-sm font-semibold cursor-pointer border ' + (journeyView === 'network'
-                    ? 'bg-cyan-500 border-cyan-500 text-slate-950'
-                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200')}>
-                  По сети · Ping
-                </button>
-              </div>
-            </div>
-            {journeyView === 'osi'
-              ? <LivingOsiStack onOpenNetwork={() => setJourneyView('network')} />
-              : <PacketJourney />}
-          </section>
-        )}
+        {activeSimulator === 'journey' && <PacketJourney />}
         {activeSimulator === 'vlan' && <VlanSimulator />}
         {activeSimulator === 'protocols' && <ProtocolSimulators />}
         {activeSimulator === 'cli' && <CliLabShell />}
