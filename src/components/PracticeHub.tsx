@@ -59,8 +59,8 @@ function iconWrapClass(isActive: boolean): string {
     : 'p-2 rounded-xl bg-slate-800 text-slate-400';
 }
 
-export const PracticeHub: React.FC = () => {
-  const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>('cli');
+export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }> = ({ initialSimulator = 'cli' }) => {
+  const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>(initialSimulator);
 
   return (
     <div className="space-y-6">
