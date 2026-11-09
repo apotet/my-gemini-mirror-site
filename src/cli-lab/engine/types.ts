@@ -102,7 +102,8 @@ export type GoalPredicate =
   | { type: 'route.exists'; device: string; prefix: string; prefixLen: number; nextHop?: string }
   | { type: 'if.trunkAllowed'; device: string; ifName: string; vlans: number[] }
   | { type: 'mode'; device: string; modes: DeviceMode[] }
-  | { type: 'privilege'; device: string; min: number };
+  | { type: 'privilege'; device: string; min: number }
+  | { type: 'l2.vlanReachable'; vlanId: number; fromDevice: string; fromIf: string; toDevice: string; toIf: string };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;
