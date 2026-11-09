@@ -52,6 +52,9 @@ jobs:
       - name: Selective trunk VLAN diagnostics regression
         run: node scripts/cli-trunk-diagnostics.test.mjs
 
+      - name: Cisco trunk allowed VLAN operations regression
+        run: node scripts/cli-trunk-allowed-ops.test.mjs
+
       - name: Cisco IOS running/startup persistence regression
         run: node scripts/cli-persistence.test.mjs
 

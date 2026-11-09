@@ -1,3 +1,4 @@
+import { formatAllowedVlans } from './trunkCommands';
 import { CommandSpec, DeviceState, NetworkState, SavedDeviceConfig } from '../../engine/types';
 import { reloadFromStartup, saveStartup } from '../../engine/ConfigPersistence';
 
@@ -20,7 +21,7 @@ function displayStartup(config: SavedDeviceConfig): string {
       if (iface.switchport.accessVlan != null) lines.push(` switchport access vlan ${iface.switchport.accessVlan}`);
     } else if (iface.switchport?.mode === 'trunk') {
       lines.push(' switchport mode trunk');
-      if (iface.switchport.trunkAllowed) lines.push(` switchport trunk allowed vlan ${iface.switchport.trunkAllowed.join(',')}`);
+      if (iface.switchport.trunkAllowed !== undefined) lines.push(` switchport trunk allowed vlan ${formatAllowedVlans(iface.switchport.trunkAllowed)}`);
     }
     if (iface.ipv4) lines.push(` ip address ${iface.ipv4.address} ${iface.ipv4.mask}`);
     lines.push(iface.adminUp ? ' no shutdown' : ' shutdown');
