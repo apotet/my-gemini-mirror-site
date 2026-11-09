@@ -3,6 +3,11 @@ import { triggerHaptic } from '../utils/haptics';
 import {
   ArrowDown,
   ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+  RotateCcw,
 } from 'lucide-react';
 
 export interface OsiLayerItem {
