@@ -71,6 +71,7 @@ export const CliLabShell: React.FC = () => {
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
   const [tick, setTick] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
 
@@ -296,7 +297,17 @@ export const CliLabShell: React.FC = () => {
             {ciscoIosProfile.displayName} · проверка по состоянию · Tab · ↑↓ history
           </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {fullscreen && (
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((v) => !v)}
+              aria-pressed={sidebarCollapsed}
+              className="rounded-lg border border-cyan-600/60 px-2.5 py-1 text-[11px] font-bold text-cyan-300 hover:bg-cyan-900/40"
+            >
+              {sidebarCollapsed ? 'Показать задание' : 'Скрыть задание'}
+            </button>
+          )}
           {modes.map((m) => (
             <button
               key={m}
@@ -334,14 +345,16 @@ export const CliLabShell: React.FC = () => {
       <div
         className={
           fullscreen
-            ? 'grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 gap-3 w-full overflow-y-auto lg:overflow-hidden'
+            ? sidebarCollapsed
+              ? 'grid flex-1 min-h-0 grid-cols-1 gap-3 w-full overflow-y-auto lg:overflow-hidden'
+              : 'grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)] gap-3 w-full overflow-y-auto lg:overflow-hidden'
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
         <div
           className={
             fullscreen
-              ? 'lg:col-span-3 rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[55dvh] lg:min-h-0 lg:h-full'
+              ? 'min-w-0 rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[55dvh] lg:min-h-0 lg:h-full'
               : 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]'
           }
         >
@@ -427,7 +440,7 @@ export const CliLabShell: React.FC = () => {
           </form>
         </div>
 
-        <div className={fullscreen ? 'space-y-3 lg:overflow-y-auto lg:min-h-0 lg:pr-1' : 'space-y-3'}>
+        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'min-w-0 space-y-3 lg:overflow-y-auto lg:min-h-0 lg:pr-1' : 'space-y-3'}>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
@@ -525,7 +538,7 @@ export const CliLabShell: React.FC = () => {
               <span className="font-mono">gi0/0</span>. Из config: <span className="font-mono">do show …</span>
             </p>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );
