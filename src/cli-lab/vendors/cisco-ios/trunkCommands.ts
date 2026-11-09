@@ -90,7 +90,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
     modes: ['exec', 'privileged'],
     handler: (_tokens, _state, device) => {
       const lines = [
-        'Port        Mode             Encapsulation  Status        Native vlan',
+        `${'Port'.padEnd(21)}${'Mode'.padEnd(17)}${'Encapsulation'.padEnd(15)}${'Status'.padEnd(14)}Native vlan`,
       ];
       const trunks = Object.values(device.interfaces).filter((i) => i.switchport?.mode === 'trunk');
       if (trunks.length === 0) {
@@ -99,14 +99,14 @@ export const ciscoTrunkCommands: CommandSpec[] = [
       for (const iface of trunks) {
         const status = iface.adminUp ? 'trunking' : 'down';
         lines.push(
-          `${iface.name.padEnd(12, ' ')}on               802.1q         ${status.padEnd(14, ' ')}1`
+          `${iface.name.padEnd(21, ' ')}${'on'.padEnd(17)}${'802.1q'.padEnd(15)}${status.padEnd(14, ' ')}1`
         );
       }
       lines.push('');
-      lines.push('Port        Vlans allowed on trunk');
+      lines.push(`${'Port'.padEnd(21)}Vlans allowed on trunk`);
       for (const iface of trunks) {
         const allowed = iface.switchport?.trunkAllowed?.join(',') || '1-4094';
-        lines.push(`${iface.name.padEnd(12, ' ')}${allowed}`);
+        lines.push(`${iface.name.padEnd(21, ' ')}${allowed}`);
       }
       return { output: lines.join('\n') };
     },
