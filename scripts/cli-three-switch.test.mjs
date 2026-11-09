@@ -49,6 +49,9 @@ assert.equal(new LabEngine(ciscoIosProfile, ciscoIosCommands, broken).checkGoals
 const disallowed = structuredClone(engine.getState());
 disallowed.devices.sw2.interfaces['FastEthernet0/23'].switchport.trunkAllowed = [20];
 assert.equal(new LabEngine(ciscoIosProfile, ciscoIosCommands, disallowed).checkGoals(scenario.goals).allPassed, false, 'wrong allowed VLAN on transit');
+const remotePortDown = structuredClone(engine.getState());
+remotePortDown.devices.sw3.interfaces['FastEthernet0/1'].adminUp = false;
+assert.equal(new LabEngine(ciscoIosProfile, ciscoIosCommands, remotePortDown).checkGoals(scenario.goals).allPassed, false, 'remote access port disabled');
 assert.equal(engine.selectDevice('sw1'), true);
 assert.equal(engine.getState().devices.sw2.vlans[10].active, true, 'SW2 config persists on console switch');
 console.log('PASS: Cisco 3-switch missing VLAN, repair and negative topology cases');
