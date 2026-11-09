@@ -62,7 +62,14 @@ export const ciscoThreeSwitchMissingVlanScenario: Scenario = {
       hint: 'Используйте переключатель консолей. На SW2 проверьте show vlan brief, затем в режиме config создайте недостающий VLAN.',
       accept: [pathGoal],
     },
+    {
+      id: 'save-repair',
+      instruction: 'Путь восстановлен. Сохраните исправление на SW2, чтобы оно не потерялось при перезагрузке.',
+      hint: 'Выберите SW2 → end → copy running-config startup-config (или write memory)',
+      explanation: 'Оперативная конфигурация работает сразу, но сохранение — отдельное действие.',
+      accept: [{ type: 'config.saved', device: 'sw2' }],
+    },
   ],
-  goals: [pathGoal],
-  successMessage: 'VLAN 10 проходит через SW1 → SW2 → SW3 по модели L2-конфигурации. Физические кадры и ping не эмулируются.',
+  goals: [pathGoal, { type: 'config.saved', device: 'sw2' }],
+  successMessage: 'VLAN 10 проходит через SW1 → SW2 → SW3 по модели L2-конфигурации; исправление SW2 сохранено в startup-config. Ping не эмулируется.',
 };
