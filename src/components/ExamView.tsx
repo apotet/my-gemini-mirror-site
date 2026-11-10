@@ -302,7 +302,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         }} onReviewMistakes={() => {
           const pool = getMistakeQuestions();
           if (!pool.length) { setEmptyMistakes(true); return; }
-          startNewQuiz(pool, 20);
+          startNewQuiz(pool, 5);
         }} onOpenVisualL1={() => {
           setSelectedMode('visual-l1');
           startNewQuiz(ALL_QUESTIONS.filter(q => q.group === 'visual-l1'), questionCount, 'visual-l1');
