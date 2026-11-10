@@ -103,7 +103,7 @@ function evaluateNetwork(source: HostId, target: HostId, vlans: Record<HostId, V
   }
   if (srcVlan !== dstVlan && l3 === 'none') {
     return { delivered: false, crossed, tagged: false, message: 'Нет доступного шлюза для другой подсети',
-      explanation: `Для пакета ${ipForHost(a, srcVlan)} → ${ipForHost(b, dstVlan)} нужен L3-шлюз. В этой модели ни один SVI не настроен; узел не может разрешить MAC шлюза через ARP, поэтому IP-пакет не отправляется в сеть.`,
+      explanation: `Для пакета ${ipForHost(a, srcVlan)} → ${ipForHost(b, dstVlan)} нужен L3-шлюз. PC отправляет ARP Broadcast в VLAN ${srcVlan}; коммутатор распространяет его только в этой VLAN (а не в VLAN ${dstVlan}). Шлюз не настроен, ARP Reply не приходит — IPv4-пакет не отправляется.`,
       ruleCitation: 'ARP / default gateway before inter-subnet forwarding' };
   }
   const needL3 = srcVlan !== dstVlan;
@@ -165,9 +165,25 @@ function generateDetailedTrace(source: HostId, target: HostId, vlans: Record<Hos
     return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
   }
   if (needsRouting && l3 === 'none') {
-    add('Нет шлюза: ARP не получает ответа', outcome.explanation, 'Сначала MAC шлюза через ARP, затем IPv4',
-      {x:a.x,y:a.y},{x:a.x,y:a.y},'drop',{activeDeviceId:a.id,dropped:true},
-      {ethType:'0x0806',dstMac:'ff:ff:ff:ff:ff:ff',status:'dropped'});
+    const arpRequest: Partial<TracePdu> = {
+      ethType: '0x0806', srcMac: a.mac, dstMac: 'ff:ff:ff:ff:ff:ff',
+      vlanId: srcVlan, isTagged: false,
+    };
+    add(`${a.name}: ARP-запрос шлюза`,
+      `Адрес ${targetIp} находится вне подсети ${sourceIp}/24. PC пытается узнать MAC своего шлюза 192.168.${srcVlan}.1: ARP Request, destination ff:ff:ff:ff:ff:ff.`,
+      'ARP broadcast перед отправкой IPv4 в другую подсеть',
+      {x:a.x,y:a.y},swPos(a.switchId),'tx',
+      {activeDeviceId:a.id,activeLinkId:accessLink(a)},arpRequest);
+    add(`${a.switchId}: ARP принят в VLAN ${srcVlan}`,
+      `Access ${a.port} принимает ARP Broadcast в VLAN ${srcVlan}. Это не DROP: коммутатор пересылает широковещательный кадр по другим портам VLAN ${srcVlan}, но не в VLAN ${dstVlan}. Возможное дальнейшее распространение через разрешённый trunk в схеме опущено.`,
+      'L2 broadcast flooding в пределах VLAN',
+      swPos(a.switchId),swPos(a.switchId),'access_ingress',
+      {activeDeviceId:a.switchId},arpRequest);
+    add(`Нет ARP Reply для 192.168.${srcVlan}.1`,
+      'В учебной конфигурации SVI/шлюза нет. Никто не отвечает на ARP-запрос, PC не узнаёт MAC next-hop. IPv4-пакет не отправлен; на PC наступает тайм-аут ARP. Коммутатор не отбрасывал запрос.',
+      'ARP unresolved → IP traffic cannot leave the host',
+      {x:a.x,y:a.y},{x:a.x,y:a.y},'drop',
+      {activeDeviceId:a.id,dropped:true},{...arpRequest,status:'dropped'});
     return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
   }
   add(`${a.name}: отправка кадра`,
@@ -451,7 +467,7 @@ export const VlanSimulator: React.FC = () => {
               <motion.g key={stepIndex} initial={{ x: active.from.x, y: active.from.y }} animate={{ x: active.to.x, y: active.to.y }} transition={{ duration: 0.7, ease: 'easeInOut' }}>
                 <rect x="-28" y="-11" width="56" height="22" rx={active.pdu.isTagged ? 4 : 11} className={active.dropped ? 'fill-rose-500' : active.pdu.isTagged ? 'fill-amber-400' : 'fill-cyan-400'} />
                 <text y="4" textAnchor="middle" className="fill-slate-950" fontSize="9" fontWeight="800">
-                  {active.dropped ? 'DROP' : active.actionType === 'l3_svi_route' ? 'SVI' : active.pdu.isTagged ? `VID ${active.pdu.vlanId}` : 'untag'}
+                  {active.dropped && active.pdu.ethType === '0x0806' ? 'TIMEOUT' : active.dropped ? 'DROP' : active.pdu.ethType === '0x0806' ? 'ARP' : active.actionType === 'l3_svi_route' ? 'SVI' : active.pdu.isTagged ? `VID ${active.pdu.vlanId}` : 'untag'}
                 </text>
               </motion.g>
             )}
@@ -467,19 +483,19 @@ export const VlanSimulator: React.FC = () => {
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2 lg:sticky lg:top-3">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>{trace ? `Шаг ${stepIndex + 1} / ${trace.steps.length}` : 'Ожидание'}</span>
-            <span className="font-mono">{active?.pdu.isTagged ? `802.1Q · VID ${active.pdu.vlanId}` : 'Untagged'}</span>
+            <span className="font-mono">{active?.pdu.ethType === '0x0806' ? 'ARP · Broadcast' : active?.pdu.isTagged ? `802.1Q · VID ${active.pdu.vlanId}` : 'Untagged'}</span>
           </div>
           <div className="text-sm font-bold text-slate-900 dark:text-white">{active?.title || 'Запусти передачу'}</div>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{active?.detail || 'Выбери отправителя и получателя, затем смотри путь кадра.'}</p>
           {active && (
             <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
               <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">MAC {active.pdu.srcMac.slice(-8)} → {active.pdu.dstMac.slice(-8)}</div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">IP {active.pdu.srcIp.split('.').slice(2).join('.')} → {active.pdu.dstIp.split('.').slice(2).join('.')}</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">{active.pdu.ethType === '0x0806' ? `ARP who-has ${active.pdu.vlanId}.1?` : `IP ${active.pdu.srcIp.split('.').slice(2).join('.')} → ${active.pdu.dstIp.split('.').slice(2).join('.')}`}</div>
               <div className={`rounded-lg p-2 ${active.pdu.isTagged ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-slate-50 dark:bg-slate-900'}`}>
                 {active.pdu.isTagged ? `тег VID ${active.pdu.vlanId}` : 'без тега'}
               </div>
               <div className={`rounded-lg p-2 ${active.pdu.ttl === 63 ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-slate-50 dark:bg-slate-900'}`}>
-                TTL {active.pdu.ttl}
+                {active.pdu.ethType === '0x0806' ? 'ARP · без TTL' : `TTL ${active.pdu.ttl}`}
               </div>
             </div>
           )}
