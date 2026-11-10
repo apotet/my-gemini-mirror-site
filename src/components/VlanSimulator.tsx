@@ -230,31 +230,57 @@ export const VlanSimulator: React.FC = () => {
           <span className="text-xs text-slate-500 dark:text-slate-400">Нажми на ПК в карточках ниже, чтобы выбрать участников передачи</span>
         </div>
         <div className="overflow-x-auto">
-          <svg viewBox="0 0 650 198" className="w-full min-w-[550px] h-auto" role="img" aria-label="PC-01 и PC-02 подключены к SW1; PC-03 и PC-04 к SW2; коммутаторы соединены trunk 802.1Q">
-            <rect x="2" y="4" width="306" height="188" rx="13" className="fill-cyan-50 dark:fill-cyan-950/25 stroke-cyan-300 dark:stroke-cyan-700/70" strokeDasharray="5 4"/>
-            <rect x="342" y="4" width="306" height="188" rx="13" className="fill-indigo-50 dark:fill-blue-950/25 stroke-indigo-300 dark:stroke-blue-700/70" strokeDasharray="5 4"/>
+          <svg viewBox="0 0 650 220" className="w-full min-w-[550px] h-auto" role="img" aria-label="PC-01 и PC-02 подключены к SW1; PC-03 и PC-04 к SW2; коммутаторы соединены trunk 802.1Q">
+            <rect x="2" y="4" width="306" height="212" rx="13" className="fill-cyan-50 dark:fill-cyan-950/25 stroke-cyan-300 dark:stroke-cyan-700/70" strokeDasharray="5 4"/>
+            <rect x="342" y="4" width="306" height="212" rx="13" className="fill-indigo-50 dark:fill-blue-950/25 stroke-indigo-300 dark:stroke-blue-700/70" strokeDasharray="5 4"/>
             <text x="14" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW1 · сеть доступа</text>
             <text x="354" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW2 · сеть доступа</text>
             <path d="M100 43 L204 88 M100 149 L204 108 M446 88 L522 43 M446 108 L522 149" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2.5" fill="none"/>
             <path d="M304 98 H346" strokeWidth="5" className="stroke-amber-500 dark:stroke-amber-400"/>
             <text x="325" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" className="fill-amber-700 dark:fill-amber-300">802.1Q</text>
-            {[{ id: 'SW1', x: 204 }, { id: 'SW2', x: 346 }].map(sw => (
-              <g key={sw.id}>
-                <rect x={sw.x} y="75" width="100" height="46" rx="9" className="fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500" strokeWidth="2"/>
-                <text x={sw.x + 50} y="94" textAnchor="middle" fontSize="13" fontWeight="bold" className="fill-slate-900 dark:fill-white">{sw.id}</text>
-                <text x={sw.x + 50} y="110" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">{l3Role === sw.id ? 'L3 · SVI 10/20' : 'L2 switch'}</text>
+            <defs>
+              <linearGradient id="netops-device-blue" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#38bdf8"/>
+                <stop offset="1" stopColor="#2563eb"/>
+              </linearGradient>
+              <linearGradient id="netops-device-slate" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#64748b"/>
+                <stop offset="1" stopColor="#1e293b"/>
+              </linearGradient>
+            </defs>
+            {[{ id: 'SW1', x: 254 }, { id: 'SW2', x: 396 }].map(sw => (
+              <g key={sw.id} transform={`translate(${sw.x}, 88)`}>
+                {/* Equipment-shaped switch chassis, visible RJ45 ports and uplink LEDs. */}
+                <path d="M-38 -12 L26 -12 L39 -3 L39 18 L-38 18 Z" fill="url(#netops-device-slate)" stroke="#94a3b8" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M26 -12 L39 -3 L26 1 L-38 1 L-38 -12 Z" fill="#64748b" opacity=".7"/>
+                {[-28, -15, -2, 11].map(x => <g key={x}>
+                  <rect x={x} y="6" width="9" height="7" rx="1" fill="#0f172a" stroke="#7dd3fc" strokeWidth=".8"/>
+                  <path d={`M${x+2} 8 V11 M${x+5} 8 V11`} stroke="#bae6fd" strokeWidth=".8"/>
+                </g>)}
+                <circle cx="28" cy="9" r="2.5" fill="#4ade80"/>
+                <circle cx="34" cy="9" r="1.7" fill="#fbbf24"/>
+                {l3Role === sw.id && <g>
+                  <circle cx="0" cy="-5" r="10" fill="#0e7490" stroke="#a5f3fc" strokeWidth="1.5"/>
+                  <path d="M-6 -5 H6 M2 -9 L6 -5 L2 -1 M-2 -1 L-6 -5 L-2 -9" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                </g>}
+                <text x="0" y="35" textAnchor="middle" fontSize="13" fontWeight="bold" className="fill-slate-900 dark:fill-white">{sw.id}</text>
+                <text x="0" y="47" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">{l3Role === sw.id ? 'L3 · SVI 10/20' : 'L2 switch'}</text>
               </g>
             ))}
             {HOSTS.map(host => (
-              <g key={host.id}>
-                <rect x={host.x} y={host.y + 10} width="90" height="41" rx="8"
-                  className={source === host.id || target === host.id
-                    ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-600 dark:stroke-cyan-300'
-                    : 'fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500'}
-                  strokeWidth="2"/>
-                <text x={host.x + 45} y={host.y + 28} textAnchor="middle" fontSize="12" fontWeight="bold" className="fill-slate-900 dark:fill-white">{host.name}</text>
-                <text x={host.x + 45} y={host.y + 42} textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">VLAN {vlans[host.id]}</text>
-                {(source === host.id || target === host.id) && <circle cx={host.x + 82} cy={host.y + 14} r="5" fill={source === host.id ? '#0891b2' : '#8b5cf6'}/>}
+              <g key={host.id} transform={`translate(${host.x + 45}, ${host.y + 26})`}>
+                {/* Desktop workstation silhouette: monitor, stand and keyboard. */}
+                <path d="M-21 -17 H21 Q24 -17 24 -14 V8 Q24 11 21 11 H-21 Q-24 11 -24 8 V-14 Q-24 -17 -21 -17 Z"
+                  fill="url(#netops-device-blue)" stroke="#0e7490" strokeWidth="1.5"/>
+                <path d="M-19 -13 H19 V5 H-19 Z" fill="#dbeafe" stroke="#0284c7" strokeWidth="1"/>
+                <path d="M-18 3 H18 V5 H-18 Z" fill="#7dd3fc"/>
+                <path d="M-4 11 V17 M4 11 V17 M-12 18 H12" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M-20 21 H20 L24 25 H-24 Z" fill="#94a3b8" stroke="#475569" strokeWidth="1"/>
+                <text x="0" y="39" textAnchor="middle" fontSize="12" fontWeight="bold" className="fill-slate-900 dark:fill-white">{host.name}</text>
+                <text x="0" y="51" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">VLAN {vlans[host.id]}</text>
+                {(source === host.id || target === host.id) && (
+                  <circle cx="27" cy="-15" r="5" fill={source === host.id ? '#0891b2' : '#8b5cf6'} stroke="white" strokeWidth="1.5"/>
+                )}
               </g>
             ))}
             <text x="325" y="151" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">Gi0/1 ↔ Gi0/1</text>
