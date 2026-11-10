@@ -300,9 +300,9 @@ export const PacketJourney: React.FC = () => {
             <svg className="w-full h-auto lg:h-[clamp(120px,19dvh,205px)]" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
               role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
               <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 635} height={mobile ? 302 : 145}
-                rx="15" fill="#164e6314" stroke="#22d3ee55" strokeDasharray="5 5" />
+                rx="15" className="fill-cyan-50 dark:fill-cyan-950/30 stroke-cyan-300 dark:stroke-cyan-600/60" strokeDasharray="5 5" />
               <rect x={mobile ? 8 : 650} y={mobile ? 310 : 20} width={mobile ? 322 : 335} height={mobile ? 181 : 145}
-                rx="15" fill="#1d4ed814" stroke="#60a5fa55" strokeDasharray="5 5" />
+                rx="15" className="fill-indigo-50 dark:fill-blue-950/30 stroke-indigo-300 dark:stroke-blue-500/60" strokeDasharray="5 5" />
               <text x={mobile ? 145 : 30} y={mobile ? 26 : 37} fontSize="12" className="fill-cyan-700 dark:fill-[#67e8f9]">LAN 1 · 192.168.1.0/24</text>
               <text x={mobile ? 145 : 755} y={mobile ? 354 : 37} fontSize="12" className="fill-blue-700 dark:fill-[#93c5fd]">LAN 2 · 192.168.2.0/24</text>
               {(['pc', 'switch', 'router'] as const).map((id, i) => {
@@ -310,16 +310,18 @@ export const PacketJourney: React.FC = () => {
                 const a = points[id]; const b = points[dest];
                 const active = (current.from === id && current.to === dest) || (current.from === dest && current.to === id);
                 return <line key={id} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}
-                  stroke={active ? '#22d3ee' : '#49657d'} strokeWidth={active ? 5 : 3}
-                  strokeLinecap="round" opacity={active ? 1 : 0.75} />;
+                  className={active ? 'stroke-cyan-600 dark:stroke-cyan-400' : 'stroke-slate-400 dark:stroke-slate-500'} strokeWidth={active ? 5 : 3}
+                  strokeLinecap="round" opacity={active ? 1 : 0.85} />;
               })}
               {(['pc', 'switch', 'router', 'server'] as const).map(id => {
                 const [x, y] = points[id];
                 const selected = current.from === id || current.to === id;
                 return (
                   <g key={id} transform={'translate(' + x + ' ' + y + ')'}>
-                    <circle r="31" fill={selected ? '#0e7490' : '#172f45'} stroke={selected ? '#67e8f9' : '#64748b'} strokeWidth="2.5" />
-                    <path d={ICONS[id]} stroke="#dbeafe" strokeWidth="2.4" strokeLinejoin="round" fill="none" />
+                    <circle r="31" className={selected
+                      ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-600 dark:stroke-cyan-300'
+                      : 'fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500'} strokeWidth="2.5" />
+                    <path d={ICONS[id]} className="stroke-slate-800 dark:stroke-slate-100" strokeWidth="2.4" strokeLinejoin="round" fill="none" />
                     <text x={mobile ? 46 : 0} y={mobile ? -2 : 51} className="fill-slate-800 dark:fill-[#f8fafc]" fontSize={mobile ? 13 : 15}
                       fontWeight="700" textAnchor={mobile ? 'start' : 'middle'}>{NAMES[id]}</text>
                     <text x={mobile ? 46 : 0} y={mobile ? 15 : 68} className="fill-slate-600 dark:fill-[#a3b4c8]" fontSize={mobile ? 10 : 12}
