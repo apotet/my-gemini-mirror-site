@@ -515,8 +515,10 @@ export const VlanSimulator: React.FC = () => {
                     <div className="font-mono text-slate-800 dark:text-slate-200">{active.pdu.ethType} · {active.pdu.ethType === '0x0806' ? 'ARP' : 'IPv4'}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 dark:text-slate-400">IP пакет · Src / Dst · TTL</div>
-                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcIp} → {active.pdu.dstIp} · TTL {active.pdu.ttl}</div>
+                    <div className="text-slate-500 dark:text-slate-400">{active.pdu.ethType === '0x0806' ? 'ARP · запрос MAC шлюза' : 'IPv4 · Src / Dst · TTL'}</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">
+                      {active.pdu.ethType === '0x0806' ? `Who has 192.168.${active.pdu.vlanId}.1? · нет IP-заголовка` : `${active.pdu.srcIp} → ${active.pdu.dstIp} · TTL ${active.pdu.ttl}`}
+                    </div>
                   </div>
                   <div>
                     <div className="text-slate-500 dark:text-slate-400">FCS · 4 байта</div>
