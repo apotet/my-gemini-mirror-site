@@ -599,8 +599,8 @@ export const MockVlanSimulator: React.FC = () => {
             <details className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
                 <span>Подробнее о кадре · Ethernet II / 802.1Q</span>
-                <span className="shrink-0 text-cyan-700 dark:text-cyan-300 group-open:hidden">Развернуть +</span>
-                <span className="hidden shrink-0 text-cyan-700 dark:text-cyan-300 group-open:inline">Свернуть −</span>
+                <span className="shrink-0 text-cyan-700 dark:text-cyan-300 group-open:hidden">Показать</span>
+                <span className="hidden shrink-0 text-cyan-700 dark:text-cyan-300 group-open:inline">Скрыть</span>
               </summary>
               <div className="border-t border-slate-200 dark:border-slate-800 px-3 pb-3 pt-2 space-y-2 text-[11px]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
