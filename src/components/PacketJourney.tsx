@@ -263,7 +263,7 @@ export const PacketJourney: React.FC = () => {
   };
 
   return (
-    <section className="mx-auto max-w-5xl space-y-4 lg:space-y-2.5" aria-label="Путь пакета через сеть">
+    <section className="mx-auto max-w-5xl space-y-4 lg:space-y-[clamp(6px,1dvh,14px)]" aria-label="Путь пакета через сеть">
       <div className="flex flex-wrap items-center justify-between gap-3 lg:gap-2">
         <div>
           <div className="text-[11px] text-cyan-700 dark:text-cyan-400 font-mono font-bold uppercase tracking-wider">Сетевая практика · ICMP</div>
@@ -284,7 +284,7 @@ export const PacketJourney: React.FC = () => {
 
       {mode === 'learn' ? (
         <>
-          <div className="rounded-2xl border border-cyan-400/45 dark:border-cyan-500/25 bg-white dark:bg-[#0b1929] p-3 sm:p-5 lg:p-3 lg:space-y-1 space-y-3 overflow-hidden">
+          <div className="rounded-2xl border border-cyan-400/45 dark:border-cyan-500/25 bg-white dark:bg-[#0b1929] p-3 sm:p-5 lg:px-3 lg:py-[clamp(6px,0.9dvh,14px)] lg:space-y-[clamp(4px,0.65dvh,10px)] space-y-3 overflow-hidden">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2 text-sm font-semibold text-cyan-800 dark:text-cyan-200">
                 <Network className="w-4 h-4" aria-hidden="true" /> Карта сети
@@ -296,7 +296,7 @@ export const PacketJourney: React.FC = () => {
                 {detective ? 'Режим: проверяю себя' : 'Режим: изучаю'}
               </button>
             </div>
-            <svg className="w-full h-auto lg:h-[145px]" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
+            <svg className="w-full h-auto lg:h-[clamp(120px,19dvh,205px)]" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
               role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
               <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 635} height={mobile ? 302 : 145}
                 rx="15" fill="#164e6314" stroke="#22d3ee55" strokeDasharray="5 5" />
@@ -355,7 +355,7 @@ export const PacketJourney: React.FC = () => {
             </div>
           </div>
 
-          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-4 z-30 rounded-xl border border-cyan-500/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] p-3 lg:px-3 lg:py-2 space-y-3 lg:space-y-1.5" aria-label="Управление путём пакета">
+          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-4 z-30 rounded-xl border border-cyan-500/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] p-3 lg:px-3 lg:py-[clamp(6px,0.8dvh,12px)] space-y-3 lg:space-y-[clamp(4px,0.55dvh,9px)]" aria-label="Управление путём пакета">
             <label htmlFor="ping-journey-scrub" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Прогресс — двигай бегунок, чтобы вернуться к любому моменту
             </label>
@@ -364,21 +364,21 @@ export const PacketJourney: React.FC = () => {
               className="w-full accent-cyan-400 disabled:opacity-40 lg:h-2" />
             <div className="flex flex-wrap items-center gap-2 justify-between">
               <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
-                className="min-h-11 lg:min-h-9 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 font-semibold disabled:opacity-30">
+                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 font-semibold disabled:opacity-30">
                 <ChevronLeft className="w-4 h-4 inline" /> Назад
               </button>
               <button type="button" onClick={restart}
-                className="min-h-11 lg:min-h-9 px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300" aria-label="Начать ping заново">
+                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300" aria-label="Начать ping заново">
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
-                className="min-h-11 lg:min-h-9 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
+                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
                 Следующий шаг <ChevronRight className="w-4 h-4 inline" />
               </button>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 lg:text-[11px]">{detective ? 'В режиме проверки надо ответить на вопрос, прежде чем двигаться дальше.' : 'Автопереходов нет: ты сам задаёшь скорость движения пакета.'}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 p-4 sm:p-5 lg:p-3 lg:space-y-1.5 space-y-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 p-4 sm:p-5 lg:px-3 lg:py-[clamp(8px,1dvh,16px)] lg:space-y-[clamp(5px,0.7dvh,10px)] space-y-3">
             <h3 className="text-lg lg:text-base font-black text-slate-900 dark:text-white">{current.title}</h3>
             <p className="text-base lg:text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
               {challenge && !solved ? 'Устройство получило данные. Прими решение и посмотри, что произойдёт.' : current.summary}
