@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, Eye, EyeOff, Network, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Network, ShieldCheck } from 'lucide-react';
 
 /**
  * A single event = one cable traversal OR one device-local processing action.
@@ -241,7 +241,6 @@ export const PacketJourney: React.FC = () => {
   const [mode, setMode] = useState<'learn' | 'fix'>('learn');
   const [detective, setDetective] = useState(false);
   const [answer, setAnswer] = useState<Record<number, number>>({});
-  const [details, setDetails] = useState(false);
   const [faultIndex, setFaultIndex] = useState(0);
   const [faultAnswer, setFaultAnswer] = useState<number | null>(null);
   const [faultFixed, setFaultFixed] = useState(false);
@@ -409,9 +408,21 @@ export const PacketJourney: React.FC = () => {
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Что несёт кадр</div>
                 <div className="rounded-2xl border-2 border-amber-400/70 bg-amber-400/10 p-3 space-y-2">
                   <div className="font-bold text-amber-200 text-sm">Ethernet · внешняя упаковка</div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><span className="block text-[11px] text-slate-400">MAC откуда</span><span className="font-semibold text-white">{displayMac(current.packet.srcMac)}</span></div>
-                    <div><span className="block text-[11px] text-slate-400">MAC куда</span><span className="font-semibold text-white">{displayMac(current.packet.dstMac)}</span></div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                    <div className="min-w-0 space-y-1">
+                      <span className="block text-[11px] text-slate-300">Source MAC · откуда</span>
+                      <span className="block font-semibold text-white">{displayMac(current.packet.srcMac)}</span>
+                      <span className="block font-mono text-[11px] sm:text-xs tabular-nums text-amber-100/80 break-all">{current.packet.srcMac}</span>
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <span className="block text-[11px] text-slate-300">Destination MAC · куда</span>
+                      <span className="block font-semibold text-white">{displayMac(current.packet.dstMac)}</span>
+                      <span className="block font-mono text-[11px] sm:text-xs tabular-nums text-amber-100/80 break-all">{current.packet.dstMac}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-amber-400/30 pt-2">
+                    <span className="text-[11px] text-slate-300">EtherType · тип содержимого</span>
+                    <span className="font-mono text-xs font-semibold text-amber-100">{current.packet.kind.startsWith('arp') ? '0x0806 · ARP' : '0x0800 · IPv4'}</span>
                   </div>
                   {current.packet.kind.startsWith('arp') ? (
                     <div className="rounded-xl border-2 border-violet-400/60 bg-violet-500/10 p-3 text-sm">
@@ -431,17 +442,6 @@ export const PacketJourney: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <button type="button" onClick={() => setDetails(v => !v)}
-                  aria-expanded={details}
-                  className="inline-flex items-center gap-2 px-2 py-2 text-xs text-cyan-300 font-semibold">
-                  {details ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  {details ? 'Скрыть настоящие MAC' : 'Показать настоящие MAC'}
-                </button>
-                {details && <div className="rounded-lg bg-slate-950 px-3 py-2 font-mono text-[11px] sm:text-xs text-slate-300 break-all" role="region" aria-label="Поля Ethernet">
-                  <div>Source: {current.packet.srcMac}</div>
-                  <div>Destination: {current.packet.dstMac}</div>
-                  <div>EtherType: {current.packet.kind.startsWith('arp') ? '0x0806 (ARP)' : '0x0800 (IPv4)'}</div>
-                </div>}
               </div>
             )}
           </div>
