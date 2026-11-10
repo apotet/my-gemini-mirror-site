@@ -305,18 +305,24 @@ export const VlanSimulator: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!playing || !trace) return;
-    if (stepIndex >= trace.steps.length - 1) {
-      setPlaying(false);
-      if (trace.outcome.delivered && caseSolved(mode, vlans, trunks, l3Role) && mode !== 'explore') {
-        setCompleted(true);
-        playSuccessSound();
-      } else if (!trace.outcome.delivered) playErrorSound();
-      return;
-    }
-    const t = window.setTimeout(() => setStepIndex((s) => s + 1), 1600);
+    if (!playing || !trace || stepIndex >= trace.steps.length - 1) return;
+    const t = window.setTimeout(() => setStepIndex((s) => Math.min(trace.steps.length - 1, s + 1)), 1600);
     return () => window.clearTimeout(t);
-  }, [playing, stepIndex, trace, mode, vlans, trunks, l3Role]);
+  }, [playing, stepIndex, trace]);
+
+  useEffect(() => {
+    if (!trace || stepIndex !== trace.steps.length - 1) return;
+    setPlaying(false);
+    if (trace.outcome.delivered && mode !== 'explore' &&
+        source === (mode === 'access' ? 'pc1' : 'pc2') &&
+        target === (mode === 'access' ? 'pc2' : 'pc4') &&
+        caseSolved(mode, vlans, trunks, l3Role)) {
+      setCompleted(true);
+      playSuccessSound();
+    } else if (!trace.outcome.delivered) {
+      playErrorSound();
+    }
+  }, [trace, stepIndex, mode, source, target, vlans, trunks, l3Role]);
 
   const changeVlan = (host: HostId, vlan: Vlan) => {
     setVlans((prev) => ({ ...prev, [host]: vlan }));
@@ -525,7 +531,7 @@ export const VlanSimulator: React.FC = () => {
           )}
           {active && (
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              Учебная модель: при смене access VLAN адрес ПК автоматически переходит в подсеть 192.168.VLAN.x (в реальности нужен DHCP renew или смена статического IP). ARP и обучение MAC считаются выполненными; native VLAN здесь не рассматривается.
+              Учебная модель: IP ПК автоматически меняется вместе с VLAN (в реальности нужен DHCP renew или настройка статического IP). Для IPv4 считаем ARP и обучение MAC выполненными; при отсутствии шлюза показываем неудачный ARP вместо выдуманного IP-кадра. Native VLAN здесь не рассматривается.
             </p>
           )}
           {active?.rule && <p className="text-[11px] text-slate-500 dark:text-slate-400">{active.rule}</p>}
@@ -563,7 +569,7 @@ export const VlanSimulator: React.FC = () => {
               <div className="mb-1 text-slate-500">Роль L3 / SVI</div>
               <div className="flex gap-1">
                 {(['none', 'SW1', 'SW2'] as L3Role[]).map((role) => (
-                  <button key={role} type="button" onClick={() => { setL3Role(role); setTrace(null); }} className={`px-2 py-1 rounded-lg border cursor-pointer ${l3Role === role ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                  <button key={role} type="button" onClick={() => { setL3Role(role); setTrace(null); setPlaying(false); setCompleted(false); }} className={`px-2 py-1 rounded-lg border cursor-pointer ${l3Role === role ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'border-slate-200 dark:border-slate-700'}`}>
                     {role === 'none' ? 'только L2' : role}
                   </button>
                 ))}
