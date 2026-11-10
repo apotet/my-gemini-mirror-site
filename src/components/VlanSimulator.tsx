@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Settings2 } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
@@ -76,71 +76,60 @@ export const INITIAL_TRUNKS: TrunkConfig = { left: [10, 20], right: [10, 20] };
 const SW1 = { x: 250, y: 150 };
 const SW2 = { x: 510, y: 150 };
 
+
+/** Explicit educational model: hosts use DHCP-like renewed addresses whenever an access VLAN is changed.
+ * MAC/ARP resolution and MAC address learning are assumed complete, rather than silently invented.
+ * VLAN 10/20 are tagged on trunk (native VLAN is outside this simplified exercise).
+ */
+function ipForHost(host: HostInfo, vlan: Vlan): string {
+  return `192.168.${vlan}.${host.ip.split('.').at(-1)}`;
+}
+
+const SVI_MAC: Record<Vlan, string> = {
+  10: '02:00:00:00:10:01',
+  20: '02:00:00:00:20:01',
+};
+
 function evaluateNetwork(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Result {
   const a = HOSTS.find((h) => h.id === source)!;
   const b = HOSTS.find((h) => h.id === target)!;
   const srcVlan = vlans[source];
   const dstVlan = vlans[target];
   const crossed = a.switchId !== b.switchId;
-  if (srcVlan !== dstVlan) {
-    if (l3 === 'none') {
-      return {
-        delivered: false,
-        tagged: crossed,
-        crossed,
-        message: 'Разные VLAN, шлюза нет',
-        explanation: `${a.name} в VLAN ${srcVlan}, ${b.name} в VLAN ${dstVlan}. L2 не пересылает кадр между broadcast-доменами. Нужен SVI или маршрутизатор.`,
-        ruleCitation: 'VLAN isolation: no inter-VLAN without L3',
-      };
-    }
-    const bad = [crossed && a.switchId !== l3 ? srcVlan : null, crossed && b.switchId !== l3 ? dstVlan : null].some(
-      (v) => v !== null && (!trunks.left.includes(v) || !trunks.right.includes(v)),
-    );
-    if (bad) {
-      return {
-        delivered: false,
-        tagged: true,
-        crossed,
-        message: 'SVI есть, но trunk режет нужный VLAN',
-        explanation: `Чтобы дойти до SVI на ${l3} и вернуться в VLAN ${dstVlan}, оба VLAN должны быть разрешены на trunk.`,
-        ruleCitation: 'trunk allowed vlan must include transit VLANs',
-      };
-    }
-    return {
-      delivered: true,
-      tagged: crossed,
-      crossed,
-      message: `Маршрутизация VLAN ${srcVlan} → ${dstVlan} на ${l3}`,
-      explanation: `Кадр приходит на SVI ${srcVlan}, L3 снимает Ethernet, TTL 64→63, новый кадр в VLAN ${dstVlan}.`,
-      ruleCitation: 'Inter-VLAN routing via SVI',
-    };
+  if (source === target) {
+    return { delivered: false, crossed: false, tagged: false, message: 'Выбран один ПК',
+      explanation: 'Для проверки связи выбери два разных узла. Ping на собственный адрес обрабатывается локальным стеком, без Ethernet-кадра в коммутатор.',
+      ruleCitation: 'Local host stack' };
   }
-  if (crossed && (!trunks.left.includes(srcVlan) || !trunks.right.includes(srcVlan))) {
-    return {
-      delivered: false,
-      tagged: true,
-      crossed,
-      message: `VLAN ${srcVlan} не разрешён на trunk`,
-      explanation: `Оба хоста в VLAN ${srcVlan}, но на одном из концов Gi0/1 этот VLAN отсутствует в allowed.`,
-      ruleCitation: 'switchport trunk allowed vlan',
-    };
+  if (srcVlan !== dstVlan && l3 === 'none') {
+    return { delivered: false, crossed, tagged: false, message: 'Нет доступного шлюза для другой подсети',
+      explanation: `Для пакета ${ipForHost(a, srcVlan)} → ${ipForHost(b, dstVlan)} нужен L3-шлюз. В этой модели ни один SVI не настроен; узел не может разрешить MAC шлюза через ARP, поэтому IP-пакет не отправляется в сеть.`,
+      ruleCitation: 'ARP / default gateway before inter-subnet forwarding' };
   }
-  return {
-    delivered: true,
-    tagged: crossed,
-    crossed,
-    message: crossed ? `Кадр дошёл по trunk VLAN ${srcVlan}` : `Кадр дошёл внутри SW, VLAN ${srcVlan}`,
-    explanation: crossed
-      ? `Access → тег 802.1Q VID ${srcVlan} на trunk → снятие тега на access получателя.`
-      : `Один коммутатор, одна VLAN. Тег на access не нужен.`,
-    ruleCitation: crossed ? '802.1Q trunk transit' : 'same-switch same-VLAN forwarding',
-  };
-}
-
-function step(
-  partial: Omit<TraceStep, 'pdu'> & { pdu: TracePdu },
-): TraceStep {
-  return partial;
+  const needL3 = srcVlan !== dstVlan;
+  const originSwitch = a.switchId;
+  const routeToGateway = needL3 && originSwitch !== l3;
+  const routeToDest = needL3 ? b.switchId !== l3 : crossed;
+  const crossing = routeToGateway || routeToDest;
+  const requiredVlans: Vlan[] = [];
+  if (routeToGateway) requiredVlans.push(srcVlan);
+  if (routeToDest) requiredVlans.push(dstVlan);
+  const filtered = requiredVlans.filter((v) => !trunks.left.includes(v) || !trunks.right.includes(v));
+  if (filtered.length) {
+    return { delivered: false, crossed: crossing, tagged: true,
+      message: `На trunk заблокирован VLAN ${[...new Set(filtered)].join(', ')}`,
+      explanation: `Для выбранного пути нужен VLAN ${[...new Set(requiredVlans)].join(' и ')} на обоих концах Gi0/1. На одном из портов он отсутствует в allowed vlan.`,
+      ruleCitation: '802.1Q trunk allowed VLAN filtering (outbound / inbound)' };
+  }
+  return needL3
+    ? { delivered: true, crossed: crossing, tagged: crossing,
+        message: `Пакет маршрутизирован через SVI ${srcVlan} → ${dstVlan} на ${l3}`,
+        explanation: 'Отправитель адресует кадр MAC своего шлюза, L3-коммутатор уменьшает TTL, выбирает выходной VLAN и формирует новый Ethernet-кадр с MAC SVI и MAC получателя. IP источника и назначения сохраняются.',
+        ruleCitation: 'IPv4 routing: TTL decrement and L2 rewrite' }
+    : { delivered: true, crossed, tagged: crossed,
+        message: crossed ? `Доставка по trunk, VLAN ${srcVlan}` : `Локальная коммутация, VLAN ${srcVlan}`,
+        explanation: crossed ? 'Тег VID добавлен на исходящем trunk, перенесён между коммутаторами и отсутствует на выходном access-порту.' : 'Один VLAN на одном коммутаторе: кадр пересылается с access на access без тега.',
+        ruleCitation: crossed ? 'IEEE 802.1Q frame tagging on trunk' : 'IEEE 802.1D MAC learning / forwarding' };
 }
 
 function generateDetailedTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Trace {
@@ -150,218 +139,112 @@ function generateDetailedTrace(source: HostId, target: HostId, vlans: Record<Hos
   const srcVlan = vlans[source];
   const dstVlan = vlans[target];
   const steps: TraceStep[] = [];
-  const srcSw = a.switchId === 'SW1' ? SW1 : SW2;
-  const dstSw = b.switchId === 'SW1' ? SW1 : SW2;
-  const srcLink = a.id === 'pc1' || a.id === 'pc2' ? (a.id === 'pc1' ? 'pc1-sw1' : 'pc2-sw1') : a.id === 'pc3' ? 'sw2-pc3' : 'sw2-pc4';
-  const dstLink = b.id === 'pc1' || b.id === 'pc2' ? (b.id === 'pc1' ? 'pc1-sw1' : 'pc2-sw1') : b.id === 'pc3' ? 'sw2-pc3' : 'sw2-pc4';
-  const basePdu = (over: Partial<TracePdu> = {}): TracePdu => ({
-    isTagged: false,
-    vlanId: srcVlan,
-    ethType: '0x0800',
-    srcMac: a.mac,
-    dstMac: b.mac,
-    srcIp: a.ip,
-    dstIp: b.ip,
-    ttl: 64,
-    status: 'moving',
-    ...over,
+  const swPos = (id: 'SW1' | 'SW2') => id === 'SW1' ? SW1 : SW2;
+  const accessLink = (h: HostInfo): NonNullable<TraceStep['activeLinkId']> =>
+    h.id === 'pc1' ? 'pc1-sw1' : h.id === 'pc2' ? 'pc2-sw1' : h.id === 'pc3' ? 'sw2-pc3' : 'sw2-pc4';
+  const sourceIp = ipForHost(a, srcVlan);
+  const targetIp = ipForHost(b, dstVlan);
+  const needsRouting = srcVlan !== dstVlan;
+  const gatewayMac = SVI_MAC[srcVlan];
+  const finalSrcMac = needsRouting ? SVI_MAC[dstVlan] : a.mac;
+  const initialDstMac = needsRouting ? gatewayMac : b.mac;
+  const pdu = (over: Partial<TracePdu> = {}): TracePdu => ({
+    isTagged: false, vlanId: srcVlan, ethType: '0x0800',
+    srcMac: a.mac, dstMac: initialDstMac, srcIp: sourceIp, dstIp: targetIp,
+    ttl: 64, status: 'moving', ...over,
   });
+  const add = (
+    title: string, detail: string, rule: string, from: {x:number;y:number}, to: {x:number;y:number},
+    actionType: TraceStep['actionType'], fields: Partial<TraceStep> = {}, payload: Partial<TracePdu> = {},
+  ) => {
+    steps.push({ title, detail, rule, from, to, actionType, ...fields, pdu: pdu(payload) });
+  };
+  if (source === target) {
+    add('Проверка локального адреса', outcome.explanation, outcome.ruleCitation || '', {x:a.x,y:a.y}, {x:a.x,y:a.y},
+      'drop', {activeDeviceId:a.id,dropped:true}, {status:'dropped'});
+    return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
+  }
+  if (needsRouting && l3 === 'none') {
+    add('Нет шлюза: ARP не получает ответа', outcome.explanation, 'Сначала MAC шлюза через ARP, затем IPv4',
+      {x:a.x,y:a.y},{x:a.x,y:a.y},'drop',{activeDeviceId:a.id,dropped:true},
+      {ethType:'0x0806',dstMac:'ff:ff:ff:ff:ff:ff',status:'dropped'});
+    return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
+  }
+  add(`${a.name}: отправка кадра`,
+    `Источник ${sourceIp}, назначение ${targetIp}. MAC назначения — ${needsRouting ? 'шлюз VLAN '+srcVlan : 'MAC ПК-получателя'}. ARP и обучение MAC уже выполнены в этой модели.`,
+    'ПК посылает нетегированный Ethernet на access-порт.',{x:a.x,y:a.y},swPos(a.switchId),'tx',
+    {activeDeviceId:a.id,activeLinkId:accessLink(a)});
+  add(`${a.switchId}: приём в VLAN ${srcVlan}`,
+    `Access ${a.port} назначает входящему untagged кадру VLAN ${srcVlan}. Коммутатор ищет MAC в таблице внутри этого VLAN.`,
+    'PVID/access VLAN; MAC address table',{...swPos(a.switchId)},swPos(a.switchId),'access_ingress',{activeDeviceId:a.switchId});
 
-  steps.push(
-    step({
-      title: `${a.name} формирует кадр`,
-      detail: `Untagged Ethernet с ${a.port}. Dst IP — ${b.ip}. Если хост в другой подсети, dst MAC будет MAC шлюза.`,
-      rule: 'Access-порт не добавляет тег.',
-      from: { x: a.x, y: a.y },
-      to: { x: srcSw.x, y: srcSw.y },
-      activeDeviceId: a.id,
-      activeLinkId: srcLink,
-      actionType: 'tx',
-      pdu: basePdu(),
-    }),
-  );
+  let currentSwitch: 'SW1' | 'SW2' = a.switchId;
+  let currentVlan = srcVlan;
+  let currentPdu: Partial<TracePdu> = {};
+  const crossTrunk = (destination: 'SW1' | 'SW2', vlan: Vlan): boolean => {
+    if (destination === currentSwitch) return true;
+    const sender: 'SW1' | 'SW2' = currentSwitch;
+    const from = swPos(sender);
+    const to = swPos(destination);
+    const senderSide = sender === 'SW1' ? 'left' : 'right';
+    const receiverSide = destination === 'SW1' ? 'left' : 'right';
+    const mid = {x:(SW1.x + SW2.x)/2,y:150};
+    if (!trunks[senderSide].includes(vlan)) {
+      add(`${sender}: trunk не выпускает VLAN ${vlan}`, 'VLAN отсутствует в allowed на исходящем Gi0/1.',
+        'Фильтр на выходе',from,from,'drop',{activeDeviceId:sender,activeLinkId:'sw1-sw2-trunk',dropped:true},
+        {...currentPdu,vlanId:vlan,status:'dropped'});
+      return false;
+    }
+    add(`${sender}: тег 802.1Q VID ${vlan}`, 'Тег TPID 0x8100, PCP 0, DEI 0, VID '+vlan+' добавляется перед EtherType.',
+      '802.1Q на trunk (оба учебных VLAN не native)',from,mid,'trunk_tag',
+      {activeDeviceId:sender,activeLinkId:'sw1-sw2-trunk'},
+      {...currentPdu,isTagged:true,vlanId:vlan});
+    if (!trunks[receiverSide].includes(vlan)) {
+      add(`${destination}: VLAN ${vlan} не принят`, 'Входящий Gi0/1 не разрешает VLAN '+vlan+'. Кадр отброшен.',
+        'Фильтр на входе',mid,to,'drop',{activeDeviceId:destination,activeLinkId:'sw1-sw2-trunk',dropped:true},
+        {...currentPdu,isTagged:true,vlanId:vlan,status:'dropped'});
+      return false;
+    }
+    add(`Trunk → ${destination}: VID ${vlan}`,
+      'Тегированный кадр доставлен до второго коммутатора. IP-поля не меняются.',
+      '802.1Q transit',mid,to,'trunk_transit',{activeLinkId:'sw1-sw2-trunk'},
+      {...currentPdu,isTagged:true,vlanId:vlan});
+    currentSwitch = destination;
+    currentVlan = vlan;
+    return true;
+  };
 
-  if (srcVlan !== dstVlan && l3 === 'none') {
-    steps.push(
-      step({
-        title: 'Кадр отброшен: разные VLAN',
-        detail: outcome.explanation,
-        rule: 'L2 не маршрутизирует.',
-        from: { x: srcSw.x, y: srcSw.y },
-        to: { x: srcSw.x, y: srcSw.y },
-        activeDeviceId: a.switchId,
-        actionType: 'drop',
-        dropped: true,
-        pdu: basePdu({ status: 'dropped' }),
-      }),
-    );
-    return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+  if (needsRouting) {
+    const l3Switch: 'SW1' | 'SW2' = l3 === 'SW1' ? 'SW1' : 'SW2';
+    if (!crossTrunk(l3Switch,srcVlan)) return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
+    const pos = swPos(l3Switch);
+    currentPdu = {isTagged:false,srcMac:SVI_MAC[dstVlan],dstMac:b.mac,vlanId:dstVlan,ttl:63};
+    add(`${l3Switch}: SVI ${srcVlan} → SVI ${dstVlan}`,
+      'L3 снимает старый Ethernet-заголовок, уменьшает TTL 64 → 63, маршрутизирует IP-пакет и создаёт новый кадр: MAC SVI целевого VLAN → MAC получателя.',
+      'L3 IPv4 FIB lookup; L2 header rewrite',pos,pos,'l3_svi_route',{activeDeviceId:l3Switch},
+      {...currentPdu,status:'routing'});
+    currentVlan = dstVlan;
   }
 
-  if (a.switchId !== b.switchId || (srcVlan !== dstVlan && l3 !== 'none' && a.switchId !== l3)) {
-    const side = a.switchId === 'SW1' ? 'left' : 'right';
-    if (!trunks[side].includes(srcVlan)) {
-      steps.push(
-        step({
-          title: `Trunk ${a.switchId} не пускает VLAN ${srcVlan}`,
-          detail: `Gi0/1 ${a.switchId} не содержит VLAN ${srcVlan} в allowed.`,
-          rule: 'switchport trunk allowed vlan',
-          from: { x: srcSw.x, y: srcSw.y },
-          to: { x: srcSw.x, y: srcSw.y },
-          activeDeviceId: a.switchId,
-          activeLinkId: 'sw1-sw2-trunk',
-          actionType: 'drop',
-          dropped: true,
-          pdu: basePdu({ isTagged: true, status: 'dropped' }),
-        }),
-      );
-      return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
-    }
-    steps.push(
-      step({
-        title: `Тег 802.1Q VID ${srcVlan}`,
-        detail: `На исходящем trunk Gi0/1 добавляется тег TPID 0x8100, VID ${srcVlan}. IP не меняется.`,
-        rule: '802.1Q tag on trunk egress',
-        from: { x: srcSw.x, y: srcSw.y },
-        to: { x: (SW1.x + SW2.x) / 2, y: 150 },
-        activeDeviceId: a.switchId,
-        activeLinkId: 'sw1-sw2-trunk',
-        actionType: 'trunk_tag',
-        pdu: basePdu({ isTagged: true }),
-      }),
-    );
-    const far = a.switchId === 'SW1' ? SW2 : SW1;
-    const farSide = a.switchId === 'SW1' ? 'right' : 'left';
-    if (!trunks[farSide].includes(srcVlan)) {
-      steps.push(
-        step({
-          title: `Входящий trunk не принимает VLAN ${srcVlan}`,
-          detail: `Кадр дошёл по кабелю, но allowed на дальнем конце не содержит VLAN ${srcVlan}.`,
-          rule: 'ingress trunk filter',
-          from: { x: (SW1.x + SW2.x) / 2, y: 150 },
-          to: { x: far.x, y: far.y },
-          activeDeviceId: far === SW1 ? 'SW1' : 'SW2',
-          activeLinkId: 'sw1-sw2-trunk',
-          actionType: 'drop',
-          dropped: true,
-          pdu: basePdu({ isTagged: true, status: 'dropped' }),
-        }),
-      );
-      return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
-    }
-    steps.push(
-      step({
-        title: 'Кадр идёт по trunk',
-        detail: `Тегированный кадр VID ${srcVlan} между SW1 и SW2.`,
-        rule: 'trunk transit',
-        from: { x: (SW1.x + SW2.x) / 2, y: 150 },
-        to: { x: far.x, y: far.y },
-        activeLinkId: 'sw1-sw2-trunk',
-        actionType: 'trunk_transit',
-        pdu: basePdu({ isTagged: true }),
-      }),
-    );
-  }
-
-  if (srcVlan !== dstVlan && l3 !== 'none') {
-    const l3Pos = l3 === 'SW1' ? SW1 : SW2;
-    steps.push(
-      step({
-        title: `${l3}: маршрутизация SVI ${srcVlan} → ${dstVlan}`,
-        detail: `SVI ${srcVlan} принимает пакет. Новый Ethernet: MAC шлюза → MAC ${b.name}. TTL 64→63. IP src/dst те же.`,
-        rule: 'SVI inter-VLAN: rewrite L2, decrement TTL',
-        from: { x: l3Pos.x, y: l3Pos.y },
-        to: { x: l3Pos.x, y: l3Pos.y },
-        activeDeviceId: l3,
-        actionType: 'l3_svi_route',
-        pdu: basePdu({
-          isTagged: false,
-          vlanId: dstVlan,
-          srcMac: `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
-          ttl: 63,
-          status: 'routing',
-        }),
-      }),
-    );
-    if (b.switchId !== l3) {
-      const side = l3 === 'SW1' ? 'left' : 'right';
-      if (!trunks[side].includes(dstVlan) || !trunks[l3 === 'SW1' ? 'right' : 'left'].includes(dstVlan)) {
-        steps.push(
-          step({
-            title: `После SVI trunk режет VLAN ${dstVlan}`,
-            detail: 'Новый кадр создан, но VLAN получателя не разрешён на trunk.',
-            rule: 'return path must be allowed',
-            from: { x: l3Pos.x, y: l3Pos.y },
-            to: { x: l3Pos.x, y: l3Pos.y },
-            activeDeviceId: l3,
-            activeLinkId: 'sw1-sw2-trunk',
-            actionType: 'drop',
-            dropped: true,
-            pdu: basePdu({ isTagged: true, vlanId: dstVlan, ttl: 63, status: 'dropped' }),
-          }),
-        );
-        return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
-      }
-      steps.push(
-        step({
-          title: `Тег VID ${dstVlan} на обратном trunk`,
-          detail: `Новый кадр VLAN ${dstVlan} идёт к коммутатору получателя.`,
-          rule: 'tagged egress after routing',
-          from: { x: l3Pos.x, y: l3Pos.y },
-          to: { x: dstSw.x, y: dstSw.y },
-          activeLinkId: 'sw1-sw2-trunk',
-          actionType: 'trunk_tag',
-          pdu: basePdu({ isTagged: true, vlanId: dstVlan, srcMac: `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`, ttl: 63 }),
-        }),
-      );
-    }
-  }
-
-  steps.push(
-    step({
-      title: `${b.switchId}: снятие тега, выход в ${b.port}`,
-      detail: `Access-порт VLAN ${dstVlan} отдаёт untagged кадр на ${b.name}.`,
-      rule: 'untag on access egress',
-      from: { x: dstSw.x, y: dstSw.y },
-      to: { x: b.x, y: b.y },
-      activeDeviceId: b.switchId,
-      activeLinkId: dstLink,
-      actionType: 'access_egress',
-      pdu: basePdu({
-        isTagged: false,
-        vlanId: dstVlan,
-        srcMac: srcVlan === dstVlan ? a.mac : `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
-        ttl: srcVlan === dstVlan ? 64 : 63,
-        status: 'delivered',
-      }),
-    }),
-  );
-  steps.push(
-    step({
-      title: outcome.delivered ? `${b.name} принял кадр` : 'Доставка не состоялась',
-      detail: outcome.explanation,
-      rule: outcome.ruleCitation || '',
-      from: { x: b.x, y: b.y },
-      to: { x: b.x, y: b.y },
-      activeDeviceId: b.id,
-      actionType: outcome.delivered ? 'rx_delivery' : 'drop',
-      dropped: !outcome.delivered,
-      pdu: basePdu({
-        isTagged: false,
-        vlanId: dstVlan,
-        srcMac: srcVlan === dstVlan ? a.mac : `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
-        ttl: srcVlan === dstVlan ? 64 : 63,
-        status: outcome.delivered ? 'delivered' : 'dropped',
-      }),
-    }),
-  );
-  return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+  if (!crossTrunk(b.switchId,currentVlan)) return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
+  const destPos = swPos(b.switchId);
+  const endPdu: Partial<TracePdu> = {
+    isTagged:false,srcMac:finalSrcMac,dstMac:b.mac,vlanId:dstVlan,ttl:needsRouting?63:64,
+  };
+  add(`${b.switchId}: выход через ${b.port}`,
+    'Перед access-портом кадр выходит без тега 802.1Q (или остаётся нетегированным при локальной коммутации).',
+    'Access egress: untagged',destPos,{x:b.x,y:b.y},'access_egress',
+    {activeDeviceId:b.switchId,activeLinkId:accessLink(b)},endPdu);
+  add(`${b.name}: кадр принят`,outcome.explanation,outcome.ruleCitation || '',
+    {x:b.x,y:b.y},{x:b.x,y:b.y},'rx_delivery',{activeDeviceId:b.id},
+    {...endPdu,status:'delivered'});
+  return {steps,outcome,initialVlan:srcVlan,finalVlan:dstVlan};
 }
 
 const MODES: { id: CaseId; label: string }[] = [
   { id: 'explore', label: 'Свободная' },
-  { id: 'access', label: 'Дело 3 · Чужая VLAN' },
-  { id: 'trunk', label: 'Дело 4 · Trunk' },
+  { id: 'access', label: 'Дело 3 · Нет связи' },
+  { id: 'trunk', label: 'Дело 4 · Нет связи' },
 ];
 
 export const VlanSimulator: React.FC = () => {
@@ -378,6 +261,12 @@ export const VlanSimulator: React.FC = () => {
   const [completed, setCompleted] = useState(false);
 
   const active = trace?.steps[stepIndex];
+  const caseSolved = (id: CaseId, configVlans: Record<HostId,Vlan>, configTrunks: TrunkConfig, role: L3Role): boolean => {
+    if (id === 'access') return evaluateNetwork('pc1','pc2',configVlans,configTrunks,role).delivered;
+    if (id === 'trunk') return configVlans.pc2 === 20 && configVlans.pc4 === 20 &&
+      role === 'none' && configTrunks.left.includes(20) && configTrunks.right.includes(20);
+    return false;
+  };
 
   const reset = (next: CaseId = mode) => {
     setMode(next);
@@ -416,23 +305,30 @@ export const VlanSimulator: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!playing || !trace) return;
-    if (stepIndex >= trace.steps.length - 1) {
-      setPlaying(false);
-      if (trace.outcome.delivered && mode !== 'explore') {
-        setCompleted(true);
-        playSuccessSound();
-      } else if (!trace.outcome.delivered) playErrorSound();
-      return;
-    }
-    const t = window.setTimeout(() => setStepIndex((s) => s + 1), 1600);
+    if (!playing || !trace || stepIndex >= trace.steps.length - 1) return;
+    const t = window.setTimeout(() => setStepIndex((s) => Math.min(trace.steps.length - 1, s + 1)), 1600);
     return () => window.clearTimeout(t);
-  }, [playing, stepIndex, trace, mode]);
+  }, [playing, stepIndex, trace]);
+
+  useEffect(() => {
+    if (!trace || stepIndex !== trace.steps.length - 1) return;
+    setPlaying(false);
+    if (trace.outcome.delivered && mode !== 'explore' &&
+        source === (mode === 'access' ? 'pc1' : 'pc2') &&
+        target === (mode === 'access' ? 'pc2' : 'pc4') &&
+        caseSolved(mode, vlans, trunks, l3Role)) {
+      setCompleted(true);
+      playSuccessSound();
+    } else if (!trace.outcome.delivered) {
+      playErrorSound();
+    }
+  }, [trace, stepIndex, mode, source, target, vlans, trunks, l3Role]);
 
   const changeVlan = (host: HostId, vlan: Vlan) => {
     setVlans((prev) => ({ ...prev, [host]: vlan }));
     setTrace(null);
     setPlaying(false);
+    setCompleted(false);
     triggerHaptic('selection');
   };
   const toggleTrunk = (side: 'left' | 'right', vlan: Vlan) => {
@@ -442,6 +338,7 @@ export const VlanSimulator: React.FC = () => {
     }));
     setTrace(null);
     setPlaying(false);
+    setCompleted(false);
     triggerHaptic('selection');
   };
   const pickHost = (id: HostId) => {
@@ -452,18 +349,9 @@ export const VlanSimulator: React.FC = () => {
     } else setTarget(id);
     setTrace(null);
     setPlaying(false);
+    setCompleted(false);
     triggerHaptic('selection');
   };
-
-  const checkGoal = useCallback(() => {
-    if (mode === 'explore') return;
-    const outcome = evaluateNetwork(source, target, vlans, trunks, l3Role);
-    if (outcome.delivered) setCompleted(true);
-  }, [mode, source, target, vlans, trunks, l3Role]);
-
-  useEffect(() => {
-    checkGoal();
-  }, [checkGoal]);
 
   const linkClass = (id: NonNullable<TraceStep['activeLinkId']>) =>
     active?.activeLinkId === id ? 'stroke-cyan-500 dark:stroke-cyan-300' : 'stroke-slate-300 dark:stroke-slate-600';
@@ -500,8 +388,8 @@ export const VlanSimulator: React.FC = () => {
       {mode !== 'explore' && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
           {mode === 'access'
-            ? 'Дело 3: PC-01 не говорит с PC-02 на одном коммутаторе. Сверь access VLAN или включи L3.'
-            : 'Дело 4: PC-02 и PC-04 в VLAN 20, но кадр не проходит trunk. Проверь allowed на обоих концах.'}
+            ? 'Дело 3: PC-01 не может связаться с PC-02 на одном коммутаторе. Проверь конфигурацию и найди причину.'
+            : 'Дело 4: PC-02 и PC-04 на разных коммутаторах не могут обменяться трафиком. Найди, где теряется кадр.'}
           {completed && <span className="ml-2 font-bold text-emerald-700 dark:text-emerald-300">Связь восстановлена.</span>}
         </div>
       )}
@@ -624,11 +512,13 @@ export const VlanSimulator: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-slate-500 dark:text-slate-400">EtherType · 2 байта</div>
-                    <div className="font-mono text-slate-800 dark:text-slate-200">{active.pdu.ethType} · IPv4</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">{active.pdu.ethType} · {active.pdu.ethType === '0x0806' ? 'ARP' : 'IPv4'}</div>
                   </div>
                   <div>
-                    <div className="text-slate-500 dark:text-slate-400">IP пакет · Src / Dst · TTL</div>
-                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcIp} → {active.pdu.dstIp} · TTL {active.pdu.ttl}</div>
+                    <div className="text-slate-500 dark:text-slate-400">{active.pdu.ethType === '0x0806' ? 'ARP · запрос MAC шлюза' : 'IPv4 · Src / Dst · TTL'}</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">
+                      {active.pdu.ethType === '0x0806' ? `Who has 192.168.${active.pdu.vlanId}.1? · нет IP-заголовка` : `${active.pdu.srcIp} → ${active.pdu.dstIp} · TTL ${active.pdu.ttl}`}
+                    </div>
                   </div>
                   <div>
                     <div className="text-slate-500 dark:text-slate-400">FCS · 4 байта</div>
@@ -640,6 +530,11 @@ export const VlanSimulator: React.FC = () => {
                 </p>
               </div>
             </details>
+          )}
+          {active && (
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              Учебная модель: IP ПК автоматически меняется вместе с VLAN (в реальности нужен DHCP renew или настройка статического IP). Для IPv4 считаем ARP и обучение MAC выполненными; при отсутствии шлюза показываем неудачный ARP вместо выдуманного IP-кадра. Native VLAN здесь не рассматривается.
+            </p>
           )}
           {active?.rule && <p className="text-[11px] text-slate-500 dark:text-slate-400">{active.rule}</p>}
           <div className="flex gap-1.5">
@@ -676,7 +571,7 @@ export const VlanSimulator: React.FC = () => {
               <div className="mb-1 text-slate-500">Роль L3 / SVI</div>
               <div className="flex gap-1">
                 {(['none', 'SW1', 'SW2'] as L3Role[]).map((role) => (
-                  <button key={role} type="button" onClick={() => { setL3Role(role); setTrace(null); }} className={`px-2 py-1 rounded-lg border cursor-pointer ${l3Role === role ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                  <button key={role} type="button" onClick={() => { setL3Role(role); setTrace(null); setPlaying(false); setCompleted(false); }} className={`px-2 py-1 rounded-lg border cursor-pointer ${l3Role === role ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'border-slate-200 dark:border-slate-700'}`}>
                     {role === 'none' ? 'только L2' : role}
                   </button>
                 ))}
