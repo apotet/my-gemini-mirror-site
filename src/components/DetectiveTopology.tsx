@@ -46,19 +46,23 @@ export const DetectiveTopology: React.FC<DetectiveTopologyProps> = ({ faultId, f
       <div className="overflow-x-auto">
         <div className="relative min-w-[560px] max-w-[720px] mx-auto">
           <svg viewBox="0 0 640 125" className="w-full h-auto" role="img" aria-label="Схема сети: PC-01 через SW-01 и R1 связан с SRV-01. Две IPv4-подсети.">
-            <rect x="5" y="7" width="320" height="113" rx="12" fill="#0891b211" stroke="#0891b255" strokeDasharray="5 4" />
-            <rect x="335" y="7" width="300" height="113" rx="12" fill="#8b5cf611" stroke="#8b5cf655" strokeDasharray="5 4" />
-            <text x="162" y="24" textAnchor="middle" fill="currentColor" fontSize="12">LAN 1 · 192.168.1.0/24</text>
-            <text x="486" y="24" textAnchor="middle" fill="currentColor" fontSize="12">LAN 2 · 192.168.2.0/24</text>
-            <path d="M130 64 H181 M299 64 H350 M468 64 H519" fill="none" stroke={fixed ? '#16a34a' : '#64748b'} strokeWidth="3" strokeLinecap="round" />
-            <text x="324" y="108" fill="currentColor" textAnchor="middle" fontSize="10">R1: .1.1 / .2.1</text>
+            <rect x="5" y="7" width="320" height="113" rx="12" className="fill-cyan-50 dark:fill-cyan-950/30 stroke-cyan-300 dark:stroke-cyan-600/60" strokeDasharray="5 4" />
+            <rect x="335" y="7" width="300" height="113" rx="12" className="fill-indigo-50 dark:fill-blue-950/30 stroke-indigo-300 dark:stroke-blue-500/60" strokeDasharray="5 4" />
+            <text x="162" y="24" textAnchor="middle" className="fill-cyan-800 dark:fill-cyan-200" fontSize="12">LAN 1 · 192.168.1.0/24</text>
+            <text x="486" y="24" textAnchor="middle" className="fill-indigo-800 dark:fill-blue-200" fontSize="12">LAN 2 · 192.168.2.0/24</text>
+            <path d="M130 64 H181 M299 64 H350 M468 64 H519" fill="none"
+              className={fixed ? 'stroke-emerald-600 dark:stroke-emerald-400' : 'stroke-slate-400 dark:stroke-slate-500'}
+              strokeWidth="3" strokeLinecap="round" />
+            <text x="324" y="108" className="fill-slate-600 dark:fill-slate-300" textAnchor="middle" fontSize="10">R1: .1.1 / .2.1</text>
             {NODES.map((node) => (
               <g key={node.id}>
                 <rect x={node.x} y={node.y} width="118" height="52" rx="9"
-                  fill={selected === node.id ? '#0e7490' : '#334155'}
-                  stroke={selected === node.id ? '#67e8f9' : '#64748b'} strokeWidth={selected === node.id ? 2.5 : 1} />
-                <text x={node.x + 59} y={node.y + 21} fill="white" fontSize="13" textAnchor="middle" fontWeight="bold">{node.title}</text>
-                <text x={node.x + 59} y={node.y + 38} fill="#e2e8f0" fontSize="10" textAnchor="middle">{node.subtitle}</text>
+                  className={selected === node.id
+                    ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-600 dark:stroke-cyan-300'
+                    : 'fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500'}
+                  strokeWidth={selected === node.id ? 2.5 : 1.5} />
+                <text x={node.x + 59} y={node.y + 21} className="fill-slate-900 dark:fill-white" fontSize="13" textAnchor="middle" fontWeight="bold">{node.title}</text>
+                <text x={node.x + 59} y={node.y + 38} className="fill-slate-600 dark:fill-slate-300" fontSize="10" textAnchor="middle">{node.subtitle}</text>
               </g>
             ))}
           </svg>
