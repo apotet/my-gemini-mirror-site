@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Layers, RotateCcw, ShieldCheck, AlertTriangle, ArrowRight, Cable, Info } from 'lucide-react';
+import { Layers, RotateCcw, ShieldCheck, AlertTriangle, ArrowRight, ArrowLeft, Cable, Info, ChevronDown, ChevronUp } from 'lucide-react';
 
 type Vlan = 10 | 20;
 type HostId = 'pc1' | 'pc2' | 'pc3' | 'pc4';
 type TrunkConfig = { left: Vlan[]; right: Vlan[] };
 type CaseId = 'explore' | 'access' | 'trunk';
 type Result = { delivered: boolean; message: string; explanation: string; tagged: boolean; crossed: boolean };
+type TraceStep = { title: string; detail: string; x: number; y: number; tagged: boolean; dropped?: boolean };
+type Trace = { steps: TraceStep[]; outcome: Result; vlan: Vlan };
 
 const HOSTS: { id: HostId; name: string; switchId: 'SW1' | 'SW2'; port: string; x: number; y: number }[] = [
   { id: 'pc1', name: 'PC-01', switchId: 'SW1', port: 'Fa0/1', x: 10, y: 16 },
@@ -44,6 +46,47 @@ function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, t
       : `Оба access-порта находятся на ${a.switchId} в VLAN ${vlan}. Тег 802.1Q не нужен на проводе к конечным ПК. Здесь предполагается известный MAC назначения.`,
   };
 }
+const FRAME_START = { x: 0, y: 0 };
+function buildTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig): Trace {
+  const outcome = evaluate(source, target, vlans, trunks);
+  const a = HOSTS.find(host => host.id === source)!;
+  const b = HOSTS.find(host => host.id === target)!;
+  const sourceSwitch = a.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
+  const targetSwitch = b.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
+  const vlan = vlans[source];
+  const steps: TraceStep[] = [
+    { title: `${a.name} формирует Ethernet-кадр`, detail: `ПК посылает обычный нетегированный Ethernet-кадр через ${a.port}. На кабеле ПК → коммутатор тега 802.1Q нет.`, x: a.x + 45, y: a.y + 30, tagged: false },
+    { title: `${a.switchId} принимает кадр на access-порту`, detail: `Кадр пришёл на ${a.port}. Access VLAN порта — ${vlan}. Коммутатор относит кадр к VLAN ${vlan} и выполняет поиск MAC назначения внутри этой VLAN.`, ...sourceSwitch, tagged: false },
+  ];
+  if (source === target) {
+    steps.push({ title: 'Передача отменена', detail: outcome.explanation, ...sourceSwitch, tagged: false, dropped: true });
+    return { steps, outcome, vlan };
+  }
+  if (vlans[source] !== vlans[target]) {
+    steps.push({ title: 'Нет L2-пути к получателю в этой VLAN', detail: `Порт ${b.port} коммутатора ${b.switchId} относится к VLAN ${vlans[target]}, а кадр принадлежит VLAN ${vlan}. В этой упрощённой модели известного unicast коммутатор не отправляет кадр в чужую VLAN.`, ...sourceSwitch, tagged: false, dropped: true });
+    return { steps, outcome, vlan };
+  }
+  if (a.switchId !== b.switchId) {
+    const firstSide = a.switchId === 'SW1' ? 'left' : 'right';
+    const otherSide = firstSide === 'left' ? 'right' : 'left';
+    if (!trunks[firstSide].includes(vlan)) {
+      steps.push({ title: 'Отброшен на исходящем trunk', detail: `На ${a.switchId} VLAN ${vlan} отсутствует в allowed VLAN порта Gi0/1. Кадр не отправляется по trunk.`, ...sourceSwitch, tagged: false, dropped: true });
+      return { steps, outcome, vlan };
+    }
+    steps.push({ title: 'Добавлен тег IEEE 802.1Q', detail: `На исходящем trunk Gi0/1 коммутатор передаёт кадр с тегом: TPID 0x8100, VID ${vlan}, PCP 0, DEI 0. На access-порту этого тега не было.`, x: 325, y: 98, tagged: true });
+    if (!trunks[otherSide].includes(vlan)) {
+      steps.push({ title: 'Отброшен на входящем trunk', detail: `Кадр дошёл до Gi0/1 коммутатора ${b.switchId}, но VLAN ${vlan} не разрешена на его trunk-порту. До конечного ПК кадр не дойдёт.`, ...targetSwitch, tagged: true, dropped: true });
+      return { steps, outcome, vlan };
+    }
+    steps.push({ title: `${b.switchId} принимает тегированный кадр`, detail: `Входящий Gi0/1 пропускает VLAN ${vlan}. Коммутатор сохраняет VLAN-контекст и определяет выходной access-порт ${b.port}.`, ...targetSwitch, tagged: true });
+    steps.push({ title: '802.1Q тег удалён перед access-портом', detail: `При выходе из ${b.port} кадр отправляется к ПК без тега. VLAN ${vlan} существует внутри L2-сегмента, но обычный конечный ПК получает untagged Ethernet.`, x: (targetSwitch.x + b.x + 45) / 2, y: (targetSwitch.y + b.y + 30) / 2, tagged: false });
+  } else {
+    steps.push({ title: 'Коммутатор выбирает выходной access-порт', detail: `Оба ПК подключены к ${a.switchId}, их порты принадлежат VLAN ${vlan}. Trunk между коммутаторами не используется, тег 802.1Q на кабеле к ПК не нужен.`, ...sourceSwitch, tagged: false });
+  }
+  steps.push({ title: `Кадр доставлен на ${b.name}`, detail: outcome.explanation, x: b.x + 45, y: b.y + 30, tagged: false });
+  return { steps, outcome, vlan };
+}
+
 const frameClass = 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1929] p-4 sm:p-5 shadow-sm';
 const activeButton = 'bg-cyan-500 text-slate-950 border-cyan-500';
 const idleButton = 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:border-cyan-400';
@@ -58,6 +101,9 @@ export const VlanSimulator: React.FC = () => {
   const [attempts, setAttempts] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [showTheory, setShowTheory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [trace, setTrace] = useState<Trace | null>(null);
+  const [traceStep, setTraceStep] = useState(0);
 
   const reset = (nextMode: CaseId = mode) => {
     setMode(nextMode);
@@ -65,11 +111,11 @@ export const VlanSimulator: React.FC = () => {
     setTrunks(nextMode === 'trunk' ? { left: [10, 20], right: [10] } : { left: [10, 20], right: [10, 20] });
     setSource(nextMode === 'access' ? 'pc1' : nextMode === 'trunk' ? 'pc2' : 'pc1');
     setTarget(nextMode === 'access' ? 'pc2' : nextMode === 'trunk' ? 'pc4' : 'pc3');
-    setResult(null); setAttempts(0); setCompleted(false);
+    setResult(null); setAttempts(0); setCompleted(false); setTrace(null); setTraceStep(0); setShowSettings(false);
   };
   const changeVlan = (host: HostId, vlan: Vlan) => {
     setVlans(previous => ({ ...previous, [host]: vlan }));
-    setResult(null);
+    setResult(null); setTrace(null); setCompleted(false);
   };
   const toggleAllowed = (side: 'left' | 'right', vlan: Vlan) => {
     setTrunks(previous => ({
@@ -78,19 +124,33 @@ export const VlanSimulator: React.FC = () => {
         ? previous[side].filter(item => item !== vlan)
         : [...previous[side], vlan].sort((a, b) => a - b),
     }));
-    setResult(null);
+    setResult(null); setTrace(null); setCompleted(false);
   };
   const simulate = () => {
-    const next = evaluate(source, target, vlans, trunks);
-    setResult(next);
+    const next = buildTrace(source, target, vlans, trunks);
+    setTrace(next);
+    setTraceStep(0);
+    setResult(null);
+    setCompleted(false);
     setAttempts(n => n + 1);
-    if (next.delivered && mode !== 'explore') setCompleted(true);
+  };
+  const changeStep = (step: number) => {
+    if (!trace) return;
+    const next = Math.max(0, Math.min(trace.steps.length - 1, step));
+    setTraceStep(next);
+    if (next === trace.steps.length - 1) {
+      setResult(trace.outcome);
+      if (trace.outcome.delivered && mode !== 'explore') setCompleted(true);
+    } else {
+      setResult(null);
+      setCompleted(false);
+    }
   };
   const sourceData = HOSTS.find(host => host.id === source)!;
   const targetData = HOSTS.find(host => host.id === target)!;
   const isCrossing = sourceData.switchId !== targetData.switchId;
   const sourceVlan = vlans[source];
-  const sourceColor = sourceVlan === 10 ? 'text-cyan-700 dark:text-cyan-300' : 'text-violet-700 dark:text-violet-300';
+  const activeTraceStep = trace?.steps[traceStep];
 
   return (
     <section className="mx-auto max-w-6xl space-y-4" aria-label="Лаборатория VLAN и Trunk">
@@ -132,7 +192,7 @@ export const VlanSimulator: React.FC = () => {
             <text x="14" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW1 · сеть доступа</text>
             <text x="354" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW2 · сеть доступа</text>
             <path d="M100 43 L204 88 M100 149 L204 108 M446 88 L522 43 M446 108 L522 149" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2.5" fill="none"/>
-            <path d="M304 98 H346" strokeWidth="5" className={result && isCrossing ? result.delivered ? 'stroke-emerald-500' : 'stroke-rose-500' : 'stroke-amber-500 dark:stroke-amber-400'}/>
+            <path d="M304 98 H346" strokeWidth="5" className="stroke-amber-500 dark:stroke-amber-400"/>
             <text x="325" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" className="fill-amber-700 dark:fill-amber-300">802.1Q</text>
             {[{ id: 'SW1', x: 204 }, { id: 'SW2', x: 346 }].map(sw => (
               <g key={sw.id}>
@@ -154,12 +214,28 @@ export const VlanSimulator: React.FC = () => {
               </g>
             ))}
             <text x="325" y="151" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">Gi0/1 ↔ Gi0/1</text>
+            {activeTraceStep && (
+              <g key={traceStep} transform={`translate(${activeTraceStep.x} ${activeTraceStep.y})`} aria-label={`Шаг ${traceStep + 1}: ${activeTraceStep.title}`}>
+                <circle r="16" fill={activeTraceStep.dropped ? '#e11d48' : '#0891b2'} stroke="white" strokeWidth="2.5"/>
+                <text x="0" y="4" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">{activeTraceStep.dropped ? '×' : activeTraceStep.tagged ? 'TAG' : 'L2'}</text>
+              </g>
+            )}
           </svg>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">Цвет подсети обозначает область схемы, не VLAN или состояние линка. VLAN определяются настройками access-портов.</p>
       </div>
 
-      <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
+      <div className={frameClass + ' space-y-3'}>
+        <button type="button" aria-expanded={showSettings} onClick={() => setShowSettings(v => !v)}
+          className="flex w-full items-center justify-between gap-3 text-left min-h-10">
+          <span className="font-bold text-slate-900 dark:text-white">Настройки стенда · access VLAN и trunk</span>
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-cyan-700 dark:text-cyan-300">
+            {showSettings ? 'Свернуть' : 'Настроить'} {showSettings ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
+          </span>
+        </button>
+        <p className="text-xs text-slate-600 dark:text-slate-300">Источник: {sourceData.name} · Получатель: {targetData.name}. Настройки доступны в любой момент; при изменении текущая трассировка сбрасывается.</p>
+        {showSettings && (
+        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
         <div className={frameClass + ' space-y-3'}>
           <h3 className="font-bold text-slate-900 dark:text-white">Access-порты и конечные устройства</h3>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -177,9 +253,9 @@ export const VlanSimulator: React.FC = () => {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => { setSource(host.id); setResult(null); }} aria-pressed={source === host.id}
+                  <button type="button" onClick={() => { setSource(host.id); setResult(null); setTrace(null); setCompleted(false); }} aria-pressed={source === host.id}
                     className={`flex-1 rounded-md border min-h-9 text-xs font-semibold ${source === host.id ? activeButton : idleButton}`}>Источник</button>
-                  <button type="button" onClick={() => { setTarget(host.id); setResult(null); }} aria-pressed={target === host.id}
+                  <button type="button" onClick={() => { setTarget(host.id); setResult(null); setTrace(null); setCompleted(false); }} aria-pressed={target === host.id}
                     className={`flex-1 rounded-md border min-h-9 text-xs font-semibold ${target === host.id ? activeButton : idleButton}`}>Получатель</button>
                 </div>
               </div>
@@ -208,19 +284,39 @@ export const VlanSimulator: React.FC = () => {
             <p>switchport trunk allowed vlan {trunks.right.join(',') || 'none'} <span className="font-sans opacity-70">· SW2</span></p>
           </div>
         </div>
+        </div>
+        )}
       </div>
 
       <div className={frameClass + ' space-y-3'}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Передать тестовый кадр</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white">Пошаговая передача кадра</h3>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{sourceData.name} (VLAN {sourceVlan}) <ArrowRight className="inline w-4 h-4"/> {targetData.name} (VLAN {vlans[target]})</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => reset()} className={`rounded-lg border min-h-11 px-3 font-semibold text-sm inline-flex items-center gap-2 ${idleButton}`}><RotateCcw className="w-4 h-4"/> Сброс</button>
-            <button type="button" onClick={simulate} className="rounded-lg min-h-11 px-4 font-bold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 inline-flex items-center gap-2"><Layers className="w-4 h-4"/> Отправить кадр</button>
+            <button type="button" onClick={simulate} className="rounded-lg min-h-11 px-4 font-bold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 inline-flex items-center gap-2"><Layers className="w-4 h-4"/> Начать передачу</button>
           </div>
         </div>
+        {trace && activeTraceStep && (
+          <div className="rounded-xl border border-cyan-300 dark:border-cyan-600 bg-cyan-50 dark:bg-cyan-950/30 p-4 space-y-3" aria-live="polite">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-bold text-cyan-800 dark:text-cyan-200">Шаг {traceStep + 1} из {trace.steps.length}</span>
+              <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{activeTraceStep.tagged ? `802.1Q · VID ${trace.vlan}` : 'Untagged Ethernet'}</span>
+            </div>
+            <input type="range" min="0" max={trace.steps.length - 1} step="1" value={traceStep} onChange={event => changeStep(Number(event.target.value))}
+              className="w-full accent-cyan-600" aria-label="Шаг передачи кадра"/>
+            <h4 className="font-bold text-slate-900 dark:text-white">{activeTraceStep.title}</h4>
+            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">{activeTraceStep.detail}</p>
+            <div className="flex items-center justify-between gap-2">
+              <button type="button" disabled={traceStep === 0} onClick={() => changeStep(traceStep - 1)}
+                className={`min-h-11 px-3 rounded-lg border text-sm font-semibold disabled:opacity-40 inline-flex gap-1 items-center ${idleButton}`}><ArrowLeft className="w-4 h-4"/> Назад</button>
+              <button type="button" disabled={traceStep === trace.steps.length - 1} onClick={() => changeStep(traceStep + 1)}
+                className="min-h-11 px-4 rounded-lg bg-cyan-500 text-slate-950 font-bold text-sm disabled:opacity-40 inline-flex gap-1 items-center">Следующий шаг <ArrowRight className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )}
         {result && (
           <div role="status" className={`rounded-xl border p-4 ${result.delivered
             ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
