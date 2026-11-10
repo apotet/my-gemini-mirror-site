@@ -4,6 +4,7 @@ import { Layers, RotateCcw, ShieldCheck, AlertTriangle, ArrowRight, ArrowLeft, C
 type Vlan = 10 | 20;
 type HostId = 'pc1' | 'pc2' | 'pc3' | 'pc4';
 type TrunkConfig = { left: Vlan[]; right: Vlan[] };
+type L3Role = 'none' | 'SW1' | 'SW2';
 type CaseId = 'explore' | 'access' | 'trunk';
 type Result = { delivered: boolean; message: string; explanation: string; tagged: boolean; crossed: boolean };
 type TraceStep = { title: string; detail: string; x: number; y: number; tagged: boolean; dropped?: boolean };
@@ -18,7 +19,7 @@ const HOSTS: { id: HostId; name: string; switchId: 'SW1' | 'SW2'; port: string; 
 const INITIAL_VLANS: Record<HostId, Vlan> = { pc1: 10, pc2: 20, pc3: 10, pc4: 20 };
 const INITIAL_TRUNKS: TrunkConfig = { left: [10, 20], right: [10, 20] };
 
-function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig): Result {
+function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Result {
   if (source === target) return {
     delivered: false, crossed: false, tagged: false,
     message: 'Выбран один и тот же конечный узел',
@@ -28,11 +29,27 @@ function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, t
   const b = HOSTS.find(host => host.id === target)!;
   const vlan = vlans[source];
   const crossed = a.switchId !== b.switchId;
-  if (vlan !== vlans[target]) return {
-    delivered: false, crossed, tagged: false,
-    message: 'Кадр не доставлен: получатель в другой VLAN',
-    explanation: `На access-порту ${a.port} коммутатора ${a.switchId} кадр относится к VLAN ${vlan}. Порт получателя назначен в VLAN ${vlans[target]}. L2-коммутаторы не маршрутизируют кадры между VLAN — нужен L3 и корректная IP-конфигурация.`,
-  };
+  if (vlan !== vlans[target]) {
+    if (l3 === 'none') return {
+      delivered: false, crossed, tagged: false,
+      message: 'Между VLAN нет маршрутизации',
+      explanation: `VLAN ${vlan} и VLAN ${vlans[target]} — разные широковещательные домены. В этой топологии нет L3-шлюза с SVI и ip routing.`,
+    };
+    const sourceRemote = a.switchId !== l3;
+    const targetRemote = b.switchId !== l3;
+    const badVlans = ([sourceRemote ? vlan : null, targetRemote ? vlans[target] : null] as (Vlan | null)[])
+      .filter((v): v is Vlan => v !== null && (!trunks.left.includes(v) || !trunks.right.includes(v)));
+    if (badVlans.length) return {
+      delivered: false, crossed: true, tagged: true,
+      message: `Маршрутизация прервана: VLAN ${badVlans.join(', ')} не проходит trunk`,
+      explanation: `Для связи через SVI на ${l3} VLAN источника должна доходить до L3-шлюза, а VLAN получателя — до его access-порта. На обоих концах trunk должны быть разрешены VLAN, которые фактически проходят линк. Заблокированы: ${badVlans.join(', ')}.`,
+    };
+    return {
+      delivered: true, crossed: sourceRemote || targetRemote, tagged: sourceRemote || targetRemote,
+      message: `Между VLAN ${vlan} и ${vlans[target]} выполнена L3-маршрутизация на ${l3}`,
+      explanation: `Хост передаёт IP-пакет своему шлюзу SVI VLAN ${vlan} на ${l3}. Коммутатор L3 маршрутизирует пакет в VLAN ${vlans[target]}, уменьшает TTL, формирует новый Ethernet-кадр и доставляет его получателю. Для простоты IP-шлюзы, ARP и маршруты уже настроены.`,
+    };
+  }
   if (crossed && (!trunks.left.includes(vlan) || !trunks.right.includes(vlan))) return {
     delivered: false, crossed, tagged: true,
     message: `VLAN ${vlan} не разрешена на всём trunk-пути`,
@@ -46,24 +63,50 @@ function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, t
       : `Оба access-порта находятся на ${a.switchId} в VLAN ${vlan}. Тег 802.1Q не нужен на проводе к конечным ПК. Здесь предполагается известный MAC назначения.`,
   };
 }
-const FRAME_START = { x: 0, y: 0 };
-function buildTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig): Trace {
-  const outcome = evaluate(source, target, vlans, trunks);
+function buildTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Trace {
+  const outcome = evaluate(source, target, vlans, trunks, l3);
   const a = HOSTS.find(host => host.id === source)!;
   const b = HOSTS.find(host => host.id === target)!;
   const sourceSwitch = a.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
   const targetSwitch = b.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
   const vlan = vlans[source];
   const steps: TraceStep[] = [
-    { title: `${a.name} формирует Ethernet-кадр`, detail: `ПК посылает обычный нетегированный Ethernet-кадр через ${a.port}. На кабеле ПК → коммутатор тега 802.1Q нет.`, x: a.x + 45, y: a.y + 30, tagged: false },
-    { title: `${a.switchId} принимает кадр на access-порту`, detail: `Кадр пришёл на ${a.port}. Access VLAN порта — ${vlan}. Коммутатор относит кадр к VLAN ${vlan} и выполняет поиск MAC назначения внутри этой VLAN.`, ...sourceSwitch, tagged: false },
+    { title: `${a.name} формирует Ethernet-кадр`, detail: `ПК отправляет обычный нетегированный Ethernet-кадр через ${a.port}. При связи между VLAN MAC назначения — шлюз SVI; IP назначения остаётся адресом конечного ПК.`, x: a.x + 45, y: a.y + 30, tagged: false },
+    { title: `${a.switchId} принимает кадр на access-порту`, detail: `Кадр пришёл на ${a.port}. Access VLAN порта — ${vlan}. Коммутатор относит кадр к VLAN ${vlan} и определяет следующий узел по MAC назначения.`, ...sourceSwitch, tagged: false },
   ];
   if (source === target) {
     steps.push({ title: 'Передача отменена', detail: outcome.explanation, ...sourceSwitch, tagged: false, dropped: true });
     return { steps, outcome, vlan };
   }
   if (vlans[source] !== vlans[target]) {
-    steps.push({ title: 'Нет L2-пути к получателю в этой VLAN', detail: `Порт ${b.port} коммутатора ${b.switchId} относится к VLAN ${vlans[target]}, а кадр принадлежит VLAN ${vlan}. В этой упрощённой модели известного unicast коммутатор не отправляет кадр в чужую VLAN.`, ...sourceSwitch, tagged: false, dropped: true });
+    if (l3 === 'none') {
+      steps.push({ title: 'Нет маршрутизатора между VLAN', detail: 'У ПК разные IP-подсети. Шлюза SVI в топологии нет, поэтому трафик между VLAN не маршрутизируется.', ...sourceSwitch, tagged: false, dropped: true });
+      return { steps, outcome, vlan };
+    }
+    const l3Point = l3 === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
+    const dstVlan = vlans[target];
+    const bridge = (id: Vlan, from: 'SW1' | 'SW2', to: 'SW1' | 'SW2'): boolean => {
+      const startPoint = from === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
+      const endPoint = to === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
+      const startSide = from === 'SW1' ? 'left' : 'right';
+      const endSide = to === 'SW1' ? 'left' : 'right';
+      if (!trunks[startSide].includes(id)) {
+        steps.push({ title: 'VLAN заблокирована на исходящем trunk', detail: `На ${from} порт Gi0/1 не разрешает VLAN ${id}. Кадр не выйдет в trunk.`, ...startPoint, tagged: false, dropped: true });
+        return false;
+      }
+      steps.push({ title: `По trunk передаётся VLAN ${id}`, detail: `Внешний Ethernet-кадр идёт с тегом IEEE 802.1Q VID=${id}. IP-пакет внутри сохраняет адреса источника и назначения.`, x: 325, y: 98, tagged: true });
+      if (!trunks[endSide].includes(id)) {
+        steps.push({ title: 'VLAN заблокирована на входящем trunk', detail: `На ${to} Gi0/1 не разрешает VLAN ${id}; кадр отбрасывается при приёме.`, ...endPoint, tagged: true, dropped: true });
+        return false;
+      }
+      steps.push({ title: `${to} получает кадр VLAN ${id}`, detail: `Trunk принимает кадр VID ${id} и сохраняет его VLAN-контекст.`, ...endPoint, tagged: true });
+      return true;
+    };
+    if (a.switchId !== l3 && !bridge(vlan, a.switchId, l3)) return { steps, outcome, vlan };
+    steps.push({ title: `${l3}: маршрутизация через SVI`, detail: `IP-пакет адресован другому VLAN. Шлюз SVI VLAN ${vlan} на ${l3} принимает Ethernet-кадр, проверяет маршрут, уменьшает TTL и создаёт новый Ethernet-кадр для VLAN ${dstVlan}. MAC-адреса новой оболочки отличаются.`, ...l3Point, tagged: false });
+    if (b.switchId !== l3 && !bridge(dstVlan, l3, b.switchId)) return { steps, outcome, vlan };
+    steps.push({ title: 'Выходной access-порт: кадр без тега', detail: `На ${b.switchId} порт ${b.port} относится к VLAN ${dstVlan}. После L3-маршрутизации конечный ПК получает кадр без 802.1Q.`, ...targetSwitch, tagged: false });
+    steps.push({ title: `IP-пакет доставлен на ${b.name}`, detail: outcome.explanation, x: b.x + 45, y: b.y + 30, tagged: false });
     return { steps, outcome, vlan };
   }
   if (a.switchId !== b.switchId) {
@@ -95,6 +138,7 @@ export const VlanSimulator: React.FC = () => {
   const [mode, setMode] = useState<CaseId>('explore');
   const [vlans, setVlans] = useState<Record<HostId, Vlan>>(INITIAL_VLANS);
   const [trunks, setTrunks] = useState<TrunkConfig>(INITIAL_TRUNKS);
+  const [l3Role, setL3Role] = useState<L3Role>('none');
   const [source, setSource] = useState<HostId>('pc1');
   const [target, setTarget] = useState<HostId>('pc3');
   const [result, setResult] = useState<Result | null>(null);
@@ -108,6 +152,7 @@ export const VlanSimulator: React.FC = () => {
   const reset = (nextMode: CaseId = mode) => {
     setMode(nextMode);
     setVlans({ ...INITIAL_VLANS });
+    setL3Role('none');
     setTrunks(nextMode === 'trunk' ? { left: [10, 20], right: [10] } : { left: [10, 20], right: [10, 20] });
     setSource(nextMode === 'access' ? 'pc1' : nextMode === 'trunk' ? 'pc2' : 'pc1');
     setTarget(nextMode === 'access' ? 'pc2' : nextMode === 'trunk' ? 'pc4' : 'pc3');
@@ -127,7 +172,7 @@ export const VlanSimulator: React.FC = () => {
     setResult(null); setTrace(null); setCompleted(false);
   };
   const simulate = () => {
-    const next = buildTrace(source, target, vlans, trunks);
+    const next = buildTrace(source, target, vlans, trunks, l3Role);
     setTrace(next);
     setTraceStep(0);
     setResult(null);
@@ -148,16 +193,15 @@ export const VlanSimulator: React.FC = () => {
   };
   const sourceData = HOSTS.find(host => host.id === source)!;
   const targetData = HOSTS.find(host => host.id === target)!;
-  const isCrossing = sourceData.switchId !== targetData.switchId;
   const sourceVlan = vlans[source];
   const activeTraceStep = trace?.steps[traceStep];
 
   return (
     <section className="mx-auto max-w-6xl space-y-4" aria-label="Лаборатория VLAN и Trunk">
       <div className={frameClass}>
-        <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Практика · L2 · 802.1Q</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Практика · L2 / L3 · 802.1Q</span>
         <h2 className="text-xl sm:text-2xl font-black mt-1 text-slate-900 dark:text-white">VLAN & Trunk: лаборатория передачи кадров</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Два коммутатора, четыре ПК и один trunk. Назначай VLAN, разрешай их на trunk и выясняй, почему кадр проходит или теряется.</p>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Два коммутатора, четыре ПК, trunk и переключаемая роль L3. Исследуй передачу кадров внутри VLAN и маршрутизацию между VLAN через SVI.</p>
         <div className="flex flex-wrap gap-2 mt-4">
           {([
             ['explore', 'Свободная практика'],
@@ -198,7 +242,7 @@ export const VlanSimulator: React.FC = () => {
               <g key={sw.id}>
                 <rect x={sw.x} y="75" width="100" height="46" rx="9" className="fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500" strokeWidth="2"/>
                 <text x={sw.x + 50} y="94" textAnchor="middle" fontSize="13" fontWeight="bold" className="fill-slate-900 dark:fill-white">{sw.id}</text>
-                <text x={sw.x + 50} y="110" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">L2 switch</text>
+                <text x={sw.x + 50} y="110" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">{l3Role === sw.id ? 'L3 · SVI 10/20' : 'L2 switch'}</text>
               </g>
             ))}
             {HOSTS.map(host => (
@@ -228,14 +272,26 @@ export const VlanSimulator: React.FC = () => {
       <div className={frameClass + ' space-y-3'}>
         <button type="button" aria-expanded={showSettings} onClick={() => setShowSettings(v => !v)}
           className="flex w-full items-center justify-between gap-3 text-left min-h-10">
-          <span className="font-bold text-slate-900 dark:text-white">Настройки стенда · access VLAN и trunk</span>
+          <span className="font-bold text-slate-900 dark:text-white">Настройки стенда · L2/L3, access VLAN и trunk</span>
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-cyan-700 dark:text-cyan-300">
             {showSettings ? 'Свернуть' : 'Настроить'} {showSettings ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
           </span>
         </button>
         <p className="text-xs text-slate-600 dark:text-slate-300">Источник: {sourceData.name} · Получатель: {targetData.name}. Настройки доступны в любой момент; при изменении текущая трассировка сбрасывается.</p>
         {showSettings && (
-        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
+        <div className="space-y-3">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-900/60">
+            <p className="font-bold text-sm text-slate-900 dark:text-white">Роль коммутаторов</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {([['none', 'Оба L2'], ['SW1', 'SW1 = L3'], ['SW2', 'SW2 = L3']] as const).map(([role, label]) => (
+                <button key={role} type="button" aria-pressed={l3Role === role}
+                  onClick={() => { setL3Role(role); setTrace(null); setResult(null); setCompleted(false); }}
+                  className={`rounded-lg px-3 min-h-10 text-xs sm:text-sm font-semibold border ${l3Role === role ? activeButton : idleButton}`}>{label}</button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">Режим L3: выбранный коммутатор имеет SVI для VLAN 10/20 и включённый ip routing. Для учебного упрощения шлюзы на ПК, маршруты и ARP заранее настроены. Между SW1 и SW2 остаётся trunk L2; одновременно активен один L3-шлюз.</p>
+          </div>
+          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
         <div className={frameClass + ' space-y-3'}>
           <h3 className="font-bold text-slate-900 dark:text-white">Access-порты и конечные устройства</h3>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -284,6 +340,7 @@ export const VlanSimulator: React.FC = () => {
             <p>switchport trunk allowed vlan {trunks.right.join(',') || 'none'} <span className="font-sans opacity-70">· SW2</span></p>
           </div>
         </div>
+          </div>
         </div>
         )}
       </div>
@@ -332,7 +389,7 @@ export const VlanSimulator: React.FC = () => {
           </div>
         )}
         {completed && mode !== 'explore' && <p role="status" className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">Дело раскрыто! Кадр успешно доставлен. Попыток передачи: {attempts}.</p>}
-        <p className="text-xs text-slate-500 dark:text-slate-400">Учебная модель L2: порты активны, MAC назначения известен, native VLAN не используется, IP и STP не моделируются.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Учебная модель: порты активны, MAC и ARP считаются известными, native VLAN и STP не моделируются. В режиме L3 включены SVI VLAN 10/20, ip routing и настроенные шлюзы ПК; TTL уменьшается при маршрутизации.</p>
       </div>
 
       <div className={frameClass}>
