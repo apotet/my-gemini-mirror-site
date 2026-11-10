@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, Network, ShieldCheck } from 'lucide-react';
+import { DetectiveTopology } from './DetectiveTopology';
 
 /**
  * A single event = one cable traversal OR one device-local processing action.
@@ -460,6 +461,7 @@ export const PacketJourney: React.FC = () => {
               </button>
             ))}
           </div>
+          <DetectiveTopology key={fault.id} faultId={fault.id} fixed={faultFixed} />
           <div className="rounded-xl bg-slate-50 dark:bg-slate-950 p-4 text-sm text-slate-700 dark:text-slate-200 space-y-2">
             <strong className="text-slate-900 dark:text-white">Наблюдение</strong>
             <p>{fault.symptom}</p>
