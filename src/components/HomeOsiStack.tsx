@@ -301,9 +301,9 @@ export const LivingOsiStack: React.FC<LivingOsiStackProps> = ({
               <div
                 key={layer.id}
                 onClick={() => handleLayerClick(layer)}
-                className={`relative group rounded-xl p-3 sm:px-4 sm:py-3 transition-all duration-200 cursor-pointer flex items-center justify-between border ${
+                className={`relative group rounded-xl p-3 sm:px-4 sm:py-3 transition-[border-color,box-shadow,color] duration-200 cursor-pointer flex items-center justify-between border ${
                   isSelected
-                    ? 'bg-cyan-50 dark:bg-gradient-to-r dark:from-cyan-950/90 dark:via-slate-900 dark:to-cyan-950/70 border-cyan-500 dark:border-cyan-400 shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/50'
+                    ? 'bg-cyan-50 dark:bg-[#091524] dark:bg-gradient-to-r dark:from-cyan-950/90 dark:via-slate-900 dark:to-cyan-950/70 border-cyan-500 dark:border-cyan-400 shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/50'
                     : isEncapsulated
                       ? 'bg-slate-50 dark:bg-slate-900/70 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300'
                       : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800/60 text-slate-500 dark:text-slate-500'
