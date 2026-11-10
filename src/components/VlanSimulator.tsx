@@ -1,138 +1,368 @@
-import React, { useState } from 'react';
-import { Layers, RotateCcw, ShieldCheck, AlertTriangle, ArrowRight, ArrowLeft, Cable, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Settings2 } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { playClickSound, playErrorSound, playSuccessSound } from '../utils/sound';
 
-type Vlan = 10 | 20;
-type HostId = 'pc1' | 'pc2' | 'pc3' | 'pc4';
-type TrunkConfig = { left: Vlan[]; right: Vlan[] };
-type L3Role = 'none' | 'SW1' | 'SW2';
-type CaseId = 'explore' | 'access' | 'trunk';
-type Result = { delivered: boolean; message: string; explanation: string; tagged: boolean; crossed: boolean };
-type TraceStep = { title: string; detail: string; x: number; y: number; tagged: boolean; dropped?: boolean };
-type Trace = { steps: TraceStep[]; outcome: Result; vlan: Vlan };
+export type Vlan = 10 | 20;
+export type HostId = 'pc1' | 'pc2' | 'pc3' | 'pc4';
+export type TrunkConfig = { left: Vlan[]; right: Vlan[] };
+export type L3Role = 'none' | 'SW1' | 'SW2';
+export type CaseId = 'explore' | 'access' | 'trunk';
 
-const HOSTS: { id: HostId; name: string; switchId: 'SW1' | 'SW2'; port: string; x: number; y: number }[] = [
-  { id: 'pc1', name: 'PC-01', switchId: 'SW1', port: 'Fa0/1', x: 10, y: 16 },
-  { id: 'pc2', name: 'PC-02', switchId: 'SW1', port: 'Fa0/2', x: 10, y: 122 },
-  { id: 'pc3', name: 'PC-03', switchId: 'SW2', port: 'Fa0/1', x: 522, y: 16 },
-  { id: 'pc4', name: 'PC-04', switchId: 'SW2', port: 'Fa0/2', x: 522, y: 122 },
+export interface HostInfo {
+  id: HostId;
+  name: string;
+  label: string;
+  switchId: 'SW1' | 'SW2';
+  port: string;
+  ip: string;
+  mac: string;
+  x: number;
+  y: number;
+}
+
+export interface Result {
+  delivered: boolean;
+  message: string;
+  explanation: string;
+  tagged: boolean;
+  crossed: boolean;
+  ruleCitation?: string;
+}
+
+export interface TracePdu {
+  isTagged: boolean;
+  vlanId: Vlan;
+  ethType: string;
+  srcMac: string;
+  dstMac: string;
+  srcIp: string;
+  dstIp: string;
+  ttl: number;
+  status: 'moving' | 'routing' | 'dropped' | 'delivered';
+}
+
+export interface TraceStep {
+  title: string;
+  detail: string;
+  rule: string;
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+  activeDeviceId?: HostId | 'SW1' | 'SW2';
+  activeLinkId?: 'pc1-sw1' | 'pc2-sw1' | 'sw1-sw2-trunk' | 'sw2-pc3' | 'sw2-pc4';
+  pdu: TracePdu;
+  actionType: 'tx' | 'access_ingress' | 'l3_svi_route' | 'trunk_tag' | 'trunk_transit' | 'trunk_egress' | 'access_egress' | 'rx_delivery' | 'drop';
+  dropped?: boolean;
+}
+
+export interface Trace {
+  steps: TraceStep[];
+  outcome: Result;
+  initialVlan: Vlan;
+  finalVlan: Vlan;
+}
+
+export const HOSTS: HostInfo[] = [
+  { id: 'pc1', name: 'PC-01', label: 'Бухгалтерия', switchId: 'SW1', port: 'Fa0/1', ip: '192.168.10.11', mac: '00:50:79:66:68:01', x: 78, y: 92 },
+  { id: 'pc2', name: 'PC-02', label: 'Финансы', switchId: 'SW1', port: 'Fa0/2', ip: '192.168.20.12', mac: '00:50:79:66:68:02', x: 78, y: 208 },
+  { id: 'pc3', name: 'PC-03', label: 'Склад', switchId: 'SW2', port: 'Fa0/1', ip: '192.168.10.13', mac: '00:50:79:66:68:03', x: 682, y: 92 },
+  { id: 'pc4', name: 'PC-04', label: 'Отдел кадров', switchId: 'SW2', port: 'Fa0/2', ip: '192.168.20.14', mac: '00:50:79:66:68:04', x: 682, y: 208 },
 ];
-const INITIAL_VLANS: Record<HostId, Vlan> = { pc1: 10, pc2: 20, pc3: 10, pc4: 20 };
-const INITIAL_TRUNKS: TrunkConfig = { left: [10, 20], right: [10, 20] };
 
-function evaluate(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Result {
-  if (source === target) return {
-    delivered: false, crossed: false, tagged: false,
-    message: 'Выбран один и тот же конечный узел',
-    explanation: 'Выбери два разных ПК. На этом стенде моделируем пересылку между различными конечными узлами.',
-  };
-  const a = HOSTS.find(host => host.id === source)!;
-  const b = HOSTS.find(host => host.id === target)!;
-  const vlan = vlans[source];
+export const INITIAL_VLANS: Record<HostId, Vlan> = { pc1: 10, pc2: 20, pc3: 10, pc4: 20 };
+export const INITIAL_TRUNKS: TrunkConfig = { left: [10, 20], right: [10, 20] };
+
+const SW1 = { x: 250, y: 150 };
+const SW2 = { x: 510, y: 150 };
+
+function evaluateNetwork(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Result {
+  const a = HOSTS.find((h) => h.id === source)!;
+  const b = HOSTS.find((h) => h.id === target)!;
+  const srcVlan = vlans[source];
+  const dstVlan = vlans[target];
   const crossed = a.switchId !== b.switchId;
-  if (vlan !== vlans[target]) {
-    if (l3 === 'none') return {
-      delivered: false, crossed, tagged: false,
-      message: 'Между VLAN нет маршрутизации',
-      explanation: `VLAN ${vlan} и VLAN ${vlans[target]} — разные широковещательные домены. В этой топологии нет L3-шлюза с SVI и ip routing.`,
-    };
-    const sourceRemote = a.switchId !== l3;
-    const targetRemote = b.switchId !== l3;
-    const badVlans = ([sourceRemote ? vlan : null, targetRemote ? vlans[target] : null] as (Vlan | null)[])
-      .filter((v): v is Vlan => v !== null && (!trunks.left.includes(v) || !trunks.right.includes(v)));
-    if (badVlans.length) return {
-      delivered: false, crossed: true, tagged: true,
-      message: `Маршрутизация прервана: VLAN ${badVlans.join(', ')} не проходит trunk`,
-      explanation: `Для связи через SVI на ${l3} VLAN источника должна доходить до L3-шлюза, а VLAN получателя — до его access-порта. На обоих концах trunk должны быть разрешены VLAN, которые фактически проходят линк. Заблокированы: ${badVlans.join(', ')}.`,
-    };
-    return {
-      delivered: true, crossed: sourceRemote || targetRemote, tagged: sourceRemote || targetRemote,
-      message: `Между VLAN ${vlan} и ${vlans[target]} выполнена L3-маршрутизация на ${l3}`,
-      explanation: `Хост передаёт IP-пакет своему шлюзу SVI VLAN ${vlan} на ${l3}. Коммутатор L3 маршрутизирует пакет в VLAN ${vlans[target]}, уменьшает TTL, формирует новый Ethernet-кадр и доставляет его получателю. Для простоты IP-шлюзы, ARP и маршруты уже настроены.`,
-    };
-  }
-  if (crossed && (!trunks.left.includes(vlan) || !trunks.right.includes(vlan))) return {
-    delivered: false, crossed, tagged: true,
-    message: `VLAN ${vlan} не разрешена на всём trunk-пути`,
-    explanation: `SW1 и SW2 должны оба пропускать VLAN ${vlan} на своих trunk-портах. SW1: [${trunks.left.join(', ') || 'нет'}], SW2: [${trunks.right.join(', ') || 'нет'}]. На каком-то участке кадр будет отфильтрован. Проверь allowed VLAN на обоих концах.`,
-  };
-  return {
-    delivered: true, crossed, tagged: crossed,
-    message: crossed ? `Кадр VLAN ${vlan} доставлен через trunk` : `Кадр доставлен внутри VLAN ${vlan}`,
-    explanation: crossed
-      ? `Кадр принят untagged на access-порту SW1/SW2, внутри коммутатора отнесён к VLAN ${vlan} и передан по trunk с тегом 802.1Q (VID=${vlan}). На выходном access-порту другого коммутатора тег удаляется. Здесь моделируем известный unicast-адрес назначения; MAC learning и flooding не симулируются.`
-      : `Оба access-порта находятся на ${a.switchId} в VLAN ${vlan}. Тег 802.1Q не нужен на проводе к конечным ПК. Здесь предполагается известный MAC назначения.`,
-  };
-}
-function buildTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Trace {
-  const outcome = evaluate(source, target, vlans, trunks, l3);
-  const a = HOSTS.find(host => host.id === source)!;
-  const b = HOSTS.find(host => host.id === target)!;
-  const sourceSwitch = a.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
-  const targetSwitch = b.switchId === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
-  const vlan = vlans[source];
-  const steps: TraceStep[] = [
-    { title: `${a.name} формирует Ethernet-кадр`, detail: `ПК отправляет обычный нетегированный Ethernet-кадр через ${a.port}. При связи между VLAN MAC назначения — шлюз SVI; IP назначения остаётся адресом конечного ПК.`, x: a.x + 45, y: a.y + 30, tagged: false },
-    { title: `${a.switchId} принимает кадр на access-порту`, detail: `Кадр пришёл на ${a.port}. Access VLAN порта — ${vlan}. Коммутатор относит кадр к VLAN ${vlan} и определяет следующий узел по MAC назначения.`, ...sourceSwitch, tagged: false },
-  ];
-  if (source === target) {
-    steps.push({ title: 'Передача отменена', detail: outcome.explanation, ...sourceSwitch, tagged: false, dropped: true });
-    return { steps, outcome, vlan };
-  }
-  if (vlans[source] !== vlans[target]) {
+  if (srcVlan !== dstVlan) {
     if (l3 === 'none') {
-      steps.push({ title: 'Нет маршрутизатора между VLAN', detail: 'У ПК разные IP-подсети. Шлюза SVI в топологии нет, поэтому трафик между VLAN не маршрутизируется.', ...sourceSwitch, tagged: false, dropped: true });
-      return { steps, outcome, vlan };
+      return {
+        delivered: false,
+        tagged: crossed,
+        crossed,
+        message: 'Разные VLAN, шлюза нет',
+        explanation: `${a.name} в VLAN ${srcVlan}, ${b.name} в VLAN ${dstVlan}. L2 не пересылает кадр между broadcast-доменами. Нужен SVI или маршрутизатор.`,
+        ruleCitation: 'VLAN isolation: no inter-VLAN without L3',
+      };
     }
-    const l3Point = l3 === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
-    const dstVlan = vlans[target];
-    const bridge = (id: Vlan, from: 'SW1' | 'SW2', to: 'SW1' | 'SW2'): boolean => {
-      const startPoint = from === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
-      const endPoint = to === 'SW1' ? { x: 254, y: 98 } : { x: 396, y: 98 };
-      const startSide = from === 'SW1' ? 'left' : 'right';
-      const endSide = to === 'SW1' ? 'left' : 'right';
-      if (!trunks[startSide].includes(id)) {
-        steps.push({ title: 'VLAN заблокирована на исходящем trunk', detail: `На ${from} порт Gi0/1 не разрешает VLAN ${id}. Кадр не выйдет в trunk.`, ...startPoint, tagged: false, dropped: true });
-        return false;
-      }
-      steps.push({ title: `По trunk передаётся VLAN ${id}`, detail: `Внешний Ethernet-кадр идёт с тегом IEEE 802.1Q VID=${id}. IP-пакет внутри сохраняет адреса источника и назначения.`, x: 325, y: 98, tagged: true });
-      if (!trunks[endSide].includes(id)) {
-        steps.push({ title: 'VLAN заблокирована на входящем trunk', detail: `На ${to} Gi0/1 не разрешает VLAN ${id}; кадр отбрасывается при приёме.`, ...endPoint, tagged: true, dropped: true });
-        return false;
-      }
-      steps.push({ title: `${to} получает кадр VLAN ${id}`, detail: `Trunk принимает кадр VID ${id} и сохраняет его VLAN-контекст.`, ...endPoint, tagged: true });
-      return true;
+    const bad = [crossed && a.switchId !== l3 ? srcVlan : null, crossed && b.switchId !== l3 ? dstVlan : null].some(
+      (v) => v !== null && (!trunks.left.includes(v) || !trunks.right.includes(v)),
+    );
+    if (bad) {
+      return {
+        delivered: false,
+        tagged: true,
+        crossed,
+        message: 'SVI есть, но trunk режет нужный VLAN',
+        explanation: `Чтобы дойти до SVI на ${l3} и вернуться в VLAN ${dstVlan}, оба VLAN должны быть разрешены на trunk.`,
+        ruleCitation: 'trunk allowed vlan must include transit VLANs',
+      };
+    }
+    return {
+      delivered: true,
+      tagged: crossed,
+      crossed,
+      message: `Маршрутизация VLAN ${srcVlan} → ${dstVlan} на ${l3}`,
+      explanation: `Кадр приходит на SVI ${srcVlan}, L3 снимает Ethernet, TTL 64→63, новый кадр в VLAN ${dstVlan}.`,
+      ruleCitation: 'Inter-VLAN routing via SVI',
     };
-    if (a.switchId !== l3 && !bridge(vlan, a.switchId, l3)) return { steps, outcome, vlan };
-    steps.push({ title: `${l3}: маршрутизация через SVI`, detail: `IP-пакет адресован другому VLAN. Шлюз SVI VLAN ${vlan} на ${l3} принимает Ethernet-кадр, проверяет маршрут, уменьшает TTL и создаёт новый Ethernet-кадр для VLAN ${dstVlan}. MAC-адреса новой оболочки отличаются.`, ...l3Point, tagged: false });
-    if (b.switchId !== l3 && !bridge(dstVlan, l3, b.switchId)) return { steps, outcome, vlan };
-    steps.push({ title: 'Выходной access-порт: кадр без тега', detail: `На ${b.switchId} порт ${b.port} относится к VLAN ${dstVlan}. После L3-маршрутизации конечный ПК получает кадр без 802.1Q.`, ...targetSwitch, tagged: false });
-    steps.push({ title: `IP-пакет доставлен на ${b.name}`, detail: outcome.explanation, x: b.x + 45, y: b.y + 30, tagged: false });
-    return { steps, outcome, vlan };
   }
-  if (a.switchId !== b.switchId) {
-    const firstSide = a.switchId === 'SW1' ? 'left' : 'right';
-    const otherSide = firstSide === 'left' ? 'right' : 'left';
-    if (!trunks[firstSide].includes(vlan)) {
-      steps.push({ title: 'Отброшен на исходящем trunk', detail: `На ${a.switchId} VLAN ${vlan} отсутствует в allowed VLAN порта Gi0/1. Кадр не отправляется по trunk.`, ...sourceSwitch, tagged: false, dropped: true });
-      return { steps, outcome, vlan };
-    }
-    steps.push({ title: 'Добавлен тег IEEE 802.1Q', detail: `На исходящем trunk Gi0/1 коммутатор передаёт кадр с тегом: TPID 0x8100, VID ${vlan}, PCP 0, DEI 0. На access-порту этого тега не было.`, x: 325, y: 98, tagged: true });
-    if (!trunks[otherSide].includes(vlan)) {
-      steps.push({ title: 'Отброшен на входящем trunk', detail: `Кадр дошёл до Gi0/1 коммутатора ${b.switchId}, но VLAN ${vlan} не разрешена на его trunk-порту. До конечного ПК кадр не дойдёт.`, ...targetSwitch, tagged: true, dropped: true });
-      return { steps, outcome, vlan };
-    }
-    steps.push({ title: `${b.switchId} принимает тегированный кадр`, detail: `Входящий Gi0/1 пропускает VLAN ${vlan}. Коммутатор сохраняет VLAN-контекст и определяет выходной access-порт ${b.port}.`, ...targetSwitch, tagged: true });
-    steps.push({ title: '802.1Q тег удалён перед access-портом', detail: `При выходе из ${b.port} кадр отправляется к ПК без тега. VLAN ${vlan} существует внутри L2-сегмента, но обычный конечный ПК получает untagged Ethernet.`, x: (targetSwitch.x + b.x + 45) / 2, y: (targetSwitch.y + b.y + 30) / 2, tagged: false });
-  } else {
-    steps.push({ title: 'Коммутатор выбирает выходной access-порт', detail: `Оба ПК подключены к ${a.switchId}, их порты принадлежат VLAN ${vlan}. Trunk между коммутаторами не используется, тег 802.1Q на кабеле к ПК не нужен.`, ...sourceSwitch, tagged: false });
+  if (crossed && (!trunks.left.includes(srcVlan) || !trunks.right.includes(srcVlan))) {
+    return {
+      delivered: false,
+      tagged: true,
+      crossed,
+      message: `VLAN ${srcVlan} не разрешён на trunk`,
+      explanation: `Оба хоста в VLAN ${srcVlan}, но на одном из концов Gi0/1 этот VLAN отсутствует в allowed.`,
+      ruleCitation: 'switchport trunk allowed vlan',
+    };
   }
-  steps.push({ title: `Кадр доставлен на ${b.name}`, detail: outcome.explanation, x: b.x + 45, y: b.y + 30, tagged: false });
-  return { steps, outcome, vlan };
+  return {
+    delivered: true,
+    tagged: crossed,
+    crossed,
+    message: crossed ? `Кадр дошёл по trunk VLAN ${srcVlan}` : `Кадр дошёл внутри SW, VLAN ${srcVlan}`,
+    explanation: crossed
+      ? `Access → тег 802.1Q VID ${srcVlan} на trunk → снятие тега на access получателя.`
+      : `Один коммутатор, одна VLAN. Тег на access не нужен.`,
+    ruleCitation: crossed ? '802.1Q trunk transit' : 'same-switch same-VLAN forwarding',
+  };
 }
 
-const frameClass = 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1929] p-4 sm:p-5 shadow-sm';
-const activeButton = 'bg-cyan-500 text-slate-950 border-cyan-500';
-const idleButton = 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:border-cyan-400';
+function step(
+  partial: Omit<TraceStep, 'pdu'> & { pdu: TracePdu },
+): TraceStep {
+  return partial;
+}
+
+function generateDetailedTrace(source: HostId, target: HostId, vlans: Record<HostId, Vlan>, trunks: TrunkConfig, l3: L3Role): Trace {
+  const outcome = evaluateNetwork(source, target, vlans, trunks, l3);
+  const a = HOSTS.find((h) => h.id === source)!;
+  const b = HOSTS.find((h) => h.id === target)!;
+  const srcVlan = vlans[source];
+  const dstVlan = vlans[target];
+  const steps: TraceStep[] = [];
+  const srcSw = a.switchId === 'SW1' ? SW1 : SW2;
+  const dstSw = b.switchId === 'SW1' ? SW1 : SW2;
+  const srcLink = a.id === 'pc1' || a.id === 'pc2' ? (a.id === 'pc1' ? 'pc1-sw1' : 'pc2-sw1') : a.id === 'pc3' ? 'sw2-pc3' : 'sw2-pc4';
+  const dstLink = b.id === 'pc1' || b.id === 'pc2' ? (b.id === 'pc1' ? 'pc1-sw1' : 'pc2-sw1') : b.id === 'pc3' ? 'sw2-pc3' : 'sw2-pc4';
+  const basePdu = (over: Partial<TracePdu> = {}): TracePdu => ({
+    isTagged: false,
+    vlanId: srcVlan,
+    ethType: '0x0800',
+    srcMac: a.mac,
+    dstMac: b.mac,
+    srcIp: a.ip,
+    dstIp: b.ip,
+    ttl: 64,
+    status: 'moving',
+    ...over,
+  });
+
+  steps.push(
+    step({
+      title: `${a.name} формирует кадр`,
+      detail: `Untagged Ethernet с ${a.port}. Dst IP — ${b.ip}. Если хост в другой подсети, dst MAC будет MAC шлюза.`,
+      rule: 'Access-порт не добавляет тег.',
+      from: { x: a.x, y: a.y },
+      to: { x: srcSw.x, y: srcSw.y },
+      activeDeviceId: a.id,
+      activeLinkId: srcLink,
+      actionType: 'tx',
+      pdu: basePdu(),
+    }),
+  );
+
+  if (srcVlan !== dstVlan && l3 === 'none') {
+    steps.push(
+      step({
+        title: 'Кадр отброшен: разные VLAN',
+        detail: outcome.explanation,
+        rule: 'L2 не маршрутизирует.',
+        from: { x: srcSw.x, y: srcSw.y },
+        to: { x: srcSw.x, y: srcSw.y },
+        activeDeviceId: a.switchId,
+        actionType: 'drop',
+        dropped: true,
+        pdu: basePdu({ status: 'dropped' }),
+      }),
+    );
+    return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+  }
+
+  if (a.switchId !== b.switchId || (srcVlan !== dstVlan && l3 !== 'none' && a.switchId !== l3)) {
+    const side = a.switchId === 'SW1' ? 'left' : 'right';
+    if (!trunks[side].includes(srcVlan)) {
+      steps.push(
+        step({
+          title: `Trunk ${a.switchId} не пускает VLAN ${srcVlan}`,
+          detail: `Gi0/1 ${a.switchId} не содержит VLAN ${srcVlan} в allowed.`,
+          rule: 'switchport trunk allowed vlan',
+          from: { x: srcSw.x, y: srcSw.y },
+          to: { x: srcSw.x, y: srcSw.y },
+          activeDeviceId: a.switchId,
+          activeLinkId: 'sw1-sw2-trunk',
+          actionType: 'drop',
+          dropped: true,
+          pdu: basePdu({ isTagged: true, status: 'dropped' }),
+        }),
+      );
+      return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+    }
+    steps.push(
+      step({
+        title: `Тег 802.1Q VID ${srcVlan}`,
+        detail: `На исходящем trunk Gi0/1 добавляется тег TPID 0x8100, VID ${srcVlan}. IP не меняется.`,
+        rule: '802.1Q tag on trunk egress',
+        from: { x: srcSw.x, y: srcSw.y },
+        to: { x: (SW1.x + SW2.x) / 2, y: 150 },
+        activeDeviceId: a.switchId,
+        activeLinkId: 'sw1-sw2-trunk',
+        actionType: 'trunk_tag',
+        pdu: basePdu({ isTagged: true }),
+      }),
+    );
+    const far = a.switchId === 'SW1' ? SW2 : SW1;
+    const farSide = a.switchId === 'SW1' ? 'right' : 'left';
+    if (!trunks[farSide].includes(srcVlan)) {
+      steps.push(
+        step({
+          title: `Входящий trunk не принимает VLAN ${srcVlan}`,
+          detail: `Кадр дошёл по кабелю, но allowed на дальнем конце не содержит VLAN ${srcVlan}.`,
+          rule: 'ingress trunk filter',
+          from: { x: (SW1.x + SW2.x) / 2, y: 150 },
+          to: { x: far.x, y: far.y },
+          activeDeviceId: far === SW1 ? 'SW1' : 'SW2',
+          activeLinkId: 'sw1-sw2-trunk',
+          actionType: 'drop',
+          dropped: true,
+          pdu: basePdu({ isTagged: true, status: 'dropped' }),
+        }),
+      );
+      return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+    }
+    steps.push(
+      step({
+        title: 'Кадр идёт по trunk',
+        detail: `Тегированный кадр VID ${srcVlan} между SW1 и SW2.`,
+        rule: 'trunk transit',
+        from: { x: (SW1.x + SW2.x) / 2, y: 150 },
+        to: { x: far.x, y: far.y },
+        activeLinkId: 'sw1-sw2-trunk',
+        actionType: 'trunk_transit',
+        pdu: basePdu({ isTagged: true }),
+      }),
+    );
+  }
+
+  if (srcVlan !== dstVlan && l3 !== 'none') {
+    const l3Pos = l3 === 'SW1' ? SW1 : SW2;
+    steps.push(
+      step({
+        title: `${l3}: маршрутизация SVI ${srcVlan} → ${dstVlan}`,
+        detail: `SVI ${srcVlan} принимает пакет. Новый Ethernet: MAC шлюза → MAC ${b.name}. TTL 64→63. IP src/dst те же.`,
+        rule: 'SVI inter-VLAN: rewrite L2, decrement TTL',
+        from: { x: l3Pos.x, y: l3Pos.y },
+        to: { x: l3Pos.x, y: l3Pos.y },
+        activeDeviceId: l3,
+        actionType: 'l3_svi_route',
+        pdu: basePdu({
+          isTagged: false,
+          vlanId: dstVlan,
+          srcMac: `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
+          ttl: 63,
+          status: 'routing',
+        }),
+      }),
+    );
+    if (b.switchId !== l3) {
+      const side = l3 === 'SW1' ? 'left' : 'right';
+      if (!trunks[side].includes(dstVlan) || !trunks[l3 === 'SW1' ? 'right' : 'left'].includes(dstVlan)) {
+        steps.push(
+          step({
+            title: `После SVI trunk режет VLAN ${dstVlan}`,
+            detail: 'Новый кадр создан, но VLAN получателя не разрешён на trunk.',
+            rule: 'return path must be allowed',
+            from: { x: l3Pos.x, y: l3Pos.y },
+            to: { x: l3Pos.x, y: l3Pos.y },
+            activeDeviceId: l3,
+            activeLinkId: 'sw1-sw2-trunk',
+            actionType: 'drop',
+            dropped: true,
+            pdu: basePdu({ isTagged: true, vlanId: dstVlan, ttl: 63, status: 'dropped' }),
+          }),
+        );
+        return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+      }
+      steps.push(
+        step({
+          title: `Тег VID ${dstVlan} на обратном trunk`,
+          detail: `Новый кадр VLAN ${dstVlan} идёт к коммутатору получателя.`,
+          rule: 'tagged egress after routing',
+          from: { x: l3Pos.x, y: l3Pos.y },
+          to: { x: dstSw.x, y: dstSw.y },
+          activeLinkId: 'sw1-sw2-trunk',
+          actionType: 'trunk_tag',
+          pdu: basePdu({ isTagged: true, vlanId: dstVlan, srcMac: `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`, ttl: 63 }),
+        }),
+      );
+    }
+  }
+
+  steps.push(
+    step({
+      title: `${b.switchId}: снятие тега, выход в ${b.port}`,
+      detail: `Access-порт VLAN ${dstVlan} отдаёт untagged кадр на ${b.name}.`,
+      rule: 'untag on access egress',
+      from: { x: dstSw.x, y: dstSw.y },
+      to: { x: b.x, y: b.y },
+      activeDeviceId: b.switchId,
+      activeLinkId: dstLink,
+      actionType: 'access_egress',
+      pdu: basePdu({
+        isTagged: false,
+        vlanId: dstVlan,
+        srcMac: srcVlan === dstVlan ? a.mac : `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
+        ttl: srcVlan === dstVlan ? 64 : 63,
+        status: 'delivered',
+      }),
+    }),
+  );
+  steps.push(
+    step({
+      title: outcome.delivered ? `${b.name} принял кадр` : 'Доставка не состоялась',
+      detail: outcome.explanation,
+      rule: outcome.ruleCitation || '',
+      from: { x: b.x, y: b.y },
+      to: { x: b.x, y: b.y },
+      activeDeviceId: b.id,
+      actionType: outcome.delivered ? 'rx_delivery' : 'drop',
+      dropped: !outcome.delivered,
+      pdu: basePdu({
+        isTagged: false,
+        vlanId: dstVlan,
+        srcMac: srcVlan === dstVlan ? a.mac : `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
+        ttl: srcVlan === dstVlan ? 64 : 63,
+        status: outcome.delivered ? 'delivered' : 'dropped',
+      }),
+    }),
+  );
+  return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
+}
+
+const MODES: { id: CaseId; label: string }[] = [
+  { id: 'explore', label: 'Свободная' },
+  { id: 'access', label: 'Дело 3 · Чужая VLAN' },
+  { id: 'trunk', label: 'Дело 4 · Trunk' },
+];
 
 export const VlanSimulator: React.FC = () => {
   const [mode, setMode] = useState<CaseId>('explore');
@@ -141,300 +371,348 @@ export const VlanSimulator: React.FC = () => {
   const [l3Role, setL3Role] = useState<L3Role>('none');
   const [source, setSource] = useState<HostId>('pc1');
   const [target, setTarget] = useState<HostId>('pc3');
-  const [result, setResult] = useState<Result | null>(null);
-  const [attempts, setAttempts] = useState(0);
-  const [completed, setCompleted] = useState(false);
-  const [showTheory, setShowTheory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [trace, setTrace] = useState<Trace | null>(null);
-  const [traceStep, setTraceStep] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
-  const reset = (nextMode: CaseId = mode) => {
-    setMode(nextMode);
-    setVlans({ ...INITIAL_VLANS });
+  const active = trace?.steps[stepIndex];
+
+  const reset = (next: CaseId = mode) => {
+    setMode(next);
     setL3Role('none');
-    setTrunks(nextMode === 'trunk' ? { left: [10, 20], right: [10] } : { left: [10, 20], right: [10, 20] });
-    setSource(nextMode === 'access' ? 'pc1' : nextMode === 'trunk' ? 'pc2' : 'pc1');
-    setTarget(nextMode === 'access' ? 'pc2' : nextMode === 'trunk' ? 'pc4' : 'pc3');
-    setResult(null); setAttempts(0); setCompleted(false); setTrace(null); setTraceStep(0); setShowSettings(false);
-  };
-  const changeVlan = (host: HostId, vlan: Vlan) => {
-    setVlans(previous => ({ ...previous, [host]: vlan }));
-    setResult(null); setTrace(null); setCompleted(false);
-  };
-  const toggleAllowed = (side: 'left' | 'right', vlan: Vlan) => {
-    setTrunks(previous => ({
-      ...previous,
-      [side]: previous[side].includes(vlan)
-        ? previous[side].filter(item => item !== vlan)
-        : [...previous[side], vlan].sort((a, b) => a - b),
-    }));
-    setResult(null); setTrace(null); setCompleted(false);
-  };
-  const simulate = () => {
-    const next = buildTrace(source, target, vlans, trunks, l3Role);
-    setTrace(next);
-    setTraceStep(0);
-    setResult(null);
+    setTrace(null);
+    setStepIndex(0);
+    setPlaying(false);
     setCompleted(false);
-    setAttempts(n => n + 1);
-  };
-  const changeStep = (step: number) => {
-    if (!trace) return;
-    const next = Math.max(0, Math.min(trace.steps.length - 1, step));
-    setTraceStep(next);
-    if (next === trace.steps.length - 1) {
-      setResult(trace.outcome);
-      if (trace.outcome.delivered && mode !== 'explore') setCompleted(true);
+    if (next === 'access') {
+      setVlans({ pc1: 10, pc2: 20, pc3: 10, pc4: 20 });
+      setTrunks({ left: [10, 20], right: [10, 20] });
+      setSource('pc1');
+      setTarget('pc2');
+    } else if (next === 'trunk') {
+      setVlans({ pc1: 10, pc2: 20, pc3: 10, pc4: 20 });
+      setTrunks({ left: [10, 20], right: [10] });
+      setSource('pc2');
+      setTarget('pc4');
     } else {
-      setResult(null);
-      setCompleted(false);
+      setVlans({ ...INITIAL_VLANS });
+      setTrunks({ left: [10, 20], right: [10, 20] });
+      setSource('pc1');
+      setTarget('pc3');
     }
+    triggerHaptic('light');
+    playClickSound();
   };
-  const sourceData = HOSTS.find(host => host.id === source)!;
-  const targetData = HOSTS.find(host => host.id === target)!;
-  const sourceVlan = vlans[source];
-  const activeTraceStep = trace?.steps[traceStep];
+
+  const start = () => {
+    const next = generateDetailedTrace(source, target, vlans, trunks, l3Role);
+    setTrace(next);
+    setStepIndex(0);
+    setPlaying(true);
+    setCompleted(false);
+    triggerHaptic('medium');
+  };
+
+  useEffect(() => {
+    if (!playing || !trace) return;
+    if (stepIndex >= trace.steps.length - 1) {
+      setPlaying(false);
+      if (trace.outcome.delivered && mode !== 'explore') {
+        setCompleted(true);
+        playSuccessSound();
+      } else if (!trace.outcome.delivered) playErrorSound();
+      return;
+    }
+    const t = window.setTimeout(() => setStepIndex((s) => s + 1), 1600);
+    return () => window.clearTimeout(t);
+  }, [playing, stepIndex, trace, mode]);
+
+  const changeVlan = (host: HostId, vlan: Vlan) => {
+    setVlans((prev) => ({ ...prev, [host]: vlan }));
+    setTrace(null);
+    setPlaying(false);
+    triggerHaptic('selection');
+  };
+  const toggleTrunk = (side: 'left' | 'right', vlan: Vlan) => {
+    setTrunks((prev) => ({
+      ...prev,
+      [side]: prev[side].includes(vlan) ? prev[side].filter((v) => v !== vlan) : [...prev[side], vlan].sort(),
+    }));
+    setTrace(null);
+    setPlaying(false);
+    triggerHaptic('selection');
+  };
+  const pickHost = (id: HostId) => {
+    if (id === source) return;
+    if (id === target) {
+      setSource(id);
+      setTarget(source);
+    } else setTarget(id);
+    setTrace(null);
+    setPlaying(false);
+    triggerHaptic('selection');
+  };
+
+  const checkGoal = useCallback(() => {
+    if (mode === 'explore') return;
+    const outcome = evaluateNetwork(source, target, vlans, trunks, l3Role);
+    if (outcome.delivered) setCompleted(true);
+  }, [mode, source, target, vlans, trunks, l3Role]);
+
+  useEffect(() => {
+    checkGoal();
+  }, [checkGoal]);
+
+  const linkClass = (id: NonNullable<TraceStep['activeLinkId']>) =>
+    active?.activeLinkId === id ? 'stroke-cyan-500 dark:stroke-cyan-300' : 'stroke-slate-300 dark:stroke-slate-600';
 
   return (
-    <section className="mx-auto max-w-6xl space-y-4" aria-label="Лаборатория VLAN и Trunk">
-      <div className={frameClass}>
-        <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Практика · L2 / L3 · 802.1Q</span>
-        <h2 className="text-xl sm:text-2xl font-black mt-1 text-slate-900 dark:text-white">VLAN & Trunk: лаборатория передачи кадров</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Два коммутатора, четыре ПК, trunk и переключаемая роль L3. Исследуй передачу кадров внутри VLAN и маршрутизацию между VLAN через SVI.</p>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {([
-            ['explore', 'Свободная практика'],
-            ['access', 'Дело №3 · Чужая VLAN'],
-            ['trunk', 'Дело №4 · Пропавший trunk'],
-          ] as const).map(([id, name]) => (
-            <button key={id} type="button" onClick={() => reset(id)} aria-pressed={mode === id}
-              className={`min-h-10 rounded-lg border px-3 py-2 text-xs sm:text-sm font-semibold ${mode === id ? activeButton : idleButton}`}>{name}</button>
+    <div className="space-y-3 max-w-6xl mx-auto pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-700 dark:text-cyan-300">Макет · VLAN</div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">VLAN & Trunk</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {HOSTS.find((h) => h.id === source)?.name} VLAN {vlans[source]} → {HOSTS.find((h) => h.id === target)?.name} VLAN {vlans[target]}
+            {l3Role !== 'none' ? ` · L3 на ${l3Role}` : ''}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => reset(m.id)}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer border ${
+                mode === m.id
+                  ? 'bg-cyan-500 text-slate-950 border-cyan-500'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              {m.label}
+            </button>
           ))}
         </div>
       </div>
 
       {mode !== 'explore' && (
-        <div className="rounded-xl border border-amber-300 dark:border-amber-600/60 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm text-slate-800 dark:text-amber-100">
-          <div className="font-bold flex gap-2 items-center"><AlertTriangle className="w-4 h-4" /> {mode === 'access' ? 'Дело №3 · Чужая VLAN' : 'Дело №4 · Пропавший trunk'}</div>
-          <p className="mt-2">{mode === 'access'
-            ? 'PC-01 не может обмениваться кадрами с PC-02, хотя оба подключены к SW1. Изучи access VLAN портов и восстанови передачу.'
-            : 'PC-02 (SW1) не может связаться с PC-04 (SW2), оба работают в VLAN 20. На первый взгляд линк между коммутаторами есть. Найди ошибку в разрешённых VLAN.'}</p>
-          <p className="mt-1 text-xs text-slate-600 dark:text-amber-200">Найди причину по параметрам портов. Схема не отмечает ошибочный участок до диагностики.</p>
+        <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
+          {mode === 'access'
+            ? 'Дело 3: PC-01 не говорит с PC-02 на одном коммутаторе. Сверь access VLAN или включи L3.'
+            : 'Дело 4: PC-02 и PC-04 в VLAN 20, но кадр не проходит trunk. Проверь allowed на обоих концах.'}
+          {completed && <span className="ml-2 font-bold text-emerald-700 dark:text-emerald-300">Связь восстановлена.</span>}
         </div>
       )}
 
-      <div className={frameClass}>
-        <div className="flex justify-between items-center flex-wrap gap-2 mb-2">
-          <h3 className="font-bold text-slate-900 dark:text-white">Карта сети</h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400">Нажми на ПК в карточках ниже, чтобы выбрать участников передачи</span>
-        </div>
-        <div className="overflow-x-auto">
-          <svg viewBox="0 0 650 220" className="w-full min-w-[550px] h-auto" role="img" aria-label="PC-01 и PC-02 подключены к SW1; PC-03 и PC-04 к SW2; коммутаторы соединены trunk 802.1Q">
-            <rect x="2" y="4" width="306" height="212" rx="13" className="fill-cyan-50 dark:fill-cyan-950/25 stroke-cyan-300 dark:stroke-cyan-700/70" strokeDasharray="5 4"/>
-            <rect x="342" y="4" width="306" height="212" rx="13" className="fill-indigo-50 dark:fill-blue-950/25 stroke-indigo-300 dark:stroke-blue-700/70" strokeDasharray="5 4"/>
-            <text x="14" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW1 · сеть доступа</text>
-            <text x="354" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW2 · сеть доступа</text>
-            <path d="M100 43 L204 88 M100 149 L204 108 M446 88 L522 43 M446 108 L522 149" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2.5" fill="none"/>
-            <path d="M304 98 H346" strokeWidth="5" className="stroke-amber-500 dark:stroke-amber-400"/>
-            <text x="325" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" className="fill-amber-700 dark:fill-amber-300">802.1Q</text>
-            <defs>
-              <linearGradient id="netops-device-blue" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#38bdf8"/>
-                <stop offset="1" stopColor="#2563eb"/>
-              </linearGradient>
-              <linearGradient id="netops-device-slate" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#64748b"/>
-                <stop offset="1" stopColor="#1e293b"/>
-              </linearGradient>
-            </defs>
-            {[{ id: 'SW1', x: 254 }, { id: 'SW2', x: 396 }].map(sw => (
-              <g key={sw.id} transform={`translate(${sw.x}, 88)`}>
-                {/* Equipment-shaped switch chassis, visible RJ45 ports and uplink LEDs. */}
-                <path d="M-38 -12 L26 -12 L39 -3 L39 18 L-38 18 Z" fill="url(#netops-device-slate)" stroke="#94a3b8" strokeWidth="1.5" strokeLinejoin="round"/>
-                <path d="M26 -12 L39 -3 L26 1 L-38 1 L-38 -12 Z" fill="#64748b" opacity=".7"/>
-                {[-28, -15, -2, 11].map(x => <g key={x}>
-                  <rect x={x} y="6" width="9" height="7" rx="1" fill="#0f172a" stroke="#7dd3fc" strokeWidth=".8"/>
-                  <path d={`M${x+2} 8 V11 M${x+5} 8 V11`} stroke="#bae6fd" strokeWidth=".8"/>
-                </g>)}
-                <circle cx="28" cy="9" r="2.5" fill="#4ade80"/>
-                <circle cx="34" cy="9" r="1.7" fill="#fbbf24"/>
-                {l3Role === sw.id && <g>
-                  <circle cx="0" cy="-5" r="10" fill="#0e7490" stroke="#a5f3fc" strokeWidth="1.5"/>
-                  <path d="M-6 -5 H6 M2 -9 L6 -5 L2 -1 M-2 -1 L-6 -5 L-2 -9" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                </g>}
-                <text x="0" y="35" textAnchor="middle" fontSize="13" fontWeight="bold" className="fill-slate-900 dark:fill-white">{sw.id}</text>
-                <text x="0" y="47" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">{l3Role === sw.id ? 'L3 · SVI 10/20' : 'L2 switch'}</text>
-              </g>
-            ))}
-            {HOSTS.map(host => (
-              <g key={host.id} transform={`translate(${host.x + 45}, ${host.y + 26})`}>
-                {/* Desktop workstation silhouette: monitor, stand and keyboard. */}
-                <path d="M-21 -17 H21 Q24 -17 24 -14 V8 Q24 11 21 11 H-21 Q-24 11 -24 8 V-14 Q-24 -17 -21 -17 Z"
-                  fill="url(#netops-device-blue)" stroke="#0e7490" strokeWidth="1.5"/>
-                <path d="M-19 -13 H19 V5 H-19 Z" fill="#dbeafe" stroke="#0284c7" strokeWidth="1"/>
-                <path d="M-18 3 H18 V5 H-18 Z" fill="#7dd3fc"/>
-                <path d="M-4 11 V17 M4 11 V17 M-12 18 H12" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"/>
-                <path d="M-20 21 H20 L24 25 H-24 Z" fill="#94a3b8" stroke="#475569" strokeWidth="1"/>
-                <text x="0" y="39" textAnchor="middle" fontSize="12" fontWeight="bold" className="fill-slate-900 dark:fill-white">{host.name}</text>
-                <text x="0" y="51" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">VLAN {vlans[host.id]}</text>
-                {(source === host.id || target === host.id) && (
-                  <circle cx="27" cy="-15" r="5" fill={source === host.id ? '#0891b2' : '#8b5cf6'} stroke="white" strokeWidth="1.5"/>
-                )}
-              </g>
-            ))}
-            <text x="325" y="151" textAnchor="middle" fontSize="10" className="fill-slate-600 dark:fill-slate-300">Gi0/1 ↔ Gi0/1</text>
-            {activeTraceStep && (
-              <g key={traceStep} transform={`translate(${activeTraceStep.x} ${activeTraceStep.y})`} aria-label={`Шаг ${traceStep + 1}: ${activeTraceStep.title}`}>
-                <circle r="16" fill={activeTraceStep.dropped ? '#e11d48' : '#0891b2'} stroke="white" strokeWidth="2.5"/>
-                <text x="0" y="4" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">{activeTraceStep.dropped ? '×' : activeTraceStep.tagged ? 'TAG' : 'L2'}</text>
-              </g>
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-3">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2">
+          <svg viewBox="0 0 760 280" className="w-full h-auto" role="img" aria-label="Два коммутатора, четыре ПК, trunk 802.1Q">
+            <rect x="6" y="8" width="360" height="264" rx="14" className="fill-cyan-50 dark:fill-cyan-950/20 stroke-cyan-300 dark:stroke-cyan-800" strokeDasharray="5 4" />
+            <rect x="394" y="8" width="360" height="264" rx="14" className="fill-indigo-50 dark:fill-indigo-950/20 stroke-indigo-300 dark:stroke-indigo-800" strokeDasharray="5 4" />
+            <text x="16" y="26" className="fill-cyan-800 dark:fill-cyan-300" fontSize="11">SW1 · access</text>
+            <text x="404" y="26" className="fill-indigo-800 dark:fill-indigo-300" fontSize="11">SW2 · access</text>
+
+            <path d="M78 92 L250 150" className={linkClass('pc1-sw1')} fill="none" strokeWidth="2.5" />
+            <path d="M78 208 L250 150" className={linkClass('pc2-sw1')} fill="none" strokeWidth="2.5" />
+            <path d="M510 150 L682 92" className={linkClass('sw2-pc3')} fill="none" strokeWidth="2.5" />
+            <path d="M510 150 L682 208" className={linkClass('sw2-pc4')} fill="none" strokeWidth="2.5" />
+            <path
+              d="M310 150 L450 150"
+              className={active?.activeLinkId === 'sw1-sw2-trunk' ? 'stroke-amber-500' : 'stroke-amber-400/70'}
+              fill="none"
+              strokeWidth="4"
+            />
+            <text x="380" y="140" textAnchor="middle" className="fill-amber-700 dark:fill-amber-300" fontSize="10" fontWeight="700">
+              802.1Q
+            </text>
+            <text x="380" y="168" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="9">
+              L {trunks.left.join(',') || '—'} · R {trunks.right.join(',') || '—'}
+            </text>
+
+            {HOSTS.map((host) => {
+              const vlan = vlans[host.id];
+              const isSrc = host.id === source;
+              const isDst = host.id === target;
+              return (
+                <g key={host.id} transform={`translate(${host.x} ${host.y})`} onClick={() => pickHost(host.id)} style={{ cursor: 'pointer' }}>
+                  <rect x="-22" y="-16" width="44" height="30" rx="4" className={isSrc || isDst ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-500' : 'fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-600'} strokeWidth="1.5" />
+                  <text y="34" textAnchor="middle" className="fill-slate-900 dark:fill-slate-100" fontSize="11" fontWeight="700">{host.name}</text>
+                  <text y="47" textAnchor="middle" className={vlan === 10 ? 'fill-cyan-700 dark:fill-cyan-300' : 'fill-violet-700 dark:fill-violet-300'} fontSize="10">VLAN {vlan}</text>
+                  {isSrc && <text y="-24" textAnchor="middle" className="fill-cyan-700 dark:fill-cyan-300" fontSize="9">TX</text>}
+                  {isDst && <text y="-24" textAnchor="middle" className="fill-violet-700 dark:fill-violet-300" fontSize="9">RX</text>}
+                </g>
+              );
+            })}
+
+            {(['SW1', 'SW2'] as const).map((id) => {
+              const pos = id === 'SW1' ? SW1 : SW2;
+              const isL3 = l3Role === id;
+              const activeSw = active?.activeDeviceId === id;
+              return (
+                <g key={id} transform={`translate(${pos.x} ${pos.y})`}>
+                  <rect x="-36" y="-18" width="72" height="36" rx="6" className={activeSw ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-500' : 'fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-600'} strokeWidth="1.5" />
+                  <text y="4" textAnchor="middle" className="fill-slate-900 dark:fill-slate-100" fontSize="12" fontWeight="700">{id}</text>
+                  {isL3 && <text y="28" textAnchor="middle" className="fill-cyan-700 dark:fill-cyan-300" fontSize="9">SVI .10.1 / .20.1</text>}
+                </g>
+              );
+            })}
+
+            {active && (
+              <motion.g key={stepIndex} initial={{ x: active.from.x, y: active.from.y }} animate={{ x: active.to.x, y: active.to.y }} transition={{ duration: 0.7, ease: 'easeInOut' }}>
+                <rect x="-28" y="-11" width="56" height="22" rx={active.pdu.isTagged ? 4 : 11} className={active.dropped ? 'fill-rose-500' : active.pdu.isTagged ? 'fill-amber-400' : 'fill-cyan-400'} />
+                <text y="4" textAnchor="middle" className="fill-slate-950" fontSize="9" fontWeight="800">
+                  {active.dropped ? 'DROP' : active.actionType === 'l3_svi_route' ? 'SVI' : active.pdu.isTagged ? `VID ${active.pdu.vlanId}` : 'untag'}
+                </text>
+              </motion.g>
             )}
           </svg>
+          <div className="flex flex-wrap gap-2 px-2 pb-1 text-[10px] text-slate-500 dark:text-slate-400">
+            <span className="text-cyan-700 dark:text-cyan-300">VLAN 10</span>
+            <span className="text-violet-700 dark:text-violet-300">VLAN 20</span>
+            <span className="text-amber-700 dark:text-amber-300">тег 802.1Q</span>
+            <span>нажми ПК, чтобы сменить получателя</span>
+          </div>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Цвет подсети обозначает область схемы, не VLAN или состояние линка. VLAN определяются настройками access-портов.</p>
+
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2 lg:sticky lg:top-3">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>{trace ? `Шаг ${stepIndex + 1} / ${trace.steps.length}` : 'Ожидание'}</span>
+            <span className="font-mono">{active?.pdu.isTagged ? `802.1Q · VID ${active.pdu.vlanId}` : 'Untagged'}</span>
+          </div>
+          <div className="text-sm font-bold text-slate-900 dark:text-white">{active?.title || 'Запусти передачу'}</div>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{active?.detail || 'Выбери отправителя и получателя, затем смотри путь кадра.'}</p>
+          {active && (
+            <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">MAC {active.pdu.srcMac.slice(-8)} → {active.pdu.dstMac.slice(-8)}</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">IP {active.pdu.srcIp.split('.').slice(2).join('.')} → {active.pdu.dstIp.split('.').slice(2).join('.')}</div>
+              <div className={`rounded-lg p-2 ${active.pdu.isTagged ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-slate-50 dark:bg-slate-900'}`}>
+                {active.pdu.isTagged ? `тег VID ${active.pdu.vlanId}` : 'без тега'}
+              </div>
+              <div className={`rounded-lg p-2 ${active.pdu.ttl === 63 ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-slate-50 dark:bg-slate-900'}`}>
+                TTL {active.pdu.ttl}
+              </div>
+            </div>
+          )}
+          {active && (
+            <details className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                <span>Подробнее о кадре · Ethernet II / 802.1Q</span>
+                <span className="shrink-0 text-cyan-700 dark:text-cyan-300 group-open:hidden">Показать</span>
+                <span className="hidden shrink-0 text-cyan-700 dark:text-cyan-300 group-open:inline">Скрыть</span>
+              </summary>
+              <div className="border-t border-slate-200 dark:border-slate-800 px-3 pb-3 pt-2 space-y-2 text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Преамбула + SFD · 8 байт на линии</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">7 B preamble + 1 B SFD</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Destination MAC · 6 байт</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.dstMac}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Source MAC · 6 байт</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcMac}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Тег 802.1Q · 4 байта при наличии</div>
+                    <div className={`font-mono ${active.pdu.isTagged ? 'text-amber-700 dark:text-amber-300' : 'text-slate-800 dark:text-slate-200'}`}>
+                      {active.pdu.isTagged ? `TPID 0x8100 · PCP 0 · DEI 0 · VID ${active.pdu.vlanId}` : 'Отсутствует · untagged'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">EtherType · 2 байта</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">{active.pdu.ethType} · IPv4</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">IP пакет · Src / Dst · TTL</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcIp} → {active.pdu.dstIp} · TTL {active.pdu.ttl}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">FCS · 4 байта</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">CRC-32 · значение не вычисляется</div>
+                  </div>
+                </div>
+                <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Это учебная структура кадра, не дамп Wireshark. Размер зависит от полезной нагрузки; преамбула и SFD в длину Ethernet-кадра не входят. FCS показан как поле, без имитации проверки CRC.
+                </p>
+              </div>
+            </details>
+          )}
+          {active?.rule && <p className="text-[11px] text-slate-500 dark:text-slate-400">{active.rule}</p>}
+          <div className="flex gap-1.5">
+            {!playing ? (
+              <button type="button" onClick={start} className="flex-1 rounded-xl bg-cyan-500 text-slate-950 text-sm font-semibold py-2 cursor-pointer">
+                <Play className="w-4 h-4 inline" /> Запустить
+              </button>
+            ) : (
+              <button type="button" onClick={() => setPlaying(false)} className="flex-1 rounded-xl bg-amber-400 text-slate-950 text-sm font-semibold py-2 cursor-pointer">
+                <Pause className="w-4 h-4 inline" /> Пауза
+              </button>
+            )}
+            <button type="button" onClick={() => { setPlaying(false); setStepIndex((s) => Math.max(0, s - 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={() => { setPlaying(false); setStepIndex((s) => Math.min((trace?.steps.length || 1) - 1, s + 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={() => reset()} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer" title="Сброс">
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className={frameClass + ' space-y-3'}>
-        <button type="button" aria-expanded={showSettings} onClick={() => setShowSettings(v => !v)}
-          className="flex w-full items-center justify-between gap-3 text-left min-h-10">
-          <span className="font-bold text-slate-900 dark:text-white">Настройки стенда · L2/L3, access VLAN и trunk</span>
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-cyan-700 dark:text-cyan-300">
-            {showSettings ? 'Свернуть' : 'Настроить'} {showSettings ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
-          </span>
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <button type="button" onClick={() => setShowSettings((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100 cursor-pointer">
+          <span className="flex items-center gap-2"><Settings2 className="w-4 h-4" /> Настройки стенда</span>
+          <span className="text-xs text-slate-500">{showSettings ? 'скрыть' : 'показать'}</span>
         </button>
-        <p className="text-xs text-slate-600 dark:text-slate-300">Источник: {sourceData.name} · Получатель: {targetData.name}. Настройки доступны в любой момент; при изменении текущая трассировка сбрасывается.</p>
         {showSettings && (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-900/60">
-            <p className="font-bold text-sm text-slate-900 dark:text-white">Роль коммутаторов</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {([['none', 'Оба L2'], ['SW1', 'SW1 = L3'], ['SW2', 'SW2 = L3']] as const).map(([role, label]) => (
-                <button key={role} type="button" aria-pressed={l3Role === role}
-                  onClick={() => { setL3Role(role); setTrace(null); setResult(null); setCompleted(false); }}
-                  className={`rounded-lg px-3 min-h-10 text-xs sm:text-sm font-semibold border ${l3Role === role ? activeButton : idleButton}`}>{label}</button>
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">Режим L3: выбранный коммутатор имеет SVI для VLAN 10/20 и включённый ip routing. Для учебного упрощения шлюзы на ПК, маршруты и ARP заранее настроены. Между SW1 и SW2 остаётся trunk L2; одновременно активен один L3-шлюз.</p>
-          </div>
-          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
-        <div className={frameClass + ' space-y-3'}>
-          <h3 className="font-bold text-slate-900 dark:text-white">Access-порты и конечные устройства</h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {HOSTS.map(host => (
-              <div key={host.id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-900/60">
-                <div className="flex items-center justify-between gap-2">
-                  <strong className="text-sm text-slate-900 dark:text-white">{host.name}</strong>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{host.switchId} · {host.port}</span>
-                </div>
-                <div className="flex gap-2">
-                  {([10, 20] as const).map(vlan => (
-                    <button key={vlan} type="button" onClick={() => changeVlan(host.id, vlan)}
-                      aria-pressed={vlans[host.id] === vlan}
-                      className={`flex-1 min-h-9 rounded-lg border text-xs font-bold ${vlans[host.id] === vlan ? activeButton : idleButton}`}>VLAN {vlan}</button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => { setSource(host.id); setResult(null); setTrace(null); setCompleted(false); }} aria-pressed={source === host.id}
-                    className={`flex-1 rounded-md border min-h-9 text-xs font-semibold ${source === host.id ? activeButton : idleButton}`}>Источник</button>
-                  <button type="button" onClick={() => { setTarget(host.id); setResult(null); setTrace(null); setCompleted(false); }} aria-pressed={target === host.id}
-                    className={`flex-1 rounded-md border min-h-9 text-xs font-semibold ${target === host.id ? activeButton : idleButton}`}>Получатель</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className={frameClass + ' space-y-3'}>
-          <div className="flex gap-2 items-center"><Cable className="w-4 h-4 text-amber-600 dark:text-amber-300"/><h3 className="font-bold text-slate-900 dark:text-white">Trunk Gi0/1 · allowed VLAN</h3></div>
-          <p className="text-xs text-slate-600 dark:text-slate-300">Разрешённые VLAN на каждом конце линка. Для передачи между SW1 и SW2 VLAN должна быть разрешена с обеих сторон.</p>
-          {(['left', 'right'] as const).map(side => (
-            <div key={side} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-3">
-              <strong className="text-sm text-slate-900 dark:text-white">{side === 'left' ? 'SW1 · Gi0/1' : 'SW2 · Gi0/1'}</strong>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {([10, 20] as const).map(vlan => (
-                  <label key={vlan} className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer min-h-9">
-                    <input type="checkbox" checked={trunks[side].includes(vlan)} onChange={() => toggleAllowed(side, vlan)}
-                      className="accent-cyan-600 w-4 h-4"/> VLAN {vlan}
-                  </label>
+          <div className="px-3 pb-3 space-y-3 text-xs">
+            <div>
+              <div className="mb-1 text-slate-500">Роль L3 / SVI</div>
+              <div className="flex gap-1">
+                {(['none', 'SW1', 'SW2'] as L3Role[]).map((role) => (
+                  <button key={role} type="button" onClick={() => { setL3Role(role); setTrace(null); }} className={`px-2 py-1 rounded-lg border cursor-pointer ${l3Role === role ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                    {role === 'none' ? 'только L2' : role}
+                  </button>
                 ))}
               </div>
             </div>
-          ))}
-          <div className="text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 p-3">
-            <p>switchport mode trunk</p>
-            <p>switchport trunk allowed vlan {trunks.left.join(',') || 'none'} <span className="font-sans opacity-70">· SW1</span></p>
-            <p>switchport trunk allowed vlan {trunks.right.join(',') || 'none'} <span className="font-sans opacity-70">· SW2</span></p>
-          </div>
-        </div>
-          </div>
-        </div>
-        )}
-      </div>
-
-      <div className={frameClass + ' space-y-3'}>
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Пошаговая передача кадра</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{sourceData.name} (VLAN {sourceVlan}) <ArrowRight className="inline w-4 h-4"/> {targetData.name} (VLAN {vlans[target]})</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => reset()} className={`rounded-lg border min-h-11 px-3 font-semibold text-sm inline-flex items-center gap-2 ${idleButton}`}><RotateCcw className="w-4 h-4"/> Сброс</button>
-            <button type="button" onClick={simulate} className="rounded-lg min-h-11 px-4 font-bold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 inline-flex items-center gap-2"><Layers className="w-4 h-4"/> Начать передачу</button>
-          </div>
-        </div>
-        {trace && activeTraceStep && (
-          <div className="rounded-xl border border-cyan-300 dark:border-cyan-600 bg-cyan-50 dark:bg-cyan-950/30 p-4 space-y-3" aria-live="polite">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-bold text-cyan-800 dark:text-cyan-200">Шаг {traceStep + 1} из {trace.steps.length}</span>
-              <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{activeTraceStep.tagged ? `802.1Q · VID ${trace.vlan}` : 'Untagged Ethernet'}</span>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {HOSTS.map((host) => (
+                <div key={host.id} className="flex items-center justify-between gap-2">
+                  <span>{host.name} · {host.port}</span>
+                  <div className="flex gap-1">
+                    {([10, 20] as Vlan[]).map((vlan) => (
+                      <button key={vlan} type="button" onClick={() => changeVlan(host.id, vlan)} className={`px-2 py-1 rounded-lg border cursor-pointer ${vlans[host.id] === vlan ? (vlan === 10 ? 'bg-cyan-500 text-slate-950 border-cyan-500' : 'bg-violet-500 text-white border-violet-500') : 'border-slate-200 dark:border-slate-700'}`}>
+                        {vlan}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-            <input type="range" min="0" max={trace.steps.length - 1} step="1" value={traceStep} onChange={event => changeStep(Number(event.target.value))}
-              className="w-full accent-cyan-600" aria-label="Шаг передачи кадра"/>
-            <h4 className="font-bold text-slate-900 dark:text-white">{activeTraceStep.title}</h4>
-            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">{activeTraceStep.detail}</p>
-            <div className="flex items-center justify-between gap-2">
-              <button type="button" disabled={traceStep === 0} onClick={() => changeStep(traceStep - 1)}
-                className={`min-h-11 px-3 rounded-lg border text-sm font-semibold disabled:opacity-40 inline-flex gap-1 items-center ${idleButton}`}><ArrowLeft className="w-4 h-4"/> Назад</button>
-              <button type="button" disabled={traceStep === trace.steps.length - 1} onClick={() => changeStep(traceStep + 1)}
-                className="min-h-11 px-4 rounded-lg bg-cyan-500 text-slate-950 font-bold text-sm disabled:opacity-40 inline-flex gap-1 items-center">Следующий шаг <ArrowRight className="w-4 h-4"/></button>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {(['left', 'right'] as const).map((side) => (
+                <div key={side}>
+                  <div className="mb-1 text-slate-500">Trunk {side === 'left' ? 'SW1 Gi0/1' : 'SW2 Gi0/1'}</div>
+                  <div className="flex gap-1">
+                    {([10, 20] as Vlan[]).map((vlan) => (
+                      <button key={vlan} type="button" onClick={() => toggleTrunk(side, vlan)} className={`px-2 py-1 rounded-lg border cursor-pointer ${trunks[side].includes(vlan) ? 'bg-amber-400 text-slate-950 border-amber-400' : 'border-slate-200 dark:border-slate-700'}`}>
+                        VLAN {vlan}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
-        {result && (
-          <div role="status" className={`rounded-xl border p-4 ${result.delivered
-            ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
-            : 'border-rose-400 bg-rose-50 dark:bg-rose-950/30'}`}>
-            <div className="flex gap-2 items-start">
-              {result.delivered ? <ShieldCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-300 shrink-0"/> : <AlertTriangle className="w-5 h-5 text-rose-700 dark:text-rose-300 shrink-0"/>}
-              <div>
-                <strong className="text-sm text-slate-900 dark:text-white">{result.message}</strong>
-                <p className="text-xs sm:text-sm mt-2 leading-relaxed text-slate-700 dark:text-slate-200">{result.explanation}</p>
-                {result.tagged && <p className="text-xs mt-2 font-mono text-slate-700 dark:text-cyan-200">802.1Q: TPID 0x8100 · PCP 0 · DEI 0 · VID {sourceVlan} (учебный кадр)</p>}
-              </div>
-            </div>
-          </div>
-        )}
-        {completed && mode !== 'explore' && <p role="status" className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">Дело раскрыто! Кадр успешно доставлен. Попыток передачи: {attempts}.</p>}
-        <p className="text-xs text-slate-500 dark:text-slate-400">Учебная модель: порты активны, MAC и ARP считаются известными, native VLAN и STP не моделируются. В режиме L3 включены SVI VLAN 10/20, ip routing и настроенные шлюзы ПК; TTL уменьшается при маршрутизации.</p>
       </div>
-
-      <div className={frameClass}>
-        <button type="button" onClick={() => setShowTheory(p => !p)} aria-expanded={showTheory}
-          className="w-full flex items-center justify-between gap-3 text-left">
-          <span className="inline-flex items-center gap-2 font-bold text-slate-900 dark:text-white"><Info className="w-4 h-4"/> Справка: что находится внутри 802.1Q</span>
-          <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">{showTheory ? 'Свернуть' : 'Показать'}</span>
-        </button>
-        {showTheory && <div className="grid sm:grid-cols-4 grid-cols-2 gap-2 mt-4">
-          {[
-            ['TPID · 16 бит', '0x8100'],
-            ['PCP · 3 бита', 'Приоритет'],
-            ['DEI · 1 бит', 'Drop eligible'],
-            ['VID · 12 бит', 'VLAN ID: 1–4094'],
-          ].map(([name, value]) => <div key={name} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3 text-xs">
-            <p className="font-bold text-cyan-700 dark:text-cyan-300">{name}</p><p className="mt-1 text-slate-700 dark:text-slate-300">{value}</p>
-          </div>)}
-        </div>}
-      </div>
-    </section>
+    </div>
   );
 };
