@@ -346,7 +346,13 @@ function generateDetailedTrace(source: HostId, target: HostId, vlans: Record<Hos
       activeDeviceId: b.id,
       actionType: outcome.delivered ? 'rx_delivery' : 'drop',
       dropped: !outcome.delivered,
-      pdu: basePdu({ status: outcome.delivered ? 'delivered' : 'dropped' }),
+      pdu: basePdu({
+        isTagged: false,
+        vlanId: dstVlan,
+        srcMac: srcVlan === dstVlan ? a.mac : `00:00:5E:00:01:0${dstVlan === 10 ? 'A' : 'B'}`,
+        ttl: srcVlan === dstVlan ? 64 : 63,
+        status: outcome.delivered ? 'delivered' : 'dropped',
+      }),
     }),
   );
   return { steps, outcome, initialVlan: srcVlan, finalVlan: dstVlan };
@@ -588,6 +594,52 @@ export const MockVlanSimulator: React.FC = () => {
                 TTL {active.pdu.ttl}
               </div>
             </div>
+          )}
+          {active && (
+            <details className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                <span>Подробнее о кадре · Ethernet II / 802.1Q</span>
+                <span className="shrink-0 text-cyan-700 dark:text-cyan-300 group-open:hidden">Развернуть +</span>
+                <span className="hidden shrink-0 text-cyan-700 dark:text-cyan-300 group-open:inline">Свернуть −</span>
+              </summary>
+              <div className="border-t border-slate-200 dark:border-slate-800 px-3 pb-3 pt-2 space-y-2 text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Преамбула + SFD · 8 байт на линии</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">7 B preamble + 1 B SFD</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Destination MAC · 6 байт</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.dstMac}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Source MAC · 6 байт</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcMac}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">Тег 802.1Q · 4 байта при наличии</div>
+                    <div className={`font-mono ${active.pdu.isTagged ? 'text-amber-700 dark:text-amber-300' : 'text-slate-800 dark:text-slate-200'}`}>
+                      {active.pdu.isTagged ? `TPID 0x8100 · PCP 0 · DEI 0 · VID ${active.pdu.vlanId}` : 'Отсутствует · untagged'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">EtherType · 2 байта</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">{active.pdu.ethType} · IPv4</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">IP пакет · Src / Dst · TTL</div>
+                    <div className="font-mono break-all text-slate-800 dark:text-slate-200">{active.pdu.srcIp} → {active.pdu.dstIp} · TTL {active.pdu.ttl}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 dark:text-slate-400">FCS · 4 байта</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200">CRC-32 · значение не вычисляется</div>
+                  </div>
+                </div>
+                <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Это учебная структура кадра, не дамп Wireshark. Размер зависит от полезной нагрузки; преамбула и SFD в длину Ethernet-кадра не входят. FCS показан как поле, без имитации проверки CRC.
+                </p>
+              </div>
+            </details>
           )}
           {active?.rule && <p className="text-[11px] text-slate-500 dark:text-slate-400">{active.rule}</p>}
           <div className="flex gap-1.5">
