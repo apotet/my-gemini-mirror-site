@@ -230,9 +230,9 @@ export const VlanSimulator: React.FC = () => {
           <span className="text-xs text-slate-500 dark:text-slate-400">Нажми на ПК в карточках ниже, чтобы выбрать участников передачи</span>
         </div>
         <div className="overflow-x-auto">
-          <svg viewBox="0 0 650 198" className="w-full min-w-[550px] h-auto" role="img" aria-label="PC-01 и PC-02 подключены к SW1; PC-03 и PC-04 к SW2; коммутаторы соединены trunk 802.1Q">
-            <rect x="2" y="4" width="306" height="188" rx="13" className="fill-cyan-50 dark:fill-cyan-950/25 stroke-cyan-300 dark:stroke-cyan-700/70" strokeDasharray="5 4"/>
-            <rect x="342" y="4" width="306" height="188" rx="13" className="fill-indigo-50 dark:fill-blue-950/25 stroke-indigo-300 dark:stroke-blue-700/70" strokeDasharray="5 4"/>
+          <svg viewBox="0 0 650 220" className="w-full min-w-[550px] h-auto" role="img" aria-label="PC-01 и PC-02 подключены к SW1; PC-03 и PC-04 к SW2; коммутаторы соединены trunk 802.1Q">
+            <rect x="2" y="4" width="306" height="212" rx="13" className="fill-cyan-50 dark:fill-cyan-950/25 stroke-cyan-300 dark:stroke-cyan-700/70" strokeDasharray="5 4"/>
+            <rect x="342" y="4" width="306" height="212" rx="13" className="fill-indigo-50 dark:fill-blue-950/25 stroke-indigo-300 dark:stroke-blue-700/70" strokeDasharray="5 4"/>
             <text x="14" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW1 · сеть доступа</text>
             <text x="354" y="18" fontSize="11" className="fill-slate-600 dark:fill-slate-300">SW2 · сеть доступа</text>
             <path d="M100 43 L204 88 M100 149 L204 108 M446 88 L522 43 M446 108 L522 149" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2.5" fill="none"/>
