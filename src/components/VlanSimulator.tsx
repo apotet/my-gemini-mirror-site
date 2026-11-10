@@ -490,7 +490,7 @@ export const VlanSimulator: React.FC = () => {
           {active && (
             <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
               <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">MAC {active.pdu.srcMac.slice(-8)} → {active.pdu.dstMac.slice(-8)}</div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">IP {active.pdu.srcIp.split('.').slice(2).join('.')} → {active.pdu.dstIp.split('.').slice(2).join('.')}</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">{active.pdu.ethType === '0x0806' ? `ARP who-has ${active.pdu.vlanId}.1?` : `IP ${active.pdu.srcIp.split('.').slice(2).join('.')} → ${active.pdu.dstIp.split('.').slice(2).join('.')}`}</div>
               <div className={`rounded-lg p-2 ${active.pdu.isTagged ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-slate-50 dark:bg-slate-900'}`}>
                 {active.pdu.isTagged ? `тег VID ${active.pdu.vlanId}` : 'без тега'}
               </div>
