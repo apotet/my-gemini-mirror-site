@@ -73,8 +73,8 @@ const DHCP_STEPS: Step[] = [
     frame: ['L2 flood в VLAN', 'IP и DHCP без изменений'],
   },
   {
-    title: 'Offer',
-    from: 'srv', to: 'pc',
+    title: 'Offer → SW',
+    from: 'srv', to: 'sw',
     summary: 'Сервер предлагает 192.168.10.100. Это ещё не аренда.',
     detail: 'В этом стенде Offer идёт broadcast: у клиента нет IP, флаг broadcast взведён. Unicast Offer тоже допустим, если сервер может доставить кадр по MAC. Предложенный адрес ≠ назначенный.',
     badge: 'offer',
@@ -85,11 +85,25 @@ const DHCP_STEPS: Step[] = [
       { label: 'server', value: '192.168.10.2' },
     ],
     frame: ['yiaddr 192.168.10.100', 'маска /24, шлюз .1, DNS 192.0.2.53', 'lease 8 часов — предложение'],
-    note: 'Клиент пока остаётся 0.0.0.0.',
+    note: 'Клиент пока остаётся 0.0.0.',
   },
   {
-    title: 'Request',
-    from: 'pc', to: 'srv',
+    title: 'SW → клиент: Offer',
+    from: 'sw', to: 'pc',
+    summary: 'Коммутатор доставляет DHCP Offer клиенту в пределах VLAN.',
+    detail: 'На участке SW → ПК кадр остаётся broadcast. L2-коммутатор не назначает адрес и не меняет DHCP-поля. Предложенный IP ещё не применяется.',
+    badge: 'Offer',
+    pdu: [
+      { label: 'UDP', value: '67 → 68' },
+      { label: 'тип', value: 'Offer' },
+      { label: 'yiaddr', value: '192.168.10.100' },
+      { label: 'статус', value: 'предложен' },
+    ],
+    frame: ['L2 broadcast flood', 'Offer доставлен клиенту', 'IP пока 0.0.0.0'],
+  },
+  {
+    title: 'Request → SW',
+    from: 'pc', to: 'sw',
     summary: 'Клиент выбирает это предложение и просит именно его.',
     detail: 'Request тоже broadcast: другие серверы должны увидеть отказ. Requested IP 192.168.10.100, Server Identifier 192.168.10.2. Адрес всё ещё не применён.',
     badge: 'request',
@@ -102,10 +116,24 @@ const DHCP_STEPS: Step[] = [
     frame: ['Requested IP Address 192.168.10.100', 'Server Identifier 192.168.10.2'],
   },
   {
-    title: 'ACK и применение',
-    from: 'srv', to: 'pc',
-    summary: 'Сервер подтверждает аренду. Только теперь клиент применяет настройки.',
-    detail: 'ACK: IP 192.168.10.100/24, шлюз 192.168.10.1, DNS 192.0.2.53, аренда 8 часов. До ACK адрес был только предложен.',
+    title: 'SW → DHCP: Request',
+    from: 'sw', to: 'srv',
+    summary: 'Коммутатор распространяет DHCP Request в пределах VLAN.',
+    detail: 'Request остаётся broadcast, другие DHCP-серверы в этом сегменте тоже могут узнать о выборе клиента. SW не изменяет UDP и DHCP.',
+    badge: 'Request',
+    pdu: [
+      { label: 'UDP', value: '68 → 67' },
+      { label: 'dst', value: '255.255.255.255' },
+      { label: 'тип', value: 'Request' },
+      { label: 'просит', value: '192.168.10.100' },
+    ],
+    frame: ['L2 broadcast flood', 'Server Identifier 192.168.10.2'],
+  },
+  {
+    title: 'ACK → SW',
+    from: 'srv', to: 'sw',
+    summary: 'Сервер отправляет подтверждение аренды в сторону клиента.',
+    detail: 'Сервер формирует ACK: IP 192.168.10.100/24, шлюз 192.168.10.1, DNS 192.0.2.53, аренда 8 часов. До получения ACK клиент адрес не применяет.',
     badge: 'ack',
     pdu: [
       { label: 'UDP', value: '67 → 68' },
@@ -114,6 +142,20 @@ const DHCP_STEPS: Step[] = [
       { label: 'lease', value: '8 ч' },
     ],
     frame: ['Message Type: ACK (5)', 'Subnet Mask 255.255.255.0', 'Router 192.168.10.1'],
+  },
+  {
+    title: 'SW → ПК: ACK и применение',
+    from: 'sw', to: 'pc',
+    summary: 'Клиент получает ACK и применяет IP, маску, шлюз и DNS.',
+    detail: 'Коммутатор пересылает ACK в VLAN. Только после приёма корректного ACK клиент применяет 192.168.10.100/24, шлюз 192.168.10.1 и аренду 8 часов.',
+    badge: 'ACK',
+    pdu: [
+      { label: 'UDP', value: '67 → 68' },
+      { label: 'тип', value: 'ACK' },
+      { label: 'IP клиента', value: '192.168.10.100', warn: true },
+      { label: 'lease', value: '8 ч' },
+    ],
+    frame: ['L2 broadcast delivery', 'DHCP ACK received', 'IP 192.168.10.100/24 применён'],
   },
 ];
 
@@ -321,8 +363,8 @@ const FAULTS: Record<Lab, Fault> = {
     brief: 'Ответ пришёл на 203.0.113.5:40001, но записи трансляции нет.',
     options: ['Нет подходящей NAT-записи', 'Клиент не знает DNS', 'Сломан коммутатор L2'],
     correct: 0,
-    why: 'Обратный пакет можно доставить только по существующей записи. Без неё маршрутизатор не знает inside local.',
-    fix: 'Создать запись PAT',
+    why: 'Без сопоставления порта и inside local обратный пакет нельзя доставить. Проверь NAT-правило и тайм-аут записи; она создаётся при разрешённом исходящем трафике, а не произвольным нажатием.',
+    fix: 'Восстановить PAT и повторить исходящий обмен',
   },
   tcp: {
     id: 'syn-timeout',
@@ -384,7 +426,7 @@ function Stand({ lab, nodes, steps }: { lab: Lab; nodes: { id: string; x: number
                 <g key={n.id} transform={'translate(' + n.x + ' 110)'}>
                   <rect x="-28" y="-16" width="56" height="32" rx="6" className={current.from === n.id || current.to === n.id ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-500' : 'fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-600'} />
                   <text y="38" textAnchor="middle" className="fill-slate-900 dark:fill-slate-100" fontSize="12" fontWeight="700">{n.title}</text>
-                  <text y="51" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="9">{n.sub}</text>
+                  <text y="51" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="9">{lab === 'dhcp' && n.id === 'pc' && step === steps.length - 1 ? '192.168.10.100/24' : n.sub}</text>
                   <text y="63" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="9">{n.extra}</text>
                 </g>
               ))}
