@@ -73,19 +73,28 @@ export class LabEngine {
     // In particular, repeated Tab presses must never construct a command.
     if (!partial) return { candidates: [] };
 
-    const parsed = resolveKeywords(this.commands, tokens, mode, priv);
+    // Config-mode "do" delegates commands to privileged EXEC, as "?" help does.
+    // Keep the literal "do " prefix in the result while resolving EXEC keywords.
+    const doExec = ['config', 'config-if', 'config-vlan'].includes(mode) &&
+      tokens[0]?.toLowerCase() === 'do';
+    const commandTokens = doExec ? tokens.slice(1) : tokens;
+    const commandMode = doExec ? 'privileged' : mode;
+    const commandPrivilege = doExec ? 15 : priv;
+    const commandSpecs = doExec ? this.commands.filter(s => s.id !== 'cisco.do') : this.commands;
+
+    const parsed = resolveKeywords(commandSpecs, commandTokens, commandMode, commandPrivilege);
     if (parsed.ambiguous) return { candidates: parsed.ambiguous };
     const available = parsed.candidates.filter(spec =>
-      spec.match.length > tokens.length &&
-      spec.match.slice(0, tokens.length).every((word, i) => word === parsed.tokens[i].toLowerCase())
+      spec.match.length > commandTokens.length &&
+      spec.match.slice(0, commandTokens.length).every((word, i) => word === parsed.tokens[i].toLowerCase())
     );
 
     // Complete exactly one CLI keyword per Tab press. Command arguments (VLAN ID,
     // IP, interface name) are not part of the static keyword completion.
     const nextTokens = Array.from(new Set(
       available
-        .filter((spec) => tokens.length < spec.match.length)
-        .map((spec) => spec.match[tokens.length])
+        .filter((spec) => commandTokens.length < spec.match.length)
+        .map((spec) => spec.match[commandTokens.length])
         .filter((word) => word.startsWith(partial))
     )).sort();
 
