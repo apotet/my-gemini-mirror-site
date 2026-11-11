@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, Network, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Network } from 'lucide-react';
 import { DetectiveTopology } from './DetectiveTopology';
 
 /**
@@ -210,15 +210,8 @@ const ICONS: Record<NodeId, string> = {
   server: 'M-19-27h38v54h-38z M-13-13h26 M-13 0h26 M-13 13h26',
 };
 const desktopPoints: Record<NodeId, [number, number]> = { pc: [90, 90], switch: [345, 90], router: [650, 90], server: [910, 90] };
-const mobilePoints: Record<NodeId, [number, number]> = { pc: [48, 63], switch: [48, 182], router: [48, 310], server: [48, 443] };
+const mobilePoints: Record<NodeId, [number, number]> = { pc: [82, 74], switch: [294, 74], router: [294, 221], server: [82, 221] };
 
-function displayMac(address: string): string {
-  if (address === MACS.pc) return 'MAC ПК';
-  if (address === MACS.routerLan1) return 'MAC R1 LAN 1';
-  if (address === MACS.routerLan2) return 'MAC R1 LAN 2';
-  if (address === MACS.server) return 'MAC сервера';
-  return 'Broadcast (всем)';
-}
 function packetKind(p: Packet): string {
   if (p.kind === 'arp-req') return 'ARP Request';
   if (p.kind === 'arp-reply') return 'ARP Reply';
@@ -284,172 +277,190 @@ export const PacketJourney: React.FC = () => {
       </div>
 
       {mode === 'learn' ? (
-        <>
-          <div className="rounded-2xl border border-cyan-400/45 dark:border-cyan-500/25 bg-white dark:bg-[#0b1929] p-3 sm:p-5 lg:px-3 lg:py-[clamp(6px,0.9dvh,14px)] lg:space-y-[clamp(4px,0.65dvh,10px)] space-y-3 overflow-hidden">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2 text-sm font-semibold text-cyan-800 dark:text-cyan-200">
-                <Network className="w-4 h-4" aria-hidden="true" /> Карта сети
-              </div>
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] items-start gap-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2 sm:p-3 space-y-2">
+            <div className="flex justify-between items-center gap-2 px-1">
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <Network className="w-4 h-4 text-cyan-500" aria-hidden="true" /> Карта сети
+              </span>
               <button type="button" onClick={() => { setDetective((d) => !d); setAnswer({}); }}
                 aria-pressed={detective}
-                className={'px-3 py-2 rounded-lg text-xs border font-semibold ' + (detective
-                  ? 'border-amber-400 text-amber-800 dark:text-amber-200 bg-amber-400/10' : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300')}>
-                {detective ? 'Режим: проверяю себя' : 'Режим: изучаю'}
+                className={'rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border ' +
+                  (detective ? 'border-amber-400 bg-amber-400/15 text-amber-800 dark:text-amber-200' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300')}>
+                {detective ? 'Проверяю себя' : 'Изучаю'}
               </button>
             </div>
-            <svg className="w-full h-auto lg:h-[clamp(120px,19dvh,205px)]" viewBox={mobile ? '0 0 340 505' : '0 0 1000 190'}
-              role="img" aria-label={'ПК, коммутатор, маршрутизатор и сервер. Текущий этап: ' + current.title}>
-              <rect x={mobile ? 8 : 15} y={mobile ? 8 : 20} width={mobile ? 322 : 635} height={mobile ? 302 : 145}
-                rx="15" className="fill-cyan-50 dark:fill-cyan-950/30 stroke-cyan-300 dark:stroke-cyan-600/60" strokeDasharray="5 5" />
-              <rect x={mobile ? 8 : 650} y={mobile ? 310 : 20} width={mobile ? 322 : 335} height={mobile ? 181 : 145}
-                rx="15" className="fill-indigo-50 dark:fill-blue-950/30 stroke-indigo-300 dark:stroke-blue-500/60" strokeDasharray="5 5" />
-              <text x={mobile ? 145 : 30} y={mobile ? 26 : 37} fontSize="12" className="fill-cyan-700 dark:fill-[#67e8f9]">LAN 1 · 192.168.1.0/24</text>
-              <text x={mobile ? 145 : 755} y={mobile ? 354 : 37} fontSize="12" className="fill-blue-700 dark:fill-[#93c5fd]">LAN 2 · 192.168.2.0/24</text>
+            <svg className="w-full h-auto" viewBox={mobile ? '0 0 400 295' : '0 0 1000 205'}
+              role="img" aria-label={'Путь ПК — коммутатор — маршрутизатор — сервер. ' + current.title}>
+              {mobile ? (
+                <>
+                  <rect x="8" y="8" width="384" height="147" rx="14" className="fill-cyan-50 dark:fill-cyan-950/30 stroke-cyan-300 dark:stroke-cyan-800" strokeDasharray="5 4" />
+                  <rect x="8" y="159" width="384" height="128" rx="14" className="fill-indigo-50 dark:fill-indigo-950/30 stroke-indigo-300 dark:stroke-indigo-800" strokeDasharray="5 4" />
+                  <text x="17" y="25" fontSize="12" className="fill-cyan-800 dark:fill-cyan-300">LAN 1 · 192.168.1.0/24</text>
+                  <text x="17" y="177" fontSize="12" className="fill-indigo-800 dark:fill-indigo-300">LAN 2 · 192.168.2.0/24</text>
+                </>
+              ) : (
+                <>
+                  <rect x="12" y="10" width="635" height="185" rx="14" className="fill-cyan-50 dark:fill-cyan-950/30 stroke-cyan-300 dark:stroke-cyan-800" strokeDasharray="5 4" />
+                  <rect x="653" y="10" width="334" height="185" rx="14" className="fill-indigo-50 dark:fill-indigo-950/30 stroke-indigo-300 dark:stroke-indigo-800" strokeDasharray="5 4" />
+                  <text x="22" y="28" fontSize="12" className="fill-cyan-800 dark:fill-cyan-300">LAN 1 · 192.168.1.0/24</text>
+                  <text x="665" y="28" fontSize="12" className="fill-indigo-800 dark:fill-indigo-300">LAN 2 · 192.168.2.0/24</text>
+                </>
+              )}
               {(['pc', 'switch', 'router'] as const).map((id, i) => {
                 const dest = (['switch', 'router', 'server'] as const)[i];
-                const a = points[id]; const b = points[dest];
-                const active = (current.from === id && current.to === dest) || (current.from === dest && current.to === id);
+                const a = points[id];
+                const b = points[dest];
+                const activeLink = (current.from === id && current.to === dest) || (current.from === dest && current.to === id);
                 return <line key={id} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}
-                  className={active ? 'stroke-cyan-600 dark:stroke-cyan-400' : 'stroke-slate-400 dark:stroke-slate-500'} strokeWidth={active ? 5 : 3}
-                  strokeLinecap="round" opacity={active ? 1 : 0.85} />;
+                  className={activeLink ? 'stroke-cyan-500 dark:stroke-cyan-300' : 'stroke-slate-400 dark:stroke-slate-600'}
+                  strokeWidth={activeLink ? 5 : 3} strokeLinecap="round" />;
               })}
               {(['pc', 'switch', 'router', 'server'] as const).map(id => {
                 const [x, y] = points[id];
                 const selected = current.from === id || current.to === id;
                 return (
                   <g key={id} transform={'translate(' + x + ' ' + y + ')'}>
-                    <circle r="31" className={selected
+                    <circle r={mobile ? 27 : 31} className={selected
                       ? 'fill-cyan-100 dark:fill-cyan-900 stroke-cyan-600 dark:stroke-cyan-300'
-                      : 'fill-white dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-500'} strokeWidth="2.5" />
+                      : 'fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-500'} strokeWidth="2.5" />
                     <path d={ICONS[id]} className="stroke-slate-800 dark:stroke-slate-100" strokeWidth="2.4" strokeLinejoin="round" fill="none" />
-                    <text x={mobile ? 46 : 0} y={mobile ? -2 : 51} className="fill-slate-800 dark:fill-[#f8fafc]" fontSize={mobile ? 13 : 15}
-                      fontWeight="700" textAnchor={mobile ? 'start' : 'middle'}>{NAMES[id]}</text>
-                    <text x={mobile ? 46 : 0} y={mobile ? 15 : 68} className="fill-slate-600 dark:fill-[#a3b4c8]" fontSize={mobile ? 10 : 12}
-                      textAnchor={mobile ? 'start' : 'middle'}>{IP_SHORT[id]}</text>
+                    <text x="0" y={mobile ? 40 : 51} className="fill-slate-900 dark:fill-slate-100" fontSize={mobile ? 12 : 14}
+                      fontWeight="700" textAnchor="middle">{NAMES[id]}</text>
+                    <text x="0" y={mobile ? 54 : 68} className="fill-slate-600 dark:fill-slate-400" fontSize={mobile ? 9 : 11}
+                      textAnchor="middle">{IP_SHORT[id]}</text>
                   </g>
                 );
               })}
               {travel ? (
                 <g key={'travel-' + step}>
-                  <path id="packet-hop-path" d={track} fill="none" stroke="none"/>
                   <g>
-                    <rect x="-34" y="-14" width="68" height="28" rx="12" fill={current.packet?.kind.startsWith('arp') ? '#fbbf24' : '#34d399'} stroke="#051220" strokeWidth="2" />
+                    <rect x="-28" y="-12" width="56" height="24" rx="10"
+                      fill={current.packet?.kind.startsWith('arp') ? '#fbbf24' : '#34d399'} />
                     <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#081525">
                       {current.packet?.kind.startsWith('arp') ? 'ARP' : 'ICMP'}
                     </text>
-                    <animateMotion key={'move-' + step + (mobile ? '-m' : '-d')} dur="1.7s" path={track} fill="freeze" />
+                    <animateMotion key={'move-' + step + (mobile ? '-m' : '-d')} dur="1.35s" path={track} fill="freeze" />
                   </g>
                 </g>
               ) : (
-                <g transform={'translate(' + (to[0] + (mobile ? 0 : 0)) + ' ' + (to[1] - 38) + ')'}>
-                  <rect x="-35" y="-13" width="70" height="26" rx="11" fill="#fbbf24" />
-                  <text x="0" y="4" fontSize="10" fontWeight="800" fill="#0f172a" textAnchor="middle">
-                    {current.packet ? 'Обработка' : 'Старт'}
+                <g transform={'translate(' + to[0] + ' ' + (to[1] - 38) + ')'}>
+                  <rect x="-34" y="-12" width="68" height="24" rx="10" fill={current.packet?.kind.startsWith('arp') ? '#fbbf24' : '#34d399'} />
+                  <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#0f172a">
+                    {current.packet ? (current.packet.kind.startsWith('arp') ? 'ARP' : 'ICMP') : 'Старт'}
                   </text>
                 </g>
               )}
             </svg>
-            <div className="flex justify-between items-center gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 flex-wrap">
-              <span className="font-semibold"><span className="text-amber-700 dark:text-amber-300">{NAMES[current.from]}</span>
-                <span className="px-2 text-cyan-700 dark:text-cyan-400">{travel ? '→' : '·'}</span>
-                <span className="text-cyan-800 dark:text-cyan-200">{travel ? NAMES[current.to] : 'обработка на месте'}</span>
-              </span>
-              <span className="font-mono text-slate-600 dark:text-slate-400">{step + 1} / {EVENTS.length}</span>
+            <div className="flex flex-wrap justify-between gap-1 px-1 text-[10px] text-slate-600 dark:text-slate-400">
+              <span>ARP — янтарный · ICMP — зелёный</span>
+              <span>{NAMES[current.from]} {travel ? '→ ' + NAMES[current.to] : '· обработка'}</span>
             </div>
           </div>
 
-          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-4 z-30 rounded-xl border border-cyan-500/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] p-3 lg:px-3 lg:py-[clamp(6px,0.8dvh,12px)] space-y-3 lg:space-y-[clamp(4px,0.55dvh,9px)]" aria-label="Управление путём пакета">
-            <label htmlFor="ping-journey-scrub" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Прогресс — двигай бегунок, чтобы вернуться к любому моменту
-            </label>
-            <input id="ping-journey-scrub" type="range" min="0" max={EVENTS.length - 1} step="1" value={step}
-              onChange={e => go(Number(e.target.value))} disabled={detective}
-              className="w-full accent-cyan-400 disabled:opacity-40 lg:h-2" />
-            <div className="flex flex-wrap items-center gap-2 justify-between">
-              <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
-                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 font-semibold disabled:opacity-30">
-                <ChevronLeft className="w-4 h-4 inline" /> Назад
-              </button>
-              <button type="button" onClick={restart}
-                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300" aria-label="Начать ping заново">
-                <RotateCcw className="w-4 h-4" />
-              </button>
-              <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
-                className="min-h-11 lg:min-h-[clamp(36px,4.5dvh,44px)] px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold disabled:opacity-40">
-                Следующий шаг <ChevronRight className="w-4 h-4 inline" />
-              </button>
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
+            <div className="flex justify-between items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span>Шаг {step + 1} / {EVENTS.length}</span>
+              <span className="font-mono">{current.packet ? packetKind(current.packet) : 'Подготовка'}</span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 lg:text-[11px]">{detective ? 'В режиме проверки надо ответить на вопрос, прежде чем двигаться дальше.' : 'Автопереходов нет: ты сам задаёшь скорость движения пакета.'}</p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 p-4 sm:p-5 lg:px-3 lg:py-[clamp(8px,1dvh,16px)] lg:space-y-[clamp(5px,0.7dvh,10px)] space-y-3">
-            <h3 className="text-lg lg:text-base font-black text-slate-900 dark:text-white">{current.title}</h3>
-            <p className="text-base lg:text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
-              {challenge && !solved ? 'Устройство получило данные. Прими решение и посмотри, что произойдёт.' : current.summary}
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{current.title}</h3>
+            <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+              {challenge && !solved ? 'Посмотри на ситуацию и выбери действие устройства.' : current.summary}
             </p>
+
             {challenge && !solved ? (
-              <div className="space-y-3 rounded-xl border border-amber-500/50 bg-amber-400/5 p-3">
-                <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">{challenge.prompt}</p>
-                <div className="grid gap-2 sm:grid-cols-3">
+              <div className="space-y-2 rounded-xl border border-amber-400/60 bg-amber-400/5 p-2.5">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">{challenge.prompt}</p>
+                <div className="grid gap-1.5">
                   {challenge.options.map((option, i) => (
                     <button type="button" key={option} onClick={() => setAnswer(prev => ({ ...prev, [step]: i }))}
-                      className={'min-h-12 rounded-xl px-3 py-2 text-sm text-left font-semibold border ' +
-                        (choice === i ? 'border-rose-400 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-100' : 'border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:border-cyan-500 dark:hover:border-cyan-400')}>
+                      className={'min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium ' +
+                        (choice === i ? 'border-amber-400 bg-amber-100 dark:bg-amber-950/40 text-slate-900 dark:text-slate-100' :
+                          'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200')}>
                       {option}
                     </button>
                   ))}
                 </div>
-                {choice !== undefined && choice !== challenge.correct && <p role="status" className="text-sm text-rose-700 dark:text-rose-300">Не совсем. Проверь, какую роль играет это устройство, и попробуй ещё раз.</p>}
+                {choice !== undefined && !solved && <p role="status" className="text-xs text-rose-700 dark:text-rose-300">Пока нет. Подумай, на каком уровне работает устройство.</p>}
               </div>
             ) : (
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{current.detail}</p>
+              <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{current.detail}</p>
             )}
-            {challenge && solved && <p className="text-sm text-emerald-700 dark:text-emerald-300 flex gap-2"><ShieldCheck className="h-4 w-4 flex-none mt-0.5" /> {challenge.why}</p>}
-            {current.note && (!challenge || solved) && <p className="rounded-lg border-l-4 border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 px-3 py-2 text-sm text-cyan-800 dark:text-cyan-100">{current.note}</p>}
+            {challenge && solved && <p className="text-xs text-emerald-700 dark:text-emerald-300">{challenge.why}</p>}
+            {current.note && solved && <p className="text-[11px] text-cyan-800 dark:text-cyan-300">{current.note}</p>}
 
-            {current.packet && (!challenge || solved) && (
-              <div className="space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Что несёт кадр</div>
-                <div className="rounded-2xl border-2 border-amber-400/70 bg-amber-400/10 p-3 space-y-2">
-                  <div className="font-bold text-amber-800 dark:text-amber-200 text-sm">Ethernet · внешняя упаковка</div>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-                    <div className="min-w-0 space-y-1">
-                      <span className="block text-[11px] text-slate-700 dark:text-slate-300">Source MAC · откуда</span>
-                      <span className="block font-semibold text-slate-900 dark:text-white">{displayMac(current.packet.srcMac)}</span>
-                      <span className="block font-mono text-[11px] sm:text-xs tabular-nums text-amber-900/80 dark:text-amber-100/80 break-all">{current.packet.srcMac}</span>
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <span className="block text-[11px] text-slate-700 dark:text-slate-300">Destination MAC · куда</span>
-                      <span className="block font-semibold text-slate-900 dark:text-white">{displayMac(current.packet.dstMac)}</span>
-                      <span className="block font-mono text-[11px] sm:text-xs tabular-nums text-amber-900/80 dark:text-amber-100/80 break-all">{current.packet.dstMac}</span>
-                    </div>
+            {current.packet && solved && (
+              <div className="space-y-1.5">
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2 break-all">
+                    MAC {current.packet.srcMac.slice(-8)} → {current.packet.dstMac.slice(-8)}
                   </div>
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-amber-400/30 pt-2">
-                    <span className="text-[11px] text-slate-700 dark:text-slate-300">EtherType · тип содержимого</span>
-                    <span className="font-mono text-xs font-semibold text-amber-900 dark:text-amber-100">{current.packet.kind.startsWith('arp') ? '0x0806 · ARP' : '0x0800 · IPv4'}</span>
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2 break-all">
+                    {current.packet.kind.startsWith('arp')
+                      ? 'ARP who-has ' + (current.packet.arpTargetIp || '—')
+                      : 'IP ' + current.packet.srcIp + ' → ' + current.packet.dstIp}
                   </div>
-                  {current.packet.kind.startsWith('arp') ? (
-                    <div className="rounded-xl border-2 border-violet-400/60 bg-violet-500/10 p-3 text-sm">
-                      <div className="font-bold text-violet-800 dark:text-violet-200">{packetKind(current.packet)} · внутри Ethernet, без IPv4</div>
-                      <p className="mt-1 text-slate-700 dark:text-slate-200">Sender IP: {current.packet.arpSenderIp}</p>
-                      <p className="text-slate-700 dark:text-slate-200">Target IP: {current.packet.arpTargetIp}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Это поля ARP, а не IP-заголовок.</p>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border-2 border-emerald-400/70 bg-emerald-500/10 p-3 space-y-2">
-                      <div className="font-bold text-emerald-800 dark:text-emerald-200 text-sm">IPv4 · внутренняя упаковка</div>
-                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">{current.packet.srcIp} → {current.packet.dstIp}</p>
-                      <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">TTL: {current.packet.ttl}</p>
-                      <div className="rounded-lg border-2 border-cyan-400/70 bg-cyan-500/15 px-3 py-2 text-sm font-bold text-cyan-800 dark:text-cyan-100">
-                        {packetKind(current.packet)} · полезная нагрузка
-                      </div>
-                    </div>
-                  )}
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">EtherType {current.packet.kind.startsWith('arp') ? '0x0806' : '0x0800'}</div>
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">
+                    {current.packet.kind.startsWith('arp') ? 'ARP · без TTL' : 'TTL ' + current.packet.ttl}
+                  </div>
                 </div>
+                <details className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40">
+                  <summary className="flex cursor-pointer list-none justify-between gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                    <span>Подробнее о кадре · Ethernet II</span>
+                    <span className="group-open:hidden text-cyan-700 dark:text-cyan-300">Показать</span>
+                    <span className="hidden group-open:inline text-cyan-700 dark:text-cyan-300">Скрыть</span>
+                  </summary>
+                  <div className="border-t border-slate-200 dark:border-slate-800 px-3 py-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div><span className="text-slate-500">Preamble + SFD</span><p>7 + 1 байт на линии</p></div>
+                    <div><span className="text-slate-500">Destination MAC · 6 байт</span><p className="font-mono break-all">{current.packet.dstMac}</p></div>
+                    <div><span className="text-slate-500">Source MAC · 6 байт</span><p className="font-mono break-all">{current.packet.srcMac}</p></div>
+                    <div><span className="text-slate-500">802.1Q</span><p>Нет тега · access Ethernet</p></div>
+                    <div><span className="text-slate-500">EtherType · 2 байта</span><p className="font-mono">{current.packet.kind.startsWith('arp') ? '0x0806 · ARP' : '0x0800 · IPv4'}</p></div>
+                    {current.packet.kind.startsWith('arp') ? (
+                      <div><span className="text-slate-500">ARP</span>
+                        <p className="font-mono break-all">Sender: {current.packet.arpSenderIp} · Target: {current.packet.arpTargetIp}</p>
+                        <p className="text-[10px] text-slate-500">Без IP-заголовка и TTL</p></div>
+                    ) : (
+                      <div><span className="text-slate-500">IPv4 + ICMP</span>
+                        <p className="font-mono break-all">{current.packet.srcIp} → {current.packet.dstIp}</p>
+                        <p>TTL {current.packet.ttl} · {packetKind(current.packet)}</p></div>
+                    )}
+                    <div><span className="text-slate-500">FCS · 4 байта</span><p>CRC32, значение не вычисляется</p></div>
+                    <p className="col-span-full text-[10px] text-slate-500 dark:text-slate-400">
+                      Учебная визуализация, не реальный захват. Преамбула/SFD не входят в размер Ethernet-кадра.
+                    </p>
+                  </div>
+                </details>
               </div>
             )}
-          </div>
+            {!current.packet && <p className="text-[11px] text-slate-500 dark:text-slate-400">На этом шаге Ethernet-кадр не передаётся.</p>}
 
-        </>
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => go(step - 1)} disabled={step === 0}
+                  className="min-h-10 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 disabled:opacity-30" aria-label="Предыдущий шаг">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={restart}
+                  className="min-h-10 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100" aria-label="Начать ping заново">
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => go(step + 1)} disabled={step === EVENTS.length - 1 || !solved}
+                  className="min-h-10 flex-1 rounded-lg bg-cyan-500 text-slate-950 text-xs font-bold disabled:opacity-40">
+                  Следующий шаг <ChevronRight className="w-4 h-4 inline" />
+                </button>
+              </div>
+              <label htmlFor="ping-journey-scrub" className="sr-only">Выбрать шаг передачи</label>
+              <input id="ping-journey-scrub" type="range" min="0" max={EVENTS.length - 1} step="1" value={step}
+                onChange={e => go(Number(e.target.value))} disabled={detective}
+                className="w-full accent-cyan-500 disabled:opacity-30" />
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                {detective ? 'В проверке ответь на вопрос, чтобы двигаться дальше.' : 'Перемещайся по шагам в своём темпе.'}
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1929] p-4 sm:p-6 space-y-4">
           <h3 className="text-lg font-black text-slate-900 dark:text-white">Сетевой детектив</h3>
