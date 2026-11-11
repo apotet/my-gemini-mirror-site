@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, Network, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Network } from 'lucide-react';
 import { DetectiveTopology } from './DetectiveTopology';
 
 /**
@@ -212,13 +212,6 @@ const ICONS: Record<NodeId, string> = {
 const desktopPoints: Record<NodeId, [number, number]> = { pc: [90, 90], switch: [345, 90], router: [650, 90], server: [910, 90] };
 const mobilePoints: Record<NodeId, [number, number]> = { pc: [82, 74], switch: [294, 74], router: [294, 221], server: [82, 221] };
 
-function displayMac(address: string): string {
-  if (address === MACS.pc) return 'MAC ПК';
-  if (address === MACS.routerLan1) return 'MAC R1 LAN 1';
-  if (address === MACS.routerLan2) return 'MAC R1 LAN 2';
-  if (address === MACS.server) return 'MAC сервера';
-  return 'Broadcast (всем)';
-}
 function packetKind(p: Packet): string {
   if (p.kind === 'arp-req') return 'ARP Request';
   if (p.kind === 'arp-reply') return 'ARP Reply';
