@@ -390,9 +390,13 @@ export const PacketJourney: React.FC = () => {
               <button key={item.id} type="button" onClick={() => { setFaultIndex(i); setFaultAnswer(null); setFaultFixed(false); }} className={'px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer ' + (faultIndex === i ? 'bg-cyan-500 border-cyan-500 text-slate-950' : 'border-slate-200 dark:border-slate-700')}>{item.name}</button>
             ))}
           </div>
+          <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
+            <span className="font-bold">{fault.name} · Задание</span>
+            <p className="mt-1 leading-relaxed">{fault.symptom}</p>
+          </div>
           <DetectiveTopology key={fault.id} faultId={fault.id} fixed={faultFixed} />
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-sm space-y-2">
-            <p className="text-slate-700 dark:text-slate-200">{fault.symptom}</p>
+            <p className="font-semibold text-slate-800 dark:text-slate-200">Выбери причину неисправности</p>
             <div className="grid sm:grid-cols-3 gap-1.5">
               {fault.options.map((option, i) => (
                 <button key={option} type="button" onClick={() => { setFaultAnswer(i); setFaultFixed(false); }} className={'rounded-lg border px-2 py-2 text-left text-xs cursor-pointer ' + (faultAnswer === i ? 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30' : 'border-slate-200 dark:border-slate-700')}>{option}</button>
