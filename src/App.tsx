@@ -1,3 +1,4 @@
+import type { PracticeLink } from './data/practiceLinks';
 import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { ExamView, type ExamViewHandle } from './components/ExamView';
@@ -22,6 +23,7 @@ function readStoredBool(key: string, fallback: boolean): boolean {
 }
 
 export function App() {
+  const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number } | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
   const examViewRef = useRef<ExamViewHandle>(null);
   const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
@@ -76,7 +78,16 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenPractice = (link: PracticeLink) => {
+    setPracticeRequest(previous => ({ link, id: (previous?.id ?? 0) + 1 }));
+    setTheoryQuestionId(null);
+    setTheoryFromExam(false);
+    setActiveTab('practice');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleTabChange = (tab: NavTab) => {
+    if (tab === 'practice') setPracticeRequest(null);
     if (tab === 'exam' && activeTab === 'exam') examViewRef.current?.returnToParameters();
     setActiveTab(tab);
     if (tab !== 'theory') {
@@ -119,7 +130,7 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+          <ExamView onOpenPractice={handleOpenPractice} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
             setActiveTab('theory');
@@ -128,6 +139,7 @@ export function App() {
         )}
         {(activeTab === 'theory' || activeTab === 'osi') && (
           <TheoryView
+            onOpenPractice={handleOpenPractice}
             initialQuestionId={theoryQuestionId}
             fromExam={theoryFromExam}
             onReturnToExam={handleReturnToExam}
@@ -147,7 +159,7 @@ export function App() {
             initialSubTab={ipv4InitialSubTab}
           />
         )}
-        {activeTab === 'practice' && <PracticeHub />}
+        {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'} initialPracticeLink={practiceRequest?.link} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
       </main>
 
@@ -160,6 +172,7 @@ export function App() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
+          if (tab === 'practice') setPracticeRequest(null);
           setActiveTab(tab);
           if (tab !== 'theory') {
             setTheoryQuestionId(null);

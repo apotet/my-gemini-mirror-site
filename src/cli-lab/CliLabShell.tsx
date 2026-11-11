@@ -69,8 +69,10 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC = () => {
-  const [scenarioId, setScenarioId] = useState(SCENARIOS[0].id);
+export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialScenarioId }) => {
+  const [scenarioId, setScenarioId] = useState(() =>
+    SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
+  );
   const scenario = SCENARIOS.find((s) => s.id === scenarioId) ?? SCENARIOS[0];
   const [labMode, setLabMode] = useState<LabMode>('learn');
   const [history, setHistory] = useState<HistoryLine[]>([]);
@@ -371,6 +373,7 @@ export const CliLabShell: React.FC = () => {
           <button
             key={s.id}
             type="button"
+            aria-pressed={scenarioId === s.id}
             onClick={() => { setScenarioId(s.id); focusCliInput(); }}
             className={
               scenarioId === s.id

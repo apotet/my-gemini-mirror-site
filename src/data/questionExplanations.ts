@@ -1,3 +1,4 @@
+import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
 import { APPLIED_INDIVIDUAL_DEEP, type ProfessionalExplanation } from './questionExplanationsApplied';
 
@@ -11,6 +12,7 @@ export interface QuestionDeepDive {
   deepAnalysis: string;
   engineeringDeep?: string;
   professional?: ProfessionalExplanation;
+  practiceLink?: PracticeLink;
   hasIndividualDeep: boolean;
   commonTrap: string;
   practicalTip?: string;
@@ -30,7 +32,7 @@ export interface QuestionDeepDive {
 /** Hand-authored deep dives for advanced IDs (no generic L1–L7 paste). */
 const ADVANCED_INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string; professional?: ProfessionalExplanation }
+  { brief: string; deep: string; trap?: string; next?: string; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
 > = {
   'l12-d01': {
     "brief": "Сначала проверьте, распознаётся ли подключение компьютера как конечное и настроена ли защита от появления другого коммутатора.",
@@ -46,6 +48,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     }
   },
   'l12-d02': {
+    practiceLink: "vlan",
     brief: "Первый коммутатор переводит данные в сеть сервера; между коммутаторами нужна уже эта сеть.",
     deep: "Компьютер сначала передаёт данные первому коммутатору, который связывает его сеть с сетью сервера. После этого межсетевого перехода данные идут ко второму коммутатору уже по сети сервера. Продлевать исходную сеть компьютера через соединение между коммутаторами для такого обмена не требуется.\n\nНа S1 шлюз компьютера — SVI 30, а шлюз сервера — SVI 10. S1 выполняет маршрутизацию из VLAN 30 в VLAN 10 и отправляет по trunk S1—S2 кадр VLAN 10. Она разрешена на этом trunk; S2 выполняет обычную L2-пересылку к access-порту сервера.\n\nОтправка по trunk кадра VLAN 30 игнорирует уже выполненную маршрутизацию на S1. S2 не переводит этот обмен между сетями заменой тега и не выбирает VLAN по адресу IP сервера. Поэтому отсутствие VLAN 30 в allowed list здесь не мешает указанному пути; для обратного обмена сервер использует свой шлюз SVI 10 на S1.",
     trap: "Не требовать переноса исходной сети через каждый участок после перехода в сеть получателя.",
@@ -103,6 +106,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
 Пакет в хост из /25 идёт в /25, даже если metric хуже.`,
   },
   'l3-d05': {
+    practiceLink: "nat",
     "brief": "Чтобы вернуть ответ нужному компьютеру, устройство учитывает адреса, порты и протокол обмена.",
     "deep": "Один внешний адрес могут одновременно использовать несколько внутренних компьютеров. Одного этого адреса недостаточно, чтобы понять, кому вернуть ответ. Устройство хранит соответствия, в которых различаются адреса участников, номера портов и используемый протокол.\n\nЭто работа PAT, также называемого NAT overload. Для TCP или UDP обмен описывают адресами источника и назначения, их портами и протоколом; эту пятёрку часто называют 5-tuple. Транслятор сопоставляет внутренние и внешние адреса и порты с учётом протокола. При проверке таблицы нужны именно эти значения; правила выделения портов и зависимость сопоставления от удалённой стороны определяются реализацией.\n\nMAC-адрес клиента относится к локальному каналу и не заменяет сведения об обмене с удалённым сервером. VLAN ID задаёт принадлежность к локальной сети, а DSCP обозначает класс обработки трафика. Ни один из этих признаков по отдельности не различает все сеансы, использующие общий внешний адрес.",
     "trap": "Считать общий внешний адрес или локальную метку устройства достаточным описанием каждого отдельного обмена.",
@@ -239,6 +243,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     }
   },
   "tcpip-d01": {
+    practiceLink: "packet",
     "brief": "Данные пришли к маршрутизатору по одному участку, а дальше пойдут по другому. Он убирает местную оболочку, выбирает путь по адресу назначения и создаёт новую оболочку для следующего соседа.",
     "deep": "Данные пришли к маршрутизатору по одному участку, а дальше пойдут по другому. Он убирает местную оболочку, выбирает путь по адресу назначения и создаёт новую оболочку для следующего соседа.\n\nЭто декапсуляция L2, решение на L3 и новая инкапсуляция L2. Без NAT конечные IP src/dst обычно сохраняются; в новом Ethernet-кадре Source MAC принадлежит выходному интерфейсу, Destination MAC — следующему узлу. IPv4 TTL уменьшается.\n\nНовая местная доставка не требует менять адрес клиента, транспортные порты или содержимое приложения. Сохранение конечных IP не означает неизменности всего пакета: TTL обновляется, а вместе с ним и контрольная сумма IPv4-заголовка.",
     "trap": "Смотрите точные формулировки стандартов и исключения.",
@@ -457,7 +462,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation }
+  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -494,6 +499,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     deepAnalysis,
     engineeringDeep,
     professional: individual?.professional,
+    practiceLink: individual?.practiceLink,
     hasIndividualDeep: Boolean(individual),
     commonTrap: individual?.trap || detectCommonTrap(question),
     practicalTip: question.remember || getPracticalTip(category),

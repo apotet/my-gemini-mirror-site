@@ -1,3 +1,4 @@
+import type { PracticeLink } from '../data/practiceLinks';
 import React, { useEffect, useState } from 'react';
 import { BookOpen, Layers, FileText, Table2, Library } from 'lucide-react';
 import { TheoryModels } from './TheoryModels';
@@ -8,6 +9,7 @@ import { TheoryRazbory } from './TheoryRazbory';
 import { KnowledgeBase } from './KnowledgeBase';
 
 interface TheoryViewProps {
+  onOpenPractice?: (link: PracticeLink) => void;
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
@@ -28,6 +30,7 @@ const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = 
 ];
 
 export const TheoryView: React.FC<TheoryViewProps> = ({
+  onOpenPractice,
   initialQuestionId,
   fromExam,
   onReturnToExam,
@@ -105,6 +108,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       )}
       {section === 'razbory' && (
         <TheoryRazbory
+          onOpenPractice={onOpenPractice}
           initialQuestionId={effectiveQuestionId}
           fromExam={fromExam}
           onReturnToExam={onReturnToExam}
