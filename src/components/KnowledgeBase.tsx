@@ -16,8 +16,8 @@ type DifficultyFilter = 'all' | Lesson['difficulty'];
 const DIFFICULTIES: { id: DifficultyFilter; label: string }[] = [
   { id: 'all', label: 'Все' },
   { id: 'beginner', label: 'База' },
-  { id: 'applied', label: 'Практика' },
-  { id: 'advanced', label: 'Разбор полётов' },
+  { id: 'applied', label: 'Средний' },
+  { id: 'advanced', label: 'Продвинутый' },
 ];
 const DIFFICULTY_ORDER = { beginner: 0, applied: 1, advanced: 2 };
 const FILTER_KEYS = {
