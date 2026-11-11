@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { LESSONS, searchLessons, getLesson } from '../data/lessons';
 import type { Lesson } from '../data/lessons/types';
+import type { PracticeLink } from '../data/practiceLinks';
 import { LessonView } from './LessonView';
 import { Library, Search } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface KnowledgeBaseProps {
   initialLessonId?: string | null;
   returnQuestionId?: string | null;
   onOpenQuestion?: (questionId: string) => void;
+  onOpenPractice?: (link: PracticeLink) => void;
   onClearLesson?: () => void;
 }
 
@@ -42,6 +44,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   initialLessonId,
   returnQuestionId,
   onOpenQuestion,
+  onOpenPractice,
   onClearLesson,
 }) => {
   const [query, setQuery] = useState('');
@@ -75,6 +78,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         }}
         returnQuestionId={returnQuestionId}
         onOpenQuestion={onOpenQuestion}
+        onOpenPractice={onOpenPractice}
         onBack={() => {
           setOpenId(null);
           onClearLesson?.();

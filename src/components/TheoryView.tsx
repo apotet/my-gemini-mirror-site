@@ -100,6 +100,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       {section === 'scenarios' && <TheoryScenarios />}
       {section === 'knowledge' && (
         <KnowledgeBase
+          onOpenPractice={onOpenPractice}
           initialLessonId={lessonId}
           returnQuestionId={returnQuestionId}
           onOpenQuestion={openQuestionFromLesson}

@@ -1,4 +1,6 @@
 import { GlossaryText } from './GlossaryText';
+import { PracticeLinkButton } from './PracticeLinkButton';
+import type { PracticeLink } from '../data/practiceLinks';
 import React, { useMemo, useState } from 'react';
 import { Lesson } from '../data/lessons/types';
 import { StudyTextToggle } from './StudyTextToggle';
@@ -12,10 +14,11 @@ interface LessonViewProps {
   onBack: () => void;
   onOpenLesson?: (lessonId: string) => void;
   onOpenQuestion?: (questionId: string) => void;
+  onOpenPractice?: (link: PracticeLink) => void;
   returnQuestionId?: string | null;
 }
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, returnQuestionId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
   const [copied, setCopied] = useState<string | null>(null);
@@ -78,6 +81,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               {b.heading}
             </h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line"><GlossaryText key={textMode}>{b.body}</GlossaryText></p>
+            <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
           </section>
         ))}
       </div>
