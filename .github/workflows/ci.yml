@@ -43,6 +43,9 @@ jobs:
       - name: Cisco show interfaces and help regression
         run: node scripts/cli-show-interfaces.test.mjs
 
+      - name: Cisco command catalog integrity
+        run: node scripts/cli-command-catalog.test.mjs
+
       - name: Two-switch VLAN path regression
         run: node scripts/cli-two-switch.test.mjs
 
