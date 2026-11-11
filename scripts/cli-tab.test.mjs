@@ -53,8 +53,6 @@ const doCommands = [
   { id: 'show-vlan', match: ['show','vlan','brief'], modes: ['privileged'] },
 ].map(x => ({ ...x, handler: () => ({ output: '' }) }));
 for (const mode of ['config','config-if','config-vlan']) {
-  const dev = engine.getState().devices.sw1;
-  dev.modeCtx = { mode };
   // The original engine command list is deliberately mocked; create a real
   // engine with both config and privileged commands for the do transition.
   const withDo = new LabEngine(
