@@ -46,7 +46,8 @@ const rewrittenL57MeaningOnlyIds = ["l6-01", "l7-01", "l7-05", "gen-osi-a-18", "
 ids.push(...["l7-02", "l7-03", "l7-04", "gen-osi-a-19", "new-l7-dns", "new-l7-dhcp", "review-ptp-16", "review-syslog-23", "gen-port-6", "gen-port-7", "gen-port-8", "l57-x04", "l57-x05", "l57-x06", "l57-x14", "l57-x19", "l57-x20", "l57-d04", "l57-d06"]);
 const newDiagnosticDualIds = ['tr-03', 'tr-05', 'tr-10', 'gen-diag-6', 'gen-diag-8', 'gen-diag-11', 'new-ts-photo-panel', 'new-ts-vlan'];
 const newL3DualIds = ['l3-05', 'l3-16'];
-const fourParagraphDualIds = [...newDiagnosticDualIds, ...newL3DualIds];
+const newPhotoDualIds = ["photo-formfactor-compat", "photo-dirty-end", "photo-otdr-use", "photo-polarity", "l1v2-c-qsfp-cage", "l1v2-c-poe-budget", "l1v2-c-converter-polarity"];
+const fourParagraphDualIds = [...newDiagnosticDualIds, ...newL3DualIds, ...newPhotoDualIds];
 ids.push(...fourParagraphDualIds);
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds) {
