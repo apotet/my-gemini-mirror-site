@@ -158,5 +158,21 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
     }
   }
 
-  return format(items);
+  const output = format(items);
+  // Cisco-style 'keyword?' completes the current keyword. 'keyword ?'
+  // requests its children. Make this distinction discoverable without
+  // pretending that missing whitespace executes the next help level.
+  if (!spaceBeforeQuestion && partial && items.has(partial)) {
+    const prefix = [...completed, partial];
+    const hasChildren = specs.some(spec =>
+      spec.match.length > prefix.length &&
+      prefix.every((keyword, i) => spec.match[i] === keyword)
+    );
+    if (hasChildren) {
+      return output + '\n\n' +
+        '  Подсказка: для списка подкоманд добавьте пробел перед ?: ' +
+        prefix.join(' ') + ' ?';
+    }
+  }
+  return output;
 }
