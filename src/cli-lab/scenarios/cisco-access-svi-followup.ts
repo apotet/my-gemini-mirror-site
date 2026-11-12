@@ -15,7 +15,19 @@ const initialState: NetworkState = {
       vendor: 'cisco-ios',
       privilege: 0,
       modeCtx: { mode: 'exec' },
-      interfaces: {},
+      interfaces: {
+        'FastEthernet0/1': {
+          name: 'FastEthernet0/1',
+          adminUp: true,
+          switchport: { mode: 'access', accessVlan: 10 },
+        },
+        'FastEthernet0/2': {
+          name: 'FastEthernet0/2',
+          adminUp: false,
+          switchport: { mode: 'unset' },
+        },
+        Vlan10: { name: 'Vlan10', adminUp: false },
+      },
       vlans: {
         1: { id: 1, name: 'default', active: true },
         10: { id: 10, name: 'Users', active: true },
@@ -24,21 +36,6 @@ const initialState: NetworkState = {
     },
   },
 };
-// Keep the canonical interface key and type, rather than introducing a phantom port.
-initialState.devices.sw1.interfaces = {
-  'FastEthernet0/1': {
-    name: 'FastEthernet0/1',
-    adminUp: true,
-    switchport: { mode: 'access', accessVlan: 10 },
-  },
-  'FastEthernet0/2': {
-    name: 'FastEthernet0/2',
-    adminUp: false,
-    switchport: { mode: 'unset' },
-  },
-  Vlan10: { name: 'Vlan10', adminUp: false },
-};
-
 const sviIp: Scenario['goals'][number] = {
   type: 'if.ipv4', device: 'sw1', ifName: 'Vlan10',
   address: '192.168.10.2', prefix: 24,
