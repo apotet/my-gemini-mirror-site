@@ -1052,6 +1052,20 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "topology change": ["Topology Change", "Изменение топологии", false, "В RSTP переход non-edge-порта в Forwarding инициирует распространение информации об изменении топологии и обновление MAC-таблиц."],
+  "Listening": ["Listening State", "Прослушивание STP", false, "Промежуточное состояние классического STP: порт обрабатывает BPDU, но ещё не изучает адреса и не пересылает пользовательские кадры."],
+  "protocol migration": ["Protocol Migration", "Совместимость версий STP", false, "Механизм перехода к обмену, совместимому с классическим STP при обнаружении старого соседа."],
+  "PVID_Inc": ["PVID Inconsistent", "Несогласованность VLAN порта", false, "Диагностическое состояние Cisco STP при несовпадении ожидаемой принадлежности служебной информации VLAN."],
+  "RECV_PVID_ERR": ["Received PVID Error", "Ошибка принятого идентификатора VLAN", false, "Сообщение Cisco о несоответствии VLAN в принятой служебной информации STP; требует проверки native VLAN и тегирования."],
+  "Max Hops": ["Maximum Hops", "Максимум переходов MST", false, "Начальное значение счётчика оставшихся переходов для распространения информации дерева внутри MST-региона."],
+  "remaining hops": ["Remaining Hops", "Оставшиеся переходы", false, "Счётчик допустимых переходов MST-информации через мосты региона; исчерпание ограничивает её распространение."],
+  "Hello Time": ["Hello Time", "Период сообщений дерева", false, "Интервал отправки служебных сообщений STP; не увеличивает допустимое число MST-переходов."],
+  "Max Age": ["Maximum Age", "Максимальный возраст информации", false, "Таймер допустимого возраста информации STP; не заменяет механизм remaining hops внутри MST-региона."],
+  "EtherChannel": ["EtherChannel", "Агрегирование каналов Cisco", false, "Объединение нескольких физических линий в логический канал, который STP рассматривает как один порт."],
+  "Port-channel": ["Port-Channel", "Логический интерфейс агрегата", false, "Интерфейс агрегированного канала; STP назначает ему общие роль и состояние для соответствующего дерева."],
+  "bundled": ["Bundled Member", "Участник агрегата", false, "Состояние физического интерфейса, который включён в работающий логический агрегированный канал."],
+  "EAP-TLS": ["Extensible Authentication Protocol — Transport Layer Security", "Аутентификация EAP с TLS", true, "Метод EAP с аутентификацией по сертификатам; требует корректной проверки доверия к сертификатам."],
+  "MAB": ["MAC Authentication Bypass", "Аутентификация по MAC", true, "Проверка доступа по MAC-адресу; сама по себе не отличает другой хост, воспроизводящий разрешённый MAC."],
   "DTP": ["Dynamic Trunking Protocol", "Динамическое согласование trunk", true, "Протокол Cisco для согласования режима trunk; пользовательским портам обычно задают явный access."],
   "double tagging": ["Double Tagging", "Двойное тегирование", false, "Атака с вложенными тегами VLAN, при которой снятие внешнего тега на первом переходе может открыть внутренний тег следующему мосту."],
   "VLAN hopping": ["VLAN Hopping", "Переход в чужую VLAN", false, "Обход ожидаемой изоляции VLAN, например через согласование trunk или обработку вложенных тегов."],

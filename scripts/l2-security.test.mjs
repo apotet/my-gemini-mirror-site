@@ -41,7 +41,7 @@ for (const id of ids) {
   assert.ok(lesson?.professional?.blocks.length);
   assert.equal(data.LESSONS.filter(l => l.relatedQuestionIds.includes(id)).length, 1);
 }
-for (const term of ['DTP', 'double tagging', 'VLAN hopping', 'BPDU Guard', 'Root Guard', 'Loop Guard', 'MSTP', 'MSTI', 'CIST', 'secure MAC', 'restrict', 'protect', 'sticky', '802.1X', 'EAP', 'PVID', 'ASIC', 'Option 82']) {
+for (const term of ['DTP', 'double tagging', 'VLAN hopping', 'BPDU Guard', 'Root Guard', 'Loop Guard', 'MSTP', 'MSTI', 'CIST', 'secure MAC', 'restrict', 'protect', 'sticky', '802.1X', 'EAP', 'PVID', 'ASIC', 'Option 82', 'topology change', 'Listening', 'protocol migration', 'PVID_Inc', 'RECV_PVID_ERR', 'Max Hops', 'remaining hops', 'EtherChannel', 'Port-channel', 'bundled', 'EAP-TLS', 'MAB']) {
   assert.ok(data.GLOSSARY_TOOLTIPS[term], term);
   assert.ok(data.splitGlossaryText(`Проверка: ${term}.`).some(p => p.term === term), term);
 }
