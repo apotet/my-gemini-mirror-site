@@ -54,6 +54,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
   const [openId, setOpenId] = useState<string | null>(initialLessonId || null);
+  const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (initialLessonId) setOpenId(initialLessonId);
@@ -179,7 +180,14 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
                 {l.category} · {l.difficulty}
               </div>
               <div className="font-semibold text-slate-900 dark:text-white">{l.title}</div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3">{l.summary}</p>
+              <p
+                className={`text-xs text-slate-600 dark:text-slate-400${expandedSummaryId === l.id ? '' : ' line-clamp-3'}`}
+                onClick={event => {
+                  if (!window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+                  event.stopPropagation();
+                  setExpandedSummaryId(current => current === l.id ? null : l.id);
+                }}
+              >{l.summary}</p>
               <div className="text-[11px] text-slate-500">Вопросов: {l.relatedQuestionIds.length}</div>
             </button>
           ))}
