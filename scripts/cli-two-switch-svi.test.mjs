@@ -51,7 +51,7 @@ cmd('interface vlan 10');
 cmd('shutdown');
 assert.equal(lab.checkGoals(scenario.goals).allPassed, false, 'admin down invalidates completion');
 cmd('no shutdown');
-assert.equal(lab.checkGoals(scenario.goals).allPassed, false, 'unsaved change invalidates completion');
+assert.equal(lab.checkGoals(scenario.goals).allPassed, true, 'restoring identical running config matches saved startup config');
 cmd('end');
 cmd('write memory');
 assert.equal(lab.checkGoals(scenario.goals).allPassed, true, 'restored and saved');
