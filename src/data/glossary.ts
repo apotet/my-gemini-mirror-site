@@ -1020,6 +1020,15 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "configuration mode": { description: "Режим изменения настроек Cisco IOS с приглашением (config)# или одним из дочерних контекстов.", relatesTo: "Режимы Cisco IOS.", lessonId: "cli-ios-modes" },
   "operational state": { description: "Фактическое рабочее состояние порта или сервиса, отличное от административной настройки. no shutdown не гарантирует физический линк up.", relatesTo: "Диагностика интерфейсов.", lessonId: "cli-show-help-tab" },
   "User Exec": { description: "Начальный непривилегированный режим с приглашением >.", relatesTo: "Режимы Cisco IOS.", lessonId: "cli-ios-modes" },
+  "OOB": { description: "Out-of-band — отдельный путь управления устройством, не зависящий от его обычной пользовательской IP-сети. Пример: подключение через Console.", relatesTo: "Резервное и локальное администрирование оборудования.", lessonId: "cli-console-ssh-telnet" },
+  "in-band management": { description: "Управление устройством через ту же сетевую инфраструктуру, по которой идёт обычный трафик. SSH зависит от IP-связности и политик доступа.", relatesTo: "Сетевое администрирование.", lessonId: "cli-console-ssh-telnet" },
+  "UART": { description: "Универсальный асинхронный приёмопередатчик для последовательной передачи данных. В консольных интерфейсах параметры формата и скорости должны совпадать.", relatesTo: "Последовательные консольные интерфейсы.", lessonId: "cli-console-ssh-telnet" },
+  "8N1": { description: "Параметры асинхронного последовательного порта: 8 бит данных, без контроля чётности, 1 стоп-бит. Скорость (например, 9600) задаётся отдельно.", relatesTo: "Параметры Console/Serial.", lessonId: "cli-console-ssh-telnet" },
+  "SSHv2": { description: "Вторая версия протокола SSH для защищённого удалённого терминального доступа. Поддержка алгоритмов и ключей зависит от версии ОС устройства.", relatesTo: "Безопасное администрирование.", lessonId: "cli-console-ssh-telnet" },
+  "TCP/22": { description: "Стандартный TCP-порт для SSH. Открытый порт не подтверждает успешную аутентификацию или корректность ключа сервера.", relatesTo: "Доступ к SSH.", lessonId: "cli-console-ssh-telnet" },
+  "TCP/23": { description: "Стандартный TCP-порт для Telnet. Telnet не шифрует содержимое сессии и не подходит для обычного безопасного управления.", relatesTo: "Незащищённый удалённый терминал.", lessonId: "cli-console-ssh-telnet" },
+  "AAA": { description: "Authentication, Authorization, Accounting — проверка личности, полномочий и учёт действий пользователя при доступе к устройству.", relatesTo: "Безопасность управления устройствами.", lessonId: "cli-console-ssh-telnet" },
+  "management SVI": { description: "Логический интерфейс VLAN, которому на коммутаторе может назначаться IP-адрес управления. Его рабочее состояние зависит от возможностей платформы и состояния VLAN/портов.", relatesTo: "Доступ к коммутатору по IP.", lessonId: "cli-console-ssh-telnet" },
 };
 
 // Alternative names share one definition instead of duplicating its text.
