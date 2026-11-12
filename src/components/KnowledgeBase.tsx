@@ -170,6 +170,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
           {list.map((l) => (
             <button
               key={l.id}
+              title={l.summary}
               type="button"
               onClick={() => setOpenId(l.id)}
               className="text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
