@@ -1,6 +1,6 @@
 export type PracticeLink =
   | 'vlan' | 'packet' | 'dhcp' | 'nat' | 'tcp'
-  | 'cli-vlan' | 'cli-trunk' | 'cli-gateway';
+  | 'cli-vlan' | 'cli-trunk' | 'cli-gateway' | 'cli-modes';
 
 interface PracticeDestination {
   simulator: 'journey' | 'vlan' | 'protocols' | 'cli';
@@ -14,6 +14,7 @@ export const PRACTICE_DESTINATIONS: Record<PracticeLink, PracticeDestination> = 
   dhcp: { simulator: 'protocols', protocol: 'dhcp' },
   nat: { simulator: 'protocols', protocol: 'nat' },
   tcp: { simulator: 'protocols', protocol: 'tcp' },
+  'cli-modes': { simulator: 'cli', scenarioId: 'cisco-ios-modes-basic' },
   'cli-vlan': { simulator: 'cli', scenarioId: 'cisco-vlan-access-basic' },
   'cli-trunk': { simulator: 'cli', scenarioId: 'cisco-trunk-basic' },
   'cli-gateway': { simulator: 'cli', scenarioId: 'cisco-l3-gateway-basic' },
