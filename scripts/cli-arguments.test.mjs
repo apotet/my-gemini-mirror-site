@@ -49,14 +49,14 @@ const check = (mode, line, outcome, cr = outcome === 'complete') => {
 
 // IPv4 lexical acceptance and interface-assignment policy are separate.
 for (const ip of ['192.0.2.1', '0.0.0.0', '255.255.255.255']) {
-  check('config-if', `ip address ${ip} 255.255.255.0`, ip === '192.0.2.1' ? 'complete' : 'invalid');
+  check('config-if', `ip address ${ip} 255.255.255.0`, ip === '192.0.2.1' ? 'complete' : 'invalid', true);
   check('config', `ip route ${ip} 0.0.0.0 ${ip}`, 'complete');
 }
 for (let prefix = 0; prefix <= 32; prefix++) {
   const mask = Array.from({ length: 4 }, (_, i) => {
     const bits = Math.max(0, Math.min(8, prefix - i * 8)); return 256 - 2 ** (8 - bits);
   }).join('.');
-  check('config-if', `ip address 192.0.2.1 ${mask}`, prefix === 0 ? 'invalid' : 'complete');
+  check('config-if', `ip address 192.0.2.1 ${mask}`, prefix === 0 ? 'invalid' : 'complete', true);
   check('config', `ip route 0.0.0.0 ${mask} 192.0.2.254`, 'complete');
 }
 
