@@ -15,7 +15,13 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
     "native VLAN",
     "Port Security",
     "sticky",
-    "DHCP Snooping"
+    "DHCP Snooping",
+    "double tagging",
+    "allowed list",
+    "ACL",
+    "secure binding",
+    "MAB",
+    "Option 82"
   ],
   "blocks": [
     {
@@ -30,7 +36,7 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
     },
     {
       "heading": "VLAN · Double tagging",
-      "body": "Атака использует то, что кадры пользовательской сети на первом переходе теряют внешний тег. Нужно изменить именно это условие, сохранив обе рабочие сети на канале.\n\nЭто double tagging. Если native VLAN не содержит пользователей, а рабочие VLAN передаются тегированными, заданная цепочка снятия внешнего пользовательского тега не выполняется.\n\nОтключение DTP мешает другому способу VLAN hopping, но не меняет обработку тегов статического trunk. Лимит MAC не проверяет число тегов, а исключение VLAN 10 нарушит требование её передачи.",
+      "body": "Атака использует то, что кадры пользовательской сети на первом переходе теряют внешний тег. Нужно изменить именно это условие, сохранив обе рабочие сети на канале.\n\nЭто double tagging. Если native VLAN не содержит пользователей, а рабочие VLAN передаются тегированными, заданная цепочка снятия внешнего пользовательского тега не выполняется.\n\nСтатический access без DTP мешает согласовать trunk, но не устраняет заданную обработку двух тегов. На первом trunk проверяется ещё внешний VLAN 10: исключение VLAN 20 не убирает этот путь атаки и нарушает требование её обычной передачи. Тегирование на выходе второго коммутатора не отменяет снятие внешнего тега на первом.",
       "practiceLink": "cli-trunk"
     },
     {
@@ -40,7 +46,7 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
     },
     {
       "heading": "VLAN · Изоляция",
-      "body": "Обмен проходит через единственный маршрутизатор. Требуется запретить конкретное направление по адресам, не разрывая подключение целой сети.\n\nВходящая ACL на интерфейсе VLAN 10 видит пакеты от её клиентов до маршрутизации. Она может запретить назначение VLAN 20 и отдельно разрешить нужные остальные направления.\n\nПакет к VLAN 20 выходит из её интерфейса, а не входит в него. Удаление VLAN с trunk нарушает подключение шире политики, Port Security не определяет разрешённые IP-назначения.",
+      "body": "Обмен проходит через единственный маршрутизатор. Требуется запретить конкретное направление по адресам, не разрывая подключение целой сети.\n\nВходящая ACL на интерфейсе VLAN 10 видит пакеты от её клиентов до маршрутизации. Она может запретить назначение VLAN 20 и отдельно разрешить нужные остальные направления.\n\nДля пакета VLAN 10 → VLAN 20 интерфейс VLAN 10 является входом в G, а интерфейс VLAN 20 — выходом. Правильное адресное правило на противоположном направлении не встретит этот пакет. В ACL действует первое совпадение: общее разрешение источника VLAN 10 перед узким запретом пропустит обмен.",
       "practiceLink": "vlan"
     },
     {
@@ -49,7 +55,7 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
     },
     {
       "heading": "Port Security · Sticky",
-      "body": "При сохранении адрес нужного ПК ещё не был известен. После перезапуска коммутатор загрузил разрешение учиться, но не конкретную привязку этого компьютера.\n\nSticky learning добавляет изученный secure MAC в running-config. Для сохранения адреса на следующую загрузку конфигурацию записывают после его появления и проверки.\n\nАвтоматической записи каждого будущего адреса в startup-config нет. Поведение не доказывает аппаратную неисправность и не означает разрешённую замену уже сохранённого адреса."
+      "body": "При сохранении адрес нужного ПК ещё не был известен. После перезапуска коммутатор загрузил разрешение учиться, но не конкретную привязку этого компьютера.\n\nSticky learning добавляет изученный secure MAC в running-config. Для сохранения адреса на следующую загрузку конфигурацию записывают после его появления и проверки.\n\nОбычная динамическая MAC-таблица и список secure-привязок — разные данные: переобучение разрешённого источника не даёт права новому источнику занять сохранённое разрешение. Штатная перезагрузка сама не гарантирует сохранения изменений: требуется подтверждённая запись конфигурации. Sticky-адрес можно сохранить без замены на static, если записать конфигурацию после обучения."
     },
     {
       "heading": "Port Security · Телефон и ПК",
@@ -90,36 +96,52 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
     "terms": [
       "802.1Q",
       "DTP",
-      "802.1X"
+      "802.1X",
+      "VLAN",
+      "native VLAN",
+      "Port Security",
+      "sticky",
+      "DHCP Snooping",
+      "double tagging",
+      "allowed list",
+      "ACL",
+      "secure binding",
+      "MAB",
+      "Option 82"
     ],
     "blocks": [
       {
         "heading": "VLAN · DTP",
-        "body": "Administrative mode определяет допустимость negotiation, operational mode показывает текущий результат. Switchport access vlan сам по себе не выключает DTP dynamic mode. Switchport mode access фиксирует режим; nonegotiate при поддержке подавляет DTP transmission. Mode trunk + nonegotiate создаёт статический trunk, а не безопасный access."
+        "body": "Administrative mode определяет допустимость negotiation, operational mode показывает текущий результат. Switchport access vlan сам по себе не выключает DTP dynamic mode. Switchport mode access фиксирует режим; nonegotiate при поддержке подавляет DTP transmission. Mode trunk + nonegotiate создаёт статический trunk, а не безопасный access.",
+        "practiceLink": "cli-vlan"
       },
       {
         "heading": "VLAN · Allowed list",
-        "body": "В IOS switchport trunk allowed vlan 30 заменяет configured list значением 30; add 30 выполняет объединение с текущим набором. Допуск VLAN должен обеспечиваться обоими концами и STP forwarding. Альтернативная корректная полная замена — явный список 10,20,30, но среди вариантов она не предложена. Native VLAN и allowed list настраиваются независимо."
+        "body": "В IOS switchport trunk allowed vlan 30 заменяет configured list значением 30; add 30 выполняет объединение с текущим набором. Допуск VLAN должен обеспечиваться обоими концами и STP forwarding. Альтернативная корректная полная замена — явный список 10,20,30, но среди вариантов она не предложена. Native VLAN и allowed list настраиваются независимо.",
+        "practiceLink": "cli-trunk"
       },
       {
         "heading": "VLAN · Double tagging",
-        "body": "Для заданной модели outer native-tag stripping открывает inner tag следующему мосту. Согласованная native VLAN без access-пользователей и тегированная передача VLAN 10/20 устраняют указанное prerequisite. DTP hardening не решает эту модель на уже статическом trunk; Port Security ограничивает source bindings. Поведение вложенных тегов и native tagging зависит от ASIC/платформы, поэтому вывод ограничен заданным трактом."
+        "body": "Для заданной модели outer native-tag stripping открывает inner tag следующему мосту. Согласованная native VLAN без access-пользователей и тегированная передача VLAN 10/20 устраняют указанное prerequisite. DTP hardening не решает эту модель на уже статическом trunk; Port Security ограничивает source bindings. Поведение вложенных тегов и native tagging зависит от ASIC/платформы, поэтому вывод ограничен заданным трактом. Pruning VLAN 20 на первом trunk не проверяет ещё скрытый inner tag, пока внешний VLAN 10 допускается; при этом обычная передача VLAN 20 по этому trunk теряется. Native tagging только на downstream egress не отменяет заданный stripping на первом мосту.",
+        "practiceLink": "cli-trunk"
       },
       {
         "heading": "VLAN · Несовпадение native",
-        "body": "При разрешённом untagged ingress B назначает свой PVID/native VLAN 20. Реальные платформы могут дополнительно блокировать путь при обнаружении inconsistency; вопрос задаёт приём нетегированного кадра. Native mismatch способен нарушить изоляцию, поэтому настройки согласуют."
+        "body": "При разрешённом untagged ingress B назначает свой PVID/native VLAN 20. Реальные платформы могут дополнительно блокировать путь при обнаружении inconsistency; вопрос задаёт приём нетегированного кадра. Native mismatch способен нарушить изоляцию, поэтому настройки согласуют.\n\nПроверяют operational native VLAN и правила tagged/untagged admission на обоих концах. В нетегированном кадре нет поля с исходным VLAN ID; FCS проверяет целостность кадра, а не согласованность классификации портов.",
+        "practiceLink": "cli-trunk"
       },
       {
         "heading": "VLAN · Изоляция",
-        "body": "При обычной interface ACL inbound/outbound отсчитывают относительно G. Трафик 10→20 проходит ingress SVI/subinterface VLAN 10 и egress VLAN 20. Extended IPv4 ACL на ingress VLAN 10 должна содержать deny для назначения VLAN 20 и последующие permit для требуемого остального трафика с учётом implicit deny. Эта stateless политика не является правилом межсетевого экрана с отслеживанием соединений и не задаёт автоматически обратное направление."
+        "body": "При обычной interface ACL inbound/outbound отсчитывают относительно G. Трафик 10→20 проходит ingress SVI/subinterface VLAN 10 и egress VLAN 20. Extended IPv4 ACL на ingress VLAN 10 должна содержать deny для назначения VLAN 20 и последующие permit для требуемого остального трафика с учётом implicit deny. Эта stateless политика не является правилом межсетевого экрана с отслеживанием соединений и не задаёт автоматически обратное направление. Extended ACL обрабатывается сверху вниз до первого совпадения: permit ip для всего источника VLAN 10 перед deny к VLAN 20 делает последующий запрет недостижимым для этого трафика.",
+        "practiceLink": "vlan"
       },
       {
         "heading": "Port Security · Restrict",
-        "body": "Cisco restrict drops violating source traffic, increments security violation counter и поддерживает уведомления согласно настройкам платформы. Разрешённые secure MAC продолжают обмен; частота уведомлений может ограничиваться."
+        "body": "Cisco restrict drops violating source traffic, increments security violation counter и поддерживает уведомления согласно настройкам платформы. Разрешённые secure MAC продолжают обмен; частота уведомлений может ограничиваться.\n\nДля различения protect и restrict проверяют настроенный violation mode и прирост счётчика при тесте, а не только потерю кадров. Shutdown прекращает также обмен разрешённого источника, тогда как restrict сохраняет его при прочих выполненных условиях forwarding."
       },
       {
         "heading": "Port Security · Sticky",
-        "body": "В указанном snapshot startup-config содержит sticky enable, но не learned sticky address. После reload этот MAC отсутствует в загруженной конфигурации, и доступный secure slot может быть занят первым допустимым source. Для persistence проверяют конкретные sticky записи и сохраняют running-config после обучения; enable sticky и learned binding — разные строки конфигурации."
+        "body": "В указанном snapshot startup-config содержит sticky enable, но не learned sticky address. После reload этот MAC отсутствует в загруженной конфигурации, и доступный secure slot может быть занят первым допустимым source. Для persistence проверяют конкретные sticky записи и сохраняют running-config после обучения; enable sticky и learned binding — разные строки конфигурации.\n\nРаздельно проверяют строку включения sticky learning и конкретную строку MAC в startup-config. Штатный reload может предложить сохранение, но по условию его не было; автоматическую запись learned MAC предполагать нельзя. Обычная dynamic MAC-таблица не является хранилищем sticky-конфигурации."
       },
       {
         "heading": "Port Security · Телефон и ПК",
@@ -131,7 +153,7 @@ export const LESSON_L2_VLAN_SECURITY: Lesson = {
       },
       {
         "heading": "Port Security · Замена устройства",
-        "body": "Нужно сопоставить port-security violation reason, secure address table и running/startup-config. Конкретную старую sticky запись удаляют, проверенный новый MAC задают или контролируемо изучают, результат сохраняют. При ручном задании можно обновить binding до recovery; при обучении сначала обеспечивают контролируемый источник и затем сохраняют learned запись. Recovery не устраняет stale secure config, а restrict не разрешает violating source."
+        "body": "Нужно сопоставить port-security violation reason, secure address table и running/startup-config. Конкретную старую sticky запись удаляют, проверенный новый MAC задают или контролируемо изучают, результат сохраняют. При ручном задании можно обновить binding до recovery; при обучении сначала обеспечивают контролируемый источник и затем сохраняют learned запись. Recovery не устраняет stale secure config, а restrict не разрешает violating source.\n\nОчистка обычной dynamic MAC-таблицы не удаляет сохранённую sticky-строку. При restrict кадры нового источника по-прежнему отбрасываются; исчезновение повторного err-disable само по себе не доказывает восстановление доступа."
       },
       {
         "heading": "VLAN · DHCP Snooping",
