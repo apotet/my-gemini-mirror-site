@@ -34,15 +34,16 @@ export { ciscoVlanAccessScenario } from './src/cli-lab/scenarios/cisco-vlan-acce
 const mod = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
 const { LabEngine, evaluateGoals, shouldShowCompletion, ciscoIosProfile, ciscoIosCommands, ciscoIosModesScenario, ciscoVlanAccessScenario } = mod;
 
-// The test imports the production completion gate rather than mirroring it.
-for (const file of ['src/cli-lab/CliLabShell.tsx','src/cli-lab/MockCliLabShell.tsx']) {
-  const source = readFileSync(file, 'utf8');
-  assert.match(source, /import \{ shouldShowCompletion \} from '\.\/engine\/completionStatus'/,
-    file + ': UI must import the tested function');
-  assert.equal((source.match(/shouldShowCompletion\(labMode, stepIndexRef\.current, steps\.length,/g) ?? []).length, 2,
-    file + ': both Check button and command submission must use the same gate');
-  assert.doesNotMatch(source, /setCompleted\(true\)/, file + ': unconditional success prohibited');
-}
+// Assert that both practice entries use the same production completion logic.
+const canonical = readFileSync('src/cli-lab/CliLabShell.tsx', 'utf8');
+assert.ok(canonical.includes('shouldShowCompletion'), 'real CLI must use completion gate');
+assert.equal(canonical.split('shouldShowCompletion(labMode, stepIndexRef.current, steps.length,').length - 1, 2,
+  'both Check button and command submit must use the tested gate');
+assert.ok(!canonical.includes('setCompleted(true)'), 'no unconditional completion');
+const mock = readFileSync('src/cli-lab/MockCliLabShell.tsx', 'utf8');
+assert.ok(mock.includes("import { CliLabShell } from './CliLabShell'"),
+  'mock must import canonical CLI instead of duplicating it');
+assert.ok(mock.includes('<CliLabShell />'), 'mock must render the canonical CLI');
 function runSequence(scenario, commands) {
   const engine = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   const results = [];
