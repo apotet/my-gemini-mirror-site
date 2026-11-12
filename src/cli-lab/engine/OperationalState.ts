@@ -9,7 +9,7 @@ import { trunkNeighbors } from './SviIpv4Reachability';
  * SVI autostate is approximated by an eligible connected trunk for its VLAN.
  */
 export function interfaceStatus(state: NetworkState, device: DeviceState, iface: InterfaceState) {
-  const sviId = /^Vlan(\\d+)$/i.exec(iface.name);
+  const sviId = /^Vlan(\d+)$/i.exec(iface.name);
   if (sviId) {
     const vlanId = Number(sviId[1]);
     const operUp = iface.adminUp && !!device.vlans[vlanId]?.active &&
