@@ -22,7 +22,7 @@ export function maskToPrefix(mask: string): number | null {
 
 export function normalizeIfaceName(raw: string): string {
   const compact = raw.replace(/\s+/g, '');
-  const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet)(\d+(?:\/\d+)*)$/i.exec(compact);
+  const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet|vlan)(\d+(?:\/\d+)*)$/i.exec(compact);
   if (!m) return compact;
   const names: Record<string, string> = { fa: 'FastEthernet', fastethernet: 'FastEthernet', gi: 'GigabitEthernet', gigabitethernet: 'GigabitEthernet', eth: 'Ethernet', ethernet: 'Ethernet', vlan: 'Vlan' };
   return names[m[1].toLowerCase()] + m[2];
