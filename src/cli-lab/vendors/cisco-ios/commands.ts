@@ -1,3 +1,4 @@
+import { formatRunningConfig } from './configFormatter';
 import { normalizeIfaceName, wordArgument, vlanArgument, vlanNameArgument, interfaceArgument, interfaceTypeArgument, interfaceNumberArgument, isLayer2Interface } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { formatAllowedVlans } from './trunkCommands';
@@ -307,44 +308,7 @@ const baseCommands: CommandSpec[] = [
     match: ['show', 'running-config'],
     modes: ['privileged'],
     minPrivilege: 15,
-    handler: (_tokens, _state, device) => {
-      const lines = ['Building configuration...', '', 'Current configuration:', '!'];
-      lines.push(`hostname ${device.hostname}`, '!');
-      for (const r of device.routes) {
-        const mask =
-          r.prefixLen === 0
-            ? '0.0.0.0'
-            : r.prefixLen === 24
-              ? '255.255.255.0'
-              : `/${r.prefixLen}`;
-        if (r.nextHop) {
-          lines.push(`ip route ${r.prefix} ${mask} ${r.nextHop}`);
-        }
-      }
-      if (device.routes.length) lines.push('!');
-      for (const iface of Object.values(device.interfaces)) {
-        lines.push(`interface ${iface.name}`);
-        if (iface.ipv4) {
-          lines.push(` ip address ${iface.ipv4.address} ${iface.ipv4.mask}`);
-        }
-        if (iface.switchport?.mode === 'access') {
-          lines.push(' switchport mode access');
-          if (iface.switchport.accessVlan && iface.switchport.accessVlan !== 1) {
-            lines.push(` switchport access vlan ${iface.switchport.accessVlan}`);
-          }
-        }
-        if (iface.switchport?.mode === 'trunk') {
-          lines.push(' switchport mode trunk');
-          if (iface.switchport.trunkAllowed !== undefined) {
-            lines.push(` switchport trunk allowed vlan ${formatAllowedVlans(iface.switchport.trunkAllowed)}`);
-          }
-        }
-        lines.push(iface.adminUp ? ' no shutdown' : ' shutdown');
-        lines.push('!');
-      }
-      lines.push('end');
-      return { output: lines.join('\n') };
-    },
+    handler: (_tokens, _state, device) => ({ output: formatRunningConfig(device) }),
   },
   {
     id: 'cisco.do',
