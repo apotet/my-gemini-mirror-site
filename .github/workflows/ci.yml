@@ -37,6 +37,9 @@ jobs:
       - name: Cisco IOS unique abbreviations regression
         run: node scripts/cli-abbreviations.test.mjs
 
+      - name: Cisco IOS canonical command resolution regression
+        run: node scripts/cli-canonical-resolution.test.mjs
+
       - name: Cisco IOS contextual question-mark help regression
         run: node scripts/cli-contextual-help.test.mjs
 

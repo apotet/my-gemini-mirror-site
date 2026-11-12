@@ -1,5 +1,5 @@
 import { CommandSpec, DeviceState, DeviceMode } from './types';
-import { resolveKeywords } from './CommandResolution';
+import { commandContext, resolveKeywords } from './CommandResolution';
 
 /**
  * Cisco-like contextual CLI help. The tree is built from executable command specs
@@ -13,7 +13,6 @@ const keywordDescriptions: Record<string, string> = {
   address: 'Configure IPv4 address',
   allowed: 'Set permitted trunk VLANs',
   brief: 'Brief summary',
-  conf: 'Enter configuration mode (abbreviation)',
   configure: 'Enter configuration mode',
   copy: 'Copy running configuration',
   disable: 'Leave privileged EXEC',
@@ -33,7 +32,6 @@ const keywordDescriptions: Record<string, string> = {
   reload: 'Simulated device reload',
   remove: 'Remove VLANs from the current allowed list',
   route: 'Static routes / route display',
-  run: 'Running configuration (abbreviation)',
   'running-config': 'Current configuration',
   show: 'Show device information',
   shutdown: 'Administratively disable interface',
@@ -45,7 +43,6 @@ const keywordDescriptions: Record<string, string> = {
   trunk: 'Trunk-port characteristics',
   vlan: 'VLAN configuration or display',
   vlans: 'VLAN selection',
-  wr: 'Write configuration (abbreviation)',
   write: 'Write configuration',
 };
 
@@ -61,7 +58,6 @@ const argumentHelp: Record<string, { name: string; detail: string }> = {
   'cisco.ip_address': { name: 'A.B.C.D', detail: 'IPv4 address, followed by subnet mask' },
   'cisco.ip_route': { name: 'A.B.C.D', detail: 'Destination network, mask and next hop' },
   'cisco.show_interfaces': { name: 'INTERFACE', detail: 'Interface name, e.g. Fa0/24' },
-  'cisco.show_interface': { name: 'INTERFACE', detail: 'Interface name, e.g. Fa0/24' },
 };
 
 function format(items: Map<string, string>): string {
@@ -88,18 +84,13 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
   const parts = raw.trim() ? raw.trim().split(/\s+/) : [];
   const partial = spaceBeforeQuestion ? '' : (parts.pop() ?? '').toLowerCase();
   let completed = parts.map(x => x.toLowerCase());
-  let mode = device.modeCtx.mode;
-  let privilege = device.privilege;
-
-  // Cisco 'do show ... ?' from configuration modes queries privileged EXEC.
-  if (completed[0] === 'do' && ['config', 'config-if', 'config-vlan'].includes(mode)) {
-    completed = completed.slice(1);
-    mode = 'privileged';
-    privilege = 15;
-  }
+  // The completed prefix can contain unique abbreviations, including 'd' for 'do'.
+  const context = commandContext(commands, completed, device.modeCtx.mode, device.privilege);
+  completed = context.words;
+  const { mode, privilege } = context;
 
   const items = new Map<string, string>();
-  const specs = available(commands, mode, privilege);
+  const specs = available(context.specs, mode, privilege);
   // Resolve already typed unique abbreviations, but keep the trailing partial
   // keyword untouched so '?' still lists its possible expansions.
   const resolved = resolveKeywords(specs, completed, mode, privilege);

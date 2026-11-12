@@ -86,19 +86,6 @@ const baseCommands: CommandSpec[] = [
     },
   },
   {
-    id: 'cisco.configure_terminal_short',
-    match: ['conf', 't'],
-    modes: ['privileged'],
-    minPrivilege: 15,
-    handler: (_tokens, state, device) => {
-      device.modeCtx = { mode: 'config' };
-      return {
-        output: 'Enter configuration commands, one per line. End with CNTL/Z.',
-        state: commitDevice(state, device),
-      };
-    },
-  },
-  {
     id: 'cisco.hostname',
     match: ['hostname'],
     modes: ['config'],
@@ -345,16 +332,6 @@ const baseCommands: CommandSpec[] = [
       }
       lines.push('end');
       return { output: lines.join('\n') };
-    },
-  },
-  {
-    id: 'cisco.show_run_short',
-    match: ['show', 'run'],
-    modes: ['privileged', 'exec'],
-    minPrivilege: 1,
-    handler: (tokens, state, device, profile) => {
-      const full = ciscoIosCommands.find((c) => c.id === 'cisco.show_running_config');
-      return full ? full.handler(tokens, state, device, profile) : { output: '' };
     },
   },
   {

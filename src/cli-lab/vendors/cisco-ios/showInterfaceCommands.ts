@@ -120,8 +120,4 @@ export const ciscoInterfaceShowCommands: CommandSpec[] = [
     id: 'cisco.show_interfaces', match: ['show', 'interfaces'],
     modes: ['exec', 'privileged'], handler: showInterfaces,
   },
-  {
-    id: 'cisco.show_interface', match: ['show', 'interface'],
-    modes: ['exec', 'privileged'], handler: showInterfaces,
-  },
 ];
