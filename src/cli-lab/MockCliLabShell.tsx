@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LabEngine } from './engine/LabEngine';
 import { evaluateGoals } from './engine/GoalEvaluator';
+import { shouldShowCompletion } from './engine/completionStatus';
 import { LabMode, Scenario } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
@@ -203,8 +204,7 @@ export const MockCliLabShell: React.FC = () => {
   const runCheck = () => {
     const result = refreshGoals();
     const prev = completedRef.current;
-    const stepsDone = labMode !== 'learn' || stepIndexRef.current >= steps.length;
-    const now = stepsDone && result.allPassed;
+    const now = shouldShowCompletion(labMode, stepIndexRef.current, steps.length, result.allPassed);
     setCompleted(now);
     completedRef.current = now;
     setHistory((h) => [
@@ -313,8 +313,7 @@ export const MockCliLabShell: React.FC = () => {
     // A later command that breaks any goal immediately clears it; restoring goals re-shows it.
     {
       const g = engine.checkGoals(scenario.goals);
-      const stepsDone = labMode !== 'learn' || stepIndexRef.current >= steps.length;
-      const now = stepsDone && g.allPassed;
+      const now = shouldShowCompletion(labMode, stepIndexRef.current, steps.length, g.allPassed);
       const prev = completedRef.current;
       if (now !== prev) {
         setCompleted(now);
