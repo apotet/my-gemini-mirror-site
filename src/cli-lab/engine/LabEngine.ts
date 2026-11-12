@@ -1,5 +1,5 @@
 import { contextualHelp } from './ContextualHelp';
-import { commandFor, resolveKeywords } from './CommandResolution';
+import { commandContext, commandFor, matchingKeywords, resolveKeywords } from './CommandResolution';
 import { initializeStartupConfigs } from './ConfigPersistence';
 import { evaluateGoals } from './GoalEvaluator';
 import {
@@ -75,12 +75,11 @@ export class LabEngine {
 
     // Config-mode "do" delegates commands to privileged EXEC, as "?" help does.
     // Keep the literal "do " prefix in the result while resolving EXEC keywords.
-    const doExec = ['config', 'config-if', 'config-vlan'].includes(mode) &&
-      tokens[0]?.toLowerCase() === 'do';
-    const commandTokens = doExec ? tokens.slice(1) : tokens;
-    const commandMode = doExec ? 'privileged' : mode;
-    const commandPrivilege = doExec ? 15 : priv;
-    const commandSpecs = doExec ? this.commands.filter(s => s.id !== 'cisco.do') : this.commands;
+    const context = commandContext(this.commands, tokens, mode, priv);
+    const commandTokens = context.words;
+    const commandMode = context.mode;
+    const commandPrivilege = context.privilege;
+    const commandSpecs = context.specs;
 
     const parsed = resolveKeywords(commandSpecs, commandTokens, commandMode, commandPrivilege);
     if (parsed.ambiguous) return { candidates: parsed.ambiguous };
@@ -91,12 +90,11 @@ export class LabEngine {
 
     // Complete exactly one CLI keyword per Tab press. Command arguments (VLAN ID,
     // IP, interface name) are not part of the static keyword completion.
-    const nextTokens = Array.from(new Set(
+    const nextTokens = matchingKeywords(Array.from(new Set(
       available
         .filter((spec) => commandTokens.length < spec.match.length)
         .map((spec) => spec.match[commandTokens.length])
-        .filter((word) => word.startsWith(partial))
-    )).sort();
+    )), partial).sort();
 
     const base = tokens.join(' ');
     const prefix = base ? base + ' ' : '';
@@ -122,7 +120,8 @@ export class LabEngine {
 
   /** Context-sensitive ? help, read-only and available independent of scenario. */
   help(line: string): string {
-    return contextualHelp(this.commands, activeDevice(this.state), line.endsWith('?') ? line : line + '?');
+    const trimmedEnd = line.trimEnd();
+    return contextualHelp(this.commands, activeDevice(this.state), trimmedEnd.endsWith('?') ? trimmedEnd : line + '?');
   }
 
   execute(line: string): CommandResult {
