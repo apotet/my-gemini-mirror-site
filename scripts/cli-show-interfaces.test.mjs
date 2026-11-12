@@ -43,4 +43,16 @@ assert.match(run('show interfaces Fa0\/24').output,/FastEthernet0\/24 is up, lin
 assert.match(run('show interfaces Fa0\/24 switchport').output,/Trunking VLANs Enabled: 10/);
 assert.match(run('show interfaces status').output,/FastEthernet0\/24\s+connected/);
 assert.match(run('show ?').output,/startup-config/);
+
+assert.match(run('show interfaces fa 0/1').output, /FastEthernet0\/1 is /);
+assert.match(run('show interfaces fa 0/24 switchport').output, /Administrative Mode: trunk/);
+const extended = structuredClone(engine.getState());
+extended.devices.sw1.interfaces.Vlan10 = { name: 'Vlan10', adminUp: true };
+extended.devices.sw1.interfaces['GigabitEthernet0/0'] = { name: 'GigabitEthernet0/0', adminUp: true };
+engine.setState(extended);
+assert.match(run('show interfaces vlan 10').output, /Vlan10 is /);
+assert.equal(run('show interfaces vlan 10 switchport').error, true);
+assert.equal(run('show interfaces gi 0/0 switchport').error, true);
+assert.match(run('show interfaces status').output, /Vlan10\s+\w+\s+--\s+/);
+assert.match(run('show interfaces status').output, /GigabitEthernet0\/0\s+\w+\s+--\s+/);
 console.log('PASS: Cisco show help, interfaces, status, port detail, switchport, multi-switch status, existing show commands');
