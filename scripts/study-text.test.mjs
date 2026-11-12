@@ -47,7 +47,8 @@ ids.push(...["l7-02", "l7-03", "l7-04", "gen-osi-a-19", "new-l7-dns", "new-l7-dh
 const newDiagnosticDualIds = ['tr-03', 'tr-05', 'tr-10', 'gen-diag-6', 'gen-diag-8', 'gen-diag-11', 'new-ts-photo-panel', 'new-ts-vlan'];
 const newL3DualIds = ['l3-05', 'l3-16'];
 const newPhotoDualIds = ["photo-formfactor-compat", "photo-dirty-end", "photo-otdr-use", "photo-polarity", "l1v2-c-qsfp-cage", "l1v2-c-poe-budget", "l1v2-c-converter-polarity"];
-const fourParagraphDualIds = [...newDiagnosticDualIds, ...newL3DualIds, ...newPhotoDualIds];
+const gapPackIds = ALL_QUESTIONS.filter(q => /^gap-pack[123]-(?:0[1-9]|[12]\d|30)$/.test(q.id)).map(q => q.id);
+const fourParagraphDualIds = [...newDiagnosticDualIds, ...newL3DualIds, ...newPhotoDualIds, ...gapPackIds];
 ids.push(...fourParagraphDualIds);
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds) {
@@ -65,11 +66,19 @@ for (const id of ids) {
   assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, fourParagraphDualIds.includes(id) ? 4 : 3, id + ': plain paragraph structure');
   if (fourParagraphDualIds.includes(id)) {
     const sentences = [...new Intl.Segmenter('ru', { granularity: 'sentence' }).segment(deep.briefAnswer)];
-    assert.ok(sentences.length >= 2 && sentences.length <= 3, id + ': plain brief has 2–3 sentences');
+    const gapPack = gapPackIds.includes(id);
+    assert.ok(sentences.length >= (gapPack ? 1 : 2) && sentences.length <= (gapPack ? 2 : 3), id + ': plain brief sentence count');
     assert.ok(deep.hasIndividualDeep && deep.commonTrap && deep.professional.trap, id + ': both layers complete');
+  }
+  if (gapPackIds.includes(id)) {
+    assert.equal(deep.plain, deep.deepAnalysis, id + ': meaning uses plain');
+    assert.equal(deep.pro, deep.professional.deep, id + ': professional uses pro');
+    assert.equal(deep.professional.brief, deep.briefAnswer, id + ': brief is unchanged across modes');
+    assert.equal(deep.professional.trap, deep.commonTrap, id + ': trap is unchanged across modes');
   }
   assert.notEqual(deep.professional.deep, deep.deepAnalysis);
 }
+assert.equal(new Set(gapPackIds.map(id => getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id)).pro)).size, gapPackIds.length, 'individual pro text, no repeated gap-pack template');
 assert.equal(getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === 'review-dot1x-19')).professional, undefined, 'MISSING history stays missing');
 
 const ospfMeaningOnly = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === 'review-ospf-26'));

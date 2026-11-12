@@ -1,6 +1,6 @@
 import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
-import { APPLIED_INDIVIDUAL_DEEP, type ProfessionalExplanation } from './questionExplanationsApplied';
+import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalExplanation } from './questionExplanationsApplied';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -10,6 +10,8 @@ export interface QuestionDeepDive {
   briefAnswer: string;
   coreConcept: string;
   deepAnalysis: string;
+  plain?: string;
+  pro?: string;
   engineeringDeep?: string;
   professional?: ProfessionalExplanation;
   practiceLink?: PracticeLink;
@@ -462,7 +464,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
+  { brief: string; deep: string; plain?: string; pro?: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -481,13 +483,25 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
       : `Правильный ответ: «${correctText}».`);
 
   const deepAnalysis = individual
-    ? individual.deep
+    ? individual.plain ?? individual.deep
     : enrichExplanation(question, category, baseExpl);
 
   const engineeringDeep =
     question.difficulty === 'advanced' || question.difficulty === 'applied'
-      ? individual?.deep || (baseExpl.length > 80 ? baseExpl : undefined)
-      : individual?.deep;
+      ? (individual ? deepAnalysis : undefined) || (baseExpl.length > 80 ? baseExpl : undefined)
+      : (individual ? deepAnalysis : undefined);
+
+  // The existing theory/review toggle consumes professional. Layered entries
+  // change only the detailed text; their brief and trap stay the same in both modes.
+  const professional = individual?.pro
+    ? {
+        ...individual.professional,
+        brief: individual.brief,
+        deep: individual.pro,
+        trap: individual.trap,
+        sourceCommit: individual.professional?.sourceCommit ?? GAP_PACK_PRO_SOURCE_COMMIT,
+      }
+    : individual?.professional;
 
   return {
     questionId: question.id,
@@ -497,8 +511,10 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     briefAnswer,
     coreConcept: `Правильный ответ: «${correctText}». Тема: ${question.topic}.`,
     deepAnalysis,
+    ...(individual?.plain !== undefined ? { plain: individual.plain } : {}),
+    ...(individual?.pro !== undefined ? { pro: individual.pro } : {}),
     engineeringDeep,
-    professional: individual?.professional,
+    professional,
     practiceLink: individual?.practiceLink,
     hasIndividualDeep: Boolean(individual),
     commonTrap: individual?.trap || detectCommonTrap(question),
