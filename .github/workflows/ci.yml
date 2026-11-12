@@ -49,6 +49,9 @@ jobs:
       - name: Cisco interface operational state regression
         run: node scripts/cli-operational-state.test.mjs
 
+      - name: Cisco IOS modes learning lab regression
+        run: node scripts/cli-ios-modes-lab.test.mjs
+
       - name: Two-switch VLAN path regression
         run: node scripts/cli-two-switch.test.mjs
 

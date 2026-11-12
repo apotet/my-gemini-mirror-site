@@ -32,8 +32,8 @@ export const LESSON_CLI_IOS_MODES: Lesson = {
     },
     {
       heading: 'Самая частая ловушка: настроить — не значит сохранить',
-      body: 'Команды в режиме настройки обычно меняют текущую конфигурацию (running-config). Она начинает действовать без отдельной команды «применить». Но после перезагрузки несохранённые изменения могут исчезнуть.\n\nВернись в Switch# и выполни copy running-config startup-config, если нужно сохранить изменения. Для проверки воспользуйся show running-config и show startup-config. Не путай выход из режима с сохранением.\n\nВ учебном стенде NetOps попробуй сначала enter/enable, затем conf t, interface, exit, end и do show. Если в стенде пока нет отдельной лаборатории навигации, используй существующий сценарий VLAN: он позволяет упражняться в этих переходах.',
-      practiceLink: 'cli-vlan'
+      body: 'Команды в режиме настройки обычно меняют текущую конфигурацию (running-config). Она начинает действовать без отдельной команды «применить». Но после перезагрузки несохранённые изменения могут исчезнуть.\n\nВернись в Switch# и выполни copy running-config startup-config, если нужно сохранить изменения. Для проверки воспользуйся show running-config и show startup-config. Не путай выход из режима с сохранением.\n\nВ учебном стенде NetOps попробуй сначала enter/enable, затем conf t, interface, exit, end и do show. Теперь для режимов есть отдельная лаборатория: пройди шаги, измени hostname и сохрани конфигурацию.',
+      practiceLink: 'cli-modes'
     }
   ],
   commands: [
@@ -73,7 +73,7 @@ export const LESSON_CLI_IOS_MODES: Lesson = {
       },
       {
         heading: 'Проверка понимания на оборудовании',
-        body: 'Проверяйте mode переходами enable → configure terminal → interface → exit/end; сравнивайте prompt до и после. В config-if выполните do show interfaces, затем вернитесь к Privileged EXEC и отдельно проверьте сохранение конфигурации.\n\nВ существующей CLI-практике NetOps можно тренировать эти базовые операции внутри сценария VLAN. Это ещё не отдельный сценарий экзамена по режимам, и лаборатория не должна выдавать возможность, которой пока не существует.',
+        body: 'Проверяйте mode переходами enable → configure terminal → interface → exit/end; сравнивайте prompt до и после. В config-if выполните do show interfaces, затем вернитесь к Privileged EXEC и отдельно проверьте сохранение конфигурации.\n\nВ CLI-практике NetOps доступен отдельный сценарий для переходов между режимами, смены hostname и сохранения running-config. Он не претендует на полную реализацию Cisco IOS.',
         practiceLink: 'cli-vlan'
       }
     ],
