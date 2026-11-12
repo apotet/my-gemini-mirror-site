@@ -144,6 +144,8 @@ export interface Scenario {
   steps?: ScenarioStep[];
   goals: GoalPredicate[];
   successMessage: string;
+  /** Optional guided next scenario shown only after successful completion. */
+  nextScenarioId?: string;
   /** Diagnostic exercises keep the root cause and repair target hidden until solved. */
   diagnostic?: boolean;
   /** Learner-facing goals; unlike internal predicates these must not disclose the fault. */
