@@ -28,6 +28,9 @@ jobs:
       - name: Coverage report
         run: npm run coverage:explanations
 
+      - name: Cisco IOS show diagnosis lab regression
+        run: node scripts/cli-show-diagnostic.test.mjs
+
       - name: Quiz logic unit tests
         run: npm run test:logic
 
@@ -54,9 +57,6 @@ jobs:
 
       - name: Cisco IOS modes learning lab regression
         run: node scripts/cli-ios-modes-lab.test.mjs
-
-      - name: Cisco IOS show diagnosis lab regression
-        run: node scripts/cli-show-diagnostic.test.mjs
 
       - name: CLI lesson glossary links regression
         run: node scripts/cli-lesson-terms.test.mjs
