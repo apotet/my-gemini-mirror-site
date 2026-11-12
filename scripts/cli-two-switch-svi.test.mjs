@@ -43,7 +43,7 @@ for (const [device, ip] of [['sw1','192.168.10.2'], ['sw2','192.168.10.3']]) {
 lab.selectDevice('sw1');
 assert.match(cmd('ping 192.168.10.3').output, /: REACHABLE/);
 assert.ok(!cmd('ping 192.168.10.3').output.includes('UNREACHABLE'));
-assert.match(cmd('show ip interface brief').output, /Vlan10.*up\\s+up/);
+assert.match(cmd('show ip interface brief').output, /Vlan10.*up\s+up/);
 lab.selectDevice('sw2');
 assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 assert.match(cmd('ping 192.168.20.1').output, /: UNREACHABLE/);
@@ -68,7 +68,7 @@ cmd('switchport trunk allowed vlan none');
 cmd('end');
 assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable')?.passed, false);
-assert.match(cmd('show ip interface brief').output, /Vlan10.*down\\s+down/);
+assert.match(cmd('show ip interface brief').output, /Vlan10.*down\s+down/);
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan 10');
