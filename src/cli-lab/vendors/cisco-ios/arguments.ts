@@ -20,6 +20,27 @@ export function maskToPrefix(mask: string): number | null {
   return bits;
 }
 
+/** Validate an interface host address, not an IPv4 route prefix. */
+export function isAssignableIpv4(address: string, prefix: number): boolean {
+  if (!isIpv4(address) || prefix < 1 || prefix > 32) return false;
+  const n = address.split('.').reduce((value, octet) => ((value << 8) | Number(octet)) >>> 0, 0);
+  // Unspecified, loopback, multicast and limited broadcast are not normal interface unicast.
+  const first = n >>> 24;
+  if (first === 0 || first === 127 || first >= 224) return false;
+  if (prefix >= 31) return true; // /31 point-to-point and /32 loopback-style unicast
+  const hostBits = 32 - prefix;
+  const hostMask = (2 ** hostBits - 1) >>> 0;
+  const host = n & hostMask;
+  return host !== 0 && host !== hostMask;
+}
+
+export function isSviInterface(name: string): boolean {
+  return /^Vlan\d+$/i.test(name);
+}
+export function isLayer2Interface(device: import('../../engine/types').DeviceState, name: string): boolean {
+  return !!device.interfaces[name]?.switchport;
+}
+
 export function normalizeIfaceName(raw: string): string {
   const compact = raw.replace(/\s+/g, '');
   const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet|vlan)(\d+(?:\/\d+)*)$/i.exec(compact);
