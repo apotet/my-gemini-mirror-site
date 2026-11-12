@@ -1,3 +1,4 @@
+import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, InterfaceState, NetworkState } from '../../engine/types';
 
 function normalizeName(raw: string): string {
@@ -8,30 +9,8 @@ function normalizeName(raw: string): string {
   return names[m[1].toLowerCase()] + m[2];
 }
 
-function operationalUp(state: NetworkState, device: DeviceState, iface: InterfaceState): boolean {
-  if (!iface.adminUp) return false;
-  const links = state.links.filter(l =>
-    (l.a === device.id && l.aIf === iface.name) ||
-    (l.b === device.id && l.bIf === iface.name));
-  if (links.length === 0) return iface.operUp;
-  return links.some(l => {
-    if (!l.up) return false;
-    const peerId = l.a === device.id ? l.b : l.a;
-    const peerIf = l.a === device.id ? l.bIf : l.aIf;
-    return !!state.devices[peerId]?.interfaces[peerIf]?.adminUp;
-  });
-}
-
-function status(state: NetworkState, device: DeviceState, iface: InterfaceState): { physical: string; protocol: string } {
-  const up = operationalUp(state, device, iface);
-  return {
-    physical: !iface.adminUp ? 'administratively down' : up ? 'up' : 'down',
-    protocol: up ? 'up' : 'down',
-  };
-}
-
 function describe(state: NetworkState, device: DeviceState, iface: InterfaceState): string {
-  const { physical, protocol } = status(state, device, iface);
+  const { physical, protocol } = interfaceStatus(state, device, iface);
   const sw = iface.switchport;
   const lines = [
     `${iface.name} is ${physical}, line protocol is ${protocol}`,
@@ -61,7 +40,7 @@ function showStatus(tokens: string[], state: NetworkState, device: DeviceState) 
   if (tokens.length !== 3) return { output: '% Invalid input detected', error: true };
   const lines = ['Port                 Status                Vlan       Duplex  Speed  Type'];
   for (const iface of Object.values(device.interfaces)) {
-    const { physical } = status(state, device, iface);
+    const { physical } = interfaceStatus(state, device, iface);
     const st = physical === 'up' ? 'connected' : physical === 'administratively down' ? 'disabled' : 'notconnect';
     const vlan = iface.switchport?.mode === 'trunk' ? 'trunk' :
       iface.switchport?.mode === 'access' ? String(iface.switchport.accessVlan ?? 1) : '1';

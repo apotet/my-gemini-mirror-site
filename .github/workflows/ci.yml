@@ -46,6 +46,9 @@ jobs:
       - name: Cisco show interfaces and help regression
         run: node scripts/cli-show-interfaces.test.mjs
 
+      - name: Cisco interface operational state regression
+        run: node scripts/cli-operational-state.test.mjs
+
       - name: Two-switch VLAN path regression
         run: node scripts/cli-two-switch.test.mjs
 

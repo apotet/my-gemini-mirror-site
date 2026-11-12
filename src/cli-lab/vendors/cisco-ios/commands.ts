@@ -1,3 +1,4 @@
+import { interfaceStatus } from '../../engine/OperationalState';
 import { formatAllowedVlans } from './trunkCommands';
 import { commandFor } from '../../engine/CommandResolution';
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
@@ -163,7 +164,7 @@ const baseCommands: CommandSpec[] = [
       if (!ifName || !device.interfaces[ifName]) {
         return { output: ciscoIosProfile.messages.invalid, error: true };
       }
-      const iface = { ...device.interfaces[ifName], adminUp: true, operUp: true };
+      const iface = { ...device.interfaces[ifName], adminUp: true };
       device.interfaces = { ...device.interfaces, [ifName]: iface };
       return { output: '', state: commitDevice(state, device) };
     },
@@ -178,7 +179,7 @@ const baseCommands: CommandSpec[] = [
       if (!ifName || !device.interfaces[ifName]) {
         return { output: ciscoIosProfile.messages.invalid, error: true };
       }
-      const iface = { ...device.interfaces[ifName], adminUp: false, operUp: false };
+      const iface = { ...device.interfaces[ifName], adminUp: false };
       device.interfaces = { ...device.interfaces, [ifName]: iface };
       return { output: '', state: commitDevice(state, device) };
     },
@@ -275,14 +276,13 @@ const baseCommands: CommandSpec[] = [
     id: 'cisco.show_ip_interface_brief',
     match: ['show', 'ip', 'interface', 'brief'],
     modes: ['exec', 'privileged'],
-    handler: (_tokens, _state, device) => {
+    handler: (_tokens, state, device) => {
       const lines = [
         'Interface                  IP-Address      OK? Method Status                Protocol',
       ];
       for (const iface of Object.values(device.interfaces)) {
         const ip = iface.ipv4?.address ?? 'unassigned';
-        const status = iface.adminUp ? 'up' : 'administratively down';
-        const proto = iface.operUp ? 'up' : 'down';
+        const { physical: status, protocol: proto } = interfaceStatus(state, device, iface);
         lines.push(
           `${iface.name.padEnd(26, ' ')} ${ip.padEnd(15, ' ')} YES unset  ${status.padEnd(22, ' ')} ${proto}`
         );
