@@ -11017,5 +11017,260 @@
     "explanation": "TCP_NODELAY отключает Nagle и снимает указанное ожидание отправки короткого сегмента. TCP_CORK способствует накоплению, локальный QUICKACK управляет своими подтверждениями, а keepalive не решает задержку активной отправки.",
     "template": false,
     "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-01",
+    "group": "l1-l2",
+    "topic": "L2 · STP · Bridge ID",
+    "text": "В Rapid PVST+ для VLAN 100 участвуют только A и B. У A настроен базовый bridge priority 32768, MAC 0000.0000.0001; у B — 28672, MAC 0000.0000.0002. Extended System ID включён. Какой результат выборов и какое десятичное значение поля priority с расширением ожидаются у root для этой VLAN?",
+    "answers": [
+      "A; поле priority с расширением 32868",
+      "B; поле priority с расширением 28672",
+      "B; поле priority с расширением 28772",
+      "A; поле priority с расширением 32768"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "В Rapid PVST+ Extended System ID равен VLAN ID: у B получается 28672 + 100 = 28772, у A — 32868. Меньшее поле priority определяет B как root до сравнения MAC.",
+    "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-02",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Root Port",
+    "text": "В RSTP мост S выбирает Root Port. Все четыре порта получают действительные BPDU с одним Root ID и advertised root path cost 10; local port cost везде 20. Bridge ID S больше идентификаторов отправителей A=32768.0000.0000.000a и B=32768.0000.0000.000b. Данные (порт S; отправитель; Sender Port ID; Local Port ID): P1; A; 128.7; 128.9. P2; A; 128.7; 128.5. P3; A; 128.8; 128.1. P4; B; 64.1; 128.2. P1 и P2 подключены к одному общему сегменту и получают BPDU одного порта A; агрегатов нет. Какой порт выберет S?",
+    "answers": [
+      "P4",
+      "P2",
+      "P3",
+      "P1"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Все пути имеют cost 30. После Sender Bridge ID остаются P1/P2/P3 от A, после Sender Port ID — P1/P2; меньший Local Port ID 128.5 выбирает P2.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-03",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Path Cost",
+    "text": "У S в RSTP два возможных пути к одному root. Через P1 сосед сообщает root path cost 10, локальный cost P1 равен 20. Через P2 сосед сообщает 20, локальный cost P2 равен 20. Root сейчас достигается через P1. Инженер меняет только локальный cost P1 на 50; BPDU и остальные настройки неизменны. Какой путь выберет S после пересчёта?",
+    "answers": [
+      "P1 с полной стоимостью 10",
+      "P1 с полной стоимостью 50",
+      "P2 с полной стоимостью 20",
+      "P2 с полной стоимостью 40"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Стоимость через P1 стала 10 + 50 = 60, через P2 осталась 20 + 20 = 40. Сравнивается полная стоимость до root, поэтому Root Port переместится на P2.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-04",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Восстановление",
+    "text": "На S работает RSTP: P1 — Root/Forwarding, P2 — Alternate/Discarding с актуальными BPDU того же root, иных путей нет. Мост S имеет худший Bridge ID, чем root. Оба соединения point-to-point, защиты не срабатывали, остальные порты S — operational edge. На P1 обнаружен физический link down, P2 остаётся исправным. Как S восстановит путь?",
+    "answers": [
+      "Выберет P2 как Root Port и сможет быстро открыть его без ожидания старения BPDU на P1",
+      "Сохранит P1 как Root Port до истечения Max Age, затем рассмотрит P2",
+      "Объявит себя новым root, поскольку единственный передающий uplink потерян",
+      "Сделает P2 Designated Port, сохранив прежний Root ID через отключённый P1"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Физический отказ сразу исключает P1. Актуальный Alternate даёт резервный путь к тому же root; заданные условия позволяют быстро повысить P2 до Root/Forwarding без ожидания Max Age P1.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-05",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Роли портов",
+    "text": "В устойчивой RSTP-топологии S имеет root path cost 10 через P1. На другом сегменте P2 получает BPDU от отдельного моста N: тот же Root ID, advertised cost 5; локальный cost P2 равен 20. N продолжает быть Designated на этом сегменте. BPDU не являются отражением сообщений S; защит и агрегации нет. Какую роль получит P2 на S?",
+    "answers": [
+      "Root: объявленные соседом 5 дают P2 лучший путь, чем 10 через P1",
+      "Designated: S представляет сегмент, сравнив свои 10 с суммой 5 + 20",
+      "Alternate: N представляет сегмент, а P1 остаётся лучшим путём S",
+      "Backup: P2 резервирует P1, поскольку S уже выбрал другой Root Port"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Через P2 суммарный cost равен 5 + 20 = 25, хуже действующего пути 10. На самом сегменте N объявляет cost 5 против 10 у S, поэтому P2 не Designated; это Alternate, а не Backup к собственному порту S.",
+    "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-06",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Proposal/Agreement",
+    "text": "S получает на point-to-point P1 superior RSTP BPDU с Proposal; P1 выбран новым Root Port. На S есть P2 — operational edge/Forwarding к ПК и P3 — non-edge Designated/Forwarding к другому мосту; P3 ещё не синхронизирован. Других портов и защит нет. Что нужно сделать S перед отправкой Agreement на P1 и быстрым открытием нового пути?",
+    "answers": [
+      "Оставить P3 передающим: самого получения Proposal достаточно для Agreement",
+      "Синхронизировать P3, переведя его в Discarding; P2 как edge уже считается синхронизированным",
+      "Дождаться перехода P2 в Discarding; P3 как Designated уже считается синхронизированным",
+      "Оставить P3 передающим и согласовать только значения Hello Time на P1"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Перед Agreement принимающий мост должен обеспечить синхронизацию остальных портов. Edge P2 уже in-sync, а несинхронизированный non-edge Designated P3 требуется заблокировать для безопасного быстрого перехода.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-07",
+    "group": "l1-l2",
+    "topic": "L2 · RSTP · Edge и BPDU Guard",
+    "text": "На Cisco IOS в Rapid PVST+ два порта к рабочим местам настроены PortFast и сейчас operational edge. На P1 BPDU Guard отключён, на P2 явно включён на интерфейсе; BPDU Filter и другие защиты отключены. На каждый порт впервые приходит действительный BPDU от подключённого коммутатора, физические линии исправны. Как различится реакция?",
+    "answers": [
+      "Оба останутся operational edge, пока не сменится Root ID",
+      "P1 станет root-inconsistent; P2 потеряет operational edge и продолжит STP",
+      "Оба перейдут в err-disabled независимо от настройки BPDU Guard",
+      "P1 потеряет operational edge и будет участвовать в STP; P2 перейдёт в err-disabled"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Без Guard получение BPDU снимает operational edge и возвращает порт к обычному участию в STP. На P2 явно включённый BPDU Guard при получении BPDU переводит интерфейс в err-disabled.",
+    "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-08",
+    "group": "l1-l2",
+    "topic": "L2 · STP · Потеря BPDU",
+    "text": "В резервной топологии Cisco PVST+ оптический порт S был Blocking и принимал BPDU от Designated-порта соседа. Затем BPDU на S перестали приходить, хотя локальный интерфейс по наблюдению остаётся link up. Другой путь S к прежнему root работает, передающий порт соседа остаётся исправным. Loop Guard, UDLD и BPDU Filter отключены; новой информации на этом сегменте нет. Каков риск после старения прежних BPDU и обычных переходов STP?",
+    "answers": [
+      "S может назначить этот порт Designated и открыть его, создав риск петли; link up не подтверждает приём BPDU",
+      "S сохранит Blocking до физического link down, поскольку прежняя роль запоминается без срока",
+      "S автоматически получит loop-inconsistent и сохранит блокировку без отдельной защиты",
+      "S автоматически перейдёт в err-disabled, поскольку любая потеря BPDU означает отказ оптического приёмника"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Без Loop Guard исчезновение актуальной информации может позволить прежнему блокирующему порту стать Designated и затем Forwarding. Наблюдаемое локальное link up не доказывает получение BPDU и не задаёт состояние обоих концов оптики.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-09",
+    "group": "l1-l2",
+    "topic": "L2 · UDLD · Однонаправленная линия",
+    "text": "Два Cisco IOS-коммутатора соединены оптикой, UDLD aggressive включён на обоих концах и ранее подтвердил двунаправленного соседа. В данном инциденте оба интерфейса фактически остаются oper up. На A перестали приходить UDLD-сообщения B; A исчерпал предусмотренные aggressive-проверки без ответа. BPDU Guard, Root Guard и Loop Guard отключены, auto-recovery errdisable не настроен. Какого результата на A ожидать?",
+    "answers": [
+      "Пересчёта root path cost при сохранении передачи через неисправный интерфейс",
+      "Состояния root-inconsistent до появления BPDU с худшим Root ID",
+      "Отключения интерфейса в err-disabled механизмом UDLD",
+      "Состояния loop-inconsistent до восстановления приёма BPDU"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "После потери подтверждённого соседа и неудачных aggressive-проверок UDLD отключает порт в err-disabled. Это контроль двунаправленности линии, а не состояния Root Guard или Loop Guard.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-10",
+    "group": "l1-l2",
+    "topic": "L2 · MSTP · Region",
+    "text": "На линии A—B между двумя Cisco IOS-коммутаторами MSTP диагностика отмечает boundary. Из активных конфигураций выписаны параметры. A: name CAMPUS; revision 12; instance 1 vlan 10-19; instance 2 vlan 20-29. B: name CAMPUS; revision 21; instance 1 vlan 10-14,15-19; instance 2 vlan 20-24,25-29. Остальные VLAN на обоих назначены MSTI 0. Для MSTI 1 bridge priority A=4096, B=32768; cost порта A—B на A=100, на B=200. Линия исправна, настройки применены, оба используют стандартный MSTP. Какая правка устранит причину границы между A и B?",
+    "answers": [
+      "На B установить bridge priority MSTI 1 равным 4096, уравняв приоритеты мостов",
+      "На B установить revision 12, сохранив имеющиеся назначения VLAN экземплярам",
+      "На B заменить списки 10-14,15-19 и 20-24,25-29 на диапазоны 10-19 и 20-29",
+      "На B установить cost порта A—B для MSTI 1 равным 100, уравняв стоимости портов"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Назначения VLAN эквивалентны: 10-14 и 15-19 вместе дают 10-19, аналогично 20-29. Имена совпадают, но revision 12 и 21 различаются; именно этот компонент MST Configuration Identifier нужно согласовать, тогда как bridge priority и port cost не определяют членство в регионе.",
+    "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-11",
+    "group": "l1-l2",
+    "topic": "L2 · MSTP · Корни экземпляров",
+    "text": "В MST-регионе CAMPUS только A и B, их конфигурации региона совпадают. Единственный выход наружу — A—R; внешний R работает RSTP и имеет меньший CIST Bridge ID, чем A и B. Иных внешних путей нет. Для MSTI 1 у A priority 32768, у B 4096, остальные компоненты BID не меняют этот порядок. Внутренняя линия A—B исправна. После сходимости какая тройка верна: CIST Root / CIST Regional Root CAMPUS / Regional Root MSTI 1?",
+    "answers": [
+      "R / B / B",
+      "A / A / B",
+      "R / A / A",
+      "R / A / B"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "R — глобальный CIST Root, A — CIST Regional Root региона с единственным внешним выходом. MSTI 1 выбирает свой региональный корень B по отдельному Bridge ID и не наследует автоматически корень CIST.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-12",
+    "group": "l1-l2",
+    "topic": "L2 · MSTP · VLAN mapping",
+    "text": "A, B и S образуют треугольник A—B—S—A без внешних соединений. Все три моста находятся в одном MST-регионе CAMPUS, revision 7; активная таблица на каждом: instance 1 vlan 10,20; instance 2 vlan 30; остальные VLAN в MSTI 0. Приоритеты мостов: MSTI 1 — A=4096, B=32768, S=61440; MSTI 2 — A=32768, B=4096, S=61440. Стоимость каждого порта всех трёх линий равна 10 в обоих экземплярах. Все линии point-to-point исправны и пропускают VLAN 10,20,30; агрегации и защит нет. По проекту при всех работающих линиях Root Port на S для VLAN 10 должен вести к A, а для VLAN 20 и 30 — к B. Какую правку следует согласованно применить, чтобы все три VLAN получили проектные пути?",
+    "answers": [
+      "На всех мостах перенести VLAN 20 из MSTI 1 в MSTI 2, сохранив приоритеты экземпляров",
+      "Назначить B корнем MSTI 1, сохранив существующую таблицу VLAN-to-instance",
+      "На S для MSTI 1 поднять cost порта к A с 10 до 30, сохранив таблицу VLAN-to-instance",
+      "На всех мостах перенести VLAN 30 из MSTI 2 в MSTI 1, сохранив приоритеты экземпляров"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "По приоритетам A — root MSTI 1, B — root MSTI 2; прямые пути от S стоят 10 против 20 через соседний мост. VLAN 20 сейчас разделяет дерево с VLAN 10: перенос только VLAN 20 в MSTI 2 даст выход к B, сохранив корни и пути VLAN 10 и 30.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-13",
+    "group": "l1-l2",
+    "topic": "L2 · MSTP · Граница с RSTP",
+    "text": "S — единственный мост MST-региона, с активным MSTI 1. Два его point-to-point порта P1 и P2 подключены к внешней связной RSTP-сети. На обоих поступают BPDU одного внешнего root R с одинаковым advertised root path cost 0; BID R лучше BID S. Local external port cost: P1=10, P2=20. Защит нет, информация актуальна. Какие роли будут после сходимости: для P1 в CIST и MSTI 1, затем для P2 в CIST?",
+    "answers": [
+      "P1: Designated и Designated; P2: Root",
+      "P1: Root и Master; P2: Alternate",
+      "P1: Alternate и Alternate; P2: Root",
+      "P1: Root и Root; P2: Designated"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Путь через P1 имеет CIST cost 10 против 20 через P2: P1 — CIST Root Port регионального корня S и Master для MSTI 1. P2 остаётся CIST Alternate; внешний BPDU не задаёт отдельную MSTI-топологию.",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "stp-new-14",
+    "group": "l1-l2",
+    "topic": "L2 · STP · Root Guard",
+    "text": "На Cisco IOS в Rapid PVST+ порт к нижестоящему коммутатору был Designated для VLAN 30. Root Guard включён, BPDU Guard и Loop Guard отключены. Через исправный интерфейс начинают поступать superior BPDU для VLAN 30, которые без защиты сделали бы этот порт Root. Затем источник таких BPDU убран и их информация устарела. Каковы ожидаемые защитное состояние и восстановление?",
+    "answers": [
+      "err-disabled на всём интерфейсе; восстановление только вручную или errdisable recovery",
+      "loop-inconsistent в VLAN 30; восстановление после любого входящего BPDU",
+      "root-inconsistent в VLAN 30; автоматический возврат к обычному STP после прекращения superior-информации",
+      "Root/Forwarding в VLAN 30; автоматический выбор нового root по superior BPDU"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Root Guard не даёт порту стать Root: VLAN переходит в root-inconsistent без err-disable интерфейса. После прекращения и старения superior-информации нормальная работа STP восстанавливается автоматически.",
+    "difficulty": "applied"
+  },
+  {
+    "id": "stp-new-15",
+    "group": "l1-l2",
+    "topic": "L2 · STP · Loop Guard",
+    "text": "На Cisco IOS в Rapid PVST+ P2 — non-edge Alternate/Discarding VLAN 40. На интерфейсе включён Loop Guard; BPDU Guard, Root Guard и UDLD отключены. Физический линк остаётся up, BPDU перестают приходить и прежняя информация истекает. Позже возвращаются те же действительные BPDU; Root Port и все стоимости не менялись. Какая последовательность ожидается для VLAN 40?",
+    "answers": [
+      "err-disabled при потере; Alternate/Discarding только после ручного включения интерфейса",
+      "root-inconsistent при потере; Root/Forwarding после любого BPDU",
+      "Designated/Forwarding при потере; Alternate/Discarding после возврата BPDU",
+      "loop-inconsistent при потере; автоматический возврат в Alternate/Discarding после восстановления BPDU"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Loop Guard не позволяет бывшему Alternate перейти в передающее состояние из-за потери BPDU и ставит loop-inconsistent. После возврата исходной информации ограничение снимается автоматически, но порт остаётся Alternate/Discarding при неизменной топологии.",
+    "difficulty": "advanced"
   }
 ]
