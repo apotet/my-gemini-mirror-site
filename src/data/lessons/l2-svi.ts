@@ -5,6 +5,7 @@ export const LESSON_L2_SVI: Lesson = {
   "title": "SVI: где VLAN, а где IP-адрес коммутатора",
   "category": "CLI · Коммутация и управление",
   "osiLayers": [
+    "CLI",
     "L2",
     "L3"
   ],
