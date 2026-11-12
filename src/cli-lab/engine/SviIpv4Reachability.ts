@@ -21,7 +21,7 @@ function svi(dev: DeviceState, vlanId: number) {
   const iface = dev.interfaces[`Vlan${vlanId}`];
   return iface && iface.adminUp && dev.vlans[vlanId]?.active ? iface : undefined;
 }
-function trunkNeighbors(state: NetworkState, id: string, vlanId: number): string[] {
+export function trunkNeighbors(state: NetworkState, id: string, vlanId: number): string[] {
   const peers: string[] = [];
   for (const link of state.links) {
     if (!link.up) continue;
