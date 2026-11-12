@@ -46,6 +46,8 @@ const SCENARIOS: Scenario[] = [
 
 function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
+    case 'ipv4.sviReachable':
+      return `${g.device.toUpperCase()}: SVI IPv4-путь к ${g.destination}`;
     case 'l2.vlanReachable':
       return `VLAN ${g.vlanId}: ${g.fromDevice} ${g.fromIf} ↔ ${g.toDevice} ${g.toIf} (L2-путь)`;
     case 'config.saved':

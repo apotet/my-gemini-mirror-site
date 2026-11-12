@@ -1,6 +1,7 @@
 import { isIpv4, maskToPrefix, ipv4Argument, maskArgument } from './arguments';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
+import { checkSviIpv4Reachability } from '../../engine/SviIpv4Reachability';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   return {
@@ -13,6 +14,20 @@ function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
 }
 
 export const ciscoL3Commands: CommandSpec[] = [
+  {
+    id: 'cisco.ping',
+    match: ['ping'],
+    arguments: [[ipv4Argument]],
+    modes: ['exec', 'privileged'],
+    handler: (tokens, state, device) => {
+      const target = tokens[1];
+      const check = checkSviIpv4Reachability(state, device.id, target);
+      return { output: check.reachable
+        ? `CLI Lab ping ${target}: REACHABLE (SVI IPv4 configuration model; no ICMP packets).\n${check.detail}`
+        : `CLI Lab ping ${target}: UNREACHABLE (SVI IPv4 configuration model; no ICMP packets).\n${check.detail}`
+      };
+    },
+  },
   {
     id: 'cisco.ip_address',
     match: ['ip', 'address'],
