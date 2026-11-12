@@ -1,3 +1,4 @@
+import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 
@@ -121,7 +122,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
     id: 'cisco.show_interfaces_trunk',
     match: ['show', 'interfaces', 'trunk'],
     modes: ['exec', 'privileged'],
-    handler: (_tokens, _state, device) => {
+    handler: (_tokens, state, device) => {
       const lines = [
         `${'Port'.padEnd(21)}${'Mode'.padEnd(17)}${'Encapsulation'.padEnd(15)}${'Status'.padEnd(14)}Native vlan`,
       ];
@@ -130,7 +131,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
         return { output: lines.join('\n') + '\n' };
       }
       for (const iface of trunks) {
-        const status = iface.adminUp ? 'trunking' : 'down';
+        const status = interfaceStatus(state, device, iface).operUp ? 'trunking' : 'down';
         lines.push(
           `${iface.name.padEnd(21, ' ')}${'on'.padEnd(17)}${'802.1q'.padEnd(15)}${status.padEnd(14, ' ')}1`
         );
@@ -141,7 +142,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
         const allowed = formatAllowedVlans(iface.switchport?.trunkAllowed);
         lines.push(`${iface.name.padEnd(21, ' ')}${allowed}`);
       }
-      return { output: lines.join('\n') };
+      return { output: lines.join('\n') + '\n\nCLI Lab: configured trunks are listed even when down; negotiation and STP forwarding are not emulated.' };
     },
   },
 ];

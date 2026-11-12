@@ -40,7 +40,8 @@ export interface SwitchportConfig {
 export interface InterfaceState {
   name: string;
   adminUp: boolean;
-  operUp: boolean;
+  /** @deprecated Legacy scenario/snapshot input only; effective status comes from OperationalState. */
+  operUp?: boolean;
   ipv4?: Ipv4Address;
   switchport?: SwitchportConfig;
   description?: string;
@@ -60,9 +61,11 @@ export interface RouteEntry {
   metric?: number;
 }
 
+export type InterfaceConfig = Omit<InterfaceState, 'operUp'>;
+
 export interface SavedDeviceConfig {
   hostname: string;
-  interfaces: Record<string, InterfaceState>;
+  interfaces: Record<string, InterfaceConfig>;
   vlans: Record<number, VlanState>;
   routes: RouteEntry[];
 }
