@@ -61,14 +61,14 @@ cmd('ip address 192.168.10.3 255.255.255.0');
 cmd('end');
 assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 
-// A missing VLAN from either trunk must break modeled IPv4 reachability and SVI autostate.
+// Remote trunk restriction breaks the path, not the local SVI autostate.
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan none');
 cmd('end');
 assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable')?.passed, false);
-assert.match(cmd('show ip interface brief').output, /Vlan10.*down\s+down/);
+assert.match(cmd('show ip interface brief').output, /Vlan10.*up\s+up/);
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan 10');
@@ -101,4 +101,97 @@ assert.equal(lab.checkGoals(scenario.goals).allPassed, true, 'restoring identica
 cmd('end');
 cmd('write memory');
 assert.equal(lab.checkGoals(scenario.goals).allPassed, true, 'restored and saved');
+
+ 
+// F2: local address cannot satisfy a remote-reachability goal; duplicates are conflicts.
+lab.selectDevice('sw1');
+assert.match(cmd('ping 192.168.10.2').output, /: LOCAL/);
+assert.equal(lab.checkGoals([{ type:'ipv4.sviReachable',device:'sw1',destination:'192.168.10.2' }]).allPassed,false);
+lab.selectDevice('sw2');
+cmd('configure terminal');
+cmd('interface vlan 10');
+cmd('ip address 192.168.10.2 255.255.255.0');
+cmd('end');
+lab.selectDevice('sw1');
+assert.match(cmd('ping 192.168.10.2').output, /: CONFLICT/);
+lab.selectDevice('sw2');
+cmd('configure terminal');
+cmd('interface vlan 10');
+cmd('ip address 192.168.10.3 255.255.255.0');
+cmd('end');
+
+// F3: local SVI autostate stays up if peer removes VLAN from its trunk.
+cmd('configure terminal');
+cmd('interface fa0/24');
+cmd('switchport trunk allowed vlan none');
+cmd('end');
+lab.selectDevice('sw1');
+assert.match(cmd('show ip interface brief').output, /Vlan10.*up\s+up/);
+assert.match(cmd('ping 192.168.10.3').output, /: UNREACHABLE/);
+lab.selectDevice('sw2');
+cmd('configure terminal');
+cmd('interface fa0/24');
+cmd('switchport trunk allowed vlan 10');
+cmd('end');
+for (const id of ['sw1','sw2']) {
+  lab.selectDevice(id);
+  cmd('configure terminal');
+  cmd('interface fa0/24');
+  cmd('switchport mode access');
+  cmd('switchport access vlan 10');
+  cmd('end');
+  assert.match(cmd('show ip interface brief').output, /Vlan10.*up\s+up/);
+}
+lab.selectDevice('sw1');
+assert.match(cmd('ping 192.168.10.3').output, /: REACHABLE/);
+
+// F4: invalid subnet network/broadcast addresses are not interface hosts.
+lab.selectDevice('sw2');
+cmd('configure terminal');
+cmd('interface vlan 10');
+for (const address of ['192.168.10.0','192.168.10.255']) {
+  assert.equal(lab.execute('ip address '+address+' 255.255.255.0').error,true,address);
+}
+cmd('ip address 192.168.10.0 255.255.255.254'); // /31 permits both addresses
+cmd('ip address 192.168.10.2 255.255.255.255'); // /32 permits host
+cmd('ip address 192.168.10.3 255.255.255.0');
+
+// F5: reject L3 commands on L2 switchports and switchport commands on SVIs.
+cmd('exit');
+cmd('interface fa0/1');
+assert.equal(lab.execute('ip address 192.168.10.3 255.255.255.0').error,true);
+cmd('exit');
+cmd('interface vlan 10');
+for(const line of ['switchport mode trunk','switchport mode access','switchport trunk allowed vlan 10']) {
+  assert.equal(lab.execute(line).error,true,line);
+}
+cmd('end');
+assert.doesNotMatch(cmd('show interfaces trunk').output,/Vlan10\s+/);
+
+// F6: bad arguments in a valid mode are not incorrect-mode errors.
+const invalidPing=lab.execute('ping 1.2.3.999');
+assert.equal(invalidPing.error,true);
+assert.doesNotMatch(invalidPing.output,/недоступна в этом режиме/);
+cmd('configure terminal');
+cmd('interface vlan 10');
+const invalidMask=lab.execute('ip address 192.168.10.3 255.0.255.0');
+assert.equal(invalidMask.error,true);
+assert.doesNotMatch(invalidMask.output,/недоступна в этом режиме/);
+cmd('end');
+
+// The existing router scenario still accepts a routed interface and /0 default route.
+const router = new LabEngine(ciscoIosProfile,ciscoIosCommands,{
+  activeDeviceId:'r1',links:[],devices:{r1:{
+    id:'r1',hostname:'R1',vendor:'cisco-ios',privilege:0,modeCtx:{mode:'exec'},
+    interfaces:{'GigabitEthernet0/0':{name:'GigabitEthernet0/0',adminUp:false}},
+    vlans:{},routes:[]
+  }}
+});
+for(const line of ['enable','configure terminal','interface gi0/0',
+  'ip address 192.168.10.1 255.255.255.0','exit',
+  'ip route 0.0.0.0 0.0.0.0 192.168.10.254']) {
+  const result=router.execute(line);
+  assert.equal(result.error,undefined,line+': '+result.output);
+}
+
 console.log('PASS Cisco two-switch SVI IPv4 modeled ping, autostate, mask/trunk/link-negative tests and persistence');
