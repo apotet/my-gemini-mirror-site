@@ -561,12 +561,28 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             </div>
           )}
 
+          {labMode === 'learn' && stepIndex >= steps.length && !completed && (
+            <div className="rounded-2xl border border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 p-4 space-y-2" role="status">
+              <div className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                Шаги пройдены, но не все цели выполнены
+              </div>
+              <p className="text-xs text-slate-700 dark:text-slate-200">
+                Проверьте конфигурацию, исправьте невыполненные цели и повторите проверку.
+                Последний шаг не означает завершение задания.
+              </p>
+              <button type="button" onClick={runCheck}
+                className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 cursor-pointer">
+                Проверить цели
+              </button>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
                 Цели
               </div>
-              {(labMode === 'task' || labMode === 'drill') && (
+              {(labMode === 'task' || labMode === 'drill' || (labMode === 'learn' && stepIndex >= steps.length && !completed)) && (
                 <button
                   type="button"
                   onClick={runCheck}
