@@ -1,3 +1,4 @@
+import { parseVlanList, vlanListArgument } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
@@ -14,19 +15,6 @@ function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
 
 /** A trunk without an explicit allowed list permits VLAN IDs 1–4094. [] means none. */
 const ALL_VLANS = Array.from({ length: 4094 }, (_, i) => i + 1);
-
-function parseVlanList(raw: string): number[] | null {
-  // Accept VLAN IDs and inclusive ranges, without silent truncation of malformed input.
-  if (!/^\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/.test(raw)) return null;
-  const result = new Set<number>();
-  for (const part of raw.split(',')) {
-    const [left, right = left] = part.split('-');
-    const lo = Number(left), hi = Number(right);
-    if (!Number.isInteger(lo) || !Number.isInteger(hi) || lo < 1 || hi > 4094 || lo > hi) return null;
-    for (let v = lo; v <= hi; v++) result.add(v);
-  }
-  return [...result].sort((a, b) => a - b);
-}
 
 export function formatAllowedVlans(allowed?: number[]): string {
   if (allowed === undefined) return '1-4094';
@@ -107,6 +95,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
   ...(['add', 'remove', 'all', 'none'] as const).map(operation => ({
     id: 'cisco.switchport_trunk_allowed_vlan_' + operation,
     match: ['switchport', 'trunk', 'allowed', 'vlan', operation],
+    arguments: operation === 'add' || operation === 'remove' ? [[vlanListArgument]] : [[]],
     modes: ['config-if'] as const as ('config-if')[],
     minPrivilege: 15,
     handler: (tokens: string[], state: NetworkState, device: DeviceState) => updateAllowed(tokens, state, device),
@@ -114,6 +103,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
   {
     id: 'cisco.switchport_trunk_allowed_vlan',
     match: ['switchport', 'trunk', 'allowed', 'vlan'],
+    arguments: [[vlanListArgument]],
     modes: ['config-if'],
     minPrivilege: 15,
     handler: updateAllowed,

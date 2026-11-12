@@ -1,5 +1,5 @@
 import { contextualHelp } from './ContextualHelp';
-import { commandContext, commandFor, matchingKeywords, resolveKeywords } from './CommandResolution';
+import { commandFor, inspectCommand, matchingKeywords } from './CommandResolution';
 import { initializeStartupConfigs } from './ConfigPersistence';
 import { evaluateGoals } from './GoalEvaluator';
 import {
@@ -73,28 +73,13 @@ export class LabEngine {
     // In particular, repeated Tab presses must never construct a command.
     if (!partial) return { candidates: [] };
 
-    // Config-mode "do" delegates commands to privileged EXEC, as "?" help does.
-    // Keep the literal "do " prefix in the result while resolving EXEC keywords.
-    const context = commandContext(this.commands, tokens, mode, priv);
-    const commandTokens = context.words;
-    const commandMode = context.mode;
-    const commandPrivilege = context.privilege;
-    const commandSpecs = context.specs;
-
-    const parsed = resolveKeywords(commandSpecs, commandTokens, commandMode, commandPrivilege);
+    const parsed = inspectCommand(this.commands, tokens, mode, priv, device);
     if (parsed.ambiguous) return { candidates: parsed.ambiguous };
-    const available = parsed.candidates.filter(spec =>
-      spec.match.length > commandTokens.length &&
-      spec.match.slice(0, commandTokens.length).every((word, i) => word === parsed.tokens[i].toLowerCase())
-    );
-
-    // Complete exactly one CLI keyword per Tab press. Command arguments (VLAN ID,
-    // IP, interface name) are not part of the static keyword completion.
-    const nextTokens = matchingKeywords(Array.from(new Set(
-      available
-        .filter((spec) => commandTokens.length < spec.match.length)
-        .map((spec) => spec.match[commandTokens.length])
-    )), partial).sort();
+    if (parsed.status === 'invalid') return { candidates: [] };
+    // Argument values are validated, never invented by TAB. Keywords after
+    // dynamic arguments use the same path as Enter and contextual help.
+    const keywords = [...new Set(parsed.next.flatMap(node => 'keyword' in node ? [node.keyword] : []))];
+    const nextTokens = matchingKeywords(keywords, partial).sort();
 
     const base = tokens.join(' ');
     const prefix = base ? base + ' ' : '';
@@ -131,10 +116,11 @@ export class LabEngine {
 
     const tokens = trimmed.split(/\s+/);
     const device = activeDevice(this.state);
-    const resolved = commandFor(this.commands, tokens, device.modeCtx.mode, device.privilege);
+    const resolved = commandFor(this.commands, tokens, device.modeCtx.mode, device.privilege, device);
     if (resolved.ambiguous) {
       return { output: '% Ambiguous command: ' + resolved.ambiguous.join(', '), error: true };
     }
+    if (resolved.status === 'incomplete') return { output: this.profile.messages.incomplete, error: true };
     const spec = resolved.spec;
     if (!spec) {
       // Do not silently accept a command from another IOS configuration mode.
@@ -149,15 +135,13 @@ export class LabEngine {
     const workingDevice = activeDevice(working);
     const result = spec.handler(resolved.tokens, working, workingDevice, this.profile);
 
-    if (result.state) {
+    if (!result.error && result.state) {
       this.state = result.state;
-    } else if (result.modeCtx) {
+    } else if (!result.error && result.modeCtx) {
       const next = cloneState(this.state);
       next.devices[next.activeDeviceId].modeCtx = result.modeCtx;
       this.state = next;
     }
-
-    if (result.state) this.state = result.state;
 
     return {
       output: result.output,

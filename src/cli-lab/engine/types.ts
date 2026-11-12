@@ -174,10 +174,20 @@ export type CommandHandler = (
   profile: VendorProfile
 ) => CommandResult;
 
+/** A suffix node after a command's canonical keyword path. Validators are read-only. */
+export type CommandArgument =
+  | { keyword: string; description?: string }
+  | { name: string; description: string;
+      validate: (value: string, device: DeviceState | undefined, preceding: string[]) => boolean;
+      /** A final free-text argument can consume multiple words (e.g. VLAN name). */
+      rest?: boolean };
+
 export interface CommandSpec {
   id: string;
   match: string[];
   modes: DeviceMode[];
   minPrivilege?: number;
+  /** Alternative argument paths; omitted means exactly the registered keywords. */
+  arguments?: CommandArgument[][];
   handler: CommandHandler;
 }
