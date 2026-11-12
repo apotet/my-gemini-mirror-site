@@ -41,49 +41,49 @@ for (const [device, ip] of [['sw1','192.168.10.2'], ['sw2','192.168.10.3']]) {
 }
 // Connectivity is available only after both SVI IPv4 endpoints and VLAN trunk are ready.
 lab.selectDevice('sw1');
-assert.match(cmd('ping 192.168.10.3').output, /REACHABLE/);
+assert.match(cmd('ping 192.168.10.3').output, /: REACHABLE/);
 assert.ok(!cmd('ping 192.168.10.3').output.includes('UNREACHABLE'));
 assert.match(cmd('show ip interface brief').output, /Vlan10.*up\\s+up/);
 lab.selectDevice('sw2');
-assert.match(cmd('ping 192.168.10.2').output, /REACHABLE/);
-assert.match(cmd('ping 192.168.20.1').output, /UNREACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
+assert.match(cmd('ping 192.168.20.1').output, /: UNREACHABLE/);
 
 // Wrong mask: a configured IP without a common IPv4 subnet cannot pass.
 cmd('configure terminal');
 cmd('interface vlan 10');
 cmd('ip address 192.168.10.3 255.255.255.255');
 cmd('end');
-assert.match(cmd('ping 192.168.10.2').output, /UNREACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable' && r.predicate.device === 'sw1')?.passed, false);
 cmd('configure terminal');
 cmd('interface vlan 10');
 cmd('ip address 192.168.10.3 255.255.255.0');
 cmd('end');
-assert.match(cmd('ping 192.168.10.2').output, /REACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 
 // A missing VLAN from either trunk must break modeled IPv4 reachability and SVI autostate.
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan none');
 cmd('end');
-assert.match(cmd('ping 192.168.10.2').output, /UNREACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable')?.passed, false);
 assert.match(cmd('show ip interface brief').output, /Vlan10.*down\\s+down/);
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan 10');
 cmd('end');
-assert.match(cmd('ping 192.168.10.2').output, /REACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 
 // Link-down should invalidate both the test command and state-based goal.
 const prior = structuredClone(lab.getState());
 const cut = structuredClone(prior);
 cut.links[0].up = false;
 lab.setState(cut);
-assert.match(cmd('ping 192.168.10.2').output, /UNREACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable')?.passed, false);
 lab.setState(prior);
-assert.match(cmd('ping 192.168.10.2').output, /REACHABLE/);
+assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 
 assert.equal(lab.checkGoals(scenario.goals).allPassed, false, 'not saved yet');
 lab.selectDevice('sw1');
