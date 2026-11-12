@@ -11,8 +11,9 @@ export { PRACTICE_DESTINATIONS } from './src/data/practiceLinks';
 export { GLOSSARY, GLOSSARY_TOOLTIPS } from './src/data/glossary';
 export { splitGlossaryText } from './src/utils/glossaryText';
 export { ciscoTwoSwitchSviScenario } from './src/cli-lab/scenarios/cisco-two-switch-svi';
+export { ciscoAccessSviFollowupScenario } from './src/cli-lab/scenarios/cisco-access-svi-followup';
 `,resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',outfile,logLevel:'silent'});
-const {getLesson,PRACTICE_DESTINATIONS,GLOSSARY,GLOSSARY_TOOLTIPS,splitGlossaryText,ciscoTwoSwitchSviScenario}=await import(pathToFileURL(outfile).href);
+const {getLesson,PRACTICE_DESTINATIONS,GLOSSARY,GLOSSARY_TOOLTIPS,splitGlossaryText,ciscoTwoSwitchSviScenario,ciscoAccessSviFollowupScenario}=await import(pathToFileURL(outfile).href);
 const lesson=getLesson('l2-svi');
 assert.ok(lesson,'SVI registered in lessons catalog');
 assert.ok(lesson.professional,'SVI has expert explanation');
@@ -26,8 +27,9 @@ for(const mode of [lesson,lesson.professional]){
  }
 }
 assert.equal(GLOSSARY.SVI.lessonId,'l2-svi');
-assert.ok(lesson.blocks.some(b=>b.practiceLink==='cli-svi'));
-assert.ok(lesson.professional.blocks.some(b=>b.practiceLink==='cli-svi'));
+assert.equal(PRACTICE_DESTINATIONS['cli-svi-followup'].scenarioId,ciscoAccessSviFollowupScenario.id);
+assert.ok(lesson.blocks.some(b=>b.practiceLink==='cli-svi-followup'));
+assert.ok(lesson.professional.blocks.some(b=>b.practiceLink==='cli-svi-followup'));
 assert.match(lesson.blocks.map(b=>b.body).join(' '),/config-vlan.*config-if/s);
 assert.match(lesson.blocks.map(b=>b.body).join(' '),/255\.255\.255\.0/);
-console.log('PASS: SVI lesson, glossary, plain/pro and direct CLI lab link');
+console.log('PASS: SVI lesson, glossary, plain/pro and guided CLI lab link');
