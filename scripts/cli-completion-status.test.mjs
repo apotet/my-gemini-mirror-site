@@ -9,12 +9,14 @@
  * Step-by-step Learn progression and the ability to continue after an error are preserved.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { build } from 'esbuild';
 
 const compiled = await build({
   stdin: {
     contents: `export { LabEngine } from './src/cli-lab/engine/LabEngine.ts';
 export { evaluateGoals } from './src/cli-lab/engine/GoalEvaluator.ts';
+export { shouldShowCompletion } from './src/cli-lab/engine/completionStatus.ts';
 export { ciscoIosCommands } from './src/cli-lab/vendors/cisco-ios/commands.ts';
 export { ciscoIosProfile } from './src/cli-lab/vendors/cisco-ios/profile.ts';
 export { ciscoIosModesScenario } from './src/cli-lab/scenarios/cisco-ios-modes.ts';
@@ -30,14 +32,17 @@ export { ciscoVlanAccessScenario } from './src/cli-lab/scenarios/cisco-vlan-acce
   logLevel: 'silent',
 });
 const mod = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
-const { LabEngine, evaluateGoals, ciscoIosProfile, ciscoIosCommands, ciscoIosModesScenario, ciscoVlanAccessScenario } = mod;
+const { LabEngine, evaluateGoals, shouldShowCompletion, ciscoIosProfile, ciscoIosCommands, ciscoIosModesScenario, ciscoVlanAccessScenario } = mod;
 
-/** Mirrors the UI decision in CliLabShell / MockCliLabShell. */
-function computeCompleted(labMode, stepIndex, stepsLength, allPassed) {
-  const stepsDone = labMode !== 'learn' || stepIndex >= stepsLength;
-  return stepsDone && allPassed;
+// The test imports the production completion gate rather than mirroring it.
+for (const file of ['src/cli-lab/CliLabShell.tsx','src/cli-lab/MockCliLabShell.tsx']) {
+  const source = readFileSync(file, 'utf8');
+  assert.match(source, /import \{ shouldShowCompletion \} from '\.\/engine\/completionStatus'/,
+    file + ': UI must import the tested function');
+  assert.equal((source.match(/shouldShowCompletion\(labMode, stepIndexRef\.current, steps\.length,/g) ?? []).length, 2,
+    file + ': both Check button and command submission must use the same gate');
+  assert.doesNotMatch(source, /setCompleted\(true\)/, file + ': unconditional success prohibited');
 }
-
 function runSequence(scenario, commands) {
   const engine = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   const results = [];
@@ -59,7 +64,7 @@ function runSequence(scenario, commands) {
   const final = evaluateGoals(engine.getState(), scenario.goals);
   assert.equal(final.allPassed, true, 'full correct sequence passes goals');
   // Simulate Learn finished (stepIndex >= length)
-  assert.equal(computeCompleted('learn', steps.length, steps.length, final.allPassed), true);
+  assert.equal(shouldShowCompletion('learn', steps.length, steps.length, final.allPassed), true);
 
   // Last step accept can pass while overall goals fail (e.g. hostname wrong, but we force saved somehow – use a partial)
   // After correct hostname but before save, overall fails
@@ -67,7 +72,7 @@ function runSequence(scenario, commands) {
   const mid = evaluateGoals(partial.engine.getState(), scenario.goals);
   assert.equal(mid.allPassed, false);
   // Even if we pretend the last step was advanced, completed must stay false
-  assert.equal(computeCompleted('learn', steps.length, steps.length, mid.allPassed), false, 'Learn does not show success without allPassed');
+  assert.equal(shouldShowCompletion('learn', steps.length, steps.length, mid.allPassed), false, 'Learn does not show success without allPassed');
 }
 
 // --- Task / Drill: green status clears on violation and returns on restore ---
@@ -84,8 +89,8 @@ function runSequence(scenario, commands) {
   ['enable', 'conf t', 'hostname NETOPS', 'end', 'copy running-config startup-config'].forEach(send);
   let g = evaluateGoals(engine.getState(), scenario.goals);
   assert.equal(g.allPassed, true);
-  assert.equal(computeCompleted('task', 0, 0, g.allPassed), true);
-  assert.equal(computeCompleted('drill', 0, 0, g.allPassed), true);
+  assert.equal(shouldShowCompletion('task', 0, 0, g.allPassed), true);
+  assert.equal(shouldShowCompletion('drill', 0, 0, g.allPassed), true);
 
   // Violate: change hostname back
   send('conf t');
@@ -93,8 +98,8 @@ function runSequence(scenario, commands) {
   send('end');
   g = evaluateGoals(engine.getState(), scenario.goals);
   assert.equal(g.allPassed, false, 'hostname change breaks goals');
-  assert.equal(computeCompleted('task', 0, 0, g.allPassed), false, 'Task clears completion immediately');
-  assert.equal(computeCompleted('drill', 0, 0, g.allPassed), false, 'Drill clears completion immediately');
+  assert.equal(shouldShowCompletion('task', 0, 0, g.allPassed), false, 'Task clears completion immediately');
+  assert.equal(shouldShowCompletion('drill', 0, 0, g.allPassed), false, 'Drill clears completion immediately');
 
   // Restore
   send('conf t');
@@ -103,7 +108,7 @@ function runSequence(scenario, commands) {
   send('copy running-config startup-config');
   g = evaluateGoals(engine.getState(), scenario.goals);
   assert.equal(g.allPassed, true, 'goals restored');
-  assert.equal(computeCompleted('task', 0, 0, g.allPassed), true, 'success reappears after restore');
+  assert.equal(shouldShowCompletion('task', 0, 0, g.allPassed), true, 'success reappears after restore');
 }
 
 // --- Learn step-by-step still advances only on step accept; continue after error ---
@@ -134,8 +139,8 @@ function runSequence(scenario, commands) {
   // We rely on the engine + goals being the source of truth
   const before = evaluateGoals(engine.getState(), scenario.goals);
   assert.equal(before.allPassed, false);
-  assert.equal(computeCompleted('task', 0, 0, before.allPassed), false);
-  assert.equal(computeCompleted('learn', 0, (scenario.steps || []).length, before.allPassed), false);
+  assert.equal(shouldShowCompletion('task', 0, 0, before.allPassed), false);
+  assert.equal(shouldShowCompletion('learn', 0, (scenario.steps || []).length, before.allPassed), false);
 }
 
 console.log('PASS: F1 completion status – success only on allPassed, clears on violation, restores, Learn steps intact');
