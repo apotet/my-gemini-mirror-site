@@ -9,6 +9,7 @@ import { ciscoIosModesScenario } from './scenarios/cisco-ios-modes';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
+import { ciscoTwoSwitchSviScenario } from './scenarios/cisco-two-switch-svi';
 import { ciscoThreeSwitchMissingVlanScenario } from './scenarios/cisco-three-switch-missing-vlan';
 import { ciscoTwoSwitchTrunkDiagnosticScenario } from './scenarios/cisco-two-switch-trunk-diagnostics';
 import { ciscoShowDiagnosticScenario } from './scenarios/cisco-show-diagnostic';
@@ -38,6 +39,7 @@ const SCENARIOS: Scenario[] = [
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
   ciscoTwoSwitchVlanScenario,
+  ciscoTwoSwitchSviScenario,
   ciscoThreeSwitchMissingVlanScenario,
   ciscoTwoSwitchTrunkDiagnosticScenario,
 ];
