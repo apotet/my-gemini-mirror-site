@@ -5,6 +5,7 @@ import { LabMode, Scenario } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
+import { ciscoIosModesScenario } from './scenarios/cisco-ios-modes';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
@@ -30,6 +31,7 @@ interface HistoryLine {
 }
 
 const SCENARIOS: Scenario[] = [
+  ciscoIosModesScenario,
   ciscoVlanAccessScenario,
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
