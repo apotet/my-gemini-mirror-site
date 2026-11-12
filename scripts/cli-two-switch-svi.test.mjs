@@ -120,6 +120,28 @@ cmd('interface vlan 10');
 cmd('ip address 192.168.10.3 255.255.255.0');
 cmd('end');
 
+// F2 regression: reverse /32 does not hide duplicate ownership.
+const duplicated = structuredClone(lab.getState());
+duplicated.devices.sw3 = structuredClone(duplicated.devices.sw2);
+duplicated.devices.sw3.id = 'sw3';
+duplicated.devices.sw3.hostname = 'SW3';
+duplicated.devices.sw3.interfaces.Vlan10.ipv4 = {
+  address: '192.168.10.3', prefix: 32, mask: '255.255.255.255',
+};
+duplicated.links.push({
+  a: 'sw1', aIf: 'FastEthernet0/23', b: 'sw3', bIf: 'FastEthernet0/24', up: true,
+});
+duplicated.devices.sw1.interfaces['FastEthernet0/23'] = {
+  name: 'FastEthernet0/23', adminUp: true,
+  switchport: { mode: 'trunk', trunkAllowed: [10] },
+};
+const savedBeforeConflict = structuredClone(lab.getState());
+lab.setState(duplicated);
+lab.selectDevice('sw1');
+assert.match(cmd('ping 192.168.10.3').output, /: CONFLICT/);
+assert.equal(lab.checkGoals([{ type: 'ipv4.sviReachable', device: 'sw1', destination: '192.168.10.3' }]).allPassed, false);
+lab.setState(savedBeforeConflict);
+
 // F3: local SVI autostate stays up if peer removes VLAN from its trunk.
 cmd('configure terminal');
 cmd('interface fa0/24');
@@ -144,6 +166,13 @@ for (const id of ['sw1','sw2']) {
 }
 lab.selectDevice('sw1');
 assert.match(cmd('ping 192.168.10.3').output, /: REACHABLE/);
+assert.equal(lab.checkGoals([{
+  type: 'l2.vlanReachable', vlanId: 10, fromDevice: 'sw1', fromIf: 'FastEthernet0/1',
+  toDevice: 'sw2', toIf: 'FastEthernet0/1',
+}]).allPassed, true, 'access-access must match ping L2 model');
+assert.equal(lab.checkGoals([{
+  type: 'if.trunkAllowed', device: 'sw1', ifName: 'FastEthernet0/24', vlans: [10],
+}]).allPassed, false, 'explicit trunk scenario goal must remain unmet');
 
 // F4: invalid subnet network/broadcast addresses are not interface hosts.
 lab.selectDevice('sw2');
@@ -162,7 +191,8 @@ cmd('interface fa0/1');
 assert.equal(lab.execute('ip address 192.168.10.3 255.255.255.0').error,true);
 cmd('exit');
 cmd('interface vlan 10');
-for(const line of ['switchport mode trunk','switchport mode access','switchport trunk allowed vlan 10']) {
+for(const line of ['switchport mode trunk','switchport mode access',
+  'switchport trunk allowed vlan 10','switchport access vlan 10']) {
   assert.equal(lab.execute(line).error,true,line);
 }
 cmd('end');
