@@ -1,4 +1,4 @@
-import { parseVlanList, vlanListArgument } from './arguments';
+import { parseVlanList, vlanListArgument, isLayer2Interface } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
@@ -34,6 +34,7 @@ function updateAllowed(tokens: string[], state: NetworkState, device: DeviceStat
   const ifName = device.modeCtx.ifName;
   const iface = ifName ? device.interfaces[ifName] : undefined;
   if (!iface) return { output: ciscoIosProfile.messages.invalid, error: true };
+  if (!isLayer2Interface(device, ifName!)) return { output: '% Switchport configuration is not available on this interface', error: true };
   if (iface.switchport?.mode !== 'trunk') {
     return { output: '% Configure switchport mode trunk first', error: true };
   }
@@ -78,6 +79,9 @@ export const ciscoTrunkCommands: CommandSpec[] = [
       const ifName = device.modeCtx.ifName;
       if (!ifName || !device.interfaces[ifName]) {
         return { output: ciscoIosProfile.messages.invalid, error: true };
+      }
+      if (!isLayer2Interface(device, ifName)) {
+        return { output: '% Switchport configuration is not available on this interface', error: true };
       }
       const prev = device.interfaces[ifName];
       const iface = {
