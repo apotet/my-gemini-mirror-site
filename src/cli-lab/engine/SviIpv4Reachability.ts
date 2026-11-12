@@ -99,8 +99,9 @@ export function checkSviIpv4Reachability(
       if (id !== sourceId) {
         const dev = state.devices[id];
         const target = dev && svi(dev, vlanId);
-        if (target?.ipv4?.address === destinationAddress && localSviPortUp(state, id, vlanId) &&
-          sameSubnet(destinationAddress, origin.ipv4!.address, target.ipv4.prefix)) {
+        if (target?.ipv4?.address === destinationAddress && localSviPortUp(state, id, vlanId)) {
+          // Count owners before validating the reverse subnet. A conflicting
+          // /32 owner still makes the destination ambiguous on the same VLAN.
           remoteMatches.push({ device: id, vlan: vlanId });
         }
       }
@@ -119,6 +120,12 @@ export function checkSviIpv4Reachability(
       detail: `LOCAL: ${destinationAddress} — собственный адрес активного SVI; это не доказательство связи с другим коммутатором` };
   }
   if (remoteMatches.length === 1) {
+    const owner = remoteMatches[0];
+    const target = svi(state.devices[owner.device], owner.vlan);
+    const origin = origins.find(iface => Number(iface.name.slice(4)) === owner.vlan &&
+      sameSubnet(destinationAddress, iface.ipv4!.address, target!.ipv4!.prefix));
+    if (!origin) return { reachable: false, kind: 'unreachable',
+      detail: `Адрес ${destinationAddress} найден на ${owner.device.toUpperCase()}, но обратная on-link подсеть не совпадает` };
     return { reachable: true, kind: 'remote',
       detail: `REMOTE: ${destinationAddress} найден на ${remoteMatches[0].device.toUpperCase()} через VLAN ${remoteMatches[0].vlan}; L2-путь и обе подсети согласованы` };
   }
