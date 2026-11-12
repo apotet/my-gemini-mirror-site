@@ -11272,5 +11272,445 @@
     ],
     "explanation": "Loop Guard не позволяет бывшему Alternate перейти в передающее состояние из-за потери BPDU и ставит loop-inconsistent. После возврата исходной информации ограничение снимается автоматически, но порт остаётся Alternate/Discarding при неизменной топологии.",
     "difficulty": "advanced"
+  },
+  {
+    "id": "l2-sec-01",
+    "text": "На Cisco Catalyst access-порт настроен как PortFast с интерфейсным BPDU Guard. Подключённый мост прислал BPDU с худшим Bridge ID. Какова реакция?",
+    "answers": [
+      "Порт продолжит передачу, поскольку корень не меняется",
+      "Интерфейс перейдёт в err-disabled",
+      "Заблокируется только выбор нового корня",
+      "Порт просто потеряет edge-статус"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "BPDU Guard реагирует на любой BPDU и отключает защищённый интерфейс. Interface-level BPDU Guard действует независимо от superior/inferior BPDU. На Catalyst нарушение вызывает err-disable интерфейса; сравнение Bridge ID не является условием срабатывания.",
+    "difficulty": "applied",
+    "topic": "STP · BPDU Guard",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "BPDU Guard"
+    ]
+  },
+  {
+    "id": "l2-sec-02",
+    "text": "RSTP-порт административно edge; BPDU Guard и BPDU Filter отключены. Он получает корректный BPDU соседнего моста. Что должно произойти с operational edge?",
+    "answers": [
+      "Сохранится до перезагрузки",
+      "Весь коммутатор отключит RSTP",
+      "Снимется, порт начнёт участвовать в обычной топологии",
+      "Интерфейс обязательно перейдёт в err-disabled"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Получение BPDU снимает operational edge. При приёме BPDU operEdge становится false. Дальнейшие роли и состояния определяет RSTP; adminEdge не означает фильтрацию BPDU или автоматический err-disable.",
+    "difficulty": "applied",
+    "topic": "RSTP · Edge",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Edge"
+    ]
+  },
+  {
+    "id": "l2-sec-03",
+    "text": "На порту к коммутатору арендатора включён Root Guard. Пришёл superior BPDU. Как защитить расположение корня, сохранив возможность автоматического возврата?",
+    "answers": [
+      "Перевести затронутую инстанцию в root-inconsistent",
+      "Отключить STP на порту",
+      "Принять нового корня и включить PortFast",
+      "Навсегда выключить физический интерфейс"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Root Guard удержит затронутую инстанцию в root-inconsistent. На ожидаемом Designated-порту superior BPDU вызывает root-inconsistent. Это состояние STP, а не shutdown интерфейса; восстановление происходит после прекращения superior information и её старения.",
+    "difficulty": "applied",
+    "topic": "STP · Root Guard",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Root Guard"
+    ]
+  },
+  {
+    "id": "l2-sec-04",
+    "text": "На Root-порту Catalyst с Loop Guard перестали приходить BPDU, хотя локальный линк up. Какая реакция предотвращает опасный переход в Designated после старения информации?",
+    "answers": [
+      "Переход в PortFast",
+      "Смена native VLAN",
+      "Автоматическое доверие соседу",
+      "Блокировка затронутой инстанции в loop-inconsistent"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Loop Guard удерживает инстанцию в loop-inconsistent при потере ожидаемых BPDU. Loop Guard защищает non-designated Root/Alternate от перехода в Designated вследствие expiry received information. Loop-inconsistent блокирует передачу соответствующей инстанции; link up не гарантирует двустороннюю доставку BPDU.",
+    "difficulty": "advanced",
+    "topic": "STP · Loop Guard",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Loop Guard"
+    ]
+  },
+  {
+    "id": "l2-sec-05",
+    "text": "После устранения неисправности на loop-inconsistent порту снова поступают допустимые BPDU. Как обычно восстанавливается Cisco Loop Guard?",
+    "answers": [
+      "Только заменой коммутатора",
+      "Автоматически, с дальнейшим выбором роли по STP",
+      "Обязательным стиранием startup-config",
+      "Постоянным включением BPDU Filter"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Возобновление BPDU позволяет автоматическое восстановление. Loop Guard recovery автоматическое при возобновлении BPDU. Снятие inconsistency и переход в Forwarding — разные события: итог зависит от port role/state машины STP.",
+    "difficulty": "applied",
+    "topic": "STP · Восстановление",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Восстановление"
+    ]
+  },
+  {
+    "id": "l2-sec-06",
+    "text": "На аплинке доступа к корню ожидаются BPDU, а порт должен иметь возможность стать Root. Инженер хочет одновременно включить Root Guard и Loop Guard на этом порту Cisco. Как исправить проект?",
+    "answers": [
+      "Оставить обе защиты: они всегда совместимы",
+      "Заменить обе на BPDU Filter",
+      "Использовать Loop Guard; Root Guard вынести на границу, где Root-порт недопустим",
+      "Сделать аплинк edge с BPDU Guard"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "На пути к корню нужен Loop Guard, а Root Guard противоречит ожидаемой роли. Root Guard и Loop Guard на одном интерфейсе Catalyst взаимоисключаются. Root Guard принуждает границу оставаться Designated; Loop Guard применяют к ожидающим BPDU Root/Alternate. Выбор зависит от роли порта, а не только от его физического направления.",
+    "difficulty": "advanced",
+    "topic": "STP · Выбор защиты",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Выбор защиты"
+    ]
+  },
+  {
+    "id": "l2-sec-07",
+    "text": "На резервном межкоммутаторном канале Cisco инженер предлагает интерфейсную команду spanning-tree bpdufilter enable, чтобы прекратить события STP. Почему это опасно?",
+    "answers": [
+      "Она шифрует BPDU",
+      "Она принудительно включает Loop Guard",
+      "Она проверяет только MAC назначения",
+      "Она подавляет BPDU и может скрыть петлю от STP"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Интерфейсный BPDU Filter может лишить STP сведений о петле. Для Catalyst interface-level spanning-tree bpdufilter enable подавляет отправку и приём BPDU, фактически исключая канал из нормального контроля STP. В отличие от глобального PortFast BPDU filtering это не режим с обычным возвратом к STP после входящего BPDU.",
+    "difficulty": "advanced",
+    "topic": "STP · BPDU Filter",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "BPDU Filter"
+    ]
+  },
+  {
+    "id": "l2-sec-08",
+    "text": "У двух MSTP-коммутаторов совпадают имя региона и revision, но VLAN 30 назначена разным MSTI. Линк поднят. Как интерпретировать соседство?",
+    "answers": [
+      "Одна область: revision достаточно",
+      "Разные MST-регионы из-за различной таблицы VLAN-to-MSTI",
+      "Оба автоматически исправят таблицы друг друга",
+      "STP отключается на обоих концах"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Разная таблица VLAN-to-MSTI означает несовпадение региона. MST Configuration Identifier включает configuration name, revision и digest VLAN-to-MSTI mapping. Разная mapping приводит к различным digest и boundary port. Внешняя связность обеспечивается CIST; локальные номера MSTI не создают сквозной идентичности между регионами.",
+    "difficulty": "advanced",
+    "topic": "MSTP · Граница региона",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Граница региона"
+    ]
+  },
+  {
+    "id": "l2-sec-09",
+    "text": "В одном MST-регионе VLAN 10 и 20 входят в MSTI 1 и проходят по одному порту. Нужно заблокировать STP-путь только для VLAN 10, сохранив путь VLAN 20. Что требуется учесть?",
+    "answers": [
+      "Роли порта общие для MSTI; нужна отдельная инстанция и согласованное изменение региона",
+      "Достаточно изменить приоритет VLAN 10 внутри того же MSTI",
+      "MSTP всегда строит отдельное дерево для каждой VLAN",
+      "BPDU Guard умеет выбирать VLAN по номеру"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Внутри одного MSTI VLAN используют общее дерево. Port role/state вычисляются для MSTI, а не независимо для каждой mapped VLAN. Разделение требует согласованной VLAN-to-MSTI mapping на всех мостах региона; частичное изменение создаёт boundary. Наличие отдельного MSTI само по себе не гарантирует требуемый путь: нужны приоритеты/cost.",
+    "difficulty": "advanced",
+    "topic": "MSTP · Общая инстанция",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита STP",
+      "Общая инстанция"
+    ]
+  },
+  {
+    "id": "l2-sec-10",
+    "text": "Пользовательский порт Catalyst оставлен в dynamic auto. Нужно исключить согласование trunk с подключённым устройством. Какой вариант подходит?",
+    "answers": [
+      "Включить только PortFast",
+      "Увеличить лимит Port Security",
+      "Явно задать switchport mode access и, где поддерживается, switchport nonegotiate",
+      "Назначить native VLAN 1 без смены режима"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Явный access исключает динамический переход в trunk. Switch spoofing через DTP устраняется явным switchport mode access; switchport nonegotiate дополнительно отключает DTP transmission на поддерживаемой платформе. Проверяют operational mode и access VLAN; PortFast и Port Security не заменяют фиксированный switchport mode.",
+    "difficulty": "applied",
+    "topic": "VLAN · DTP",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "DTP"
+    ]
+  },
+  {
+    "id": "l2-sec-11",
+    "text": "На trunk между двумя коммутаторами нужны только VLAN 10 и 20; сейчас разрешены все VLAN. Как уменьшить распространение лишнего трафика?",
+    "answers": [
+      "Установить согласованный allowed list 10,20 на обоих концах",
+      "Поставить PortFast на trunk",
+      "Включить BPDU Filter",
+      "Изменить MAC-адрес коммутатора"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Согласованный allowed list ограничит перенос VLAN по trunk. На обоих концах задают switchport trunk allowed vlan 10,20 с учётом служебных требований платформы. Проверяют существование VLAN и STP Forwarding. Allowed list не является гарантией блокировки всех link-local control protocols.",
+    "difficulty": "applied",
+    "topic": "VLAN · Allowed list",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "Allowed list"
+    ]
+  },
+  {
+    "id": "l2-sec-12",
+    "text": "В модели атаки первый коммутатор снимает внешний тег native VLAN перед trunk; внутренний тег указывает VLAN жертвы. Пользовательские порты находятся в этой native VLAN. Как уменьшить именно этот риск?",
+    "answers": [
+      "Отключить RSTP",
+      "Разрешить все VLAN на trunk",
+      "Перенести пользователей в native VLAN",
+      "Выделить native VLAN без пользовательских портов и согласовать её на обоих концах"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Не размещать пользователей в native VLAN trunk. Double tagging требует конкретного пути обработки тегов и egress stripping outer native tag. Mitigation: native VLAN без access-пользователей, ограничение allowed VLAN и native tagging при поддержке и согласовании. Это не универсальная гарантия против всех VLAN hopping, реализация обработки вложенных тегов зависит от ASIC/платформы.",
+    "difficulty": "advanced",
+    "topic": "VLAN · Double tagging",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "Double tagging"
+    ]
+  },
+  {
+    "id": "l2-sec-13",
+    "text": "На trunk нетегированные кадры разрешены. У A native VLAN 10, у B — 20. A отправляет нетегированный пользовательский кадр VLAN 10. Куда B обычно отнесёт его на входе?",
+    "answers": [
+      "В VLAN 10 по исходному номеру",
+      "В VLAN 20 по собственной native VLAN",
+      "Автоматически отбросит по FCS",
+      "В обе VLAN одновременно"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "B классифицирует нетегированный кадр в свою native VLAN 20. При разрешённом untagged ingress B назначает свой PVID/native VLAN 20. Реальные платформы могут дополнительно блокировать путь при обнаружении inconsistency; вопрос задаёт приём нетегированного кадра. Native mismatch способен нарушить изоляцию, поэтому настройки согласуют.",
+    "difficulty": "advanced",
+    "topic": "VLAN · Несовпадение native",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "Несовпадение native"
+    ]
+  },
+  {
+    "id": "l2-sec-14",
+    "text": "Клиенты из разных VLAN после настройки маршрутизатора обмениваются трафиком. Нужно запретить этот обмен по политике. Что выбрать?",
+    "answers": [
+      "Сменить только native VLAN",
+      "Стереть MAC-таблицу",
+      "Применить межсетевые правила на пути маршрутизации",
+      "Включить sticky MAC на клиентских портах"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Политику межсетевого доступа применяют на пути маршрутизации. Inter-VLAN routing создаёт L3 reachability при наличии маршрутов и разрешающей политики. ACL/firewall размещают на фактическом пути с учётом обоих направлений; VLAN separation не эквивалентна deny inter-VLAN.",
+    "difficulty": "applied",
+    "topic": "VLAN · Изоляция",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "Изоляция"
+    ]
+  },
+  {
+    "id": "l2-sec-15",
+    "text": "На Catalyst лимит secure MAC уже занят разрешённым ПК. Нужно отбрасывать кадры нового источника, считать нарушения и сохранить передачу ПК. Какой режим выбрать?",
+    "answers": [
+      "shutdown",
+      "protect",
+      "Отключить Port Security",
+      "restrict"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Restrict отбрасывает нарушающий трафик и учитывает нарушения без отключения порта. Cisco restrict drops violating source traffic, increments security violation counter и поддерживает уведомления согласно настройкам платформы. Разрешённые secure MAC продолжают обмен; частота уведомлений может ограничиваться.",
+    "difficulty": "applied",
+    "topic": "Port Security · Restrict",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита портов",
+      "Restrict"
+    ]
+  },
+  {
+    "id": "l2-sec-16",
+    "text": "Sticky MAC нужного ПК появился в running-config, но startup-config ещё содержит только старую настройку без этого адреса. Нужно сохранить привязку после перезапуска. Что сделать?",
+    "answers": [
+      "Только очистить динамическую MAC-таблицу",
+      "Проверить изученный адрес и сохранить running-config в startup-config",
+      "Перезагрузить без сохранения",
+      "Поставить protect вместо restrict"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Проверенный sticky MAC нужно сохранить вместе с конфигурацией. Sticky secure address записывается в running-config. Copy running-config startup-config после верификации закрепляет запись для следующей загрузки; обычный dynamic secure MAC не становится persistent только от сохранения конфигурации.",
+    "difficulty": "applied",
+    "topic": "Port Security · Sticky",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита портов",
+      "Sticky"
+    ]
+  },
+  {
+    "id": "l2-sec-17",
+    "text": "На access-порту Cisco подключены IP-телефон и ПК за ним. Voice VLAN настроена; платформа учитывает оба источника в общем maximum Port Security. Maximum=1, телефон уже изучен. Почему ПК вызывает violation?",
+    "answers": [
+      "Его MAC — второй источник сверх общего лимита",
+      "Voice VLAN автоматически выключает Port Security",
+      "Лимит считает только MAC назначения",
+      "Каждый IP-пакет расходует новую запись"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Телефон и ПК дают два источника, а общий лимит равен одному. На заданной платформе total maximum включает secure addresses voice и access VLAN. Для двух ожидаемых источников нужен достаточный total maximum и корректные per-VLAN limits, если поддерживаются. Точное число записей проверяют по реальному поведению телефона и платформы.",
+    "difficulty": "advanced",
+    "topic": "Port Security · Телефон и ПК",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита портов",
+      "Телефон и ПК"
+    ]
+  },
+  {
+    "id": "l2-sec-18",
+    "text": "Злоумышленник отключил разрешённый ПК и использует его MAC на том же порту и в той же VLAN. Почему Port Security с единственным static secure MAC может это пропустить?",
+    "answers": [
+      "Static MAC проверяет цифровую подпись каждого кадра",
+      "Root Guard разрешает замену",
+      "Совпадает проверяемый адрес источника; это не доказательство личности",
+      "Sticky всегда шифрует кадры"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Совпадение разрешённого MAC не доказывает подлинность устройства. При той же source MAC, VLAN и ingress interface secure binding может совпасть, и нарушения не будет. Port Security не обеспечивает possession proof; 802.1X с подходящим EAP-методом решает задачу аутентификации, а защита содержимого требует отдельных механизмов.",
+    "difficulty": "advanced",
+    "topic": "Port Security · Подмена",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита портов",
+      "Подмена"
+    ]
+  },
+  {
+    "id": "l2-sec-19",
+    "text": "После плановой замены ПК порт с maximum=1 и сохранённым sticky MAC старого ПК уходит в err-disabled. Новый ПК разрешён организацией. Как восстановить работу без снятия политики?",
+    "answers": [
+      "Только многократно выполнять shutdown/no shutdown",
+      "Отключить STP",
+      "Включить BPDU Filter",
+      "Обновить secure-привязку на проверенный MAC, сохранить и восстановить порт"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Сначала обновить устаревшую привязку, затем восстановить порт. Проверяют violation reason, secure MAC table и running/startup-config. Удаляют конкретную старую sticky запись, задают или контролируемо изучают новую, сохраняют и выполняют предусмотренное платформой recovery. Отключение sticky без проверки записей не гарантирует их удаления.",
+    "difficulty": "applied",
+    "topic": "Port Security · Замена устройства",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Защита портов",
+      "Замена устройства"
+    ]
+  },
+  {
+    "id": "l2-sec-20",
+    "text": "DHCP Snooping включён в пользовательской VLAN. Администратор предлагает сделать все access-порты trusted, чтобы клиенты точно получили адреса. Как исправить решение?",
+    "answers": [
+      "Доверять всем портам, но включить PortFast",
+      "Оставить клиентские порты untrusted, доверить только проверенный путь к серверу или relay",
+      "Доверить порт любого клиента с sticky MAC",
+      "Отключить проверку только для ответов DHCP"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Trusted назначают проверенному направлению серверных ответов. Trusted ingress разрешает DHCP server messages. Проверяют snooping VLAN, путь server/relay, Option 82 policy и ограничения скорости согласно платформе. Trust не следует автоматически переносить на DAI: у функций отдельные настройки и модели проверки.",
+    "difficulty": "advanced",
+    "topic": "VLAN · DHCP Snooping",
+    "group": "l1-l2",
+    "hashtags": [
+      "L2",
+      "Безопасность VLAN",
+      "DHCP Snooping"
+    ]
   }
 ]
