@@ -52,6 +52,9 @@ jobs:
       - name: Cisco IOS modes learning lab regression
         run: node scripts/cli-ios-modes-lab.test.mjs
 
+      - name: CLI lesson glossary links regression
+        run: node scripts/cli-lesson-terms.test.mjs
+
       - name: Two-switch VLAN path regression
         run: node scripts/cli-two-switch.test.mjs
 
