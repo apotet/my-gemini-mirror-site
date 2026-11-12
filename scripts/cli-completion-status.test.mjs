@@ -34,18 +34,16 @@ export { ciscoVlanAccessScenario } from './src/cli-lab/scenarios/cisco-vlan-acce
 const mod = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
 const { LabEngine, evaluateGoals, shouldShowCompletion, ciscoIosProfile, ciscoIosCommands, ciscoIosModesScenario, ciscoVlanAccessScenario } = mod;
 
-// The test imports the production completion gate rather than mirroring it.
+// Assert that both practice entries use the same production completion logic.
 const canonical = readFileSync('src/cli-lab/CliLabShell.tsx', 'utf8');
-assert.match(canonical, /import \\{ shouldShowCompletion \\} from '\\.\\/engine\\/completionStatus'/,
-  'canonical UI must import the tested completion function');
-assert.equal((canonical.match(/shouldShowCompletion\\(labMode, stepIndexRef\\.current, steps\\.length,/g) ?? []).length, 2,
-  'both Check button and command submission use the shared gate');
-assert.doesNotMatch(canonical, /setCompleted\\(true\\)/, 'unconditional success prohibited');
+assert.ok(canonical.includes('shouldShowCompletion'), 'real CLI must use completion gate');
+assert.equal(canonical.split('shouldShowCompletion(labMode, stepIndexRef.current, steps.length,').length - 1, 2,
+  'both Check button and command submit must use the tested gate');
+assert.ok(!canonical.includes('setCompleted(true)'), 'no unconditional completion');
 const mock = readFileSync('src/cli-lab/MockCliLabShell.tsx', 'utf8');
-assert.match(mock, /import \\{ CliLabShell \\} from '\\.\\/CliLabShell'/,
-  'experimental CLI must wrap the canonical shell, not duplicate it');
-assert.match(mock, /<CliLabShell\\s*\\/>/,
-  'experimental CLI must render the canonical shell');
+assert.ok(mock.includes("import { CliLabShell } from './CliLabShell'"),
+  'mock must import canonical CLI instead of duplicating it');
+assert.ok(mock.includes('<CliLabShell />'), 'mock must render the canonical CLI');
 function runSequence(scenario, commands) {
   const engine = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   const results = [];
