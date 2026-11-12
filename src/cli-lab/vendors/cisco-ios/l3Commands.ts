@@ -23,8 +23,8 @@ export const ciscoL3Commands: CommandSpec[] = [
       const target = tokens[1];
       const check = checkSviIpv4Reachability(state, device.id, target);
       return { output: check.reachable
-        ? `Simulated SVI IPv4 connectivity to ${target}: 5/5 reachable (CLI Lab model; not real ICMP packets).\n${check.detail}`
-        : `Simulated SVI IPv4 connectivity to ${target}: 0/5 reachable (CLI Lab model; not real ICMP packets).\n${check.detail}`
+        ? `CLI Lab ping ${target}: REACHABLE (SVI IPv4 configuration model; no ICMP packets).\n${check.detail}`
+        : `CLI Lab ping ${target}: UNREACHABLE (SVI IPv4 configuration model; no ICMP packets).\n${check.detail}`
       };
     },
   },
