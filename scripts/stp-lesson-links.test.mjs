@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const slugs = ['l2-stp-election', 'l2-rstp-convergence', 'l2-stp-protection', 'l2-mstp-advanced'];
 const registry = readFileSync('src/data/lessons/index.ts', 'utf8');
 const questions = JSON.parse(readFileSync('src/data/questions.json', 'utf8'));
-const ids = questions.filter(q => /^stp-new-\\d{2}$/.test(q.id)).map(q => q.id);
+const ids = questions.filter(q => /^stp-new-\d{2}$/.test(q.id)).map(q => q.id);
 const coverage = new Map();
 assert.equal(ids.length, 15, 'expected the reviewed STP 15-question batch');
 
