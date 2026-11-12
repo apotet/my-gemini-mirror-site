@@ -1,5 +1,6 @@
 import { CommandSpec, DeviceState } from './types';
 import { inspectCommand } from './CommandResolution';
+import { isLayer2Interface } from '../vendors/cisco-ios/arguments';
 
 /**
  * Cisco-like contextual CLI help. The tree is built from executable command specs
@@ -29,6 +30,7 @@ const keywordDescriptions: Record<string, string> = {
   name: 'Set VLAN name',
   no: 'Negate a command',
   none: 'Permit no VLANs on this trunk',
+  ping: 'Check modeled SVI IPv4 reachability',
   reload: 'Simulated device reload',
   remove: 'Remove VLANs from the current allowed list',
   route: 'Static routes / route display',
@@ -66,7 +68,18 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
   if (parsed.status === 'invalid') return format(items);
   for (const node of parsed.next) {
     if ('keyword' in node) {
-      if (node.keyword.startsWith(partial)) items.set(node.keyword, node.description ?? keywordDescriptions[node.keyword] ?? 'CLI keyword');
+      const keyword = node.keyword;
+      const configInterface = device.modeCtx.mode === 'config-if';
+      const l2 = configInterface && !!device.modeCtx.ifName && isLayer2Interface(device, device.modeCtx.ifName);
+      if (configInterface && completed.length === 0) {
+        if (l2 && keyword === 'ip') continue;
+        if (!l2 && keyword === 'switchport') continue;
+      }
+      // "do" preserves a configuration context; session transitions cannot
+      // be safely delegated from that mode in this simulator.
+      if (completed[0]?.toLowerCase() === 'do' &&
+          ['disable', 'reload', 'configure', 'exit', 'end'].includes(keyword)) continue;
+      if (keyword.startsWith(partial)) items.set(keyword, node.description ?? keywordDescriptions[keyword] ?? 'CLI keyword');
     } else if (!partial || node.validate(partial, device, parsed.tokens)) {
       items.set(node.name, node.description);
     }
