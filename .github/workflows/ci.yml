@@ -31,9 +31,6 @@ jobs:
       - name: Cisco IOS show diagnosis lab regression
         run: node scripts/cli-show-diagnostic.test.mjs
 
-      - name: Quiz logic unit tests
-        run: npm run test:logic
-
       - name: CLI Tab regression tests
         run: node scripts/cli-tab.test.mjs
 
@@ -87,6 +84,9 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Quiz logic unit tests
+        run: npm run test:logic
 
       - name: Upload coverage artifact
         if: always()
