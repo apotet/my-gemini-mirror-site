@@ -66,6 +66,10 @@ assert.equal(e.getState().devices.sw1.interfaces['FastEthernet0/24'].switchport.
 
 // Context-aware L3 role help and accurate subnet mask documentation.
 run('end');
+const withSvi = structuredClone(e.getState());
+withSvi.devices.sw1.interfaces.Vlan10 = { name: 'Vlan10', adminUp: true };
+withSvi.devices.sw1.vlans[10] = { id: 10, active: true };
+e.setState(withSvi);
 run('conf t');
 run('interface vlan 10');
 assert.doesNotMatch(help('?'), /switchport/, 'SVI must not suggest L2 switchport commands');
