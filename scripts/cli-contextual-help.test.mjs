@@ -25,6 +25,8 @@ assert.match(help('?'),/interface/);
 assert.match(help('do show ?'),/interfaces/);
 assert.doesNotMatch(help('?'),/copy/, 'copy not available in config');
 run('interface fa0/24');
+assert.doesNotMatch(help('?'), /^\s+ip\s+IP-related/gm, 'L2 config must not suggest assigning IP');
+assert.doesNotMatch(help('do ?'), /reload|disable|configure/, 'do cannot change EXEC session');
 const first=help('switchport ?');
 assert.match(first,/mode/);
 assert.match(first,/access/);
@@ -61,4 +63,12 @@ help('switchport mode trunk ?');
 assert.equal(e.getState().devices.sw1.interfaces['FastEthernet0/24'].switchport?.mode,before);
 run('switchport mode trunk');
 assert.equal(e.getState().devices.sw1.interfaces['FastEthernet0/24'].switchport.mode,'trunk');
+
+// Context-aware L3 role help and accurate subnet mask documentation.
+run('end');
+run('conf t');
+run('interface vlan 10');
+assert.doesNotMatch(help('?'), /switchport/, 'SVI must not suggest L2 switchport commands');
+assert.match(help('ip address 192.0.2.1 ?'), /\/1 through \/32/);
+assert.doesNotMatch(help('ip address 192.0.2.1 ?'), /\/0 through \/32/);
 console.log('PASS: context-sensitive ? inline help is accurate, privilege-aware, read-only, and never invents unsupported keywords');
