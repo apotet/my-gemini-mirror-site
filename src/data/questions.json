@@ -11277,15 +11277,15 @@
     "id": "l2-sec-01",
     "text": "В Rapid PVST+ Root ID VLAN 40 не меняется, аплинки не переключаются. Счётчик topology change растёт при каждом включении рабочего ПК. Last change occurred from Gi1/0/18; там только ПК, PortFast выключен, переход в Forwarding зафиксирован при каждом запуске. Какое исправление соответствует наблюдениям?",
     "answers": [
-      "Увеличить задержку перехода в Forwarding для VLAN 40, чтобы краткие включения ПК не приводили к повторным topology change",
-      "Включить Root Guard на Gi1/0/18, оставив порт non-edge, чтобы изменения на пользовательском сегменте не распространялись выше",
+      "Включить глобальный BPDU Guard для PortFast-портов, сохранив Gi1/0/18 non-edge: защита ограничит влияние подключений ПК на дерево",
+      "Включить интерфейсный BPDU Guard на Gi1/0/18 без PortFast: пользовательский порт будет защищён, и его включения перестанут вызывать topology change",
       "После проверки, что за Gi1/0/18 нет моста, настроить PortFast и защиту от неожиданных BPDU",
-      "Увеличить STP cost Gi1/0/18, оставив его non-edge, чтобы он не участвовал в изменениях дерева при запуске ПК"
+      "Включить Root Guard на Gi1/0/18, сохранив его non-edge: порт останется Designated, а события от рабочего места не повлияют на вышестоящее дерево"
     ],
     "correct": [
       2
     ],
-    "explanation": "Причина — переход порта конечного устройства в Forwarding как non-edge, а не смена корня. Rapid PVST+ использует распространение RSTP topology change: non-edge transition to Forwarding инициирует topology change и обновление изученной MAC-информации. Last-change port и корреляция с link-up ПК локализуют источник; неизменный Root ID исключает необходимость смены root policy. После проверки физического назначения Gi1/0/18 включают PortFast с принятой BPDU Guard policy. Это диагностика источника topology change, а не реакция на входящий BPDU.",
+    "explanation": "Причина — переход порта конечного устройства в Forwarding как non-edge, а не смена корня. Rapid PVST+ использует распространение RSTP topology change: non-edge transition to Forwarding инициирует topology change и обновление изученной MAC-информации. Last-change port и корреляция с link-up ПК локализуют источник; неизменный Root ID исключает необходимость смены root policy. После проверки физического назначения Gi1/0/18 включают PortFast с принятой BPDU Guard policy. Это диагностика источника topology change, а не реакция на входящий BPDU. Interface BPDU Guard сам по себе не включает operEdge; global PortFast BPDU Guard policy охватывает PortFast-порты. При отсутствии входящего BPDU ни он, ни Root Guard не подавляет заданный non-edge transition.",
     "difficulty": "applied",
     "topic": "RSTP · Источник topology change",
     "group": "l1-l2",
@@ -11322,14 +11322,14 @@
     "text": "На trunk Catalyst физический линк up, VLAN 10 и 20 разрешены на обоих концах. После правки native VLAN журнал сообщает RECV_PVID_ERR, а show spanning-tree inconsistentports — PVID_Inc. Root ID не менялся. Какое действие устраняет указанную причину?",
     "answers": [
       "Выровнять native VLAN на концах trunk и проверить классификацию нетегированных кадров",
-      "Снять Root Guard на trunk и дождаться повторной обработки BPDU, сохранив текущие native VLAN",
-      "Добавить обе native VLAN в allowed list на каждом конце, сохранив их разные назначения интерфейсам",
-      "Перезапустить trunk после очистки динамической MAC-таблицы, сохранив текущие native VLAN"
+      "Установить одинаковую access VLAN на обоих trunk-интерфейсах, сохранив разные native VLAN: так будет согласована принадлежность нетегированных кадров",
+      "Согласовать allowed list на концах trunk, включив в него обе native VLAN, но сохранив их разные назначения интерфейсам",
+      "Явно задать static trunk и отключить DTP на обоих концах, сохранив текущие native VLAN: это устранит несогласованность после изменения trunk"
     ],
     "correct": [
       0
     ],
-    "explanation": "PVID inconsistency требует проверки native VLAN, а не Root Guard или выборов корня. Cisco PVST/Rapid PVST consistency checking может обнаружить mismatch VLAN/PVID в получаемой STP-информации и заблокировать затронутые VLAN. RECV_PVID_ERR после изменения native VLAN требует сверки switchport operational trunk/native settings на обоих концах. PVID inconsistency не равна root-inconsistent или loop-inconsistent; снятие guard не исправляет mismatch.",
+    "explanation": "PVID inconsistency требует проверки native VLAN, а не Root Guard или выборов корня. Cisco PVST/Rapid PVST consistency checking может обнаружить mismatch VLAN/PVID в получаемой STP-информации и заблокировать затронутые VLAN. RECV_PVID_ERR после изменения native VLAN требует сверки switchport operational trunk/native settings на обоих концах. PVID inconsistency не равна root-inconsistent или loop-inconsistent; снятие guard не исправляет mismatch. Access VLAN на operational trunk не заменяет native/PVID. Совпадение allowed list и отключение DTP не меняют несовпадающие native assignments.",
     "difficulty": "applied",
     "topic": "STP · PVID inconsistency",
     "group": "l1-l2",
@@ -11409,15 +11409,15 @@
     "id": "l2-sec-07",
     "text": "На Catalyst проверены два режима: глобальный spanning-tree portfast bpdufilter default для PortFast-портов и интерфейсный spanning-tree bpdufilter enable. На резервной межкоммутаторной линии инженер хочет использовать второй, считая, что при входящем BPDU фильтр автоматически уступит STP. Как оценить предложение?",
     "answers": [
-      "Интерфейсная фильтрация, как и глобальная, действует только пока порт operational PortFast; входящий BPDU возвращает обычный STP",
-      "Интерфейсная фильтрация подавляет отправку BPDU, но сохраняет их приём; резервный путь по-прежнему контролируется по сообщениям соседа",
-      "Интерфейсная фильтрация сохраняет последнее блокирующее состояние STP; подавление BPDU не позволит резервному порту перейти в Forwarding",
+      "Интерфейсная команда включает ту же PortFast-зависимую политику для одного порта; входящий BPDU снимает edge и возвращает обычный STP",
+      "Интерфейсная команда подавляет исходящие BPDU без отключения обработки входящих; соседние BPDU по-прежнему определяют роль и состояние резервного порта",
+      "Интерфейсная команда запрещает служебный обмен по защитному принципу: входящий BPDU вызывает err-disabled, поэтому резерв не откроется без контроля",
       "Интерфейсный режим принудительно подавляет BPDU; поведение глобального PortFast-режима на него переносить нельзя"
     ],
     "correct": [
       3
     ],
-    "explanation": "У интерфейсного BPDU Filter нет обещанного возврата к STP по правилам глобального PortFast-режима. На Cisco Catalyst global PortFast bpdufilter default связан с operational PortFast: при приёме BPDU порт утрачивает соответствующий edge-режим и фильтрация прекращается. Interface-level bpdufilter enable принудительно подавляет BPDU send/receive независимо от этой логики. Такое исключение резервного канала из STP создаёт риск петли; platform-specific глобальное поведение нельзя приписывать интерфейсной команде.",
+    "explanation": "У интерфейсного BPDU Filter нет обещанного возврата к STP по правилам глобального PortFast-режима. На Cisco Catalyst global PortFast bpdufilter default связан с operational PortFast: при приёме BPDU порт утрачивает соответствующий edge-режим и фильтрация прекращается. Interface-level bpdufilter enable принудительно подавляет BPDU send/receive независимо от этой логики. Такое исключение резервного канала из STP создаёт риск петли; platform-specific глобальное поведение нельзя приписывать интерфейсной команде. Interface BPDU Filter нельзя трактовать ни как transmit-only suppression с сохранённым ingress STP, ни как BPDU Guard: err-disable по входящему BPDU эта команда не обеспечивает.",
     "difficulty": "advanced",
     "topic": "STP · BPDU Filter",
     "group": "l1-l2",
@@ -11519,15 +11519,15 @@
     "id": "l2-sec-12",
     "text": "В лабораторной модели double tagging пользователь находится в VLAN 10, которая является native на первом trunk. Первый мост снимает внешний тег 10, второй принимает внутренний тег 20; VLAN 20 разрешена дальше. Какое изменение устраняет именно это условие при сохранении передачи VLAN 10 и 20 по trunk?",
     "answers": [
-      "Отключить DTP на статическом trunk, сохранив native VLAN 10 и текущие allowed VLAN 10,20",
+      "Статически закрепить пользовательский порт в access VLAN 10 и отключить на нём DTP, сохранив native VLAN 10 на первом trunk",
       "Назначить согласованную native VLAN без пользовательских портов, сохранив VLAN 10 и 20 тегированными и разрешёнными",
-      "Сохранить native VLAN 10 и текущий trunk, разрешив на пользовательском порту только проверенный source MAC через Port Security",
-      "Сохранить native VLAN 10, ограничив allowed list на обоих концах только рабочими VLAN 10 и 20"
+      "Сохранить native VLAN 10; на первом trunk разрешить только VLAN 10, а VLAN 20 оставить разрешённой на втором, где раскрывается внутренний тег",
+      "Сохранить native VLAN 10 на первом trunk и снятие внешнего тега на нём; включить тегирование native VLAN только на выходе второго коммутатора"
     ],
     "correct": [
       1
     ],
-    "explanation": "Выделенная native VLAN без пользователей устраняет заданное совпадение пользовательской VLAN с нетегируемой. Для заданной модели outer native-tag stripping открывает inner tag следующему мосту. Согласованная native VLAN без access-пользователей и тегированная передача VLAN 10/20 устраняют указанное prerequisite. DTP hardening не решает эту модель на уже статическом trunk; Port Security ограничивает source bindings. Поведение вложенных тегов и native tagging зависит от ASIC/платформы, поэтому вывод ограничен заданным трактом.",
+    "explanation": "Выделенная native VLAN без пользователей устраняет заданное совпадение пользовательской VLAN с нетегируемой. Для заданной модели outer native-tag stripping открывает inner tag следующему мосту. Согласованная native VLAN без access-пользователей и тегированная передача VLAN 10/20 устраняют указанное prerequisite. DTP hardening не решает эту модель на уже статическом trunk; Port Security ограничивает source bindings. Поведение вложенных тегов и native tagging зависит от ASIC/платформы, поэтому вывод ограничен заданным трактом. Pruning VLAN 20 на первом trunk не проверяет ещё скрытый inner tag, пока внешний VLAN 10 допускается; при этом обычная передача VLAN 20 по этому trunk теряется. Native tagging только на downstream egress не отменяет заданный stripping на первом мосту.",
     "difficulty": "advanced",
     "topic": "VLAN · Double tagging",
     "group": "l1-l2",
@@ -11563,15 +11563,15 @@
     "id": "l2-sec-14",
     "text": "VLAN 10 и 20 маршрутизируются через шлюз G. Нужно запретить IPv4-пакеты из VLAN 10 в VLAN 20, сохранив выход VLAN 10 в другие сети. Других путей нет. Где и какую политику применить?",
     "answers": [
-      "На выходе L3-интерфейса VLAN 10 на G запретить назначение VLAN 20 и разрешить остальной нужный IPv4-трафик",
-      "На выходе L3-интерфейса VLAN 20 на G запретить источник VLAN 20 и назначение VLAN 10, затем разрешить остальной нужный IPv4-трафик",
+      "На выходе L3-интерфейса VLAN 10 на G запретить источник VLAN 10 с назначением VLAN 20, затем разрешить остальной нужный IPv4-трафик",
+      "На входе L3-интерфейса VLAN 10 на G сначала разрешить весь IPv4-трафик источника VLAN 10, затем запретить его назначение VLAN 20",
       "На входе L3-интерфейса VLAN 10 на G запретить назначение VLAN 20 и разрешить остальной нужный IPv4-трафик",
-      "На входе L3-интерфейса VLAN 20 на G запретить источник VLAN 10 и разрешить остальной нужный IPv4-трафик"
+      "На входе L3-интерфейса VLAN 20 на G запретить источник VLAN 10 с назначением VLAN 20, затем разрешить остальной нужный IPv4-трафик"
     ],
     "correct": [
       2
     ],
-    "explanation": "Пакеты из VLAN 10 входят в G через её L3-интерфейс; там применяют адресную политику с нужными разрешениями. При обычной interface ACL inbound/outbound отсчитывают относительно G. Трафик 10→20 проходит ingress SVI/subinterface VLAN 10 и egress VLAN 20. Extended IPv4 ACL на ingress VLAN 10 должна содержать deny для назначения VLAN 20 и последующие permit для требуемого остального трафика с учётом implicit deny. Эта stateless политика не является правилом межсетевого экрана с отслеживанием соединений и не задаёт автоматически обратное направление.",
+    "explanation": "Пакеты из VLAN 10 входят в G через её L3-интерфейс; там применяют адресную политику с нужными разрешениями. При обычной interface ACL inbound/outbound отсчитывают относительно G. Трафик 10→20 проходит ingress SVI/subinterface VLAN 10 и egress VLAN 20. Extended IPv4 ACL на ingress VLAN 10 должна содержать deny для назначения VLAN 20 и последующие permit для требуемого остального трафика с учётом implicit deny. Эта stateless политика не является правилом межсетевого экрана с отслеживанием соединений и не задаёт автоматически обратное направление. Extended ACL обрабатывается сверху вниз до первого совпадения: permit ip для всего источника VLAN 10 перед deny к VLAN 20 делает последующий запрет недостижимым для этого трафика.",
     "difficulty": "applied",
     "topic": "VLAN · Изоляция",
     "group": "l1-l2",
