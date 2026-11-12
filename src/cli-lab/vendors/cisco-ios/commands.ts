@@ -372,6 +372,14 @@ const baseCommands: CommandSpec[] = [
         device.privilege = savedPriv;
         return { output: resolved.status === 'incomplete' ? profile.messages.incomplete : profile.messages.invalid, error: true };
       }
+      // IOS "do" is for EXEC commands that can return to the current config
+      // context. A reload/disable/exit must not restore a stale privileged
+      // context after changing or resetting the session.
+      if (new Set(['cisco.reload_simulated', 'cisco.disable', 'cisco.exit', 'cisco.end', 'cisco.configure_terminal']).has(best.id)) {
+        device.modeCtx = savedMode;
+        device.privilege = savedPriv;
+        return { output: '% Command not available through do in configuration mode', error: true };
+      }
       const result = best.handler(resolved.tokens, state, device, profile);
       if (result.state) {
         const d = result.state.devices[result.state.activeDeviceId];

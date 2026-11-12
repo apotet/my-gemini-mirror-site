@@ -56,6 +56,23 @@ cmd('reload');
 assert.equal(engine.getState().devices.sw2.hostname, 'SW2-CHANGED');
 engine.selectDevice('sw1');
 assert.equal(engine.getState().devices.sw1.hostname, 'PERSISTED-SW1', 'SW2 operations do not touch SW1');
+// A delegated EXEC command must never leave the console in a stale mode
+// after reload or silently ignore an attempted privilege change.
+for (const commands of [
+  ['enable', 'configure terminal', 'vlan 20'],
+  ['enable', 'configure terminal', 'interface FastEthernet0/1'],
+]) {
+  const other = make();
+  for (const line of commands) assert.equal(other.execute(line).error, undefined, line);
+  const before = structuredClone(other.getState());
+  for (const line of ['do reload', 'do disable']) {
+    const answer = other.execute(line);
+    assert.equal(answer.error, true, line + ' must reject unsafe session changes');
+    assert.match(answer.output, /not available through do/i);
+    assert.deepEqual(other.getState(), before, line + ' must preserve original state');
+  }
+  assert.deepEqual(other.getState().devices.sw1.modeCtx, before.devices.sw1.modeCtx);
+}
 engine.reset(structuredClone(ciscoTwoSwitchVlanScenario.initialState));
 assert.equal(engine.getState().devices.sw1.hostname, 'SW1', 'Reset returns lab to initial snapshot');
 assert.equal(engine.getState().devices.sw2.hostname, 'SW2', 'Reset clears SW2 snapshot');

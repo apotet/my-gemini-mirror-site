@@ -394,7 +394,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className={fullscreen ? 'flex shrink-0 flex-nowrap gap-2 max-h-[12dvh] overflow-x-auto overflow-y-hidden' : 'flex flex-wrap gap-2'}>
         {SCENARIOS.map((s) => (
           <button
             key={s.id}
@@ -413,7 +413,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
       </div>
 
       {Object.keys(engine.getState().devices).length > 1 && (
-        <div className="flex flex-wrap items-center gap-2" aria-label="Выбор консоли устройства">
+        <div className={fullscreen ? 'flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto max-h-[9dvh]' : 'flex flex-wrap items-center gap-2'} aria-label="Выбор консоли устройства">
           <span className="text-xs text-slate-500 dark:text-slate-400">Консоль:</span>
           {Object.values(engine.getState().devices).map((device) => (
             <button key={device.id} type="button" onClick={() => switchConsole(device.id)}
@@ -432,15 +432,15 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         className={
           fullscreen
             ? sidebarCollapsed
-              ? 'grid flex-1 min-h-0 grid-cols-1 gap-3 w-full overflow-y-auto lg:overflow-hidden'
-              : 'grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)] gap-3 w-full overflow-y-auto lg:overflow-hidden'
+              ? 'grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] gap-3 w-full overflow-hidden'
+              : 'relative grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)] gap-3 w-full overflow-hidden'
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
         <div
           className={
             fullscreen
-              ? 'min-w-0 rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[55dvh] lg:min-h-0 lg:h-full'
+              ? 'min-w-0 min-h-0 h-full rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col'
               : 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]'
           }
         >
@@ -452,7 +452,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => { setFullscreen((v) => !v); focusCliInput(); }}
+                onClick={() => { setFullscreen((v) => !v); setSidebarCollapsed(true); focusCliInput(); }}
                 className="inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
                 title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
               >
@@ -501,9 +501,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
               e.preventDefault();
               submitLine();
             }}
-            className="border-t border-slate-800 bg-slate-900/90 px-3 py-2 flex items-center gap-2"
+            className="min-w-0 border-t border-slate-800 bg-slate-900/90 px-2 sm:px-3 py-2 flex items-center gap-1.5 sm:gap-2"
           >
-            <span className="font-mono text-[12px] text-emerald-400 shrink-0">
+            <span className="font-mono text-[11px] sm:text-[12px] text-emerald-400 shrink-0 max-w-[42%] truncate">
               {engine.getPrompt()}
             </span>
             <input
@@ -511,14 +511,14 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 bg-transparent border-0 outline-none font-mono text-[12px] text-white placeholder:text-slate-600"
+              className="flex-1 min-w-0 bg-transparent border-0 outline-none font-mono text-[12px] text-white placeholder:text-slate-600"
               placeholder="command… (Tab · ↑↓ · ?)"
               autoComplete="off"
               spellCheck={false}
             />
             <button
               type="submit"
-              className="text-cyan-400 hover:text-cyan-300 cursor-pointer"
+              className="shrink-0 text-cyan-400 hover:text-cyan-300 cursor-pointer"
               aria-label="Submit"
             >
               <ChevronRight className="w-4 h-4" />
@@ -526,7 +526,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
           </form>
         </div>
 
-        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'min-w-0 space-y-3 lg:overflow-y-auto lg:min-h-0 lg:pr-1' : 'space-y-3'}>
+        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'absolute inset-0 z-10 min-w-0 space-y-3 overflow-y-auto rounded-xl bg-slate-950 p-2 lg:static lg:p-0 lg:pr-1 lg:bg-transparent lg:overflow-y-auto lg:min-h-0' : 'space-y-3'}>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
