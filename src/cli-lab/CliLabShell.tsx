@@ -215,7 +215,8 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const runCheck = () => {
     const result = refreshGoals();
     const prev = completedRef.current;
-    const now = result.allPassed;
+    const stepsDone = labMode !== 'learn' || stepIndexRef.current >= steps.length;
+    const now = stepsDone && result.allPassed;
     setCompleted(now);
     completedRef.current = now;
     setHistory((h) => [
