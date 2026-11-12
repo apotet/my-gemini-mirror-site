@@ -50,7 +50,9 @@ const check = (mode, line, outcome, cr = outcome === 'complete') => {
 // IPv4 lexical acceptance and interface-assignment policy are separate.
 for (const ip of ['192.0.2.1', '0.0.0.0', '255.255.255.255']) {
   check('config-if', `ip address ${ip} 255.255.255.0`, ip === '192.0.2.1' ? 'complete' : 'invalid', true);
-  check('config', `ip route ${ip} 0.0.0.0 ${ip}`, 'complete');
+  // IPv4 grammar accepts these literals; route semantics must reject invalid
+  // destinations or next-hops without changing the running state.
+  check('config', `ip route ${ip} 0.0.0.0 ${ip}`, 'invalid', true);
 }
 for (let prefix = 0; prefix <= 32; prefix++) {
   const mask = Array.from({ length: 4 }, (_, i) => {
@@ -71,6 +73,14 @@ for (const addr of ['192.0.2.0', '192.0.2.255']) {
   assert.equal(routed.execute(`ip address ${addr} 255.255.255.0`).error, true);
   assert.deepEqual(routed.getState(), before);
 }
+
+
+// Strict route semantics must reject host bits and unsafe next hops.
+for (const cmd of [
+  'ip route 10.0.0.5 255.255.255.0 192.0.2.254',
+  'ip route 0.0.0.0 0.0.0.0 0.0.0.0',
+  'ip route 0.0.0.0 0.0.0.0 255.255.255.255',
+]) check('config', cmd, 'invalid', true);
 
 const invalidIps = ['192..1.1', '1.2.3.', '.1.2.3', '1.2.3.256', '1.2.x.4', '-1.2.3.4', '1.2.3.4.5',
   '01.2.3.4', '+1.2.3.4', '1e1.2.3.4', '0x1.2.3.4', '1.2.3', '1.2.3.-1', '1.2.3.+4', '000.0.0.0'];
