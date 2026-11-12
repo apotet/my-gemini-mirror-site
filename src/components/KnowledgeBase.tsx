@@ -13,7 +13,7 @@ interface KnowledgeBaseProps {
   onClearLesson?: () => void;
 }
 
-const LAYERS = ['all', 'L1', 'L2', 'L3', 'L4', 'L5–L7', 'L7'];
+const LAYERS = ['all', 'CLI', 'L1', 'L2', 'L3', 'L4', 'L5–L7', 'L7'];
 type DifficultyFilter = 'all' | Lesson['difficulty'];
 const DIFFICULTIES: { id: DifficultyFilter; label: string }[] = [
   { id: 'all', label: 'Все' },
@@ -105,7 +105,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         />
       </div>
 
-      <div role="group" aria-label="Уровень OSI" className="flex flex-wrap gap-1.5">
+      <div role="group" aria-label="Раздел базы знаний" className="flex flex-wrap gap-1.5">
         {LAYERS.map((l) => (
           <button
             key={l}
@@ -119,7 +119,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
               layer === l ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
             }`}
           >
-            {l === 'all' ? 'Все уровни' : l}
+            {l === 'all' ? 'Все темы' : l === 'CLI' ? 'CLI и управление' : l}
           </button>
         ))}
       </div>
