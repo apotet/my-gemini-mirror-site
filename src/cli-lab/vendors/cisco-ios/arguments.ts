@@ -22,9 +22,9 @@ export function maskToPrefix(mask: string): number | null {
 
 export function normalizeIfaceName(raw: string): string {
   const compact = raw.replace(/\s+/g, '');
-  const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet)(\d+(?:\/\d+)*)$/i.exec(compact);
+  const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet|vlan)(\d+(?:\/\d+)*)$/i.exec(compact);
   if (!m) return compact;
-  const names: Record<string, string> = { fa: 'FastEthernet', fastethernet: 'FastEthernet', gi: 'GigabitEthernet', gigabitethernet: 'GigabitEthernet', eth: 'Ethernet', ethernet: 'Ethernet' };
+  const names: Record<string, string> = { fa: 'FastEthernet', fastethernet: 'FastEthernet', gi: 'GigabitEthernet', gigabitethernet: 'GigabitEthernet', eth: 'Ethernet', ethernet: 'Ethernet', vlan: 'Vlan' };
   return names[m[1].toLowerCase()] + m[2];
 }
 
@@ -49,7 +49,7 @@ export const vlanListArgument: CommandArgument = { name: '<vlan-list>', descript
 export const interfaceArgument: CommandArgument = { name: 'INTERFACE', description: 'Existing interface, e.g. Fa0/24', validate: (value, device) => !!device?.interfaces[normalizeIfaceName(value)] };
 // Preserve the existing IOS spelling "interface Fa 0/1" without accepting arbitrary trailing tokens.
 export const interfaceTypeArgument: CommandArgument = { name: 'INTERFACE-TYPE', description: 'Interface type followed by number', validate: (value, device) =>
-  /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet)$/i.test(value) &&
+  /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet|vlan)$/i.test(value) &&
   Object.keys(device?.interfaces ?? {}).some(name => name.startsWith(normalizeIfaceName(value + '0').slice(0, -1))) };
 export const interfaceNumberArgument: CommandArgument = { name: 'INTERFACE-NUMBER', description: 'Existing port number', validate: (value, device, preceding) =>
   /^\d+(?:\/\d+)*$/.test(value) && !!device?.interfaces[normalizeIfaceName(preceding[preceding.length - 1] + value)] };
