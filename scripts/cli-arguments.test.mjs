@@ -12,10 +12,13 @@ export { ciscoIosModesScenario as modesScenario } from './src/cli-lab/scenarios/
   bundle: true, platform: 'node', format: 'esm', write: false, logLevel: 'silent',
 });
 const lib = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
-const make = (mode = 'config-if', privilege = 15) => {
+const make = (mode = 'config-if', privilege = 15, routed = false) => {
   const state = structuredClone(lib.scenario.initialState);
   const d = state.devices.sw1;
-  d.modeCtx = { mode, ifName: 'FastEthernet0/1', vlanId: 20 }; d.privilege = privilege;
+  // IPv4 grammar tests run on a routed interface; access/trunk ports must
+  // reject interface addresses under the F5 role policy.
+  if (routed) d.interfaces['GigabitEthernet0/0'] = { name: 'GigabitEthernet0/0', adminUp: true };
+  d.modeCtx = { mode, ifName: routed ? 'GigabitEthernet0/0' : 'FastEthernet0/1', vlanId: 20 }; d.privilege = privilege;
   d.vlans[20] = { id: 20, name: 'Users', active: true };
   d.interfaces['FastEthernet0/1'].switchport = { mode: 'trunk', trunkAllowed: [10] };
   return new lib.LabEngine(lib.ciscoIosProfile, lib.ciscoIosCommands, state);
@@ -26,7 +29,7 @@ const run = (e, cmd) => {
 const matrix = [];
 // Every row exercises Enter, syntax ?, TAB, and the before/after state contract.
 const check = (mode, line, outcome, cr = outcome === 'complete') => {
-  const e = make(mode);
+  const e = make(mode, 15, /^\s*ip\s+address\b/i.test(line));
   const before = structuredClone(e.getState());
   const help = e.execute(line + ' ?').output;
   const tab = e.complete(line);
@@ -44,18 +47,31 @@ const check = (mode, line, outcome, cr = outcome === 'complete') => {
   return e;
 };
 
-// Lexically valid boundary values are allowed; no new host/network/broadcast policy.
+// IPv4 lexical acceptance and interface-assignment policy are separate.
 for (const ip of ['192.0.2.1', '0.0.0.0', '255.255.255.255']) {
-  check('config-if', `ip address ${ip} 255.255.255.0`, 'complete');
+  check('config-if', `ip address ${ip} 255.255.255.0`, ip === '192.0.2.1' ? 'complete' : 'invalid');
   check('config', `ip route ${ip} 0.0.0.0 ${ip}`, 'complete');
 }
 for (let prefix = 0; prefix <= 32; prefix++) {
   const mask = Array.from({ length: 4 }, (_, i) => {
     const bits = Math.max(0, Math.min(8, prefix - i * 8)); return 256 - 2 ** (8 - bits);
   }).join('.');
-  check('config-if', `ip address 192.0.2.1 ${mask}`, 'complete');
+  check('config-if', `ip address 192.0.2.1 ${mask}`, prefix === 0 ? 'invalid' : 'complete');
   check('config', `ip route 0.0.0.0 ${mask} 192.0.2.254`, 'complete');
 }
+
+// Interface role restrictions must not affect generic IPv4 parsing or the route grammar.
+const layer2Ip = make('config-if');
+assert.equal(layer2Ip.execute('ip address 192.0.2.1 255.255.255.0').error, true);
+const routedIp = make('config-if', 15, true);
+assert.equal(routedIp.execute('ip address 192.0.2.1 255.255.255.0').error, undefined);
+for (const addr of ['192.0.2.0', '192.0.2.255']) {
+  const routed = make('config-if', 15, true);
+  const before = structuredClone(routed.getState());
+  assert.equal(routed.execute(`ip address ${addr} 255.255.255.0`).error, true);
+  assert.deepEqual(routed.getState(), before);
+}
+
 const invalidIps = ['192..1.1', '1.2.3.', '.1.2.3', '1.2.3.256', '1.2.x.4', '-1.2.3.4', '1.2.3.4.5',
   '01.2.3.4', '+1.2.3.4', '1e1.2.3.4', '0x1.2.3.4', '1.2.3', '1.2.3.-1', '1.2.3.+4', '000.0.0.0'];
 for (const ip of invalidIps) {
