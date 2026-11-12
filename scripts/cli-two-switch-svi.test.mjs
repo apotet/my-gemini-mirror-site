@@ -61,14 +61,14 @@ cmd('ip address 192.168.10.3 255.255.255.0');
 cmd('end');
 assert.match(cmd('ping 192.168.10.2').output, /: REACHABLE/);
 
-// Remote trunk restriction breaks the path, not the local SVI autostate.
+// A locally excluded VLAN makes SW2's own SVI down; SW1's SVI remains up (checked below).
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan none');
 cmd('end');
 assert.match(cmd('ping 192.168.10.2').output, /: UNREACHABLE/);
 assert.equal(lab.checkGoals(scenario.goals).results.find(r => r.predicate.type === 'ipv4.sviReachable')?.passed, false);
-assert.match(cmd('show ip interface brief').output, /Vlan10.*up\s+up/);
+assert.match(cmd('show ip interface brief').output, /Vlan10.*down\s+down/);
 cmd('configure terminal');
 cmd('interface fa0/24');
 cmd('switchport trunk allowed vlan 10');
