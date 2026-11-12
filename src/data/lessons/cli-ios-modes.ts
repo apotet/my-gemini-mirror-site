@@ -74,7 +74,7 @@ export const LESSON_CLI_IOS_MODES: Lesson = {
       {
         heading: 'Проверка понимания на оборудовании',
         body: 'Проверяйте mode переходами enable → configure terminal → interface → exit/end; сравнивайте prompt до и после. В config-if выполните do show interfaces, затем вернитесь к Privileged EXEC и отдельно проверьте сохранение конфигурации.\n\nВ CLI-практике NetOps доступен отдельный сценарий для переходов между режимами, смены hostname и сохранения running-config. Он не претендует на полную реализацию Cisco IOS.',
-        practiceLink: 'cli-vlan'
+        practiceLink: 'cli-modes'
       }
     ],
     commands: [
