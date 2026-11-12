@@ -3,6 +3,7 @@ import { LESSONS, searchLessons, getLesson } from '../data/lessons';
 import type { Lesson } from '../data/lessons/types';
 import type { PracticeLink } from '../data/practiceLinks';
 import { LessonView } from './LessonView';
+import { CliReference } from './CliReference';
 import { Library, Search } from 'lucide-react';
 
 interface KnowledgeBaseProps {
@@ -47,6 +48,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   onOpenPractice,
   onClearLesson,
 }) => {
+  const [section, setSection] = useState<'lessons' | 'cli-reference'>('lessons');
   const [query, setQuery] = useState('');
   const [layer, setLayer] = useState(() => readFilter('layer', LAYERS));
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
@@ -95,6 +97,24 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         <span className="text-[11px] font-mono text-slate-500">{LESSONS.length} урок</span>
       </div>
 
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Раздел базы знаний">
+        <button type="button" aria-pressed={section === 'lessons'} onClick={() => setSection('lessons')}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold cursor-pointer ${section === 'lessons' ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>
+          Уроки
+        </button>
+        <button type="button" aria-pressed={section === 'cli-reference'} onClick={() => setSection('cli-reference')}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold cursor-pointer ${section === 'cli-reference' ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>
+          Справочник CLI
+        </button>
+      </div>
+
+      {section === 'cli-reference' ? (
+        <CliReference onOpenLesson={id => {
+          setOpenId(id);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }} />
+      ) : (
+      <>
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
@@ -163,6 +183,8 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
             </button>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );
