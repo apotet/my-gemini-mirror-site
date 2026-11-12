@@ -32,6 +32,11 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     description: 'Таблица коммутатора, связывающая MAC-адрес и VLAN с портом. Обычные динамические записи изучаются по адресам источников входящих кадров и со временем устаревают.',
     relatesTo: 'Коммутация Ethernet; L2. Отличается от ARP-кэша, который связывает IP и MAC.',
   },
+  "SVI": {
+    description: "Switch Virtual Interface — логический IP-интерфейс коммутатора для конкретной VLAN. На L2-коммутаторе обычно используется для управления; наличие SVI не включает маршрутизацию между VLAN.",
+    relatesTo: "Интерфейс VLAN и IP управления; отличие L2 VLAN от L3 интерфейса.",
+    lessonId: "l2-svi",
+  },
   VLAN: {
     description: 'Логическое разделение коммутируемой сети на отдельные широковещательные домены. Для обычного обмена между разными VLAN нужна маршрутизация.',
     relatesTo: 'Сегментация локальной сети; L2.',
@@ -1047,6 +1052,8 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "running-config": ["Running Configuration", "Текущая конфигурация устройства", false, "Активные настройки Cisco IOS; изменения действуют сразу, но для сохранения после перезагрузки их обычно копируют в startup-config."],
+  "SVI": ["Switch Virtual Interface", "Виртуальный интерфейс VLAN", true, "Логический IP-интерфейс коммутатора, привязанный к VLAN; может служить для управления или L3-шлюзом при включённой маршрутизации."],
   "Proposal": ["RSTP Proposal","Предложение быстрого включения порта",false,"Флаг RSTP BPDU: назначенный порт предлагает соседу согласовать безопасный быстрый переход к пересылке."],
   "Agreement": ["RSTP Agreement","Подтверждение RSTP",false,"Ответ соседа на Proposal после синхронизации других некраевых назначенных портов; позволяет ускорить переход без петли."],
   "path cost": ["Spanning Tree Path Cost","Стоимость пути к корню",false,"Метрика STP: для выбора Root Port учитывается объявленная соседом стоимость пути плюс стоимость локального входящего порта."],
