@@ -82,4 +82,63 @@ assert.ok(20 + 20 < 10 + 50, 'changed local cost selects P2');
 assert.ok(5 + 20 > 10 && 5 < 10, 'P2 loses Root but N wins Designated');
 assert.ok(0 + 10 < 0 + 20, 'boundary CIST root path uses P1');
 
+// Compare the configurations given in 10 by VLAN membership, not by spelling
+// of ranges. A revision change fixes region identity; cost/priority do not.
+const regionQuestion = ALL_QUESTIONS.find(q => q.id === 'stp-new-10');
+function vlanSet(list) {
+  return new Set(list.split(',').flatMap(part => {
+    const [first, last = first] = part.split('-').map(Number);
+    return Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  }));
+}
+const configurations = [...regionQuestion.text.matchAll(
+  /([AB]): name (\S+); revision (\d+); instance 1 vlan ([\d,-]+); instance 2 vlan ([\d,-]+)/g,
+)].map(([, bridge, name, revision, first, second]) => ({ bridge, name, revision: Number(revision),
+  mapping: [vlanSet(first), vlanSet(second)] }));
+assert.equal(configurations.length, 2);
+const [regionA, regionB] = configurations;
+assert.equal(regionA.name, regionB.name);
+assert.deepEqual(regionA.mapping, regionB.mapping, 'range split does not change the allocation table');
+assert.notEqual(regionA.revision, regionB.revision, 'actual mismatch is revision');
+assert.match(regionQuestion.answers[regionQuestion.correct[0]], new RegExp(`revision ${regionA.revision}\\b`));
+assert.match(regionQuestion.answers[2], /10-14,15-19/, 'plausible but ineffective range rewrite retained');
+
+// In 12, infer roots from priorities and the required instance from physical
+// paths. Then evaluate all four proposed edits against every VLAN's path.
+const mappingQuestion = ALL_QUESTIONS.find(q => q.id === 'stp-new-12');
+const mapping = new Map([...mappingQuestion.text.matchAll(/instance (\d) vlan ([\d,]+)/g)]
+  .flatMap(([, instance, vlans]) => vlans.split(',').map(vlan => [Number(vlan), Number(instance)])));
+const roots = new Map([...mappingQuestion.text.matchAll(/MSTI (\d) — A=(\d+), B=(\d+), S=(\d+)/g)]
+  .map(([, instance, a, b, s]) => [Number(instance), [['A', Number(a)], ['B', Number(b)], ['S', Number(s)]]
+    .sort((x, y) => x[1] - y[1])[0][0]]));
+assert.deepEqual([...mapping], [[10, 1], [20, 1], [30, 2]]);
+assert.deepEqual([...roots], [[1, 'A'], [2, 'B']]);
+assert.match(mappingQuestion.text, /Стоимость каждого порта всех трёх линий равна 10/);
+assert.match(mappingQuestion.text, /для VLAN 10 должен вести к A, а для VLAN 20 и 30 — к B/);
+const desired = new Map([[10, 'A'], [20, 'B'], [30, 'B']]);
+// A direct path costs 10; the other uplink reaches the same root via 10+10.
+function paths(allocation, instanceRoots, costToA = 10) {
+  return [...desired.keys()].map(vlan => {
+    const instance = allocation.get(vlan), root = instanceRoots.get(instance);
+    const a = instance === 1 ? costToA : 10;
+    const viaA = a + (root === 'A' ? 0 : 10);
+    const viaB = 10 + (root === 'B' ? 0 : 10);
+    assert.notEqual(viaA, viaB, 'no unspecified tie-breaker');
+    return [vlan, viaA < viaB ? 'A' : 'B'];
+  });
+}
+const outcomes = [
+  paths(new Map(mapping).set(20, 2), roots),
+  paths(mapping, new Map(roots).set(1, 'B')),
+  paths(mapping, roots, 30),
+  paths(new Map(mapping).set(30, 1), roots),
+];
+assert.deepEqual(paths(mapping, roots), [[10, 'A'], [20, 'A'], [30, 'B']]);
+const validEdits = outcomes.flatMap((outcome, index) => JSON.stringify(outcome) === JSON.stringify([...desired]) ? [index] : []);
+assert.deepEqual(validEdits, mappingQuestion.correct, 'only one edit satisfies all three paths');
+assert.match(mappingQuestion.answers[0], /VLAN 20 из MSTI 1 в MSTI 2/);
+assert.match(mappingQuestion.answers[1], /B корнем MSTI 1/);
+assert.match(mappingQuestion.answers[2], /cost порта к A с 10 до 30/);
+assert.match(mappingQuestion.answers[3], /VLAN 30 из MSTI 2 в MSTI 1/);
+
 console.log('PASS: 15 STP scenarios; 5 applied/10 advanced; unique IDs, four answers/one key, plain/pro, real loader, 15 rendered review toggles and focused theory entries; beginner/mixed unchanged');
