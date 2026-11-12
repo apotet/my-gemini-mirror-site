@@ -1,6 +1,6 @@
 export type PracticeLink =
   | 'vlan' | 'packet' | 'dhcp' | 'nat' | 'tcp'
-  | 'cli-vlan' | 'cli-trunk' | 'cli-gateway' | 'cli-modes' | 'cli-diagnostic' | 'cli-svi';
+  | 'cli-vlan' | 'cli-trunk' | 'cli-gateway' | 'cli-modes' | 'cli-diagnostic' | 'cli-svi' | 'cli-svi-followup';
 
 interface PracticeDestination {
   simulator: 'journey' | 'vlan' | 'protocols' | 'cli';
@@ -20,4 +20,5 @@ export const PRACTICE_DESTINATIONS: Record<PracticeLink, PracticeDestination> = 
   'cli-trunk': { simulator: 'cli', scenarioId: 'cisco-trunk-basic' },
   'cli-gateway': { simulator: 'cli', scenarioId: 'cisco-l3-gateway-basic' },
   'cli-svi': { simulator: 'cli', scenarioId: 'cisco-two-switch-management-svi' },
+  'cli-svi-followup': { simulator: 'cli', scenarioId: 'cisco-access-vlan-svi-followup' },
 };

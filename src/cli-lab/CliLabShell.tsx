@@ -5,6 +5,7 @@ import { LabMode, Scenario } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
+import { ciscoAccessSviFollowupScenario } from './scenarios/cisco-access-svi-followup';
 import { ciscoIosModesScenario } from './scenarios/cisco-ios-modes';
 import { ciscoL3GatewayScenario } from './scenarios/cisco-l3-gateway';
 import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
@@ -36,6 +37,7 @@ const SCENARIOS: Scenario[] = [
   ciscoIosModesScenario,
   ciscoShowDiagnosticScenario,
   ciscoVlanAccessScenario,
+  ciscoAccessSviFollowupScenario,
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
   ciscoTwoSwitchVlanScenario,
@@ -578,9 +580,20 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
               ))}
             </ul>
             {completed && (
-              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 pt-1">
-                {scenario.successMessage}
-              </p>
+              <div className="space-y-2 pt-1">
+                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                  {scenario.successMessage}
+                </p>
+                {scenario.nextScenarioId && SCENARIOS.some(s => s.id === scenario.nextScenarioId) && (
+                  <button
+                    type="button"
+                    onClick={() => { setScenarioId(scenario.nextScenarioId!); focusCliInput(); }}
+                    className="w-full rounded-xl bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 cursor-pointer hover:bg-cyan-400"
+                  >
+                    Следующее задание: {SCENARIOS.find(s => s.id === scenario.nextScenarioId)?.title}
+                  </button>
+                )}
+              </div>
             )}
           </div>
 

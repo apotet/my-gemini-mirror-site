@@ -38,7 +38,7 @@ export const LESSON_L2_SVI: Lesson = {
     {
       "heading": "Не заучивай вслепую — спроси Cisco",
       "body": "В командном режиме запроси interface ?, чтобы посмотреть допустимые типы интерфейсов; в режиме config-if — ip ? и ip address ?. Подсказка ? зависит от того, в каком режиме ты находишься. Режим видно в приглашении — config, config-vlan или config-if.\n\nДля проверки используй show vlan brief, show interfaces trunk, show ip interface brief и show running-config. Закончив, сохрани конфигурацию: copy running-config startup-config. Иначе изменения могут пропасть после перезагрузки.",
-      "practiceLink": "cli-svi"
+      "practiceLink": "cli-svi-followup"
     }
   ],
   "commands": [
@@ -98,7 +98,7 @@ export const LESSON_L2_SVI: Lesson = {
       {
         "heading": "Привилегии, синтаксис и сохранение",
         "body": "`SW1(config-vlan)# exit` возвращает в global configuration mode; `interface vlan 10` вводит interface configuration mode. `do` предназначен для запуска EXEC-команд из config modes, а не для перехода в config-if. После `end` — `copy running-config startup-config`; running и startup могут расходиться без сохранения.",
-        "practiceLink": "cli-svi"
+        "practiceLink": "cli-svi-followup"
       }
     ],
     "commands": [
