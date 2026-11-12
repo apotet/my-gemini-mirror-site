@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LabEngine } from './engine/LabEngine';
 import { evaluateGoals } from './engine/GoalEvaluator';
+import { shouldShowCompletion } from './engine/completionStatus';
 import { LabMode, Scenario } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
@@ -101,6 +102,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const stepIndexRef = useRef(0);
+  const completedRef = useRef(false);
 
   // Toolbar buttons take DOM focus; return it to the CLI input after layout updates.
   // Keep the existing input text and caret intact when only changing layout.
@@ -131,6 +133,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
     stepIndexRef.current = 0;
     setHintOpen(false);
     setCompleted(false);
+    completedRef.current = false;
     setGoalResults(null);
     setInput('');
     setHistIndex(null);
@@ -185,14 +188,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
     if (next >= steps.length) {
       stepIndexRef.current = next;
       setStepIndex(next);
-      setCompleted(true);
-      const goals = evaluateGoals(state, scenario.goals);
-      setGoalResults(goals);
       setHistory((h) => [
         ...h,
         {
           type: 'system',
-          text: `✓ Шаг выполнен. ${current.explanation || ''}\n\n✓ ${scenario.successMessage}`,
+          text: `✓ Шаг выполнен. ${current.explanation || ''}`,
         },
       ]);
       return;
@@ -215,17 +215,22 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
 
   const runCheck = () => {
     const result = refreshGoals();
-    setCompleted(result.allPassed);
+    const prev = completedRef.current;
+    const now = shouldShowCompletion(labMode, stepIndexRef.current, steps.length, result.allPassed);
+    setCompleted(now);
+    completedRef.current = now;
     setHistory((h) => [
       ...h,
       {
         type: 'system',
-        text: result.allPassed
+        text: now
           ? `✓ ${scenario.successMessage}`
-          : scenario.diagnostic
-            ? `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей. Продолжайте диагностику по всем узлам: статус портов, VLAN, trunk и сохранение изменений.`
-            : `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей.\n` +
-              result.results.map((r) => `${r.passed ? '✓' : '✗'} ${r.detail}`).join('\n'),
+          : prev
+            ? `Статус завершения снят: цели больше не выполнены.\nПроверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей.`
+            : scenario.diagnostic
+              ? `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей. Продолжайте диагностику по всем узлам: статус портов, VLAN, trunk и сохранение изменений.`
+              : `Проверка: ${result.results.filter((r) => r.passed).length}/${result.results.length} целей.\n` +
+                result.results.map((r) => `${r.passed ? '✓' : '✗'} ${r.detail}`).join('\n'),
       },
     ]);
   };
@@ -316,12 +321,23 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
 
     tryAdvanceLearnStep();
 
-    if (labMode === 'task' || labMode === 'drill') {
+    // Success status in every mode is driven exclusively by overall goals.
+    // A later command that breaks any goal immediately clears it; restoring goals re-shows it.
+    {
       const g = engine.checkGoals(scenario.goals);
-      if (g.allPassed) {
-        setCompleted(true);
+      const now = shouldShowCompletion(labMode, stepIndexRef.current, steps.length, g.allPassed);
+      const prev = completedRef.current;
+      if (now !== prev) {
+        setCompleted(now);
+        completedRef.current = now;
         setGoalResults(g);
-        setHistory((h) => [...h, { type: 'system', text: `✓ ${scenario.successMessage}` }]);
+        if (now) {
+          setHistory((h) => [...h, { type: 'system', text: `✓ ${scenario.successMessage}` }]);
+        } else if (prev) {
+          setHistory((h) => [...h, { type: 'system', text: 'Статус завершения снят: цели больше не выполнены.' }]);
+        }
+      } else {
+        setGoalResults(g);
       }
     }
 
