@@ -35,14 +35,17 @@ const mod = await import('data:text/javascript;base64,' + Buffer.from(compiled.o
 const { LabEngine, evaluateGoals, shouldShowCompletion, ciscoIosProfile, ciscoIosCommands, ciscoIosModesScenario, ciscoVlanAccessScenario } = mod;
 
 // The test imports the production completion gate rather than mirroring it.
-for (const file of ['src/cli-lab/CliLabShell.tsx','src/cli-lab/MockCliLabShell.tsx']) {
-  const source = readFileSync(file, 'utf8');
-  assert.match(source, /import \{ shouldShowCompletion \} from '\.\/engine\/completionStatus'/,
-    file + ': UI must import the tested function');
-  assert.equal((source.match(/shouldShowCompletion\(labMode, stepIndexRef\.current, steps\.length,/g) ?? []).length, 2,
-    file + ': both Check button and command submission must use the same gate');
-  assert.doesNotMatch(source, /setCompleted\(true\)/, file + ': unconditional success prohibited');
-}
+const canonical = readFileSync('src/cli-lab/CliLabShell.tsx', 'utf8');
+assert.match(canonical, /import \\{ shouldShowCompletion \\} from '\\.\\/engine\\/completionStatus'/,
+  'canonical UI must import the tested completion function');
+assert.equal((canonical.match(/shouldShowCompletion\\(labMode, stepIndexRef\\.current, steps\\.length,/g) ?? []).length, 2,
+  'both Check button and command submission use the shared gate');
+assert.doesNotMatch(canonical, /setCompleted\\(true\\)/, 'unconditional success prohibited');
+const mock = readFileSync('src/cli-lab/MockCliLabShell.tsx', 'utf8');
+assert.match(mock, /import \\{ CliLabShell \\} from '\\.\\/CliLabShell'/,
+  'experimental CLI must wrap the canonical shell, not duplicate it');
+assert.match(mock, /<CliLabShell\\s*\\/>/,
+  'experimental CLI must render the canonical shell');
 function runSequence(scenario, commands) {
   const engine = new LabEngine(ciscoIosProfile, ciscoIosCommands, structuredClone(scenario.initialState));
   const results = [];
