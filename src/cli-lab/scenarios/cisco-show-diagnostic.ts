@@ -38,8 +38,6 @@ const initialState: NetworkState = {
   devices: { sw1: makeSwitch('sw1'), sw2: makeSwitch('sw2') },
   links: [
     { a: 'sw1', aIf: UPLINK, b: 'sw2', bIf: UPLINK, up: true },
-    { a: 'sw1', aIf: CLIENT, b: 'sw2', bIf: CLIENT, up: true },
-    { a: 'sw1', aIf: WORKING, b: 'sw2', bIf: WORKING, up: true },
   ],
 };
 
