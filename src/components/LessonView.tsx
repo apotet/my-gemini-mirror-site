@@ -78,7 +78,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <section key={b.heading} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
-              {b.heading}
+              <GlossaryText key={textMode}>{b.heading}</GlossaryText>
             </h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line"><GlossaryText key={textMode}>{b.body}</GlossaryText></p>
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
