@@ -11,6 +11,7 @@ import { ciscoTrunkScenario } from './scenarios/cisco-trunk';
 import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
 import { ciscoThreeSwitchMissingVlanScenario } from './scenarios/cisco-three-switch-missing-vlan';
 import { ciscoTwoSwitchTrunkDiagnosticScenario } from './scenarios/cisco-two-switch-trunk-diagnostics';
+import { ciscoShowDiagnosticScenario } from './scenarios/cisco-show-diagnostic';
 import {
   Terminal as TerminalIcon,
   RotateCcw,
@@ -32,6 +33,7 @@ interface HistoryLine {
 
 const SCENARIOS: Scenario[] = [
   ciscoIosModesScenario,
+  ciscoShowDiagnosticScenario,
   ciscoVlanAccessScenario,
   ciscoTrunkScenario,
   ciscoL3GatewayScenario,
