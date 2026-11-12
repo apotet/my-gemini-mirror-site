@@ -1052,6 +1052,7 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "running-config": ["Running Configuration", "Текущая конфигурация устройства", false, "Активные настройки Cisco IOS; изменения действуют сразу, но для сохранения после перезагрузки их обычно копируют в startup-config."],
   "SVI": ["Switch Virtual Interface", "Виртуальный интерфейс VLAN", true, "Логический IP-интерфейс коммутатора, привязанный к VLAN; может служить для управления или L3-шлюзом при включённой маршрутизации."],
   "Proposal": ["RSTP Proposal","Предложение быстрого включения порта",false,"Флаг RSTP BPDU: назначенный порт предлагает соседу согласовать безопасный быстрый переход к пересылке."],
   "Agreement": ["RSTP Agreement","Подтверждение RSTP",false,"Ответ соседа на Proposal после синхронизации других некраевых назначенных портов; позволяет ускорить переход без петли."],
