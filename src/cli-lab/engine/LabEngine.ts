@@ -124,9 +124,12 @@ export class LabEngine {
     const spec = resolved.spec;
     if (!spec) {
       // Do not silently accept a command from another IOS configuration mode.
+      // Only report wrong mode if a full command, including its arguments,
+      // resolves in another mode. Matching leading keywords is insufficient.
       const elsewhere = this.commands.some(s =>
-        s.match.length <= tokens.length &&
-        s.match.every((word, i) => word.startsWith(tokens[i].toLowerCase()))
+        !s.modes.includes(device.modeCtx.mode) && s.modes.some(mode =>
+          inspectCommand(this.commands, tokens, mode, Math.max(device.privilege, s.minPrivilege ?? 0), device).spec === s
+        )
       );
       return { output: elsewhere ? this.profile.messages.invalid + '\n(Команда недоступна в этом режиме)' : this.profile.messages.invalid, error: true };
     }

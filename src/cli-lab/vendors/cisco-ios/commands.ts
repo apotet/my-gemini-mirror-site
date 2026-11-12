@@ -1,4 +1,4 @@
-import { normalizeIfaceName, wordArgument, vlanArgument, vlanNameArgument, interfaceArgument, interfaceTypeArgument, interfaceNumberArgument } from './arguments';
+import { normalizeIfaceName, wordArgument, vlanArgument, vlanNameArgument, interfaceArgument, interfaceTypeArgument, interfaceNumberArgument, isLayer2Interface } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { formatAllowedVlans } from './trunkCommands';
 import { commandFor } from '../../engine/CommandResolution';
@@ -199,6 +199,9 @@ const baseCommands: CommandSpec[] = [
       if (!ifName || !device.interfaces[ifName]) {
         return { output: ciscoIosProfile.messages.invalid, error: true };
       }
+      if (!isLayer2Interface(device, ifName)) {
+        return { output: '% Switchport configuration is not available on this interface', error: true };
+      }
       const prev = device.interfaces[ifName];
       const iface = {
         ...prev,
@@ -228,6 +231,9 @@ const baseCommands: CommandSpec[] = [
       const ifName = device.modeCtx.ifName;
       if (!ifName || !device.interfaces[ifName]) {
         return { output: ciscoIosProfile.messages.invalid, error: true };
+      }
+      if (!isLayer2Interface(device, ifName)) {
+        return { output: '% Switchport configuration is not available on this interface', error: true };
       }
       ensureVlan(device, vlanId);
       const prev = device.interfaces[ifName];

@@ -1,19 +1,17 @@
 import { DeviceState, InterfaceState, NetworkState } from './types';
-import { trunkNeighbors } from './SviIpv4Reachability';
+import { localSviPortUp } from './SviIpv4Reachability';
 
 /**
- * Effective Ethernet status for the limited CLI Lab topology.
- * An unmodeled cable/endpoint is not evidence of carrier. Legacy operUp is
- * ignored: both ends must exist, be administratively enabled, and have an up link.
- * This does not model negotiation, STP forwarding or packet delivery.
- * SVI autostate is approximated by an eligible connected trunk for its VLAN.
+ * Limited operational-state model. PHY requires an up link and enabled peer.
+ * SVI autostate depends on local forwarding-eligible VLAN membership, not on
+ * the peer's VLAN/allowed configuration. STP itself is not simulated.
  */
 export function interfaceStatus(state: NetworkState, device: DeviceState, iface: InterfaceState) {
   const sviId = /^Vlan(\d+)$/i.exec(iface.name);
   if (sviId) {
     const vlanId = Number(sviId[1]);
     const operUp = iface.adminUp && !!device.vlans[vlanId]?.active &&
-      trunkNeighbors(state, device.id, vlanId).length > 0;
+      localSviPortUp(state, device.id, vlanId);
     return {
       operUp,
       physical: !iface.adminUp ? 'administratively down' : operUp ? 'up' : 'down',

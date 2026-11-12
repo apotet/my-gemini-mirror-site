@@ -13,7 +13,7 @@ export function evaluatePredicate(state: NetworkState, p: GoalPredicate): GoalCh
   switch (p.type) {
     case 'ipv4.sviReachable': {
       const result = checkSviIpv4Reachability(state, p.device, p.destination);
-      return { predicate: p, passed: result.reachable, detail: result.detail };
+      return { predicate: p, passed: result.kind === 'remote', detail: result.detail };
     }
     case 'l2.vlanReachable': {
       const result = checkVlanPath(state, p.vlanId, p.fromDevice, p.fromIf, p.toDevice, p.toIf);
