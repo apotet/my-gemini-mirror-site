@@ -13,7 +13,7 @@ export interface QuestionDeepDive {
   plain?: string;
   pro?: string;
   engineeringDeep?: string;
-  professional?: ProfessionalExplanation;
+  professional?: Omit<ProfessionalExplanation, 'sourceCommit'> & { sourceCommit?: string };
   practiceLink?: PracticeLink;
   hasIndividualDeep: boolean;
   commonTrap: string;
@@ -499,7 +499,10 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
         brief: individual.brief,
         deep: individual.pro,
         trap: individual.trap,
-        sourceCommit: individual.professional?.sourceCommit ?? GAP_PACK_PRO_SOURCE_COMMIT,
+        // Historical gap-pack wording has a source revision; newly authored
+        // plain/pro entries must not inherit that unrelated provenance.
+        sourceCommit: individual.professional?.sourceCommit ??
+          (/^gap-pack[123]-/.test(question.id) ? GAP_PACK_PRO_SOURCE_COMMIT : undefined),
       }
     : individual?.professional;
 
