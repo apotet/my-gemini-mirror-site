@@ -59,4 +59,28 @@ assert.equal(engine.getState().devices.sw1.hostname, 'PERSISTED-SW1', 'SW2 opera
 engine.reset(structuredClone(ciscoTwoSwitchVlanScenario.initialState));
 assert.equal(engine.getState().devices.sw1.hostname, 'SW1', 'Reset returns lab to initial snapshot');
 assert.equal(engine.getState().devices.sw2.hostname, 'SW2', 'Reset clears SW2 snapshot');
+// Both show commands must print identical IOS config semantics.
+{
+  const cli = make();
+  const send = (line) => {
+    const r = cli.execute(line);
+    assert.equal(r.error, undefined, line + ': ' + r.output);
+    return r.output;
+  };
+  send('enable');
+  send('configure terminal');
+  send('vlan 20');
+  send('name MGMT');
+  send('exit');
+  send('ip route 10.0.0.0 255.255.0.0 192.168.10.254');
+  send('end');
+  const beforeSave = send('show running-config');
+  assert.match(beforeSave, /vlan 20\n name MGMT/);
+  assert.match(beforeSave, /ip route 10\.0\.0\.0 255\.255\.0\.0 192\.168\.10\.254/);
+  send('copy running-config startup-config');
+  const startup = send('show startup-config');
+  const running = send('show running-config');
+  assert.equal(running.slice(running.indexOf('!')), startup.slice(startup.indexOf('!')),
+    'running/startup must share the exact same formatted config when saved');
+}
 console.log('PASS: IOS save/reload/startup per-device persistence and reset');
