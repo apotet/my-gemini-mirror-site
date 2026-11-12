@@ -1,3 +1,4 @@
+import { isIpv4, maskToPrefix, ipv4Argument, maskArgument } from './arguments';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 
@@ -11,34 +12,11 @@ function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   };
 }
 
-function maskToPrefix(mask: string): number | null {
-  const parts = mask.split('.').map((x) => Number(x));
-  if (parts.length !== 4 || parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return null;
-  let bits = 0;
-  let seenZero = false;
-  for (const o of parts) {
-    for (let i = 7; i >= 0; i--) {
-      const bit = (o >> i) & 1;
-      if (bit === 1) {
-        if (seenZero) return null;
-        bits++;
-      } else {
-        seenZero = true;
-      }
-    }
-  }
-  return bits;
-}
-
-function isIpv4(s: string): boolean {
-  const p = s.split('.').map((x) => Number(x));
-  return p.length === 4 && p.every((n) => Number.isInteger(n) && n >= 0 && n <= 255);
-}
-
 export const ciscoL3Commands: CommandSpec[] = [
   {
     id: 'cisco.ip_address',
     match: ['ip', 'address'],
+    arguments: [[ipv4Argument, maskArgument]],
     modes: ['config-if'],
     minPrivilege: 15,
     handler: (tokens, state, device) => {
@@ -85,6 +63,7 @@ export const ciscoL3Commands: CommandSpec[] = [
   {
     id: 'cisco.ip_route',
     match: ['ip', 'route'],
+    arguments: [[ipv4Argument, maskArgument, ipv4Argument]],
     modes: ['config'],
     minPrivilege: 15,
     handler: (tokens, state, device) => {

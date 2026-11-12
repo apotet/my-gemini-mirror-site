@@ -1,13 +1,6 @@
+import { normalizeIfaceName, interfaceArgument } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, InterfaceState, NetworkState } from '../../engine/types';
-
-function normalizeName(raw: string): string {
-  const compact = raw.replace(/\s+/g, '');
-  const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet)(\d+(?:\/\d+)*)$/i.exec(compact);
-  if (!m) return compact;
-  const names: Record<string, string> = { fa: 'FastEthernet', fastethernet: 'FastEthernet', gi: 'GigabitEthernet', gigabitethernet: 'GigabitEthernet', eth: 'Ethernet', ethernet: 'Ethernet' };
-  return names[m[1].toLowerCase()] + m[2];
-}
 
 function describe(state: NetworkState, device: DeviceState, iface: InterfaceState): string {
   const { physical, protocol } = interfaceStatus(state, device, iface);
@@ -30,7 +23,7 @@ function showInterfaces(tokens: string[], state: NetworkState, device: DeviceSta
   }
   if (tokens.length === 4 && tokens[3].toLowerCase() === 'switchport') return showSwitchport(tokens, state, device);
   if (tokens.length !== 3) return { output: '% Invalid input detected. Use show interfaces [interface-name]', error: true };
-  const name = normalizeName(tokens[2]);
+  const name = normalizeIfaceName(tokens[2]);
   const iface = device.interfaces[name];
   if (!iface) return { output: `% Invalid interface ${tokens[2]}`, error: true };
   return { output: describe(state, device, iface) };
@@ -51,7 +44,7 @@ function showStatus(tokens: string[], state: NetworkState, device: DeviceState) 
 
 function showSwitchport(tokens: string[], _state: NetworkState, device: DeviceState) {
   if (tokens.length !== 4) return { output: '% Incomplete command.', error: true };
-  const iface = device.interfaces[normalizeName(tokens[2])];
+  const iface = device.interfaces[normalizeIfaceName(tokens[2])];
   if (!iface) return { output: `% Invalid interface ${tokens[2]}`, error: true };
   const sw = iface.switchport;
   return { output: [
@@ -65,38 +58,12 @@ function showSwitchport(tokens: string[], _state: NetworkState, device: DeviceSt
 
 export const ciscoInterfaceShowCommands: CommandSpec[] = [
   {
-    id: 'cisco.show_incomplete', match: ['show'],
-    modes: ['exec', 'privileged'],
-    handler: (tokens) => {
-      if (tokens.length === 1) return { output: '% Incomplete command. Type show ? to list supported commands.', error: true };
-      return { output: '% Invalid input detected. Type show ? for CLI Lab commands.', error: true };
-    },
-  },
-  {
-    id: 'cisco.show_help', match: ['show', '?'],
-    modes: ['exec', 'privileged'],
-    handler: (tokens) => tokens.length === 2
-      ? { output: ['CLI Lab: supported show subcommands (Cisco IOS subset):',
-        '  interfaces                 Interface state and switchport configuration',
-        '  interfaces <interface>     One interface, e.g. Fa0/24',
-        '  interfaces status          Port status table',
-        '  interfaces trunk           Trunk summary',
-        '  interfaces <interface> switchport  Port switchport configuration',
-        '  ip interface brief         Interface IP and state',
-        '  vlan brief                 Local VLAN database',
-        '  running-config             Active configuration (privileged EXEC)',
-        '  startup-config             Saved configuration (privileged EXEC)',
-        '  ip route                   Routes where supported',
-        'Type ? for general mode help. No real counters, traffic, or PHY simulation.',
-      ].join('\n') }
-      : { output: '% Invalid input detected', error: true },
-  },
-  {
     id: 'cisco.show_interfaces_status', match: ['show', 'interfaces', 'status'],
     modes: ['exec', 'privileged'], handler: showStatus,
   },
   {
     id: 'cisco.show_interfaces', match: ['show', 'interfaces'],
+    arguments: [[], [interfaceArgument], [interfaceArgument, { keyword: 'switchport', description: 'Display interface switching configuration' }]],
     modes: ['exec', 'privileged'], handler: showInterfaces,
   },
 ];
