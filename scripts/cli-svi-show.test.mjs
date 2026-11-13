@@ -41,14 +41,14 @@ function test(name, fn) { fn(); count++; console.log('PASS ' + name); }
 
 test('targeted running config returns the actual SVI block and exact mask', () => {
   const result = run('show running-config interface vlan 10');
-  assert.match(result, /^interface Vlan10\\n ip address 192\\.168\\.10\\.2 255\\.255\\.255\\.0\\n no shutdown$/);
+  assert.match(result, /^interface Vlan10\n ip address 192\.168\.10\.2 255\.255\.255\.0\n no shutdown$/);
   assert.ok(run('show running-config').includes(result));
 });
 test('short interface name, IP detail and existing brief still work', () => {
   assert.equal(run('sh run int Vlan10'), run('show running-config interface vlan 10'));
-  assert.match(run('show ip interface Vlan10'), /Internet address is 192\\.168\\.10\\.2\\/24/);
-  assert.match(run('show ip interface vlan 10'), /Subnet mask is 255\\.255\\.255\\.0/);
-  assert.match(run('show ip interface brief'), /Vlan10\\s+192\\.168\\.10\\.2/);
+  assert.match(run('show ip interface Vlan10'), /Internet address is 192\.168\.10\.2\/24/);
+  assert.match(run('show ip interface vlan 10'), /Subnet mask is 255\.255\.255\.0/);
+  assert.match(run('show ip interface brief'), /Vlan10\s+192\.168\.10\.2/);
 });
 test('contextual help and TAB offer interface names without executing', () => {
   assert.match(engine.help('show running-config ?'), /interface/);
@@ -65,8 +65,8 @@ test('invalid interfaces and trailing args are rejected', () => {
 test('do show in config-if does not change mode or IP configuration', () => {
   run('configure terminal'); run('interface vlan 10');
   const before = structuredClone(engine.getState());
-  assert.match(run('do show running-config interface Vlan10'), /255\\.255\\.255\\.0/);
-  assert.match(run('do show ip interface Vlan10'), /Subnet mask is 255\\.255\\.255\\.0/);
+  assert.match(run('do show running-config interface Vlan10'), /255\.255\.255\.0/);
+  assert.match(run('do show ip interface Vlan10'), /Subnet mask is 255\.255\.255\.0/);
   assert.deepEqual(engine.getState(), before);
 });
 console.log(`Targeted SVI show: ${count} groups passed.`);
