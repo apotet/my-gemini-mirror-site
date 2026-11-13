@@ -50,7 +50,7 @@ for(let i=0;i<4;i++){
 assert.equal(engine.setLinkState(200,false),false);
 assert.equal(engine.setLinkState(0,false),true);
 assert.equal(engine.setLinkState(1,false),true);
-assert.equal(m.checkHostIpv4Reachability(engine.getState(),'pc1v10','pc3v10').reachable,false,'two cuts partition ring');
+assert.equal(m.checkHostIpv4Reachability(engine.getState(),'pc2v10','pc3v10').reachable,false,'two cuts isolate Switch2');
 engine.setLinkState(0,true);engine.setLinkState(1,true);
 
 const vlanFault=structuredClone(engine.getState());
