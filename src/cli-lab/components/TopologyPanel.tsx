@@ -138,7 +138,11 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   } catch {
     tree = null;
   }
-  const rootDevice = tree ? Object.values(tree.bridges)[0]?.rootDevice ?? null : null;
+  // Every disconnected STP component elects its own root. Never infer a
+  // single global root from the first bridge in the result.
+  const rootDevices = new Set(
+    Object.values(tree?.bridges ?? {}).map(bridge => bridge.rootDevice),
+  );
 
   if (collapsed) {
     return (
@@ -224,7 +228,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
           })}
           {nodes.map(node => {
             const isActive = node.id === activeDeviceId;
-            const isRoot = node.id === rootDevice;
+            const isRoot = rootDevices.has(node.id);
             return (
               <g
                 key={node.id}
