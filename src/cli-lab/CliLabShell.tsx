@@ -95,7 +95,7 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean }> = ({ initialScenarioId, experimentalTopology = false }) => {
+export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean }> = ({ initialScenarioId, experimentalTopology = true }) => {
   const [scenarioId, setScenarioId] = useState(() =>
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
