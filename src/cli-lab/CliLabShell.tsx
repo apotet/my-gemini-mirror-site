@@ -3,6 +3,7 @@ import { TopologyPanel } from './components/TopologyPanel';
 import { resolveTopologyLayer, type TopologyLayerChoice } from './topologyLayers';
 import { LabEngine } from './engine/LabEngine';
 import { scenarioTheoryIds } from './scenarioTheory';
+import { commandCatalogForScenario } from './vendors/cisco-ios/commandCatalog';
 import { getLesson } from '../data/lessons';
 import { LessonView } from '../components/LessonView';
 import { evaluateGoals } from './engine/GoalEvaluator';
@@ -98,6 +99,8 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const [stepIndex, setStepIndex] = useState(0);
   const [hintOpen, setHintOpen] = useState(false);
   const [theoryLessonId, setTheoryLessonId] = useState<string | null>(null);
+  const [commandCatalogOpen, setCommandCatalogOpen] = useState(false);
+  const [commandCatalogQuery, setCommandCatalogQuery] = useState('');
   const [completed, setCompleted] = useState(false);
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
   const [tick, setTick] = useState(0);
@@ -364,6 +367,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const allLessonChoices = scenarioTheoryIds(scenario.id).map(id => getLesson(id))
     .filter((lesson): lesson is NonNullable<typeof lesson> => !!lesson);
   const activeTheoryLesson = theoryLessonId ? getLesson(theoryLessonId) : undefined;
+  const commandGroups = commandCatalogForScenario(scenario);
   const openTheory = (id: string) => {
     if (!getLesson(id)) return;
     setTheoryLessonId(id);
@@ -413,6 +417,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
+          <button type="button" onClick={() => setCommandCatalogOpen(v => !v)}
+            aria-expanded={commandCatalogOpen}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+            <TerminalIcon className="w-3.5 h-3.5" /> {commandCatalogOpen ? 'Скрыть команды' : 'Команды Cisco'}
+          </button>
           {allLessonChoices.length > 0 && (
             <button type="button" onClick={() => openTheory(lessonChoices[0]?.id ?? allLessonChoices[0].id)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 dark:text-cyan-300 cursor-pointer"
@@ -446,6 +455,46 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
           ))}
         </div>
       </div>
+
+      {commandCatalogOpen && (
+        <section aria-label="Справочник доступных команд Cisco CLI Lab"
+          className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/90 p-3 space-y-2 text-xs text-slate-700 dark:text-slate-200">
+          <div className="flex flex-wrap items-center gap-2 justify-between">
+            <strong>Исполняемые команды нашего Cisco IOS Lab</strong>
+            <input type="search" aria-label="Поиск команды" value={commandCatalogQuery}
+              onChange={event => setCommandCatalogQuery(event.target.value)}
+              placeholder="Поиск: show, vlan, trunk, stp…"
+              className="min-w-[180px] flex-1 max-w-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent px-2 py-1.5" />
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Это не полный Cisco IOS. Синтаксис показывает основу команды; аргументы смотри через ? в консоли.
+            Рекомендации связаны только с общей темой задания, не подсказывают скрытую неисправность.
+          </p>
+          <div className="max-h-48 overflow-y-auto space-y-2">
+            {([
+              ['По теме', commandGroups.recommended],
+              ['Другие диагностические', commandGroups.otherDiagnostics],
+              ['Другие команды', commandGroups.otherCommands],
+            ] as const).map(([name, commands]) => {
+              const query = commandCatalogQuery.trim().toLowerCase();
+              const visible = commands.filter(item => !query ||
+                [item.syntax, item.explanation, ...item.topics].join(' ').toLowerCase().includes(query));
+              return visible.length ? (
+                <div key={name} className="space-y-1">
+                  <div className="text-[10px] uppercase font-bold tracking-wide text-cyan-700 dark:text-cyan-300">{name}</div>
+                  {visible.map(item => (
+                    <div key={item.id} className="flex flex-wrap gap-x-3 gap-y-0.5 border-b border-slate-100 dark:border-slate-800 py-1">
+                      <code className="font-mono font-semibold text-slate-900 dark:text-white">{item.syntax}</code>
+                      <span>{item.explanation}</span>
+                      <span className="text-slate-500 dark:text-slate-400">[{item.modes.join(', ')}]</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null;
+            })}
+          </div>
+        </section>
+      )}
 
       <div className={fullscreen ? 'flex shrink-0 flex-nowrap gap-2 max-h-[12dvh] overflow-x-auto overflow-y-hidden' : 'flex flex-wrap gap-2'}>
         {SCENARIOS.map((s) => (
