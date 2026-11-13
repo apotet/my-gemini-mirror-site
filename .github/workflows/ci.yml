@@ -43,6 +43,9 @@ jobs:
       - name: Cisco IOS argument grammar regression
         run: node scripts/cli-arguments.test.mjs
 
+      - name: Cisco CLI command catalog integrity
+        run: node scripts/cli-command-catalog.test.mjs
+
       - name: CLI topology port details regression
         run: node scripts/cli-topology-port-details.test.mjs
 
