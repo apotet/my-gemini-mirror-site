@@ -37,6 +37,22 @@ export interface SwitchportConfig {
   trunkAllowed?: number[];
 }
 
+/** Classic CST configuration only; derived roles/states never belong in snapshots. */
+export interface StpBridgeConfig {
+  priority?: number;
+  /** Unicast MAC, colon-separated; absent uses a deterministic locally administered MAC. */
+  mac?: string;
+}
+
+export interface StpPortConfig {
+  priority?: number;
+  /** Explicit port number for the low 12 bits of Port ID. */
+  number?: number;
+  pathCost?: number;
+  /** Configuration metadata only: steady-state calculation has no transition timers. */
+  portfast?: boolean;
+}
+
 export interface InterfaceState {
   name: string;
   adminUp: boolean;
@@ -45,6 +61,7 @@ export interface InterfaceState {
   ipv4?: Ipv4Address;
   switchport?: SwitchportConfig;
   description?: string;
+  stp?: StpPortConfig;
 }
 
 export interface VlanState {
@@ -64,6 +81,7 @@ export interface RouteEntry {
 export type InterfaceConfig = Omit<InterfaceState, 'operUp'>;
 
 export interface SavedDeviceConfig {
+  stp?: StpBridgeConfig;
   hostname: string;
   interfaces: Record<string, InterfaceConfig>;
   vlans: Record<number, VlanState>;
@@ -71,6 +89,7 @@ export interface SavedDeviceConfig {
 }
 
 export interface DeviceState {
+  stp?: StpBridgeConfig;
   id: string;
   hostname: string;
   vendor: VendorId;
