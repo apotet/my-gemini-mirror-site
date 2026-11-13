@@ -146,6 +146,24 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   const placedLabels = useMemo(() => placePortLabels(graph, labelSpecs), [graph, labelSpecs]);
   const fullBounds = useMemo(() => computeGraphBounds(graph, placedLabels), [graph, placedLabels]);
 
+  // Keep the graph's center inside the viewport during touch pan/pinch.
+  // Without this guard a single large swipe can move the entire drawing offscreen.
+  const keepGraphVisible = useCallback((view: ViewTransform): ViewTransform => {
+    const w = Math.max(1, containerSize.width);
+    const h = Math.max(1, containerSize.height);
+    const cx = fullBounds.minX + fullBounds.width / 2;
+    const cy = fullBounds.minY + fullBounds.height / 2;
+    const minTx = w * 0.15 - cx * view.scale;
+    const maxTx = w * 0.85 - cx * view.scale;
+    const minTy = h * 0.15 - cy * view.scale;
+    const maxTy = h * 0.85 - cy * view.scale;
+    return {
+      ...view,
+      tx: Math.max(minTx, Math.min(maxTx, view.tx)),
+      ty: Math.max(minTy, Math.min(maxTy, view.ty)),
+    };
+  }, [containerSize.width, containerSize.height, fullBounds]);
+
   const computeFitTransform = useCallback((w: number, h: number): ViewTransform => {
     const safeW = Math.max(200, w);
     const safeH = Math.max(180, h);
@@ -212,11 +230,11 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     setTransform(prev => {
       const nextScale = Math.min(2.6, Math.max(0.25, prev.scale * factor));
       const ratio = nextScale / prev.scale;
-      return {
+      return keepGraphVisible({
         scale: nextScale,
         tx: cx - (cx - prev.tx) * ratio,
         ty: cy - (cy - prev.ty) * ratio,
-      };
+      });
     });
   };
 
@@ -235,19 +253,22 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     setTransform(prev => {
       const nextScale = Math.min(2.6, Math.max(0.25, prev.scale * factor));
       const ratio = nextScale / prev.scale;
-      return {
+      return keepGraphVisible({
         scale: nextScale,
         tx: px - (px - prev.tx) * ratio,
         ty: py - (py - prev.ty) * ratio,
-      };
+      });
     });
     };
     el.addEventListener('wheel', onNativeWheel, { passive: false });
     return () => el.removeEventListener('wheel', onNativeWheel);
-  }, [collapsed]);
+  }, [collapsed, keepGraphVisible]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // iOS Safari may cancel a touch when the pointer leaves the SVG stage.
+    // Capture it so gestures remain scoped to this panel, not the whole page.
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* Safari fallback */ }
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointersRef.current.size === 1) {
       dragRef.current = {
@@ -284,11 +305,11 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
       const ratio = nextScale / origTransform.scale;
       setUserAdjustedView(true);
       suppressClickRef.current = true;
-      setTransform({
+      setTransform(keepGraphVisible({
         scale: nextScale,
         tx: curMidX - (m0x - origTransform.tx) * ratio,
         ty: curMidY - (m0y - origTransform.ty) * ratio,
-      });
+      }));
       return;
     }
 
@@ -301,7 +322,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
         setUserAdjustedView(true);
       }
       if (dragRef.current.moved) {
-        setTransform(prev => ({
+        setTransform(prev => keepGraphVisible({
           ...prev,
           tx: dragRef.current!.origTx + dx,
           ty: dragRef.current!.origTy + dy,
@@ -311,6 +332,9 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     pointersRef.current.delete(e.pointerId);
     if (pointersRef.current.size === 0) {
       dragRef.current = null;
@@ -442,7 +466,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
-            className="relative w-full h-[290px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-none cursor-grab active:cursor-grabbing"
+            className="relative w-full h-[290px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-none overscroll-contain cursor-grab active:cursor-grabbing"
           >
             <svg
               width="100%"
