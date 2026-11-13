@@ -60,7 +60,28 @@ function showSwitchport(iface: InterfaceState) {
   ].join('\n') };
 }
 
+function showIpInterface(tokens: string[], state: NetworkState, device: DeviceState) {
+  const name = normalizeIfaceName(tokens.slice(3).join(' '));
+  const iface = device.interfaces[name];
+  if (!iface) return { output: `% Invalid interface ${name}`, error: true };
+  const status = interfaceStatus(state, device, iface);
+  const lines = [
+    `${name} is ${status.physical}, line protocol is ${status.protocol}`,
+    `  Internet address is ${iface.ipv4 ? `${iface.ipv4.address}/${iface.ipv4.prefix}` : 'unassigned'}`,
+    `  Subnet mask is ${iface.ipv4?.mask ?? 'unassigned'}`,
+    '  CLI Lab: IP interface state is simulated; ARP and packets are not emulated.',
+  ];
+  return { output: lines.join('\\n') };
+}
+
 export const ciscoInterfaceShowCommands: CommandSpec[] = [
+  {
+    id: 'cisco.show_ip_interface',
+    match: ['show', 'ip', 'interface'],
+    arguments: [[interfaceArgument], [interfaceTypeArgument, interfaceNumberArgument]],
+    modes: ['exec', 'privileged'],
+    handler: showIpInterface,
+  },
   {
     id: 'cisco.show_interfaces_status', match: ['show', 'interfaces', 'status'],
     modes: ['exec', 'privileged'], handler: showStatus,
