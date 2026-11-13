@@ -173,7 +173,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Топология</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Схема соединений</span>
         {onToggleCollapse && (
           <button type="button" onClick={onToggleCollapse} className="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
             Скрыть
@@ -181,7 +181,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
         )}
       </div>
       <div className="p-2 overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-full h-auto" role="img" aria-label="Сетевая топология">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-full h-auto min-h-[180px]" role="img" aria-label="Сетевая топология">
           {state.links.map((link, idx) => {
             const na = nodeMap[link.a];
             const nb = nodeMap[link.b];
@@ -240,7 +240,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                   onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.a, link.aIf); } }}
                   className="cursor-pointer focus:outline-none">
                   <circle cx={la.x} cy={la.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.a && selection.interfaceName === link.aIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
-                  <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
+                  <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="11" fill="#e2e8f0" className="font-mono pointer-events-none">
                   {shortA}{portInfo(aIf)}{roleLabel(roleA) ? ` ${roleLabel(roleA)}` : ''}{aBlocked && layer === 'stp' ? ' ⊘' : ''}
                   </text>
                 </g>
@@ -249,7 +249,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                   onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.b, link.bIf); } }}
                   className="cursor-pointer focus:outline-none">
                   <circle cx={lb.x} cy={lb.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.b && selection.interfaceName === link.bIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
-                  <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
+                  <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="11" fill="#e2e8f0" className="font-mono pointer-events-none">
                   {shortB}{portInfo(bIf)}{roleLabel(roleB) ? ` ${roleLabel(roleB)}` : ''}{bBlocked && layer === 'stp' ? ' ⊘' : ''}
                   </text>
                 </g>
