@@ -57,7 +57,7 @@ const vlanFault=structuredClone(engine.getState());
 vlanFault.devices.sw2.interfaces.FastEthernet0/1.switchport.accessVlan=20;
 assert.equal(m.checkHostIpv4Reachability(vlanFault,'pc1v10','pc2v10').reachable,false,'access VLAN mismatch isolates host');
 const maskFault=structuredClone(engine.getState());
-maskFault.devices.pc3v20.interfaces.Ethernet0.ipv4.prefix=25;
+maskFault.devices.pc3v20.interfaces.Ethernet0.ipv4.prefix=30;
 assert.equal(m.checkHostIpv4Reachability(maskFault,'pc1v20','pc3v20').reachable,false,'host mask mismatch');
 const hostCut=structuredClone(engine.getState());
 const hostLink=hostCut.links.find(l=>l.b==='pc3v10');
