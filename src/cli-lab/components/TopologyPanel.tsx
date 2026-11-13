@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { getPortDetails } from '../portDetails';
 import { DeviceState, NetworkState, NetworkLink } from '../engine/types';
 import { interfaceStatus } from '../engine/OperationalState';
 import { deriveSpanningTree, type SpanningTreeResult } from '../engine/SpanningTree';
@@ -131,6 +132,12 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   collapsed = false,
   onToggleCollapse,
 }) => {
+  const [selection, setSelection] = useState<{ deviceId: string; interfaceName: string } | null>(null);
+  const details = selection ? getPortDetails(state, selection.deviceId, selection.interfaceName) : null;
+  const selectPort = (deviceId: string, interfaceName: string) => {
+    setSelection(current => current?.deviceId === deviceId && current?.interfaceName === interfaceName
+      ? null : { deviceId, interfaceName });
+  };
   const nodes = layoutDevices(state.devices, state.links);
   const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 
@@ -228,12 +235,24 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             return (
               <g key={`link-${idx}`}>
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={width} strokeDasharray={dash} />
-                <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
+                <g role="button" tabIndex={0} aria-label={`Параметры порта ${aDev.hostname} ${link.aIf}`}
+                  onClick={() => selectPort(link.a, link.aIf)}
+                  onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.a, link.aIf); } }}
+                  className="cursor-pointer focus:outline-none">
+                  <circle cx={la.x} cy={la.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.a && selection.interfaceName === link.aIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
+                  <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
                   {shortA}{portInfo(aIf)}{roleLabel(roleA) ? ` ${roleLabel(roleA)}` : ''}{aBlocked && layer === 'stp' ? ' ⊘' : ''}
-                </text>
-                <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
+                  </text>
+                </g>
+                <g role="button" tabIndex={0} aria-label={`Параметры порта ${bDev.hostname} ${link.bIf}`}
+                  onClick={() => selectPort(link.b, link.bIf)}
+                  onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.b, link.bIf); } }}
+                  className="cursor-pointer focus:outline-none">
+                  <circle cx={lb.x} cy={lb.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.b && selection.interfaceName === link.bIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
+                  <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
                   {shortB}{portInfo(bIf)}{roleLabel(roleB) ? ` ${roleLabel(roleB)}` : ''}{bBlocked && layer === 'stp' ? ' ⊘' : ''}
-                </text>
+                  </text>
+                </g>
               </g>
             );
           })}
@@ -295,8 +314,64 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
           })}
         </svg>
       </div>
+      {state.links.length > 0 && (
+        <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5" aria-label="Порты соединений">
+          {state.links.flatMap((link, index) => ([
+            { id: link.a, iface: link.aIf, key: `${index}-a` },
+            { id: link.b, iface: link.bIf, key: `${index}-b` },
+          ])).map(item => (
+            <button key={item.key} type="button" onClick={() => selectPort(item.id, item.iface)}
+              aria-pressed={selection?.deviceId === item.id && selection.interfaceName === item.iface}
+              className={selection?.deviceId === item.id && selection.interfaceName === item.iface
+                ? 'rounded-lg bg-cyan-500 px-2 py-1 text-[11px] font-semibold text-slate-950'
+                : 'rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-300'}>
+              {state.devices[item.id]?.hostname} {shortIf(item.iface)}
+            </button>
+          ))}
+        </div>
+      )}
+      {details && (
+        <section className="mx-3 my-2 rounded-xl border border-cyan-500/40 bg-slate-50 dark:bg-slate-950/60 p-3 space-y-2 text-xs"
+          aria-label="Параметры выбранного порта" aria-live="polite">
+          <div className="flex items-center justify-between gap-2">
+            <strong className="text-slate-900 dark:text-white">{details.deviceName} · {details.interfaceName}</strong>
+            <button type="button" onClick={() => setSelection(null)} aria-label="Закрыть параметры порта"
+              className="text-cyan-700 dark:text-cyan-300 font-semibold">Закрыть ×</button>
+          </div>
+          <dl className="grid grid-cols-[minmax(95px,auto)_minmax(0,1fr)] gap-x-3 gap-y-1 text-slate-700 dark:text-slate-300">
+            <dt>Админ.</dt><dd>{details.admin}</dd>
+            <dt>Физика</dt><dd>{details.physical} · protocol {details.protocol}</dd>
+            <dt>Сосед</dt><dd>{details.peer ?? 'нет смоделированного линка'}</dd>
+            <dt>Режим</dt><dd>{details.switchport?.mode ?? 'L3 / без switchport'}</dd>
+            {details.switchport?.mode === 'access' && (
+              <><dt>Access VLAN</dt><dd>{details.switchport.accessVlan ?? 1}</dd></>
+            )}
+            {details.switchport?.mode === 'trunk' && (
+              <><dt>Allowed VLAN</dt><dd>{details.switchport.trunkAllowed?.join(', ') ?? 'all (по умолчанию)'}</dd></>
+            )}
+            {details.ipv4 && (
+              <><dt>IPv4</dt><dd>{details.ipv4.address}/{details.ipv4.prefix} · {details.ipv4.mask}</dd></>
+            )}
+            {details.stp && (
+              <>
+                <dt>STP CST</dt><dd>{details.stp.role} · {details.stp.state}</dd>
+                <dt>Root / Cost</dt><dd>{state.devices[details.stp.root]?.hostname ?? details.stp.root} · {details.stp.pathCost}</dd>
+                <dt>Port Priority</dt><dd>{details.stp.portPriority}</dd>
+              </>
+            )}
+            {details.stpError && <><dt>STP ошибка</dt><dd>{details.stpError}</dd></>}
+          </dl>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            Read-only: параметры из текущего NetworkState. PHY up не гарантирует STP forwarding или связь между VLAN.
+          </p>
+          <button type="button" onClick={() => onSelectDevice(details.deviceId)}
+            className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 underline">
+            Перейти в консоль {details.deviceName}
+          </button>
+        </section>
+      )}
       <div className="px-3 py-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-100 dark:border-slate-800 space-y-0.5">
-        <div>Клик / Enter — консоль{layer === 'stp' ? ' · ★ Root Bridge' : ''}</div>
+        <div>Клик по устройству — консоль · по порту — параметры{layer === 'stp' ? ' · ★ Root Bridge' : ''}</div>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           <span><span className="text-emerald-500">━</span> {layer === 'stp' ? 'STP Forwarding' : 'PHY up'}</span>
           {layer === 'stp' && <span><span className="text-amber-500">━</span> STP Blocking ⊘</span>}
