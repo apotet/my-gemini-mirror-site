@@ -9,6 +9,7 @@ import { ciscoL3Commands } from './l3Commands';
 import { ciscoTrunkCommands } from './trunkCommands';
 import { ciscoInterfaceShowCommands } from './showInterfaceCommands';
 import { ciscoPersistenceCommands } from './persistenceCommands';
+import { ciscoSpanningTreeCommands } from './spanningTreeCommands';
 
 function commitDevice(state: NetworkState, device: DeviceState): NetworkState {
   return {
@@ -366,6 +367,7 @@ export const ciscoIosCommands: CommandSpec[] = [
   ...ciscoTrunkCommands,
   ...ciscoPersistenceCommands,
   ...ciscoInterfaceShowCommands,
+  ...ciscoSpanningTreeCommands,
 ];
 
 export { normalizeIfaceName };
