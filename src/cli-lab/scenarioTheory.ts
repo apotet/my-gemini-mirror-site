@@ -8,6 +8,10 @@ export interface CliTheoryTopics {
 }
 
 export const CLI_SCENARIO_THEORY: Record<string, CliTheoryTopics> = {
+  'cisco-four-switch-host-ring': {
+    all: ['cli-vlan-trunk', 'l2-svi', 'cli-ip-static-route', 'ts-method'],
+    steps: [['cli-vlan-trunk', 'ts-method'], ['cli-vlan-trunk', 'l2-svi'], ['cli-ip-static-route', 'ts-method']],
+  },
   'cisco-ios-modes-basic': {
     all: ['cli-ios-modes', 'cli-show-help-tab'],
     steps: [['cli-ios-modes'], ['cli-ios-modes'], ['cli-ios-modes'], ['cli-ios-modes'],
