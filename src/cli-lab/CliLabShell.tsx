@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TopologyPanel } from './components/TopologyPanel';
+import { resolveTopologyLayer, type TopologyLayerChoice } from './topologyLayers';
 import { LabEngine } from './engine/LabEngine';
 import { scenarioTheoryIds } from './scenarioTheory';
 import { getLesson } from '../data/lessons';
@@ -103,6 +104,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const [selectedDeviceId, setSelectedDeviceId] = useState(scenario.initialState.activeDeviceId);
   const [fullscreen, setFullscreen] = useState(false);
   const [topologyCollapsed, setTopologyCollapsed] = useState(false);
+  const [topologyLayerChoice, setTopologyLayerChoice] = useState<TopologyLayerChoice>('auto');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
@@ -355,6 +357,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const modes: LabMode[] = ['learn', 'drill', 'task'];
   void tick;
   const currentStep = steps[stepIndex];
+  const effectiveTopologyLayer = resolveTopologyLayer(topologyLayerChoice, scenario);
   const lessonChoices = scenarioTheoryIds(scenario.id, labMode === 'learn' && currentStep ? stepIndex : undefined)
     .map(id => getLesson(id))
     .filter((lesson): lesson is NonNullable<typeof lesson> => !!lesson);
@@ -490,7 +493,31 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col xl:flex-row gap-3'}>
           {!fullscreen && Object.keys(engine.getState().devices).length > 0 && (
             <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-56 xl:shrink-0 xl:max-w-[22%]'}>
-              <TopologyPanel
+              <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
+              {([
+                ['auto', 'Авто'],
+                ['phy', 'Физика'],
+                ['vlan', 'VLAN'],
+                ['stp', 'STP'],
+                ['ip', 'IP'],
+              ] as const).map(([value, label]) => (
+                <button key={value} type="button"
+                  aria-pressed={topologyLayerChoice === value}
+                  onClick={() => setTopologyLayerChoice(value)}
+                  className={topologyLayerChoice === value
+                    ? 'rounded-lg bg-cyan-500 px-2 py-1 text-[11px] font-semibold text-slate-950'
+                    : 'rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300'}>
+                  {label}
+                </button>
+              ))}
+              {topologyLayerChoice === 'auto' && (
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {effectiveTopologyLayer.toUpperCase()}
+                </span>
+              )}
+            </div>
+            <TopologyPanel
+                layer={effectiveTopologyLayer}
                 state={engine.getState()}
                 activeDeviceId={selectedDeviceId}
                 onSelectDevice={switchConsole}
