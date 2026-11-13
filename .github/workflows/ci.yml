@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, feat/cli-stp-cst-engine]
+    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding]
 
 jobs:
   build:
@@ -84,6 +84,9 @@ jobs:
 
       - name: CST forwarding and SVI integration regression
         run: node scripts/cli-stp-forwarding.test.mjs
+
+      - name: Cisco IOS CST diagnostic commands regression
+        run: node scripts/cli-spanning-tree.test.mjs
 
       - name: Typecheck
         run: npm run lint

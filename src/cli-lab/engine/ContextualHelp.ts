@@ -36,6 +36,7 @@ const keywordDescriptions: Record<string, string> = {
   route: 'Static routes / route display',
   'running-config': 'Current configuration',
   show: 'Show device information',
+  'spanning-tree': 'Converged IEEE 802.1D common spanning tree (CST)',
   shutdown: 'Administratively disable interface',
   startup: 'Startup configuration',
   'startup-config': 'Saved startup configuration',
