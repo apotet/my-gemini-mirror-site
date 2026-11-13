@@ -20,6 +20,7 @@ import { ciscoTwoSwitchVlanScenario } from './scenarios/cisco-two-switch-vlan';
 import { ciscoTwoSwitchSviScenario } from './scenarios/cisco-two-switch-svi';
 import { ciscoThreeSwitchMissingVlanScenario } from './scenarios/cisco-three-switch-missing-vlan';
 import { ciscoTwoSwitchTrunkDiagnosticScenario } from './scenarios/cisco-two-switch-trunk-diagnostics';
+import { ciscoFourSwitchHostRingScenario } from './scenarios/cisco-four-switch-host-ring';
 import { ciscoShowDiagnosticScenario } from './scenarios/cisco-show-diagnostic';
 import {
   Terminal as TerminalIcon,
@@ -53,10 +54,15 @@ const SCENARIOS: Scenario[] = [
   ciscoTwoSwitchSviScenario,
   ciscoThreeSwitchMissingVlanScenario,
   ciscoTwoSwitchTrunkDiagnosticScenario,
+  ciscoFourSwitchHostRingScenario,
 ];
 
 function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
+    case 'ipv4.hostReachable':
+      return `ПК ${g.fromHost} ↔ ${g.toHost}: IP/VLAN/L2-доступность`;
+    case 'stp.bridgePriority':
+      return `${g.device.toUpperCase()}: CST приоритет ${g.priority}`;
     case 'ipv4.sviReachable':
       return `${g.device.toUpperCase()}: SVI IPv4-путь к ${g.destination}`;
     case 'l2.vlanReachable':
@@ -174,6 +180,16 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
     return () => window.removeEventListener('keydown', onEsc);
   }, [fullscreen]);
 
+  const toggleCable = (index: number) => {
+    if (!scenario.allowLinkToggle) return;
+    const link = engine.getState().links[index];
+    if (!link || !engine.setLinkState(index, !link.up)) return;
+    setTick(t => t + 1);
+    setGoalResults(null);
+    setCompleted(false);
+    completedRef.current = false;
+    setHistory(h => [...h, { type: 'system', text: `Кабель ${index + 1}: ${link.up ? 'отключён' : 'восстановлен'}. Пересчитай CST и проверь пути.` }]);
+  };
   const switchConsole = (id: string) => {
     if (!engine.selectDevice(id)) return;
     setSelectedDeviceId(id);
@@ -514,10 +530,10 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         ))}
       </div>
 
-      {Object.keys(engine.getState().devices).length > 1 && (
+      {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
         <div className={fullscreen ? 'flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto max-h-[9dvh]' : 'flex flex-wrap items-center gap-2'} aria-label="Выбор консоли устройства">
           <span className="text-xs text-slate-500 dark:text-slate-400">Консоль:</span>
-          {Object.values(engine.getState().devices).map((device) => (
+          {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').map((device) => (
             <button key={device.id} type="button" onClick={() => switchConsole(device.id)}
               aria-pressed={selectedDeviceId === device.id}
               className={selectedDeviceId === device.id
@@ -560,6 +576,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             state={engine.getState()}
             activeDeviceId={selectedDeviceId}
             onSelectDevice={switchConsole}
+            onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
             collapsed={topologyCollapsed}
             onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
           />
