@@ -308,9 +308,28 @@ const baseCommands: CommandSpec[] = [
   {
     id: 'cisco.show_running_config',
     match: ['show', 'running-config'],
+    arguments: [[],
+      [{ keyword: 'interface', description: 'Display configuration of a specific interface' }, interfaceArgument],
+      [{ keyword: 'interface', description: 'Display configuration of a specific interface' }, interfaceTypeArgument, interfaceNumberArgument]],
     modes: ['privileged'],
     minPrivilege: 15,
-    handler: (_tokens, _state, device) => ({ output: formatRunningConfig(device) }),
+    handler: (tokens, _state, device) => {
+      if (tokens.length === 2) return { output: formatRunningConfig(device) };
+      if (tokens[2] !== 'interface' || tokens.length < 4) {
+        return { output: ciscoIosProfile.messages.invalid, error: true };
+      }
+      const name = normalizeIfaceName(tokens.slice(3).join(' '));
+      if (!device.interfaces[name]) return { output: `% Invalid interface ${name}`, error: true };
+      // Reuse the same formatter as the full running-config, so the selected
+      // block cannot silently disagree about the IP address or subnet mask.
+      const config = formatRunningConfig(device);
+      const header = `interface ${name}`;
+      const lines = config.split('\\n');
+      const start = lines.indexOf(header);
+      if (start === -1) return { output: `% Interface ${name} not found in running-config`, error: true };
+      const end = lines.indexOf('!', start + 1);
+      return { output: lines.slice(start, end === -1 ? undefined : end).join('\\n') };
+    },
   },
   {
     id: 'cisco.do',
