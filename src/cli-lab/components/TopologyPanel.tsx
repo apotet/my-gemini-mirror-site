@@ -2,9 +2,11 @@ import React from 'react';
 import { DeviceState, NetworkState, NetworkLink } from '../engine/types';
 import { interfaceStatus } from '../engine/OperationalState';
 import { deriveSpanningTree, type SpanningTreeResult } from '../engine/SpanningTree';
+import type { TopologyLayer } from '../topologyLayers';
 
 interface TopologyPanelProps {
   state: NetworkState;
+  layer?: TopologyLayer;
   activeDeviceId: string;
   onSelectDevice: (id: string) => void;
   collapsed?: boolean;
@@ -123,6 +125,7 @@ function labelNearEnd(node: NodePos, edge: { x: number; y: number }): { x: numbe
 
 export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   state,
+  layer = 'stp',
   activeDeviceId,
   onSelectDevice,
   collapsed = false,
@@ -134,7 +137,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   // Pure call — no cached runtime, recomputed every render from NetworkState.
   let tree: SpanningTreeResult | null = null;
   try {
-    tree = deriveSpanningTree(state, { kind: 'cst' });
+    if (layer === 'stp') tree = deriveSpanningTree(state, { kind: 'cst' });
   } catch {
     tree = null;
   }
@@ -188,7 +191,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             const bStp = tree?.bridges[link.b]?.ports[link.bIf];
             const aBlocked = aStp?.portState === 'blocking' && aStp.portRole !== 'disabled';
             const bBlocked = bStp?.portState === 'blocking' && bStp.portRole !== 'disabled';
-            const stpBlocked = phyUp && (aBlocked || bBlocked);
+            const stpBlocked = layer === 'stp' && phyUp && (aBlocked || bBlocked);
 
             let color = '#ef4444';
             let dash: string | undefined = '5 3';
@@ -207,6 +210,14 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             const p2 = edgePoint(nb, na);
             const shortA = shortIf(link.aIf);
             const shortB = shortIf(link.bIf);
+            const portInfo = (iface: typeof aIf) => {
+              if (layer !== 'vlan') return '';
+              if (!iface?.switchport) return '';
+              const sw = iface.switchport;
+              if (sw.mode === 'access') return ` A:${sw.accessVlan ?? 1}`;
+              if (sw.mode === 'trunk') return ' TRK';
+              return '';
+            };
             const la = labelNearEnd(na, p1);
             const lb = labelNearEnd(nb, p2);
 
@@ -218,17 +229,23 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
               <g key={`link-${idx}`}>
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={width} strokeDasharray={dash} />
                 <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
-                  {shortA}{roleLabel(roleA) ? ` ${roleLabel(roleA)}` : ''}{aBlocked ? ' ⊘' : ''}
+                  {shortA}{portInfo(aIf)}{roleLabel(roleA) ? ` ${roleLabel(roleA)}` : ''}{aBlocked && layer === 'stp' ? ' ⊘' : ''}
                 </text>
                 <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="8" fill="#e2e8f0" className="font-mono pointer-events-none">
-                  {shortB}{roleLabel(roleB) ? ` ${roleLabel(roleB)}` : ''}{bBlocked ? ' ⊘' : ''}
+                  {shortB}{portInfo(bIf)}{roleLabel(roleB) ? ` ${roleLabel(roleB)}` : ''}{bBlocked && layer === 'stp' ? ' ⊘' : ''}
                 </text>
               </g>
             );
           })}
           {nodes.map(node => {
             const isActive = node.id === activeDeviceId;
-            const isRoot = rootDevices.has(node.id);
+            const isRoot = layer === 'stp' && rootDevices.has(node.id);
+            const ip = layer === 'ip'
+              ? Object.values(state.devices[node.id].interfaces)
+                .filter(iface => iface.ipv4)
+                .map(iface => `${shortIf(iface.name)} ${iface.ipv4!.address}/${iface.ipv4!.prefix}`)
+              : [];
+            const firstIp = ip[0] ?? '';
             return (
               <g
                 key={node.id}
@@ -258,7 +275,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                 />
                 <text
                   x={node.x}
-                  y={node.y + 4}
+                  y={node.y + (firstIp ? -4 : 4)}
                   textAnchor="middle"
                   fontSize="13"
                   fontWeight="bold"
@@ -267,18 +284,26 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                 >
                   {node.hostname}{isRoot ? ' ★' : ''}
                 </text>
+                {firstIp && (
+                  <text x={node.x} y={node.y + 14} textAnchor="middle" fontSize="8"
+                    fill="#bfdbfe" className="font-mono pointer-events-none">
+                    {firstIp.length > 22 ? `${firstIp.slice(0, 21)}…` : firstIp}{ip.length > 1 ? ' +more' : ''}
+                  </text>
+                )}
               </g>
             );
           })}
         </svg>
       </div>
       <div className="px-3 py-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-100 dark:border-slate-800 space-y-0.5">
-        <div>Клик / Enter — консоль · ★ Root Bridge</div>
+        <div>Клик / Enter — консоль{layer === 'stp' ? ' · ★ Root Bridge' : ''}</div>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-          <span><span className="text-emerald-500">━</span> Forwarding</span>
-          <span><span className="text-amber-500">━</span> STP Blocking ⊘</span>
+          <span><span className="text-emerald-500">━</span> {layer === 'stp' ? 'STP Forwarding' : 'PHY up'}</span>
+          {layer === 'stp' && <span><span className="text-amber-500">━</span> STP Blocking ⊘</span>}
           <span><span className="text-red-500">━</span> PHY down</span>
-          <span>RP Root · DP Designated · ND Non-des</span>
+          {layer === 'stp' && <span>RP Root · DP Designated · ND Non-des</span>}
+          {layer === 'vlan' && <span>A:10 — access VLAN 10 · TRK — trunk (allowed VLAN проверяй в CLI)</span>}
+          {layer === 'ip' && <span>IP — адрес интерфейса из конфигурации, не гарантия доступности</span>}
         </div>
       </div>
     </div>
