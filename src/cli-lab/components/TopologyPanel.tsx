@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { HostPingPanel } from './HostPingPanel';
 import { getPortDetails } from '../portDetails';
 import { checkHostIpv4Reachability } from '../engine/HostIpv4Reachability';
 import { DeviceState, NetworkState, NetworkLink } from '../engine/types';
@@ -373,9 +374,10 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             })}
           </div>
           {selectedHostId && state.devices[selectedHostId]?.vendor === 'linux-host' && (
-            <div className="flex items-center gap-3 mt-2 text-slate-700 dark:text-slate-200">
+            <div className="min-w-0 space-y-2 mt-2 text-slate-700 dark:text-slate-200">
               <span>ПК {state.devices[selectedHostId].hostname}: {state.devices[selectedHostId].interfaces.Ethernet0?.ipv4?.address}/24</span>
               <button type="button" onClick={() => setSelectedHostId(null)} className="underline">Закрыть</button>
+              <HostPingPanel key={selectedHostId} state={state} hostId={selectedHostId} />
             </div>
           )}
         </section>

@@ -112,6 +112,9 @@ jobs:
       - name: Cisco IOS CST configuration regression
         run: node scripts/cli-stp-configuration.test.mjs
 
+      - name: Modeled PC ping regression
+        run: node scripts/cli-host-ping.test.mjs
+
       - name: Typecheck
         run: npm run lint
 

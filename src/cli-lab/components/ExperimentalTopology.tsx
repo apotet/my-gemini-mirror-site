@@ -6,6 +6,7 @@ import { interfaceStatus } from '../engine/OperationalState';
 import { deriveSpanningTree, type SpanningTreeResult } from '../engine/SpanningTree';
 import { checkHostIpv4Reachability } from '../engine/HostIpv4Reachability';
 import { getPortDetails } from '../portDetails';
+import { HostPingPanel } from './HostPingPanel';
 import {
   computeGraphBounds,
   computeTopologyLayout,
@@ -756,6 +757,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
                   <div>Статус: {interfaceStatus(state, selectedHost, iface).physical}</div>
                 </div>
               ))}
+              <HostPingPanel key={selectedHost.id} state={state} hostId={selectedHost.id} />
               <div className="space-y-1">
                 <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Связь с другими ПК</div>
                 {modeledHosts.filter(h => h.id !== selectedHost.id).map(peer => {
