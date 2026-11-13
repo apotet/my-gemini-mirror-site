@@ -135,7 +135,8 @@ export type GoalPredicate =
   | { type: 'privilege'; device: string; min: number }
   | { type: 'config.saved'; device: string }
   | { type: 'l2.vlanReachable'; vlanId: number; fromDevice: string; fromIf: string; toDevice: string; toIf: string }
-  | { type: 'ipv4.sviReachable'; device: string; destination: string };
+  | { type: 'ipv4.sviReachable'; device: string; destination: string }
+  | { type: 'ipv4.hostReachable'; fromHost: string; toHost: string };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;
