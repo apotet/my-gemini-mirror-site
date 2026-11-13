@@ -103,18 +103,21 @@ function edgePoint(node: NodePos, other: NodePos): { x: number; y: number } {
   return { x: node.x + dx / scale, y: node.y + dy / scale };
 }
 
-/** Place label just outside the node edge, slightly off the link line. */
-function labelNearEnd(node: NodePos, edge: { x: number; y: number }, other: NodePos, outward = 18): { x: number; y: number } {
+/**
+ * Position each port label outside its node and on the opposite side of the
+ * link from the label at the far end. This matters on short 3-switch links:
+ * placing both labels on the centerline makes Fa0/24 and Fa0/23 collide.
+ */
+function labelNearEnd(node: NodePos, edge: { x: number; y: number }): { x: number; y: number } {
   const dx = edge.x - node.x;
   const dy = edge.y - node.y;
   const len = Math.hypot(dx, dy) || 1;
-  // outward from node center through the edge point
-  const ox = (dx / len) * outward;
-  const oy = (dy / len) * outward;
-  // small perpendicular nudge so it doesn't sit exactly on the line
-  const px = -dy / len * 8;
-  const py = dx / len * 8;
-  return { x: edge.x + ox + px, y: edge.y + oy + py };
+  const outward = 10;
+  const perpendicular = 16;
+  return {
+    x: edge.x + (dx / len) * outward - (dy / len) * perpendicular,
+    y: edge.y + (dy / len) * outward + (dx / len) * perpendicular,
+  };
 }
 
 export const TopologyPanel: React.FC<TopologyPanelProps> = ({
@@ -171,15 +174,15 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             const p2 = edgePoint(nb, na);
             const shortA = shortIf(link.aIf);
             const shortB = shortIf(link.bIf);
-            const la = labelNearEnd(na, p1, nb, 20);
-            const lb = labelNearEnd(nb, p2, na, 20);
+            const la = labelNearEnd(na, p1);
+            const lb = labelNearEnd(nb, p2);
             return (
               <g key={`link-${idx}`}>
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={up ? 3 : 2} strokeDasharray={up ? undefined : '5 3'} />
-                <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="7.5" fill="#cbd5e1" className="font-mono pointer-events-none">
+                <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="8.5" fill="#cbd5e1" className="font-mono pointer-events-none">
                   {shortA}
                 </text>
-                <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="7.5" fill="#cbd5e1" className="font-mono pointer-events-none">
+                <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="8.5" fill="#cbd5e1" className="font-mono pointer-events-none">
                   {shortB}
                 </text>
               </g>
