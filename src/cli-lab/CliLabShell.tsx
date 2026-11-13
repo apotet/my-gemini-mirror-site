@@ -60,6 +60,22 @@ const PC_ATTACHMENTS: Record<string, Array<[string, string, string, string]>> = 
     ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
     ['pc2', 'sw2', 'FastEthernet0/1', '192.168.10.12'],
   ],
+  'cisco-three-switch-l2-diagnostics': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw3', 'FastEthernet0/1', '192.168.10.12'],
+  ],
+  'cisco-two-switch-vlan-selective-diagnostics': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.10.12'],
+    ['pc3', 'sw1', 'FastEthernet0/2', '192.168.20.11'],
+    ['pc4', 'sw2', 'FastEthernet0/2', '192.168.20.12'],
+  ],
+  'cisco-show-diagnostic-basic': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.30.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.30.12'],
+    ['pc3', 'sw1', 'FastEthernet0/2', '192.168.10.11'],
+    ['pc4', 'sw2', 'FastEthernet0/2', '192.168.10.12'],
+  ],
 };
 
 function withPcEndpoints(scenario: Scenario): Scenario {
