@@ -190,6 +190,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
   const [tick, setTick] = useState(0);
   const [selectedDeviceId, setSelectedDeviceId] = useState(scenario.initialState.activeDeviceId);
   const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreenTopologyOpen, setFullscreenTopologyOpen] = useState(false);
   const [topologyCollapsed, setTopologyCollapsed] = useState(true);
   const [topologyLayerChoice, setTopologyLayerChoice] = useState<TopologyLayerChoice>('auto');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -413,7 +414,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         : []),
     ]);
     if (line.trim().endsWith('?')) {
-      requestAnimationFrame(() => inputRef.current?.focus());
+      requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
       setInput(line.slice(0, -1));
       return;
     }
@@ -449,7 +450,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
       }
     }
 
-    requestAnimationFrame(() => inputRef.current?.focus());
+    requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
   };
 
   const modes: LabMode[] = ['learn', 'drill', 'task'];
@@ -476,7 +477,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     <div
       className={
         fullscreen
-          ? 'fixed inset-0 z-[60] h-[100dvh] w-screen bg-slate-950 p-3 sm:p-4 overflow-hidden flex flex-col gap-3'
+          ? 'fixed inset-0 z-[60] h-[100dvh] w-screen bg-slate-950 p-1.5 sm:p-2 overflow-hidden flex flex-col gap-1.5'
           : 'space-y-4 max-w-5xl mx-auto'
       }
     >
@@ -501,6 +502,52 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </section>
         </div>
       )}
+      {fullscreen && (
+        <div className="shrink-0 flex items-center gap-1.5 overflow-x-auto bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => { setSidebarCollapsed((v) => !v); focusCliInput(); }}
+            aria-pressed={sidebarCollapsed}
+            className="shrink-0 rounded-lg border border-cyan-600/60 px-2.5 py-1 font-bold text-cyan-300 hover:bg-cyan-900/40"
+          >
+            {sidebarCollapsed ? 'Показать задание' : 'Скрыть задание'}
+          </button>
+          {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
+            <div className="flex items-center gap-1 shrink-0" aria-label="Выбор консоли устройства">
+              {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').map((device) => (
+                <button key={device.id} type="button" onClick={() => switchConsole(device.id)}
+                  aria-pressed={selectedDeviceId === device.id}
+                  className={selectedDeviceId === device.id
+                    ? 'rounded-lg border border-cyan-500 bg-cyan-500/20 px-2 py-1 font-bold text-cyan-200'
+                    : 'rounded-lg border border-slate-600 px-2 py-1 text-slate-300'}>
+                  {device.hostname}
+                </button>
+              ))}
+            </div>
+          )}
+          {engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1 && (
+            <button
+              type="button"
+              onClick={() => { setFullscreenTopologyOpen(v => !v); focusCliInput(); }}
+              aria-pressed={fullscreenTopologyOpen}
+              className={fullscreenTopologyOpen
+                ? 'shrink-0 rounded-lg bg-cyan-500 px-2.5 py-1 font-bold text-slate-950'
+                : 'shrink-0 rounded-lg border border-slate-600 px-2.5 py-1 font-bold text-slate-200'}
+            >
+              Схема
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => { setFullscreen(false); setFullscreenTopologyOpen(false); focusCliInput(); }}
+            className="ml-auto shrink-0 inline-flex items-center gap-1 rounded-lg border border-slate-600 px-2.5 py-1 font-bold text-slate-200 hover:bg-slate-800"
+            title="Выйти из полного экрана (Esc)"
+          >
+            <Minimize2 className="w-3.5 h-3.5" /> Выход
+          </button>
+        </div>
+      )}
+      {!fullscreen && (
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -543,6 +590,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           ))}
         </div>
       </div>
+      )}
 
       {commandCatalogOpen && (
         <section aria-label="Справочник доступных команд Cisco CLI Lab"
@@ -584,6 +632,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </section>
       )}
 
+      {!fullscreen && (
       <section className="space-y-2" aria-label="Уровень сложности и сценарий CLI">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Сложность:</span>
@@ -617,8 +666,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           ))}
         </div>
       </section>
+      )}
 
-      {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
+      {!fullscreen && Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
         <div className={fullscreen ? 'flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto max-h-[9dvh]' : 'flex flex-wrap items-center gap-2'} aria-label="Выбор консоли устройства">
           <span className="text-xs text-slate-500 dark:text-slate-400">Консоль:</span>
           {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').map((device) => (
@@ -686,13 +736,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
       <div
         className={
           fullscreen
-            ? sidebarCollapsed
-              ? 'grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] gap-3 w-full overflow-hidden'
-              : 'relative grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)] gap-3 w-full overflow-hidden'
+            ? `relative flex flex-1 min-h-0 w-full overflow-hidden ${fullscreenTopologyOpen ? 'lg:flex-row' : 'flex-col'}`
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
-        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col gap-3'}>
+        <div className={fullscreen ? 'min-w-0 min-h-0 flex-1 flex flex-col' : 'lg:col-span-2 flex flex-col gap-3'}>
 
           <div
             className={
@@ -709,7 +757,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => { setFullscreen((v) => !v); setSidebarCollapsed(true); focusCliInput(); }}
+                onClick={() => { setFullscreen((v) => !v); setSidebarCollapsed(true); setFullscreenTopologyOpen(false); focusCliInput(); }}
                 className="inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
                 title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
               >
@@ -784,7 +832,33 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </div>
         </div>
 
-        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'absolute inset-0 z-10 min-w-0 space-y-3 overflow-y-auto rounded-xl bg-slate-950 p-2 lg:static lg:p-0 lg:pr-1 lg:bg-transparent lg:overflow-y-auto lg:min-h-0' : 'space-y-3'}>
+        {fullscreen && fullscreenTopologyOpen && engine.getState().links.length > 0 && (
+          <div className="hidden lg:flex lg:flex-col w-80 xl:w-96 shrink-0 border-l border-slate-700 bg-slate-900/50 overflow-y-auto">
+            {experimentalTopology ? (
+              <ExperimentalTopology
+                layer={effectiveTopologyLayer}
+                state={engine.getState()}
+                activeDeviceId={selectedDeviceId}
+                onSelectDevice={switchConsole}
+                onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
+                collapsed={false}
+                onToggleCollapse={() => { setFullscreenTopologyOpen(false); focusCliInput(); }}
+              />
+            ) : (
+              <TopologyPanel
+                layer={effectiveTopologyLayer}
+                state={engine.getState()}
+                activeDeviceId={selectedDeviceId}
+                onSelectDevice={switchConsole}
+                onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
+                collapsed={false}
+                onToggleCollapse={() => { setFullscreenTopologyOpen(false); focusCliInput(); }}
+              />
+            )}
+          </div>
+        )}
+
+        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'absolute inset-0 z-20 min-w-0 space-y-3 overflow-y-auto rounded-xl bg-slate-950/95 p-2' : 'space-y-3'}>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
