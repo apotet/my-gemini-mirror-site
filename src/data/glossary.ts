@@ -6,6 +6,11 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "subnet mask": {"description": "Маска IPv4 определяет длину сетевого префикса. Например, 255.255.255.0 соответствует /24. В CLI IOS задаётся вместе с ip address.", "relatesTo": "Настройка и проверка IP на SVI или маршрутизируемом интерфейсе.", "lessonId": "cli-ip-static-route"},
+  "default route": {"description": "Маршрут 0.0.0.0/0 используется, если не найден более специфичный подходящий маршрут; задаётся с корректным next hop.", "relatesTo": "Маршрутизация IPv4 и команда ip route.", "lessonId": "cli-ip-static-route"},
+  "gateway": {"description": "Шлюз передаёт трафик в другие IP-сети. Для конечного узла это обычно адрес L3-интерфейса в его подсети.", "relatesTo": "IPv4-сети, SVI и маршрут по умолчанию.", "lessonId": "cli-ip-static-route"},
+  "FIB": {"description": "Forwarding Information Base — таблица, используемая плоскостью пересылки для выбора следующего шага пакета; не тождественна полному протокольному RIB.", "relatesTo": "Маршрутизация и выбор следующего перехода.", "lessonId": "cli-ip-static-route"},
+  "L2 forwarding": {"description": "Передача Ethernet-кадров на канальном уровне. VLAN, совместимость портов и состояние STP forwarding влияют на возможность передачи.", "relatesTo": "Коммутация, VLAN, trunk и STP.", "lessonId": "cli-vlan-trunk"},
   "Root ID": {"description": "Идентификатор корневого моста, объявленный в BPDU. Неизменный Root ID не исключает topology change от перехода другого порта в Forwarding.", "relatesTo": "Диагностика дерева STP.", "lessonId": "l2-stp-guard-design"},
   "untrusted": {"description": "Порт, на котором DHCP Snooping не разрешает серверные ответы. Клиентские запросы могут проходить при соблюдении остальных проверок.", "relatesTo": "Политики доступа и защита портов.", "lessonId": "l2-vlan-security"},
   "shutdown": {"description": "В контексте Port Security — режим защитного отключения интерфейса при violation. В конфигурации IOS команда shutdown также используется для административного выключения порта; это отдельное действие.", "relatesTo": "Политики доступа и защита портов.", "lessonId": "l2-vlan-security"},
