@@ -20,8 +20,8 @@ interface NodePos {
   height: number;
 }
 
-const NODE_W = 110;
-const NODE_H = 60;
+const NODE_W = 140;
+const NODE_H = 72;
 
 function shortIf(name: string): string {
   return name
@@ -43,40 +43,41 @@ function layoutDevices(devices: Record<string, DeviceState>, links: NetworkLink[
     height: NODE_H,
   });
 
-  if (n === 1) return [make(ids[0], 200, 140)];
-  if (n === 2) return [make(ids[0], 120, 140), make(ids[1], 340, 140)];
-  if (n === 3) return [make(ids[0], 80, 140), make(ids[1], 230, 140), make(ids[2], 380, 140)];
+  // Larger spacing so labels fit next to ends
+  if (n === 1) return [make(ids[0], 300, 180)];
+  if (n === 2) return [make(ids[0], 160, 180), make(ids[1], 480, 180)];
+  if (n === 3) return [make(ids[0], 120, 180), make(ids[1], 340, 180), make(ids[2], 560, 180)];
   if (n === 4) {
     return [
-      make(ids[0], 100, 80),
-      make(ids[1], 340, 80),
-      make(ids[2], 340, 220),
-      make(ids[3], 100, 220),
+      make(ids[0], 160, 100),
+      make(ids[1], 480, 100),
+      make(ids[2], 480, 280),
+      make(ids[3], 160, 280),
     ];
   }
   const cols = Math.ceil(Math.sqrt(n));
   return ids.map((id, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    return make(id, 80 + col * 160, 70 + row * 120);
+    return make(id, 140 + col * 220, 100 + row * 160);
   });
 }
 
-/** Compute attachment point on the device border facing the other device. */
+/** Attachment point on the side of the chassis facing the other device. */
 function borderPoint(node: NodePos, other: NodePos): { x: number; y: number; side: 'left' | 'right' | 'top' | 'bottom' } {
   const dx = other.x - node.x;
   const dy = other.y - node.y;
   const hw = node.width / 2;
   const hh = node.height / 2;
-  if (Math.abs(dx) > Math.abs(dy)) {
+  if (Math.abs(dx) >= Math.abs(dy)) {
     const side = dx > 0 ? 'right' : 'left';
     const x = node.x + (dx > 0 ? hw : -hw);
-    const y = node.y + Math.max(-hh + 8, Math.min(hh - 8, (dy / Math.abs(dx || 1)) * hh * 0.4));
+    const y = node.y + Math.max(-hh + 12, Math.min(hh - 12, (dy / (Math.abs(dx) || 1)) * hh * 0.3));
     return { x, y, side };
   } else {
     const side = dy > 0 ? 'bottom' : 'top';
     const y = node.y + (dy > 0 ? hh : -hh);
-    const x = node.x + Math.max(-hw + 8, Math.min(hw - 8, (dx / Math.abs(dy || 1)) * hw * 0.4));
+    const x = node.x + Math.max(-hw + 12, Math.min(hw - 12, (dx / (Math.abs(dy) || 1)) * hw * 0.3));
     return { x, y, side };
   }
 }
@@ -97,26 +98,37 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   const rootDevice = tree ? Object.values(tree.bridges)[0]?.rootDevice ?? null : null;
 
   const [scale, setScale] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [pan, setPan] = useState({ x: 20, y: 20 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const contentBounds = useMemo(() => {
+    if (nodes.length === 0) return { minX: 0, minY: 0, maxX: 600, maxY: 300 };
+    const minX = Math.min(...nodes.map(n => n.x - n.width / 2)) - 60;
+    const maxX = Math.max(...nodes.map(n => n.x + n.width / 2)) + 60;
+    const minY = Math.min(...nodes.map(n => n.y - n.height / 2)) - 40;
+    const maxY = Math.max(...nodes.map(n => n.y + n.height / 2)) + 50;
+    return { minX, maxX, minY, maxY };
+  }, [nodes]);
+
   const fitToScreen = () => {
     if (!containerRef.current || nodes.length === 0) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const minX = Math.min(...nodes.map(n => n.x - n.width / 2)) - 40;
-    const maxX = Math.max(...nodes.map(n => n.x + n.width / 2)) + 40;
-    const minY = Math.min(...nodes.map(n => n.y - n.height / 2)) - 40;
-    const maxY = Math.max(...nodes.map(n => n.y + n.height / 2)) + 60;
-    const contentW = maxX - minX;
-    const contentH = maxY - minY;
-    const s = Math.min(rect.width / contentW, rect.height / contentH, 1.4);
-    setScale(s);
-    setPan({ x: (rect.width - contentW * s) / 2 - minX * s, y: (rect.height - contentH * s) / 2 - minY * s });
+    const contentW = contentBounds.maxX - contentBounds.minX;
+    const contentH = contentBounds.maxY - contentBounds.minY;
+    const s = Math.min((rect.width - 24) / contentW, (rect.height - 24) / contentH, 1.6);
+    setScale(Math.max(0.5, s));
+    setPan({
+      x: (rect.width - contentW * s) / 2 - contentBounds.minX * s,
+      y: (rect.height - contentH * s) / 2 - contentBounds.minY * s,
+    });
   };
 
-  useEffect(() => { fitToScreen(); }, [nodes.length]);
+  useEffect(() => {
+    const t = setTimeout(fitToScreen, 50);
+    return () => clearTimeout(t);
+  }, [nodes.length, contentBounds.maxX]);
 
   if (collapsed) {
     return (
@@ -129,17 +141,17 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     );
   }
 
-  const width = 500;
-  const height = 320;
+  const svgW = Math.max(700, contentBounds.maxX + 40);
+  const svgH = Math.max(360, contentBounds.maxY + 40);
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden flex flex-col h-full min-h-[280px]">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden flex flex-col" style={{ minHeight: 340 }}>
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Топология · экспериментальная</span>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setScale(s => Math.min(2, s + 0.15))} className="text-xs px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600">+</button>
-          <button type="button" onClick={() => setScale(s => Math.max(0.5, s - 0.15))} className="text-xs px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600">−</button>
-          <button type="button" onClick={fitToScreen} className="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold">Вписать</button>
+          <button type="button" onClick={() => setScale(s => Math.min(2.2, s + 0.2))} className="text-xs px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600">+</button>
+          <button type="button" onClick={() => setScale(s => Math.max(0.4, s - 0.2))} className="text-xs px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600">−</button>
+          <button type="button" onClick={fitToScreen} className="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold px-2">Вписать</button>
           {onToggleCollapse && (
             <button type="button" onClick={onToggleCollapse} className="text-[11px] text-slate-500">Скрыть</button>
           )}
@@ -147,16 +159,18 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
       </div>
       <div
         ref={containerRef}
-        className="flex-1 relative overflow-hidden bg-slate-950/20 cursor-grab active:cursor-grabbing"
+        className="relative overflow-hidden bg-slate-950/30"
+        style={{ height: 300 }}
         onMouseDown={(e) => { setDragging(true); setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y }); }}
         onMouseMove={(e) => { if (dragging) setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); }}
         onMouseUp={() => setDragging(false)}
         onMouseLeave={() => setDragging(false)}
-        onWheel={(e) => { e.preventDefault(); setScale(s => Math.max(0.4, Math.min(2.2, s - e.deltaY * 0.001))); }}
+        onWheel={(e) => { e.preventDefault(); setScale(s => Math.max(0.35, Math.min(2.5, s - e.deltaY * 0.0012))); }}
       >
         <svg
-          viewBox={`0 0 ${width} ${height}`}
-          className="absolute inset-0 w-full h-full"
+          width={svgW}
+          height={svgH}
+          className="absolute"
           style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transformOrigin: '0 0' }}
         >
           {state.links.map((link, idx) => {
@@ -179,16 +193,17 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
             const pa = borderPoint(na, nb);
             const pb = borderPoint(nb, na);
 
-            const color = !phyUp ? '#ef4444' : (aBlocked || bBlocked) ? '#f59e0b' : '#10b981';
-            const dash = !phyUp ? '6 3' : (aBlocked || bBlocked) ? '4 2' : undefined;
+            const color = !phyUp ? '#ef4444' : (aBlocked || bBlocked) ? '#f59e0b' : '#22c55e';
+            const dash = !phyUp ? '6 3' : (aBlocked || bBlocked) ? '5 3' : undefined;
 
-            const labelOffset = (side: string, isA: boolean) => {
-              const ox = side === 'left' ? -28 : side === 'right' ? 28 : 0;
-              const oy = side === 'top' ? -16 : side === 'bottom' ? 16 : 0;
-              return { ox, oy };
+            const labelPos = (side: string, px: number, py: number) => {
+              if (side === 'left') return { x: px - 6, y: py - 8, anchor: 'end' as const };
+              if (side === 'right') return { x: px + 6, y: py - 8, anchor: 'start' as const };
+              if (side === 'top') return { x: px, y: py - 10, anchor: 'middle' as const };
+              return { x: px, y: py + 14, anchor: 'middle' as const };
             };
-            const la = labelOffset(pa.side, true);
-            const lb = labelOffset(pb.side, false);
+            const la = labelPos(pa.side, pa.x, pa.y);
+            const lb = labelPos(pb.side, pb.x, pb.y);
 
             const roleA = aStp?.portRole;
             const roleB = bStp?.portRole;
@@ -196,15 +211,13 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
 
             return (
               <g key={`link-${idx}`}>
-                <line x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} stroke={color} strokeWidth={phyUp ? 2.5 : 1.5} strokeDasharray={dash} />
-                {/* Port markers on chassis */}
-                <circle cx={pa.x} cy={pa.y} r={3.5} fill={color} stroke="#0f172a" strokeWidth={1} />
-                <circle cx={pb.x} cy={pb.y} r={3.5} fill={color} stroke="#0f172a" strokeWidth={1} />
-                {/* Labels tightly next to ends */}
-                <text x={pa.x + la.ox} y={pa.y + la.oy} textAnchor={pa.side === 'left' ? 'end' : pa.side === 'right' ? 'start' : 'middle'} fontSize="9" fill="#e2e8f0" className="font-mono pointer-events-none">
+                <line x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} stroke={color} strokeWidth={phyUp ? 3 : 2} strokeDasharray={dash} />
+                <circle cx={pa.x} cy={pa.y} r={5} fill={color} stroke="#020617" strokeWidth={1.5} />
+                <circle cx={pb.x} cy={pb.y} r={5} fill={color} stroke="#020617" strokeWidth={1.5} />
+                <text x={la.x} y={la.y} textAnchor={la.anchor} fontSize="11" fontWeight="600" fill="#f1f5f9" className="font-mono pointer-events-none">
                   {shortIf(link.aIf)}{roleShort(roleA) ? ` ${roleShort(roleA)}` : ''}{aBlocked ? ' ⊘' : ''}
                 </text>
-                <text x={pb.x + lb.ox} y={pb.y + lb.oy} textAnchor={pb.side === 'left' ? 'end' : pb.side === 'right' ? 'start' : 'middle'} fontSize="9" fill="#e2e8f0" className="font-mono pointer-events-none">
+                <text x={lb.x} y={lb.y} textAnchor={lb.anchor} fontSize="11" fontWeight="600" fill="#f1f5f9" className="font-mono pointer-events-none">
                   {shortIf(link.bIf)}{roleShort(roleB) ? ` ${roleShort(roleB)}` : ''}{bBlocked ? ' ⊘' : ''}
                 </text>
               </g>
@@ -227,12 +240,12 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
                   y={node.y - node.height / 2}
                   width={node.width}
                   height={node.height}
-                  rx={8}
+                  rx={10}
                   fill={isActive ? '#0e7490' : isRoot ? '#064e3b' : '#1e293b'}
-                  stroke={isActive ? '#22d3ee' : isRoot ? '#34d399' : '#475569'}
-                  strokeWidth={isActive || isRoot ? 2.5 : 1.5}
+                  stroke={isActive ? '#22d3ee' : isRoot ? '#34d399' : '#64748b'}
+                  strokeWidth={isActive || isRoot ? 3 : 2}
                 />
-                <text x={node.x} y={node.y + 4} textAnchor="middle" fontSize="12" fontWeight="bold" fill="#f1f5f9" className="font-mono pointer-events-none">
+                <text x={node.x} y={node.y + 5} textAnchor="middle" fontSize="15" fontWeight="bold" fill="#f8fafc" className="font-mono pointer-events-none">
                   {node.hostname}{isRoot ? ' ★' : ''}
                 </text>
               </g>
@@ -240,8 +253,8 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
           })}
         </svg>
       </div>
-      <div className="px-3 py-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-100 dark:border-slate-800">
-        ★ Root · RP/DP/ND · ⊘ STP Block · красный = PHY down · колесо/кнопки — масштаб · перетаскивание
+      <div className="px-3 py-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-100 dark:border-slate-800">
+        ★ Root · RP/DP/ND · ⊘ STP Block · красный = PHY down · колесо/кнопки — масштаб · перетаскивание · Вписать
       </div>
     </div>
   );
