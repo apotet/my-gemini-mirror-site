@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, feat/cli-stp-cst-engine]
 
 jobs:
   build:
@@ -81,6 +81,9 @@ jobs:
 
       - name: Deterministic IEEE 802.1D CST regression
         run: node scripts/cli-stp.test.mjs
+
+      - name: CST forwarding and SVI integration regression
+        run: node scripts/cli-stp-forwarding.test.mjs
 
       - name: Typecheck
         run: npm run lint
