@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding, feat/cli-stp-diagnostics, integration/cli-2-stp-theory]
+    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding, feat/cli-stp-diagnostics, integration/cli-2-stp-theory , feat/cli-topology-layers]
 
 jobs:
   build:
