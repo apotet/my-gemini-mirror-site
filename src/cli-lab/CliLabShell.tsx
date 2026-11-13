@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { TopologyPanel } from './components/TopologyPanel';
 import { LabEngine } from './engine/LabEngine';
 import { evaluateGoals } from './engine/GoalEvaluator';
 import { shouldShowCompletion } from './engine/completionStatus';
@@ -95,6 +96,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const [tick, setTick] = useState(0);
   const [selectedDeviceId, setSelectedDeviceId] = useState(scenario.initialState.activeDeviceId);
   const [fullscreen, setFullscreen] = useState(false);
+  const [topologyCollapsed, setTopologyCollapsed] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
@@ -437,13 +439,25 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
-        <div
-          className={
-            fullscreen
-              ? 'min-w-0 min-h-0 h-full rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col'
-              : 'lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px]'
-          }
-        >
+        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col lg:flex-row gap-3'}>
+          {!fullscreen && Object.keys(engine.getState().devices).length > 0 && (
+            <div className={topologyCollapsed ? 'w-full' : 'w-full lg:w-80 lg:shrink-0'}>
+              <TopologyPanel
+                state={engine.getState()}
+                activeDeviceId={selectedDeviceId}
+                onSelectDevice={switchConsole}
+                collapsed={topologyCollapsed}
+                onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+              />
+            </div>
+          )}
+          <div
+            className={
+              fullscreen
+                ? 'min-w-0 min-h-0 h-full rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col'
+                : 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px] flex-1'
+            }
+          >
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/80">
             <div className="flex items-center gap-2 text-xs font-mono text-cyan-300">
               <TerminalIcon className="w-3.5 h-3.5" />
@@ -524,6 +538,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
               <ChevronRight className="w-4 h-4" />
             </button>
           </form>
+          </div>
         </div>
 
         {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'absolute inset-0 z-10 min-w-0 space-y-3 overflow-y-auto rounded-xl bg-slate-950 p-2 lg:static lg:p-0 lg:pr-1 lg:bg-transparent lg:overflow-y-auto lg:min-h-0' : 'space-y-3'}>
