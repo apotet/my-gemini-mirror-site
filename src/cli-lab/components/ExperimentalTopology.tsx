@@ -964,7 +964,7 @@ function renderDeviceNode(
   }
 
   // Physical ports status LEDs for switch faceplate
-  const physPorts = Object.values(dev.interfaces).filter(isPhysicalPort).slice(0, 6);
+  const physPorts = Object.values(dev.interfaces).filter(isPhysicalPort).slice(0, 16);
   const ips = layer === 'ip'
     ? Object.values(dev.interfaces)
       .filter(i => i.ipv4)
@@ -993,62 +993,59 @@ function renderDeviceNode(
       }}
       className="cursor-pointer focus:outline-none"
     >
-      {/* Subtle top bevel for hardware rack feel */}
+      {/* Original compact Catalyst-inspired SVG faceplate, not a raster image.
+          All link endpoints and labels remain anchored by topologyLayout. */}
       <rect
-        x={node.x - hw}
-        y={node.y - hh}
-        width={node.width}
-        height={node.height}
-        rx={10}
-        fill={bodyFill}
-        stroke={bodyStroke}
+        x={node.x - hw} y={node.y - hh}
+        width={node.width} height={node.height} rx={7}
+        fill={bodyFill} stroke={bodyStroke}
         strokeWidth={isActive || isRoot ? 2.5 : 1.6}
       />
-      <rect
-        x={node.x - hw + 6}
-        y={node.y - hh + 6}
-        width={node.width - 12}
-        height={24}
-        rx={4}
-        fill="#091220"
-        stroke="#334155"
-        strokeWidth={1}
+      <path
+        d={`M ${node.x - hw + 7} ${node.y - hh + 3} H ${node.x + hw - 7}`}
+        stroke="#94a3b8" strokeOpacity={0.55} strokeWidth={1.3}
+        strokeLinecap="round" pointerEvents="none"
       />
-
+      <rect
+        x={node.x - hw + 7} y={node.y - hh + 7}
+        width={node.width - 14} height={30} rx={3}
+        fill="#09111f" stroke="#475569" strokeWidth={0.8}
+      />
       {node.kind === 'router' ? (
-        <g stroke="#38bdf8" strokeWidth={1.6} strokeLinecap="round" className="pointer-events-none">
-          <line x1={node.x - 24} y1={node.y - hh + 18} x2={node.x - 6} y2={node.y - hh + 18} />
-          <line x1={node.x - 15} y1={node.y - hh + 11} x2={node.x - 15} y2={node.y - hh + 25} />
+        <g className="pointer-events-none" stroke="#38bdf8" fill="none" strokeWidth={2}>
+          <circle cx={node.x} cy={node.y - hh + 22} r={10} />
+          <path d={`M ${node.x - 7} ${node.y - hh + 22} H ${node.x + 7} M ${node.x} ${node.y - hh + 15} V ${node.y - hh + 29}`} />
         </g>
       ) : (
-        /* Switch bidirectional arrows emblem */
-        <g stroke="#38bdf8" strokeWidth={1.5} strokeLinecap="round" fill="none" className="pointer-events-none">
-          <path d={`M ${node.x - hw + 14} ${node.y - hh + 14} H ${node.x - hw + 34} M ${node.x - hw + 30} ${node.y - hh + 11} L ${node.x - hw + 34} ${node.y - hh + 14} L ${node.x - hw + 30} ${node.y - hh + 17}`} />
-          <path d={`M ${node.x - hw + 34} ${node.y - hh + 22} H ${node.x - hw + 14} M ${node.x - hw + 18} ${node.y - hh + 19} L ${node.x - hw + 14} ${node.y - hh + 22} L ${node.x - hw + 18} ${node.y - hh + 25}`} />
-        </g>
+        <>
+          {/* Two rows of recessed RJ45 sockets, scaled to the compact schematic.
+              Only the actual modeled interfaces receive live status LEDs. */}
+          {Array.from({ length: 16 }, (_, idx) => {
+            const col = idx % 8;
+            const row = Math.floor(idx / 8);
+            const px = node.x - hw + 12 + col * ((node.width - 30) / 8);
+            const py = node.y - hh + 10 + row * 13;
+            const iface = physPorts[idx];
+            const st = iface ? interfaceStatus(state, dev, iface) : null;
+            const stpPort = iface ? tree?.bridges[node.id]?.ports[iface.name] : null;
+            const blocked = layer === 'stp' && !!st?.operUp && stpPort?.portState === 'blocking' && stpPort.portRole !== 'disabled';
+            const ledColor = !iface ? '#334155' : !iface.adminUp ? '#64748b' : !st?.operUp ? '#ef4444' : blocked ? '#f59e0b' : '#34d399';
+            return (
+              <g key={idx} pointerEvents="none">
+                <rect x={px} y={py} width={9.5} height={10} rx={1}
+                  fill="#020617" stroke="#64748b" strokeWidth={0.7} />
+                <path d={`M ${px + 2} ${py + 1} V ${py + 3} H ${px + 7.5} V ${py + 1}`}
+                  stroke="#94a3b8" strokeWidth={0.6} fill="none" />
+                <rect x={px + 2.2} y={py + 7} width={5} height={1.5} rx={0.4}
+                  fill="#475569" />
+                <circle cx={px + 4.7} cy={py + 11.1} r={1.1} fill={ledColor} />
+              </g>
+            );
+          })}
+          <circle cx={node.x + hw - 11} cy={node.y - hh + 22}
+            r={2.5} fill={isActive ? '#22d3ee' : '#34d399'} pointerEvents="none" />
+        </>
       )}
-
-      {/* Mini RJ45 status LEDs reflecting real device port states */}
-      {physPorts.map((iface, idx) => {
-        const st = interfaceStatus(state, dev, iface);
-        const stpPort = tree?.bridges[node.id]?.ports[iface.name];
-        const blocked = layer === 'stp' && st.operUp && stpPort?.portState === 'blocking' && stpPort.portRole !== 'disabled';
-        const ledColor = !iface.adminUp ? '#475569' : !st.operUp ? '#ef4444' : blocked ? '#f59e0b' : '#10b981';
-        const rx = node.x + hw - 14 - (physPorts.length - 1 - idx) * 12;
-        return (
-          <rect
-            key={iface.name}
-            x={rx - 4}
-            y={node.y - hh + 13}
-            width={8}
-            height={10}
-            rx={1.5}
-            fill={ledColor}
-            stroke="#020617"
-            strokeWidth={0.8}
-          />
-        );
-      })}
 
       {/* Hostname */}
       <text
