@@ -46,6 +46,9 @@ jobs:
       - name: Cisco IOS contextual question-mark help regression
         run: node scripts/cli-contextual-help.test.mjs
 
+      - name: Targeted SVI running-config and IP-mask regression
+        run: node scripts/cli-svi-show.test.mjs
+
       - name: Cisco show interfaces and help regression
         run: node scripts/cli-show-interfaces.test.mjs
 
