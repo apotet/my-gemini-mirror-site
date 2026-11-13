@@ -6,6 +6,12 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "write memory": {"description": "Традиционная команда Cisco IOS для записи текущей конфигурации в постоянную загрузочную копию. При поддержке платформой выполняет ту же задачу, что copy running-config startup-config.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
+  "copy": {"description": "Команда Cisco IOS с явно заданными источником и назначением. Направление копирования важно: сохранение running в startup не эквивалентно загрузке startup в running.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
+  "reload": {"description": "Команда перезагрузки Cisco IOS. Не является командой сохранения; при обычной загрузке применяются сохранённые настройки, если не заданы особые boot/recovery условия.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
+  "allowed VLANs": {"description": "Набор VLAN, административно допущенных на trunk. Он не доказывает существование VLAN на обоих концах или её состояние STP forwarding.", "relatesTo": "Диагностика VLAN и trunk Cisco IOS.", "lessonId": "cli-trunk-vlan-diagnostics"},
+  "show interfaces trunk": {"description": "Вывод Cisco с состоянием trunk и отдельными списками разрешённых, активных и передающих неотсечённых VLAN. Его сравнивают на обоих концах соединения.", "relatesTo": "Диагностика VLAN и trunk Cisco IOS.", "lessonId": "cli-trunk-vlan-diagnostics"},
+  "VTP pruning": {"description": "Механизм VTP, уменьшающий ненужное распространение flooded-трафика в поддерживаемых VLAN. Не равен статическому allowed list и проверяется отдельно от STP.", "relatesTo": "Диагностика VLAN и trunk Cisco IOS.", "lessonId": "cli-trunk-vlan-diagnostics"},
   "iBGP": {"description": "BGP-сеанс внутри одного AS. Обычный iBGP не передаёт iBGP-полученный путь другому iBGP-соседу без предусмотренного механизма вроде Route Reflection.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "eBGP": {"description": "BGP-сеанс между разными AS. На обычном Cisco IOS стандартны AD 20 и исходящий TTL 1; настройки multihop и TTL security меняют транспортные условия.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "Idle": {"description": "Состояние автомата BGP, из которого начинается подготовка и запуск попытки установить сеанс.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
@@ -1179,6 +1185,13 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "startup-config": ["Startup Configuration", "Конфигурация следующей загрузки", false],
+  "write memory": ["Write Memory", "Сохранение активной конфигурации", false],
+  "copy": ["Copy Configuration or File", "Копирование конфигурации или файла", false],
+  "reload": ["Reload Device", "Перезапуск устройства", false],
+  "allowed VLANs": ["Allowed VLANs", "Разрешённые VLAN", false],
+  "show interfaces trunk": ["Show Interfaces Trunk", "Проверка trunk и списков VLAN", false],
+  "VTP pruning": ["VLAN Trunking Protocol Pruning", "Сокращение ненужного flooded-трафика", false],
   "iBGP": ["Internal Border Gateway Protocol", "Внутренний BGP", true],
   "eBGP": ["External Border Gateway Protocol", "Внешний BGP", true],
   "Idle": ["BGP Idle State", "Начальное состояние BGP", false],
