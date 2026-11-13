@@ -136,7 +136,8 @@ export type GoalPredicate =
   | { type: 'config.saved'; device: string }
   | { type: 'l2.vlanReachable'; vlanId: number; fromDevice: string; fromIf: string; toDevice: string; toIf: string }
   | { type: 'ipv4.sviReachable'; device: string; destination: string }
-  | { type: 'ipv4.hostReachable'; fromHost: string; toHost: string };
+  | { type: 'ipv4.hostReachable'; fromHost: string; toHost: string }
+  | { type: 'stp.bridgePriority'; device: string; priority: number };
 
 export interface GoalCheckResult {
   predicate: GoalPredicate;
@@ -168,6 +169,8 @@ export interface Scenario {
   nextScenarioId?: string;
   /** Diagnostic exercises keep the root cause and repair target hidden until solved. */
   diagnostic?: boolean;
+  /** Allow user-driven physical cable failures; only enabled in explicit resilience labs. */
+  allowLinkToggle?: boolean;
   /** Learner-facing goals; unlike internal predicates these must not disclose the fault. */
   publicGoalLabels?: string[];
 }
