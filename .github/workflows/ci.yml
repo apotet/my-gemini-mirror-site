@@ -46,6 +46,9 @@ jobs:
       - name: Cisco CLI command catalog integrity
         run: node scripts/cli-command-catalog.test.mjs
 
+      - name: Four-switch port label overlap geometry
+        run: node scripts/cli-topology-label-overlap.test.mjs
+
       - name: Four-switch eight-PC live ring regression
         run: node scripts/cli-four-switch-host-ring.test.mjs
 
