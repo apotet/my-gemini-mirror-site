@@ -45,7 +45,12 @@ assert.equal(m.getPortDetails(state,state.activeDeviceId,'nonexistent'),null);
 assert.deepEqual(state,before,'read-only details mutated NetworkState');
 const changed=structuredClone(state);
 const link=changed.links[0];
+// A cable-down test must first have two administratively enabled endpoints.
+changed.devices[link.a].interfaces[link.aIf].adminUp=true;
+changed.devices[link.b].interfaces[link.bIf].adminUp=true;
+link.up=true;
 const down=m.getPortDetails(changed,link.a,link.aIf);
+assert.equal(down.physical,'up');
 link.up=false;
 const newState=m.getPortDetails(changed,link.a,link.aIf);
 assert.notEqual(newState.physical,down.physical,'PHY must track current link changes');
