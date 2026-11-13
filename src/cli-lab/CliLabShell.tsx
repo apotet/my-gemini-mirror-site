@@ -530,6 +530,42 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         </div>
       )}
 
+      {!fullscreen && engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1 && (
+        <div className="w-full max-w-5xl mx-auto">
+          <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
+          {([
+            ['auto', 'Авто'],
+            ['phy', 'Физика'],
+            ['vlan', 'VLAN'],
+            ['stp', 'STP'],
+            ['ip', 'IP'],
+          ] as const).map(([value, label]) => (
+            <button key={value} type="button"
+              aria-pressed={topologyLayerChoice === value}
+              onClick={() => setTopologyLayerChoice(value)}
+              className={topologyLayerChoice === value
+                ? 'rounded-lg bg-cyan-500 px-2 py-1 text-[11px] font-semibold text-slate-950'
+                : 'rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300'}>
+              {label}
+            </button>
+          ))}
+          {topologyLayerChoice === 'auto' && (
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+              {effectiveTopologyLayer.toUpperCase()}
+            </span>
+          )}
+        </div>
+        <TopologyPanel
+            layer={effectiveTopologyLayer}
+            state={engine.getState()}
+            activeDeviceId={selectedDeviceId}
+            onSelectDevice={switchConsole}
+            collapsed={topologyCollapsed}
+            onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+          />
+        </div>
+      )}
+
       <div
         className={
           fullscreen
@@ -539,42 +575,8 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
-        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col xl:flex-row gap-3'}>
-          {!fullscreen && engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1 && (
-            <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-[42%] xl:shrink-0 xl:min-w-[340px]'}>
-              <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
-              {([
-                ['auto', 'Авто'],
-                ['phy', 'Физика'],
-                ['vlan', 'VLAN'],
-                ['stp', 'STP'],
-                ['ip', 'IP'],
-              ] as const).map(([value, label]) => (
-                <button key={value} type="button"
-                  aria-pressed={topologyLayerChoice === value}
-                  onClick={() => setTopologyLayerChoice(value)}
-                  className={topologyLayerChoice === value
-                    ? 'rounded-lg bg-cyan-500 px-2 py-1 text-[11px] font-semibold text-slate-950'
-                    : 'rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300'}>
-                  {label}
-                </button>
-              ))}
-              {topologyLayerChoice === 'auto' && (
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                  {effectiveTopologyLayer.toUpperCase()}
-                </span>
-              )}
-            </div>
-            <TopologyPanel
-                layer={effectiveTopologyLayer}
-                state={engine.getState()}
-                activeDeviceId={selectedDeviceId}
-                onSelectDevice={switchConsole}
-                collapsed={topologyCollapsed}
-                onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
-              />
-            </div>
-          )}
+        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col gap-3'}>
+
           <div
             className={
               fullscreen
