@@ -120,6 +120,7 @@ export class LabEngine {
     if (resolved.ambiguous) {
       return { output: '% Ambiguous command: ' + resolved.ambiguous.join(', '), error: true };
     }
+    if (resolved.invalidReason) return { output: resolved.invalidReason, error: true };
     if (resolved.status === 'incomplete') return { output: this.profile.messages.incomplete, error: true };
     const spec = resolved.spec;
     if (!spec) {

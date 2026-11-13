@@ -201,10 +201,14 @@ export type CommandArgument =
   | { keyword: string; description?: string }
   | { name: string; description: string;
       validate: (value: string, device: DeviceState | undefined, preceding: string[]) => boolean;
+      /** Optional capability explanation when this argument rejects input. */
+      invalidMessage?: string;
       /** A final free-text argument can consume multiple words (e.g. VLAN name). */
       rest?: boolean };
 
 export interface CommandSpec {
+  /** Optional read-only device capability gate, shared by Enter, TAB and help. */
+  available?: (device: DeviceState) => boolean;
   id: string;
   match: string[];
   modes: DeviceMode[];
