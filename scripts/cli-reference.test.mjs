@@ -13,8 +13,10 @@ export { LESSONS, getLesson } from './src/data/lessons/index.ts';`,
 const { GLOSSARY, LESSONS, getLesson } = await import('data:text/javascript;base64,' +
   Buffer.from(output.outputFiles[0].contents).toString('base64'));
 const cli = LESSONS.filter(l => l.osiLayers.includes('CLI'));
-assert.equal(cli.length, 4, 'CLI reference includes the published SVI lesson alongside three existing CLI lessons');
+assert.equal(cli.length, 6, 'CLI reference includes four existing CLI lessons and two new task-oriented lessons');
 assert.ok(cli.some(l => l.id === 'l2-svi'), 'SVI reference lesson present');
+assert.ok(cli.some(l => l.id === 'cli-vlan-trunk'), 'CLI trunk lesson present');
+assert.ok(cli.some(l => l.id === 'cli-ip-static-route'), 'CLI IP and route lesson present');
 const terms = [...new Set(cli.flatMap(l => [...l.terms, ...(l.professional?.terms ?? [])]))];
 assert.ok(terms.length >= 25, 'expected substantive CLI vocabulary');
 for (const term of terms) {
