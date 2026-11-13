@@ -159,7 +159,8 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     setHistIndex(null);
     setTick((t) => t + 1);
     setSelectedDeviceId(scenario.initialState.activeDeviceId);
-    inputRef.current?.focus();
+    // Do not focus the offscreen CLI on entry or mode/scenario switch:
+    // browsers scroll the entire page down to reveal its caret.
   };
 
   useEffect(() => {
