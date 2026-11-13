@@ -740,6 +740,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
                 )}
               </div>
             )}
+            {completed && (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 italic leading-relaxed">
+                NetOps — учись бесплатно. Ошибайся бесплатно. Увольняйся только виртуально! 😎
+              </p>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
