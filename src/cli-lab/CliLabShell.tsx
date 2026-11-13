@@ -574,9 +574,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </div>
         {experimentalTopology ? (
           <ExperimentalTopology
+            layer={effectiveTopologyLayer}
             state={engine.getState()}
             activeDeviceId={selectedDeviceId}
             onSelectDevice={switchConsole}
+            onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
             collapsed={topologyCollapsed}
             onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
           />

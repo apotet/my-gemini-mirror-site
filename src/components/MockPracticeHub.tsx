@@ -41,7 +41,7 @@ const PRACTICE_ITEMS: PracticeItem[] = [
     id: 'cli',
     title: 'CLI Lab 2.0',
     badge: 'Cisco IOS',
-    subtitle: 'Лаборатория с проверкой состояния: VLAN, access-порт, режимы IOS',
+    subtitle: 'Packet Tracer-топология, VLAN/STP/SVI и Cisco IOS консоль (макет)',
     icon: <Terminal className="w-4 h-4 text-amber-400" />,
   },
 ];
