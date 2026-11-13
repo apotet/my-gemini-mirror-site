@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TopologyPanel } from './components/TopologyPanel';
 import { LabEngine } from './engine/LabEngine';
+import { scenarioTheoryIds } from './scenarioTheory';
+import { getLesson } from '../data/lessons';
+import { LessonView } from '../components/LessonView';
 import { evaluateGoals } from './engine/GoalEvaluator';
 import { shouldShowCompletion } from './engine/completionStatus';
 import { LabMode, Scenario } from './engine/types';
@@ -24,6 +27,8 @@ import {
   HelpCircle,
   ChevronRight,
   Cpu,
+  BookOpen,
+  X,
   Maximize2,
   Minimize2,
 } from 'lucide-react';
@@ -91,6 +96,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const [input, setInput] = useState('');
   const [stepIndex, setStepIndex] = useState(0);
   const [hintOpen, setHintOpen] = useState(false);
+  const [theoryLessonId, setTheoryLessonId] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
   const [goalResults, setGoalResults] = useState<ReturnType<typeof evaluateGoals> | null>(null);
   const [tick, setTick] = useState(0);
@@ -349,6 +355,20 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
   const modes: LabMode[] = ['learn', 'drill', 'task'];
   void tick;
   const currentStep = steps[stepIndex];
+  const lessonChoices = scenarioTheoryIds(scenario.id, labMode === 'learn' && currentStep ? stepIndex : undefined)
+    .map(id => getLesson(id))
+    .filter((lesson): lesson is NonNullable<typeof lesson> => !!lesson);
+  const allLessonChoices = scenarioTheoryIds(scenario.id).map(id => getLesson(id))
+    .filter((lesson): lesson is NonNullable<typeof lesson> => !!lesson);
+  const activeTheoryLesson = theoryLessonId ? getLesson(theoryLessonId) : undefined;
+  const openTheory = (id: string) => {
+    if (!getLesson(id)) return;
+    setTheoryLessonId(id);
+  };
+  const closeTheory = () => {
+    setTheoryLessonId(null);
+    focusCliInput();
+  };
 
   return (
     <div
@@ -358,6 +378,27 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
           : 'space-y-4 max-w-5xl mx-auto'
       }
     >
+      {activeTheoryLesson && (
+        <div className="fixed inset-0 z-[90] bg-slate-950/85 p-2 sm:p-5 flex items-center justify-center" role="presentation">
+          <section role="dialog" aria-modal="true" aria-label={`Теория: ${activeTheoryLesson.title}`}
+            className="w-full max-w-3xl max-h-[92dvh] flex flex-col rounded-2xl border border-cyan-500/30 bg-white dark:bg-[#091524] shadow-2xl overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-4 py-3 gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold text-cyan-600 dark:text-cyan-300 uppercase">Теория к заданию</div>
+                <div className="truncate text-sm font-semibold text-slate-900 dark:text-white">{scenario.title}</div>
+              </div>
+              <button type="button" onClick={closeTheory}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 cursor-pointer">
+                <X className="w-4 h-4" /> Вернуться в CLI
+              </button>
+            </div>
+            <div className="min-h-0 overflow-y-auto p-4 sm:p-6">
+              <LessonView key={activeTheoryLesson.id} lesson={activeTheoryLesson}
+                onBack={closeTheory} onOpenLesson={openTheory} />
+            </div>
+          </section>
+        </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -369,6 +410,13 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
+          {allLessonChoices.length > 0 && (
+            <button type="button" onClick={() => openTheory(lessonChoices[0]?.id ?? allLessonChoices[0].id)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 dark:text-cyan-300 cursor-pointer"
+              title="Читать теорию без выхода из лаборатории">
+              <BookOpen className="w-3.5 h-3.5" /> Теория по заданию
+            </button>
+          )}
           {fullscreen && (
             <button
               type="button"
@@ -550,6 +598,19 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {scenario.description}
             </p>
+            {allLessonChoices.length > 0 && (
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-2 space-y-1.5">
+                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Не получается? Открой тему — прогресс сохранится:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {allLessonChoices.map(lesson => (
+                    <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
+                      className="rounded-lg border border-cyan-500/30 px-2 py-1 text-left text-[11px] text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 cursor-pointer">
+                      {lesson.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {labMode === 'learn' && currentStep && !completed && (
@@ -560,6 +621,16 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed">
                 {currentStep.instruction}
               </p>
+              {lessonChoices.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {lessonChoices.map(lesson => (
+                    <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-cyan-500/40 px-2 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300 cursor-pointer">
+                      <BookOpen className="w-3.5 h-3.5" /> Читать: {lesson.title}
+                    </button>
+                  ))}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => { setHintOpen((v) => !v); focusCliInput(); }}
