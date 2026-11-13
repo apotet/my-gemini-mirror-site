@@ -98,6 +98,10 @@ for (const line of ['ip route', 'ip route 192.0.2.0', 'ip route 192.0.2.0 255.25
 
 // Every registered command gets an explicit valid witness and a tail-rejection test.
 const samples = {
+  'cisco.stp_bridge_priority': 'spanning-tree vlan 1 priority 4096',
+  'cisco.no_stp_bridge_priority': 'no spanning-tree vlan 1 priority',
+  'cisco.stp_cost': 'spanning-tree cost 10',
+  'cisco.stp_port_priority': 'spanning-tree port-priority 16',
   'cisco.hostname': 'hostname NETOPS', 'cisco.vlan': 'vlan 20', 'cisco.vlan_name': 'name Users',
   'cisco.interface': 'interface Fa0/1', 'cisco.switchport_access_vlan': 'switchport access vlan 20',
   'cisco.ip_address': 'ip address 192.0.2.1 255.255.255.0', 'cisco.ip_route': 'ip route 0.0.0.0 0.0.0.0 192.0.2.254',

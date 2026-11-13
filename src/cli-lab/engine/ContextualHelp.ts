@@ -16,6 +16,9 @@ const keywordDescriptions: Record<string, string> = {
   brief: 'Brief summary',
   configure: 'Enter configuration mode',
   copy: 'Copy running configuration',
+  cost: 'CST port path cost (lab range 1-65535)',
+  'port-priority': 'CST port priority (0-240, step 16)',
+  priority: 'Common tree priority (0-61440, step 4096)',
   disable: 'Leave privileged EXEC',
   do: 'Run EXEC command from configuration mode',
   enable: 'Enter privileged EXEC',
@@ -66,7 +69,7 @@ export function contextualHelp(commands: CommandSpec[], device: DeviceState, lin
     for (const word of parsed.ambiguous) items.set(word, keywordDescriptions[word] ?? 'CLI keyword');
     return format(items);
   }
-  if (parsed.status === 'invalid') return format(items);
+  if (parsed.status === 'invalid') return parsed.invalidReason ?? format(items);
   for (const node of parsed.next) {
     if ('keyword' in node) {
       const keyword = node.keyword;
