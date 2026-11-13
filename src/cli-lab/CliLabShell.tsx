@@ -58,6 +58,23 @@ const SCENARIOS: Scenario[] = [
   ciscoFourSwitchHostRingScenario,
 ];
 
+type ScenarioLevel = 'beginner' | 'applied' | 'advanced';
+
+const SCENARIO_LEVELS: { id: ScenarioLevel; label: string; description: string; scenarios: Scenario[] }[] = [
+  {
+    id: 'beginner', label: 'Начальный', description: 'Режимы IOS, show, VLAN и первые интерфейсы',
+    scenarios: [ciscoIosModesScenario, ciscoShowDiagnosticScenario, ciscoVlanAccessScenario, ciscoAccessSviFollowupScenario],
+  },
+  {
+    id: 'applied', label: 'Прикладной', description: 'Trunk, шлюз, SVI и связь между коммутаторами',
+    scenarios: [ciscoTrunkScenario, ciscoL3GatewayScenario, ciscoTwoSwitchVlanScenario, ciscoTwoSwitchSviScenario],
+  },
+  {
+    id: 'advanced', label: 'Продвинутый', description: 'Диагностика отказов, VLAN и STP в кольце',
+    scenarios: [ciscoThreeSwitchMissingVlanScenario, ciscoTwoSwitchTrunkDiagnosticScenario, ciscoFourSwitchHostRingScenario],
+  },
+];
+
 function goalLabel(g: Scenario['goals'][number]): string {
   switch (g.type) {
     case 'ipv4.hostReachable':
@@ -100,6 +117,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
   const scenario = SCENARIOS.find((s) => s.id === scenarioId) ?? SCENARIOS[0];
+  const [scenarioLevel, setScenarioLevel] = useState<ScenarioLevel>(() =>
+    SCENARIO_LEVELS.find(level => level.scenarios.some(item => item.id === (initialScenarioId ?? SCENARIOS[0].id)))?.id ?? 'beginner'
+  );
   const [labMode, setLabMode] = useState<LabMode>('learn');
   const [history, setHistory] = useState<HistoryLine[]>([]);
   const [input, setInput] = useState('');
@@ -113,7 +133,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
   const [tick, setTick] = useState(0);
   const [selectedDeviceId, setSelectedDeviceId] = useState(scenario.initialState.activeDeviceId);
   const [fullscreen, setFullscreen] = useState(false);
-  const [topologyCollapsed, setTopologyCollapsed] = useState(false);
+  const [topologyCollapsed, setTopologyCollapsed] = useState(true);
   const [topologyLayerChoice, setTopologyLayerChoice] = useState<TopologyLayerChoice>('auto');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
@@ -514,23 +534,39 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </section>
       )}
 
-      <div className={fullscreen ? 'flex shrink-0 flex-nowrap gap-2 max-h-[12dvh] overflow-x-auto overflow-y-hidden' : 'flex flex-wrap gap-2'}>
-        {SCENARIOS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            aria-pressed={scenarioId === s.id}
-            onClick={() => { setScenarioId(s.id); focusCliInput(); }}
-            className={
-              scenarioId === s.id
-                ? 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-cyan-500 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 cursor-pointer'
-                : 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer'
-            }
-          >
-            {s.title}
-          </button>
-        ))}
-      </div>
+      <section className="space-y-2" aria-label="Уровень сложности и сценарий CLI">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Сложность:</span>
+          {SCENARIO_LEVELS.map(level => (
+            <button key={level.id} type="button"
+              aria-pressed={scenarioLevel === level.id}
+              onClick={() => {
+                setScenarioLevel(level.id);
+                if (!level.scenarios.some(item => item.id === scenarioId)) setScenarioId(level.scenarios[0].id);
+              }}
+              className={scenarioLevel === level.id
+                ? 'rounded-lg border border-cyan-500 bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold text-cyan-800 dark:text-cyan-200'
+                : 'rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300'}>
+              {level.label} <span className="opacity-70">({level.scenarios.length})</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {SCENARIO_LEVELS.find(level => level.id === scenarioLevel)?.description}
+        </p>
+        <div className={fullscreen ? 'flex shrink-0 flex-nowrap gap-2 max-h-[12dvh] overflow-x-auto overflow-y-hidden' : 'flex flex-wrap gap-2'}>
+          {(SCENARIO_LEVELS.find(level => level.id === scenarioLevel)?.scenarios ?? []).map(s => (
+            <button key={s.id} type="button"
+              aria-pressed={scenarioId === s.id}
+              onClick={() => setScenarioId(s.id)}
+              className={scenarioId === s.id
+                ? 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-cyan-500 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200'
+                : 'px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}>
+              {s.title}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
         <div className={fullscreen ? 'flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto max-h-[9dvh]' : 'flex flex-wrap items-center gap-2'} aria-label="Выбор консоли устройства">
