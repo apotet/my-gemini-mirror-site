@@ -23,8 +23,8 @@ interface NodePos {
   height: number;
 }
 
-const NODE_W = 88;
-const NODE_H = 46;
+const NODE_W = 128;
+const NODE_H = 72;
 
 function shortIf(name: string): string {
   return name
@@ -78,21 +78,20 @@ function layoutDevices(devices: Record<string, DeviceState>, links: NetworkLink[
     height: NODE_H,
   });
 
-  if (n === 1) return [make(ordered[0], 200, 100)];
-  if (n === 2) return [make(ordered[0], 90, 115), make(ordered[1], 310, 115)];
-  if (n === 3) return [make(ordered[0], 55, 115), make(ordered[1], 200, 115), make(ordered[2], 345, 115)];
+  if (n === 1) return [make(ordered[0], 380, 210)];
+  if (n === 2) return [make(ordered[0], 185, 210), make(ordered[1], 575, 210)];
+  if (n === 3) return [make(ordered[0], 140, 210), make(ordered[1], 380, 210), make(ordered[2], 620, 210)];
   if (n === 4) {
-    // Square ring, order follows graph walk to reduce crossings
+    // Follow physical adjacency for a readable square ring.
     return [
-      make(ordered[0], 100, 60),
-      make(ordered[1], 300, 60),
-      make(ordered[2], 300, 160),
-      make(ordered[3], 100, 160),
+      make(ordered[0], 185, 115),
+      make(ordered[1], 575, 115),
+      make(ordered[2], 575, 330),
+      make(ordered[3], 185, 330),
     ];
   }
-  const start = 60;
-  const step = Math.min(110, 280 / Math.max(1, n - 1));
-  return ordered.map((id, i) => make(id, start + i * step, 100));
+  // Larger topologies use a two-row grid instead of shrinking devices to dots.
+  return ordered.map((id, i) => make(id, 130 + (i % 3) * 250, 115 + Math.floor(i / 3) * 210));
 }
 
 function edgePoint(node: NodePos, other: NodePos): { x: number; y: number } {
@@ -116,8 +115,8 @@ function labelNearEnd(node: NodePos, edge: { x: number; y: number }): { x: numbe
   const dx = edge.x - node.x;
   const dy = edge.y - node.y;
   const len = Math.hypot(dx, dy) || 1;
-  const outward = 10;
-  const perpendicular = 16;
+  const outward = 21;
+  const perpendicular = 24;
   return {
     x: edge.x + (dx / len) * outward - (dy / len) * perpendicular,
     y: edge.y + (dy / len) * outward + (dx / len) * perpendicular,
@@ -167,8 +166,8 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
     );
   }
 
-  const width = 400;
-  const height = nodes.some(n => n.y > 130) ? 240 : 200;
+  const width = 760;
+  const height = nodes.length > 4 ? 110 + Math.ceil(nodes.length / 3) * 210 : nodes.length === 4 ? 445 : 420;
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden">
@@ -181,7 +180,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
         )}
       </div>
       <div className="p-2 overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-full h-auto min-h-[180px]" role="img" aria-label="Сетевая топология">
+        <svg viewBox={`0 0 ${width} ${height}`} className="block w-full h-auto min-h-[260px] max-h-[600px]" role="img" aria-label="Сетевая топология">
           {state.links.map((link, idx) => {
             const na = nodeMap[link.a];
             const nb = nodeMap[link.b];
@@ -234,13 +233,13 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
 
             return (
               <g key={`link-${idx}`}>
-                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={width} strokeDasharray={dash} />
+                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={Math.max(width, 4)} strokeDasharray={dash} />
                 <g role="button" tabIndex={0} aria-label={`Параметры порта ${aDev.hostname} ${link.aIf}`}
                   onClick={() => selectPort(link.a, link.aIf)}
                   onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.a, link.aIf); } }}
                   className="cursor-pointer focus:outline-none">
-                  <circle cx={la.x} cy={la.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.a && selection.interfaceName === link.aIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
-                  <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="11" fill="#e2e8f0" className="font-mono pointer-events-none">
+                  <circle cx={la.x} cy={la.y - 4} r={24} fill="transparent" stroke={selection?.deviceId === link.a && selection.interfaceName === link.aIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
+                  <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="14" fill="#e2e8f0" paintOrder="stroke" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round" className="font-mono pointer-events-none">
                   {shortA}{portInfo(aIf)}{roleLabel(roleA) ? ` ${roleLabel(roleA)}` : ''}{aBlocked && layer === 'stp' ? ' ⊘' : ''}
                   </text>
                 </g>
@@ -248,8 +247,8 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                   onClick={() => selectPort(link.b, link.bIf)}
                   onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPort(link.b, link.bIf); } }}
                   className="cursor-pointer focus:outline-none">
-                  <circle cx={lb.x} cy={lb.y - 4} r={16} fill="transparent" stroke={selection?.deviceId === link.b && selection.interfaceName === link.bIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
-                  <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="11" fill="#e2e8f0" className="font-mono pointer-events-none">
+                  <circle cx={lb.x} cy={lb.y - 4} r={24} fill="transparent" stroke={selection?.deviceId === link.b && selection.interfaceName === link.bIf ? '#22d3ee' : 'transparent'} strokeWidth={1.5} />
+                  <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="14" fill="#e2e8f0" paintOrder="stroke" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round" className="font-mono pointer-events-none">
                   {shortB}{portInfo(bIf)}{roleLabel(roleB) ? ` ${roleLabel(roleB)}` : ''}{bBlocked && layer === 'stp' ? ' ⊘' : ''}
                   </text>
                 </g>
@@ -282,31 +281,29 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                 aria-label={`Коммутатор ${node.hostname}${isActive ? ', активный' : ''}${isRoot ? ', Root Bridge' : ''}`}
                 className="focus:outline-none"
               >
-                <rect
-                  x={node.x - node.width / 2}
-                  y={node.y - node.height / 2}
-                  width={node.width}
-                  height={node.height}
-                  rx={6}
-                  fill={isActive ? '#0e7490' : isRoot ? '#064e3b' : '#1e293b'}
-                  stroke={isActive ? '#22d3ee' : isRoot ? '#34d399' : '#475569'}
-                  strokeWidth={isActive || isRoot ? 2.5 : 1.5}
-                />
-                <text
-                  x={node.x}
-                  y={node.y + (firstIp ? -4 : 4)}
-                  textAnchor="middle"
-                  fontSize="13"
-                  fontWeight="bold"
-                  fill="#f1f5f9"
-                  className="font-mono select-none pointer-events-none"
-                >
+                {/* Actual switch chassis, not a tiny abstract pill. */}
+                <rect x={node.x - node.width/2} y={node.y - node.height/2}
+                  width={node.width} height={node.height} rx={12}
+                  fill={isActive ? '#155e75' : isRoot ? '#14532d' : '#1e293b'}
+                  stroke={isActive ? '#22d3ee' : isRoot ? '#34d399' : '#94a3b8'}
+                  strokeWidth={isActive || isRoot ? 3 : 2} />
+                <rect x={node.x-51} y={node.y-25} width={102} height={28}
+                  rx={4} fill="#0b1220" stroke="#64748b" />
+                {Array.from({length: 8}, (_, index) => (
+                  <rect key={index} x={node.x-43+index*12} y={node.y-19}
+                    width={8} height={13} rx={1} fill="#334155" stroke="#94a3b8" strokeWidth={0.6}/>
+                ))}
+                <circle cx={node.x+47} cy={node.y-19} r={2.5} fill="#34d399" />
+                <text x={node.x} y={node.y+22} textAnchor="middle"
+                  fontSize={17} fontWeight="bold" fill="#f8fafc"
+                  className="font-mono select-none pointer-events-none">
                   {node.hostname}{isRoot ? ' ★' : ''}
                 </text>
                 {firstIp && (
-                  <text x={node.x} y={node.y + 14} textAnchor="middle" fontSize="8"
-                    fill="#bfdbfe" className="font-mono pointer-events-none">
-                    {firstIp.length > 22 ? `${firstIp.slice(0, 21)}…` : firstIp}{ip.length > 1 ? ' +more' : ''}
+                  <text x={node.x} y={node.y+48} textAnchor="middle" fontSize={13}
+                    fill="#bae6fd" paintOrder="stroke" stroke="#0f172a" strokeWidth={2.5}
+                    className="font-mono pointer-events-none">
+                    {firstIp.length > 25 ? `${firstIp.slice(0,24)}…` : firstIp}{ip.length > 1 ? ' (+)' : ''}
                   </text>
                 )}
               </g>
