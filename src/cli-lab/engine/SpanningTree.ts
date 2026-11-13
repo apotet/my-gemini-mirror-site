@@ -1,5 +1,5 @@
 import type { InterfaceState, NetworkLink, NetworkState } from './types';
-import { carriesLocalVlan } from './SviIpv4Reachability';
+import { carriesLocalVlan } from './VlanMembership';
 
 /** One common spanning tree. No VLAN-specific elections or simulated convergence time. */
 export type StpInstance = { kind: 'cst' };
