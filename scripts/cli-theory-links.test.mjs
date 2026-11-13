@@ -16,6 +16,7 @@ export { ciscoTwoSwitchVlanScenario } from './src/cli-lab/scenarios/cisco-two-sw
 export { ciscoTwoSwitchSviScenario } from './src/cli-lab/scenarios/cisco-two-switch-svi';
 export { ciscoThreeSwitchMissingVlanScenario } from './src/cli-lab/scenarios/cisco-three-switch-missing-vlan';
 export { ciscoTwoSwitchTrunkDiagnosticScenario } from './src/cli-lab/scenarios/cisco-two-switch-trunk-diagnostics';
+export { ciscoFourSwitchHostRingScenario } from './src/cli-lab/scenarios/cisco-four-switch-host-ring';
 `,
     resolveDir: process.cwd(), loader: 'ts',
   },
@@ -27,8 +28,9 @@ const all = [
   m.ciscoAccessSviFollowupScenario, m.ciscoTrunkScenario, m.ciscoL3GatewayScenario,
   m.ciscoTwoSwitchVlanScenario, m.ciscoTwoSwitchSviScenario,
   m.ciscoThreeSwitchMissingVlanScenario, m.ciscoTwoSwitchTrunkDiagnosticScenario,
+  m.ciscoFourSwitchHostRingScenario,
 ];
-assert.equal(all.length, 10);
+assert.equal(all.length, 11);
 assert.deepEqual(Object.keys(m.CLI_SCENARIO_THEORY).sort(), all.map(s=>s.id).sort());
 for (const scenario of all) {
   const topics = m.scenarioTheoryIds(scenario.id);
@@ -54,4 +56,4 @@ for (const id of ['cli-vlan-trunk','cli-ip-static-route']) {
   const lesson=m.getLesson(id);
   assert.ok(lesson?.commands?.length > 0);
 }
-console.log('CLI theory mapping: 10 scenarios, all step links and 2 new lessons passed.');
+console.log('CLI theory mapping: 11 scenarios, all step links and 2 new lessons passed.');
