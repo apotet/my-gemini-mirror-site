@@ -83,7 +83,7 @@ breaker is in the comparator, but identical sending-port advertisements to two
 local ports require such a shared segment; it is not an end-to-end fixture in
 this point-to-point model.
 
-## Physical status, VLAN readiness and future integration
+## Physical status, VLAN readiness and integration
 
 `isStpForwarding(state, tree, device, port, vlan)` checks **local** link-up,
 forwarding state, active VLAN and local access/trunk membership.
@@ -94,10 +94,11 @@ A blocked port can be physically up. An allowed-list mismatch can break VLAN
 connectivity even if CST itself has a valid spanning tree. CST does not elect
 another per-VLAN tree to compensate.
 
-This PR intentionally does **not** change existing reachability or autostate:
+**Historical stage 2A boundary:** the original engine PR did not change reachability or autostate:
 `VlanPath`, `SviIpv4Reachability`, `OperationalState` and their current scenario
-results remain unchanged. Therefore existing ping still does not consult STP.
-Safe next integration, as a separate reviewed change:
+results were unchanged in stage 2A. Stage 2B now makes ping consult CST forwarding.
+The following integration is implemented by the separate stage 2B change, documented in
+[STP_FORWARDING.md](STP_FORWARDING.md):
 
 1. Derive once per current immutable snapshot; extract shared local VLAN-membership
    predicates from `SviIpv4Reachability` into a neutral module (the new readiness
