@@ -460,13 +460,6 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
             <TerminalIcon className="w-3.5 h-3.5" /> {commandCatalogOpen ? 'Скрыть команды' : 'Команды Cisco'}
           </button>
-          {allLessonChoices.length > 0 && (
-            <button type="button" onClick={() => openTheory(lessonChoices[0]?.id ?? allLessonChoices[0].id)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 dark:text-cyan-300 cursor-pointer"
-              title="Читать теорию без выхода из лаборатории">
-              <BookOpen className="w-3.5 h-3.5" /> Теория по заданию
-            </button>
-          )}
           {fullscreen && (
             <button
               type="button"
