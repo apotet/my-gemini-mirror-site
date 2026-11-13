@@ -251,7 +251,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
         <div className="flex flex-col min-w-0">
           <div
             ref={stageRef}
-            className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-pan-y"
+            className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-auto"
           >
             <svg
               width="100%"
