@@ -287,7 +287,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             return (
               <g
                 key={node.id}
-                onClick={() => state.devices[node.id].vendor === 'linux-host' ? setSelectedHostId(node.id) : onSelectDevice(node.id)
+                onClick={() => state.devices[node.id].vendor === 'linux-host' ? setSelectedHostId(node.id) : onSelectDevice(node.id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
