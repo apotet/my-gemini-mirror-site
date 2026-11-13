@@ -9,7 +9,7 @@ import { getLesson } from '../data/lessons';
 import { LessonView } from '../components/LessonView';
 import { evaluateGoals } from './engine/GoalEvaluator';
 import { shouldShowCompletion } from './engine/completionStatus';
-import { LabMode, Scenario } from './engine/types';
+import { LabMode, Scenario, type DeviceState } from './engine/types';
 import { ciscoIosProfile } from './vendors/cisco-ios/profile';
 import { ciscoIosCommands } from './vendors/cisco-ios/commands';
 import { ciscoVlanAccessScenario } from './scenarios/cisco-vlan-access';
@@ -44,6 +44,63 @@ interface HistoryLine {
   error?: boolean;
 }
 
+/**
+ * Add visible, physically connected PCs without changing the existing exercises'
+ * commands, steps, or goal predicates. Reachability is derived by the existing
+ * HostIpv4Reachability model; these are not emulated operating systems.
+ */
+const PC_ATTACHMENTS: Record<string, Array<[string, string, string, string]>> = {
+  'cisco-vlan-access-basic': [['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11']],
+  'cisco-access-vlan-svi-followup': [['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11']],
+  'cisco-two-switch-vlan10': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.10.12'],
+  ],
+  'cisco-two-switch-management-svi': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.10.12'],
+  ],
+  'cisco-three-switch-l2-diagnostics': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw3', 'FastEthernet0/1', '192.168.10.12'],
+  ],
+  'cisco-two-switch-vlan-selective-diagnostics': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.10.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.10.12'],
+    ['pc3', 'sw1', 'FastEthernet0/2', '192.168.20.11'],
+    ['pc4', 'sw2', 'FastEthernet0/2', '192.168.20.12'],
+  ],
+  'cisco-show-diagnostic-basic': [
+    ['pc1', 'sw1', 'FastEthernet0/1', '192.168.30.11'],
+    ['pc2', 'sw2', 'FastEthernet0/1', '192.168.30.12'],
+    ['pc3', 'sw1', 'FastEthernet0/2', '192.168.10.11'],
+    ['pc4', 'sw2', 'FastEthernet0/2', '192.168.10.12'],
+  ],
+};
+
+function withPcEndpoints(scenario: Scenario): Scenario {
+  const attachments = PC_ATTACHMENTS[scenario.id];
+  if (!attachments) return scenario;
+  const state = structuredClone(scenario.initialState);
+  for (const [id, switchId, switchPort, address] of attachments) {
+    if (!state.devices[switchId]?.interfaces[switchPort] || state.devices[id]) continue;
+    const host: DeviceState = {
+      id, hostname: id.toUpperCase(), vendor: 'linux-host',
+      privilege: 0, modeCtx: { mode: 'exec' },
+      interfaces: {
+        Ethernet0: {
+          name: 'Ethernet0', adminUp: true,
+          ipv4: { address, prefix: 24, mask: '255.255.255.0' },
+        },
+      },
+      vlans: {}, routes: [],
+    };
+    state.devices[id] = host;
+    state.links.push({ a: id, aIf: 'Ethernet0', b: switchId, bIf: switchPort, up: true });
+  }
+  return { ...scenario, initialState: state };
+}
+
 const SCENARIOS: Scenario[] = [
   ciscoIosModesScenario,
   ciscoShowDiagnosticScenario,
@@ -56,7 +113,7 @@ const SCENARIOS: Scenario[] = [
   ciscoThreeSwitchMissingVlanScenario,
   ciscoTwoSwitchTrunkDiagnosticScenario,
   ciscoFourSwitchHostRingScenario,
-];
+].map(withPcEndpoints);
 
 type ScenarioLevel = 'beginner' | 'applied' | 'advanced';
 

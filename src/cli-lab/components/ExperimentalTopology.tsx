@@ -930,22 +930,36 @@ function renderDeviceNode(
         }}
         className="cursor-pointer focus:outline-none"
       >
-        {/* Host bounding card base (subtle dark workstation frame) */}
-        <rect
-          x={node.x - hw}
-          y={node.y - hh}
-          width={node.width}
-          height={node.height}
-          rx={10}
-          fill="#0f1d32"
-          stroke={strokeCol}
-          strokeWidth={isHostSelected ? 2.5 : 1.5}
-        />
-        {/* Monitor icon */}
-        <rect x={node.x - 26} y={node.y - 34} width={52} height={32} rx={4} fill="#1e293b" stroke={strokeCol} strokeWidth={1.4} />
-        <rect x={node.x - 21} y={node.y - 29} width={42} height={22} rx={2} fill="#091220" />
-        <text x={node.x - 14} y={node.y - 14} fontSize={10} fill="#38bdf8" className="font-mono pointer-events-none select-none">&gt;_</text>
-        <path d={`M ${node.x - 10} ${node.y - 2} H ${node.x + 10} M ${node.x} ${node.y - 2} V ${node.y + 4} M ${node.x - 14} ${node.y + 4} H ${node.x + 14}`} stroke="#94a3b8" strokeWidth={2} strokeLinecap="round" />
+        {/* Original vector workstation: blue screen + dark tower.
+            Deliberately simplified for small mobile topology nodes. */}
+        <rect x={node.x - hw} y={node.y - hh}
+          width={node.width} height={node.height} rx={9}
+          fill="#101c32" stroke={strokeCol} strokeWidth={isHostSelected ? 2.5 : 1.5} />
+        <g pointerEvents="none">
+          {/* System unit */}
+          <rect x={node.x - 33} y={node.y - 31}
+            width={15} height={38} rx={3} fill="#1d3156"
+            stroke="#5b78a9" strokeWidth={1.1} />
+          <rect x={node.x - 30} y={node.y - 27}
+            width={9} height={5} rx={2} fill="#0c1830"
+            stroke="#80b5dd" strokeWidth={0.7} />
+          <circle cx={node.x - 25.5} cy={node.y - 14} r={2.1} fill="#38bdf8" />
+          <g fill="#607fa7">
+            <circle cx={node.x - 29} cy={node.y + 2} r={0.8} />
+            <circle cx={node.x - 25.5} cy={node.y + 2} r={0.8} />
+            <circle cx={node.x - 22} cy={node.y + 2} r={0.8} />
+          </g>
+          {/* Monitor and blue glass */}
+          <rect x={node.x - 14} y={node.y - 32}
+            width={49} height={32} rx={4} fill="#1d3156"
+            stroke="#7db7e5" strokeWidth={1.2} />
+          <rect x={node.x - 11} y={node.y - 29}
+            width={43} height={25} rx={2} fill="#209fce" />
+          <path d={`M ${node.x - 9} ${node.y - 27} L ${node.x + 3} ${node.y - 27} L ${node.x + 28} ${node.y - 5} L ${node.x + 17} ${node.y - 5} Z`}
+            fill="#8bdbfa" opacity={0.65} />
+          <path d={`M ${node.x + 12} ${node.y} V ${node.y + 6} M ${node.x + 2} ${node.y + 6} H ${node.x + 22}`}
+            stroke="#7c9bc9" strokeWidth={2.5} strokeLinecap="round" />
+        </g>
 
         {/* Hostname & IP */}
         <text x={node.x} y={node.y + 19} textAnchor="middle" fontSize={12} fontWeight={700} fill="#f8fafc" className="font-mono pointer-events-none select-none">
