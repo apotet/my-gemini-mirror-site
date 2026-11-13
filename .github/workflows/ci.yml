@@ -79,6 +79,9 @@ jobs:
       - name: Cisco IOS running/startup persistence regression
         run: node scripts/cli-persistence.test.mjs
 
+      - name: Deterministic IEEE 802.1D CST regression
+        run: node scripts/cli-stp.test.mjs
+
       - name: Typecheck
         run: npm run lint
 
