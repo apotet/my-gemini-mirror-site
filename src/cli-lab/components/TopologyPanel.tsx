@@ -132,8 +132,12 @@ function labelNearEnd(node: NodePos, edge: { x: number; y: number }): { x: numbe
   const dx = edge.x - node.x;
   const dy = edge.y - node.y;
   const len = Math.hypot(dx, dy) || 1;
-  const outward = 21;
-  const perpendicular = 24;
+  // Labels use 14px type and can include VLAN/STP suffixes. The previous
+  // 21/24 offsets placed text partially ON the switch/PC chassis.
+  // Keep labels outside all 12 device rectangles in the four-switch ring;
+  // space endpoints far enough apart to avoid label-label collisions.
+  const outward = 45;
+  const perpendicular = 80;
   return {
     x: edge.x + (dx / len) * outward - (dy / len) * perpendicular,
     y: edge.y + (dy / len) * outward + (dx / len) * perpendicular,
