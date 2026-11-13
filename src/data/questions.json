@@ -11712,5 +11712,225 @@
       "Безопасность VLAN",
       "DHCP Snooping"
     ]
+  },
+  {
+    "id": "l3-eigrp-01",
+    "group": "l3",
+    "topic": "EIGRP · Variance и feasibility",
+    "text": "У R маршрут EIGRP к P стабилен: successor A, метрика и FD=100000. Через B: RD=60000, полная метрика=180000; через C: RD=110000, полная метрика=190000. Заданы variance 2 и maximum-paths 4, фильтров нет. Какие next hop допустимы для передачи к P?",
+    "answers": [
+      "Только A",
+      "A и B",
+      "A и C",
+      "A, B и C"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "B выполняет RD < FD и укладывается в порог variance; C не выполняет условие feasibility, хотя его полная метрика ниже 200000.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "EIGRP",
+      "Variance и feasibility"
+    ]
+  },
+  {
+    "id": "l3-eigrp-02",
+    "group": "l3",
+    "topic": "EIGRP · Порог Variance",
+    "text": "У R стабильный EIGRP successor A имеет метрику и FD=100000. Резерв через B: RD=60000, полная метрика=240000. maximum-paths 4, фильтров нет, сейчас variance 1. Какое минимальное целое variance позволит использовать также B без изменения метрик?",
+    "answers": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "B выполняет RD < FD, а минимальный целый множитель, покрывающий метрику 240000 при основной 100000, равен 3.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "EIGRP",
+      "Порог Variance"
+    ]
+  },
+  {
+    "id": "l3-eigrp-03",
+    "group": "l3",
+    "topic": "EIGRP · Offset-list",
+    "text": "На R в процессе EIGRP задано offset-list 10 in 50 Gi0/0. Стандартный ACL 10 разрешает маршрут P и не разрешает Q. Оба маршрута получены через Gi0/0; других политик нет. Что делает эта настройка?",
+    "answers": [
+      "Увеличивает входную метрику P на R; метрика Q этой политикой не меняется",
+      "Увеличивает только метрику P в обновлениях, отправляемых R через Gi0/0",
+      "Повышает Administrative Distance P, оставляя его EIGRP-метрику прежней",
+      "Увеличивает метрику P и удаляет Q из EIGRP как запрещённый ACL маршрут"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "In применяет положительный offset к метрике совпавшего входящего маршрута P; ACL здесь выбирает маршруты для изменения, а не фильтрует Q.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "EIGRP",
+      "Offset-list"
+    ]
+  },
+  {
+    "id": "l3-eigrp-04",
+    "group": "l3",
+    "topic": "EIGRP · Administrative Distance",
+    "text": "На Cisco IOS для одной записи префикса P доступны: локальный EIGRP summary в Null0, EIGRP internal, OSPF и EIGRP external. AD не меняли, все кандидаты допустимы. Какой источник выберет RIB именно для P?",
+    "answers": [
+      "EIGRP internal с AD 90",
+      "OSPF с AD 110",
+      "EIGRP external с AD 170",
+      "Локальный EIGRP summary с AD 5"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "У локально созданного EIGRP summary стандартная AD 5, что меньше 90 для internal, 110 для OSPF и 170 для external.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "EIGRP",
+      "Administrative Distance"
+    ]
+  },
+  {
+    "id": "l3-eigrp-05",
+    "group": "l3",
+    "topic": "EIGRP · Authentication",
+    "text": "Два Cisco IOS-маршрутизатора в classic EIGRP раньше были соседями. На R1 включили MD5 с key-chain; R2 остался без authentication. AS, K-values и связность совпадают. Нужно восстановить соседство, сохранив проверку ключом. Что настроить?",
+    "answers": [
+      "На R2 — plain-text authentication с тем же паролем вместо MD5",
+      "На R2 — MD5 и совместимые key ID, секрет и сроки действия ключей с R1",
+      "На R1 — null authentication, оставив key-chain как достаточную проверку",
+      "На R2 — MD5 с любым key ID: совпадения имени key-chain на двух узлах достаточно"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "На R2 нужно включить совместимый MD5 и действующий общий ключ; отсутствие authentication не совместимо с требуемой проверкой R1.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "EIGRP",
+      "Authentication"
+    ]
+  },
+  {
+    "id": "l3-ospf-01",
+    "group": "l3",
+    "topic": "OSPF · Предпочтение типов маршрутов",
+    "text": "В одном процессе OSPF к одному префиксу доступны допустимые пути: O с cost 80, O IA с cost 10, E1 с полной стоимостью 5 и E2 с внешней метрикой 1. Политик изменения предпочтения нет. Какой тип пути выберет OSPF?",
+    "answers": [
+      "O с cost 80",
+      "O IA с cost 10",
+      "E1 с полной стоимостью 5",
+      "E2 с внешней метрикой 1"
+    ],
+    "correct": [
+      0
+    ],
+    "explanation": "Для одного префикса intra-area O предпочтительнее inter-area и external, даже если численная стоимость у него больше.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "OSPF",
+      "Предпочтение типов маршрутов"
+    ]
+  },
+  {
+    "id": "l3-ospf-02",
+    "group": "l3",
+    "topic": "OSPF · E1 и E2",
+    "text": "R видит один внешний префикс через ASBR A и B. Оба объявляют redistribution metric 20; внутренний cost до A=10, до B=40. Forwarding Address=0, иных различий нет. Каковы сравниваемые стоимости путей A/B, если оба объявления E1, и что меняется, если оба E2?",
+    "answers": [
+      "E1: 20/20; E2: 30/60, в обоих случаях выбирается A",
+      "E1: 30/60; E2: 20/20, при E2 оба пути обязательно равноправны",
+      "E1: 30/60; E2: внешняя 20/20, внутренние 10/40 разрешают равенство в пользу A",
+      "E1: 10/40; E2: 20/20, при E2 выбирается B по большей внутренней стоимости"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "E1 складывает внешнюю и внутреннюю стоимости: 30 против 60; E2 сначала сравнивает внешние 20/20, затем внутренний путь выбирает A.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "OSPF",
+      "E1 и E2"
+    ]
+  },
+  {
+    "id": "l3-ospf-03",
+    "group": "l3",
+    "topic": "OSPF · DR, BDR и Network LSA",
+    "text": "На общем Ethernet-сегменте OSPF маршрутизаторы A/B/C полностью обменялись базой. У C show ip ospf interface: Network Type BROADCAST, State DROTHER, DR=A, BDR=B. Кто штатно создаёт Network LSA для этого сегмента и что означает роль C?",
+    "answers": [
+      "B создаёт Type-2 LSA; C имеет полную смежность только с A",
+      "Каждый из A/B/C создаёт Type-2 LSA; DROTHER влияет только на выбор следующего DR",
+      "C создаёт Type-2 LSA со своими соседями; A создаёт только Router LSA",
+      "A создаёт Type-2 LSA; C имеет полные смежности с DR и BDR"
+    ],
+    "correct": [
+      3
+    ],
+    "explanation": "Network LSA (Type 2) для broadcast-сегмента создаёт DR A; DROTHER C формирует полные смежности с A и B.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "OSPF",
+      "DR, BDR и Network LSA"
+    ]
+  },
+  {
+    "id": "l3-ospf-04",
+    "group": "l3",
+    "topic": "OSPF · Hello и Dead Interval",
+    "text": "На Ethernet оба интерфейса OSPF работают как broadcast в area 0, адреса и authentication согласованы. A отправляет Hello/Dead=10/40 с, B — 5/20 с. Hello видны в обе стороны, но соседство не создаётся. Какая минимальная правка устраняет указанное несоответствие?",
+    "answers": [
+      "На B изменить только Dead на 40 с, сохранив Hello=5 с",
+      "На B изменить Hello/Dead на 10/40 с, сохранив broadcast",
+      "На A и B изменить только приоритет интерфейса, чтобы A стал DR",
+      "На B увеличить только retransmit interval до 40 с"
+    ],
+    "correct": [
+      1
+    ],
+    "explanation": "Для OSPF на этом сегменте должны совпадать и Hello Interval, и Dead Interval; изменение только одного не устраняет оба несоответствия.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "OSPF",
+      "Hello и Dead Interval"
+    ]
+  },
+  {
+    "id": "l3-ospf-05",
+    "group": "l3",
+    "topic": "OSPF · Network types",
+    "text": "В лаборатории Cisco IOS сравнивают три линка OSPF: Ethernet с network type broadcast, выделенную линию point-to-point и сеть без multicast с типом non-broadcast (NBMA). Других настроек нет. Какой план соответствует этим типам?",
+    "answers": [
+      "На всех трёх выбирать DR/BDR; для NBMA вручную задавать соседей",
+      "DR/BDR нужны только на Ethernet; NBMA работает как point-to-point и сам обнаруживает соседей",
+      "Broadcast и NBMA используют DR/BDR; point-to-point обходится без них, а для NBMA нужны настроенные соседи",
+      "Broadcast использует DR/BDR; point-to-point и NBMA обходятся без них, на NBMA достаточно согласовать таймеры"
+    ],
+    "correct": [
+      2
+    ],
+    "explanation": "Для типов broadcast и non-broadcast выбираются DR/BDR; у point-to-point их нет, а IOS NBMA требует настройки соседей для обмена без multicast.",
+    "difficulty": "applied",
+    "hashtags": [
+      "L3",
+      "OSPF",
+      "Network types"
+    ]
   }
 ]
