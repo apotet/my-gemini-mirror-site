@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TopologyPanel } from './components/TopologyPanel';
+import { ExperimentalTopology } from './components/ExperimentalTopology';
 import { LabEngine } from './engine/LabEngine';
 import { evaluateGoals } from './engine/GoalEvaluator';
 import { shouldShowCompletion } from './engine/completionStatus';
@@ -81,7 +82,7 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialScenarioId }) => {
+export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean }> = ({ initialScenarioId, experimentalTopology = false }) => {
   const [scenarioId, setScenarioId] = useState(() =>
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
@@ -442,13 +443,23 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col xl:flex-row gap-3'}>
           {!fullscreen && Object.keys(engine.getState().devices).length > 0 && (
             <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-56 xl:shrink-0 xl:max-w-[22%]'}>
-              <TopologyPanel
-                state={engine.getState()}
-                activeDeviceId={selectedDeviceId}
-                onSelectDevice={switchConsole}
-                collapsed={topologyCollapsed}
-                onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
-              />
+              {experimentalTopology ? (
+                <ExperimentalTopology
+                  state={engine.getState()}
+                  activeDeviceId={selectedDeviceId}
+                  onSelectDevice={switchConsole}
+                  collapsed={topologyCollapsed}
+                  onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+                />
+              ) : (
+                <TopologyPanel
+                  state={engine.getState()}
+                  activeDeviceId={selectedDeviceId}
+                  onSelectDevice={switchConsole}
+                  collapsed={topologyCollapsed}
+                  onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+                />
+              )}
             </div>
           )}
           <div
