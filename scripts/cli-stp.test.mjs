@@ -182,8 +182,8 @@ for(const [label,mutate]of [
 ])test('invalid '+label+' fails explicitly without mutating input',()=>{
   const s=triangle();mutate(s);const before=structuredClone(s);assert.throws(()=>derive(s));assert.deepEqual(s,before);
 });
-test('all ten legacy scenario snapshots derive without migration or mutation',()=>{
-  assert.equal(legacyScenarios.length,10);
+test('all current scenario snapshots derive without migration or mutation',()=>{
+  assert.equal(legacyScenarios.length,11);
   for(const scenario of legacyScenarios){const s=structuredClone(scenario.initialState),before=structuredClone(s);assert.ok(derive(s));assert.deepEqual(s,before,scenario.id);}
 });
 test('frozen input accepted; mutable result cannot change config',()=>{
