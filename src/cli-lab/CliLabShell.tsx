@@ -540,8 +540,8 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
         }
       >
         <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col xl:flex-row gap-3'}>
-          {!fullscreen && Object.keys(engine.getState().devices).length > 0 && (
-            <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-56 xl:shrink-0 xl:max-w-[22%]'}>
+          {!fullscreen && engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1 && (
+            <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-[42%] xl:shrink-0 xl:min-w-[340px]'}>
               <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
               {([
                 ['auto', 'Авто'],
