@@ -466,7 +466,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
-            className="relative w-full h-[290px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-none overscroll-contain cursor-grab active:cursor-grabbing"
+            className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-none overscroll-contain cursor-grab active:cursor-grabbing"
           >
             <svg
               width="100%"
