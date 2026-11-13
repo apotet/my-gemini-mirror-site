@@ -3,7 +3,7 @@ import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
 import { MockPacketJourney } from './MockPacketJourney';
 import { MockVlanSimulator } from './MockVlanSimulator';
 import { MockProtocolSimulators } from './MockProtocolSimulators';
-import { MockCliLabShell } from '../cli-lab/MockCliLabShell';
+import { ExperimentalMockCliLabShell } from '../cli-lab/ExperimentalMockCliLabShell';
 
 export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli';
 
@@ -116,7 +116,7 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
         {activeSimulator === 'journey' && <MockPacketJourney />}
         {activeSimulator === 'vlan' && <MockVlanSimulator />}
         {activeSimulator === 'protocols' && <MockProtocolSimulators />}
-        {activeSimulator === 'cli' && <MockCliLabShell />}
+        {activeSimulator === 'cli' && <ExperimentalMockCliLabShell />}
       </div>
     </div>
   );
