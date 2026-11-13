@@ -1,5 +1,5 @@
 import React from 'react';
-import { DeviceState, NetworkState } from '../engine/types';
+import { DeviceState, NetworkState, NetworkLink } from '../engine/types';
 import { interfaceStatus } from '../engine/OperationalState';
 
 interface TopologyPanelProps {
@@ -19,13 +19,51 @@ interface NodePos {
   height: number;
 }
 
-const NODE_W = 90;
-const NODE_H = 48;
+const NODE_W = 88;
+const NODE_H = 46;
 
-function layoutDevices(devices: Record<string, DeviceState>): NodePos[] {
-  const ids = Object.keys(devices).sort(); // stable order
+function shortIf(name: string): string {
+  return name
+    .replace(/FastEthernet/g, 'Fa')
+    .replace(/GigabitEthernet/g, 'Gi')
+    .replace(/Ethernet/g, 'Et')
+    .replace(/Port-channel/g, 'Po');
+}
+
+/** Order nodes for a cycle/ring by following links when possible. */
+function orderByGraph(ids: string[], links: NetworkLink[]): string[] {
+  if (ids.length <= 2) return ids.slice().sort();
+  const adj = new Map<string, string[]>();
+  for (const id of ids) adj.set(id, []);
+  for (const l of links) {
+    if (adj.has(l.a) && adj.has(l.b)) {
+      adj.get(l.a)!.push(l.b);
+      adj.get(l.b)!.push(l.a);
+    }
+  }
+  // Prefer a cycle walk if degrees allow
+  const start = ids.slice().sort()[0];
+  const visited = new Set<string>();
+  const order: string[] = [];
+  function dfs(cur: string) {
+    if (visited.has(cur)) return;
+    visited.add(cur);
+    order.push(cur);
+    const neighbors = (adj.get(cur) || []).slice().sort();
+    for (const n of neighbors) dfs(n);
+  }
+  dfs(start);
+  // Append any unconnected
+  for (const id of ids.slice().sort()) if (!visited.has(id)) order.push(id);
+  return order;
+}
+
+function layoutDevices(devices: Record<string, DeviceState>, links: NetworkLink[]): NodePos[] {
+  const ids = Object.keys(devices);
   const n = ids.length;
   if (n === 0) return [];
+
+  const ordered = orderByGraph(ids, links);
 
   const make = (id: string, x: number, y: number): NodePos => ({
     id,
@@ -36,29 +74,23 @@ function layoutDevices(devices: Record<string, DeviceState>): NodePos[] {
     height: NODE_H,
   });
 
-  if (n === 1) return [make(ids[0], 200, 90)];
-  if (n === 2) {
-    return [make(ids[0], 100, 90), make(ids[1], 300, 90)];
-  }
-  if (n === 3) {
-    return [make(ids[0], 70, 90), make(ids[1], 200, 90), make(ids[2], 330, 90)];
-  }
-  // 4 devices: square ring
+  if (n === 1) return [make(ordered[0], 200, 100)];
+  if (n === 2) return [make(ordered[0], 90, 115), make(ordered[1], 310, 115)];
+  if (n === 3) return [make(ordered[0], 55, 115), make(ordered[1], 200, 115), make(ordered[2], 345, 115)];
   if (n === 4) {
+    // Square ring, order follows graph walk to reduce crossings
     return [
-      make(ids[0], 90, 50),   // top-left
-      make(ids[1], 310, 50),  // top-right
-      make(ids[2], 310, 150), // bottom-right
-      make(ids[3], 90, 150),  // bottom-left
+      make(ordered[0], 100, 60),
+      make(ordered[1], 300, 60),
+      make(ordered[2], 300, 160),
+      make(ordered[3], 100, 160),
     ];
   }
-  // fallback linear for >4
-  const start = 50;
-  const step = Math.min(120, 300 / Math.max(1, n - 1));
-  return ids.map((id, i) => make(id, start + i * step, 90));
+  const start = 60;
+  const step = Math.min(110, 280 / Math.max(1, n - 1));
+  return ordered.map((id, i) => make(id, start + i * step, 100));
 }
 
-/** Compute point on the border of the rect closest to the direction toward `other`. */
 function edgePoint(node: NodePos, other: NodePos): { x: number; y: number } {
   const dx = other.x - node.x;
   const dy = other.y - node.y;
@@ -68,17 +100,21 @@ function edgePoint(node: NodePos, other: NodePos): { x: number; y: number } {
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
   const scale = Math.max(absDx / hw, absDy / hh);
-  return {
-    x: node.x + dx / scale,
-    y: node.y + dy / scale,
-  };
+  return { x: node.x + dx / scale, y: node.y + dy / scale };
 }
 
-function shortIf(name: string): string {
-  return name
-    .replace(/FastEthernet/g, 'Fa')
-    .replace(/GigabitEthernet/g, 'Gi')
-    .replace(/Ethernet/g, 'Et');
+/** Place label just outside the node edge, slightly off the link line. */
+function labelNearEnd(node: NodePos, edge: { x: number; y: number }, other: NodePos, outward = 18): { x: number; y: number } {
+  const dx = edge.x - node.x;
+  const dy = edge.y - node.y;
+  const len = Math.hypot(dx, dy) || 1;
+  // outward from node center through the edge point
+  const ox = (dx / len) * outward;
+  const oy = (dy / len) * outward;
+  // small perpendicular nudge so it doesn't sit exactly on the line
+  const px = -dy / len * 8;
+  const py = dx / len * 8;
+  return { x: edge.x + ox + px, y: edge.y + oy + py };
 }
 
 export const TopologyPanel: React.FC<TopologyPanelProps> = ({
@@ -88,7 +124,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   collapsed = false,
   onToggleCollapse,
 }) => {
-  const nodes = layoutDevices(state.devices);
+  const nodes = layoutDevices(state.devices, state.links);
   const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 
   if (collapsed) {
@@ -105,7 +141,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   }
 
   const width = 400;
-  const height = nodes.some(n => n.y > 120) ? 220 : 180;
+  const height = nodes.some(n => n.y > 130) ? 240 : 200;
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden">
@@ -119,7 +155,6 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
       </div>
       <div className="p-2 overflow-x-auto">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-full h-auto" role="img" aria-label="Сетевая топология">
-          {/* Links first (behind nodes) */}
           {state.links.map((link, idx) => {
             const na = nodeMap[link.a];
             const nb = nodeMap[link.b];
@@ -134,26 +169,22 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             const color = up ? '#10b981' : '#ef4444';
             const p1 = edgePoint(na, nb);
             const p2 = edgePoint(nb, na);
-            const midX = (p1.x + p2.x) / 2;
-            const midY = (p1.y + p2.y) / 2;
             const shortA = shortIf(link.aIf);
             const shortB = shortIf(link.bIf);
-            // Offset labels slightly perpendicular to avoid overlap with line
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
-            const len = Math.hypot(dx, dy) || 1;
-            const ox = (-dy / len) * 10;
-            const oy = (dx / len) * 10;
+            const la = labelNearEnd(na, p1, nb, 20);
+            const lb = labelNearEnd(nb, p2, na, 20);
             return (
               <g key={`link-${idx}`}>
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={up ? 3 : 2} strokeDasharray={up ? undefined : '5 3'} />
-                <text x={midX + ox} y={midY + oy} textAnchor="middle" fontSize="8.5" fill="#64748b" className="font-mono pointer-events-none">
-                  {shortA} ↔ {shortB}
+                <text x={la.x} y={la.y - 2} textAnchor="middle" fontSize="7.5" fill="#cbd5e1" className="font-mono pointer-events-none">
+                  {shortA}
+                </text>
+                <text x={lb.x} y={lb.y - 2} textAnchor="middle" fontSize="7.5" fill="#cbd5e1" className="font-mono pointer-events-none">
+                  {shortB}
                 </text>
               </g>
             );
           })}
-          {/* Nodes */}
           {nodes.map(node => {
             const isActive = node.id === activeDeviceId;
             return (
@@ -182,7 +213,6 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                   fill={isActive ? '#0e7490' : '#1e293b'}
                   stroke={isActive ? '#22d3ee' : '#475569'}
                   strokeWidth={isActive ? 2.5 : 1.5}
-                  className={isActive ? '' : 'focus-within:stroke-cyan-400'}
                 />
                 <text
                   x={node.x}

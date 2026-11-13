@@ -439,9 +439,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
-        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col lg:flex-row gap-3'}>
+        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col xl:flex-row gap-3'}>
           {!fullscreen && Object.keys(engine.getState().devices).length > 0 && (
-            <div className={topologyCollapsed ? 'w-full' : 'w-full lg:w-80 lg:shrink-0'}>
+            <div className={topologyCollapsed ? 'w-full' : 'w-full xl:w-56 xl:shrink-0 xl:max-w-[22%]'}>
               <TopologyPanel
                 state={engine.getState()}
                 activeDeviceId={selectedDeviceId}
