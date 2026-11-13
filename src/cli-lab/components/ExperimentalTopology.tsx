@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Maximize2, RotateCcw, ZoomIn, ZoomOut, Unplug, Cable, Terminal, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Unplug, Cable, Terminal, X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { InterfaceState, NetworkState } from '../engine/types';
 import type { TopologyLayer } from '../topologyLayers';
 import { interfaceStatus } from '../engine/OperationalState';
@@ -69,14 +69,8 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 720, height: 360 });
   const [transform, setTransform] = useState<ViewTransform>({ scale: 1, tx: 0, ty: 0 });
-  const [userAdjustedView, setUserAdjustedView] = useState(false);
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
-  const dragRef = useRef<{ startX: number; startY: number; origTx: number; origTy: number; moved: boolean } | null>(null);
-  const pinchRef = useRef<{ dist: number; midX: number; midY: number; origTransform: ViewTransform } | null>(null);
-  const suppressClickRef = useRef(false);
-
   const tree = useMemo<SpanningTreeResult | null>(() => {
     try {
       return deriveSpanningTree(state, { kind: 'cst' });
@@ -146,24 +140,6 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   const placedLabels = useMemo(() => placePortLabels(graph, labelSpecs), [graph, labelSpecs]);
   const fullBounds = useMemo(() => computeGraphBounds(graph, placedLabels), [graph, placedLabels]);
 
-  // Keep the graph's center inside the viewport during touch pan/pinch.
-  // Without this guard a single large swipe can move the entire drawing offscreen.
-  const keepGraphVisible = useCallback((view: ViewTransform): ViewTransform => {
-    const w = Math.max(1, containerSize.width);
-    const h = Math.max(1, containerSize.height);
-    const cx = fullBounds.minX + fullBounds.width / 2;
-    const cy = fullBounds.minY + fullBounds.height / 2;
-    const minTx = w * 0.15 - cx * view.scale;
-    const maxTx = w * 0.85 - cx * view.scale;
-    const minTy = h * 0.15 - cy * view.scale;
-    const maxTy = h * 0.85 - cy * view.scale;
-    return {
-      ...view,
-      tx: Math.max(minTx, Math.min(maxTx, view.tx)),
-      ty: Math.max(minTy, Math.min(maxTy, view.ty)),
-    };
-  }, [containerSize.width, containerSize.height, fullBounds]);
-
   const computeFitTransform = useCallback((w: number, h: number): ViewTransform => {
     const safeW = Math.max(200, w);
     const safeH = Math.max(180, h);
@@ -196,159 +172,13 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     return () => window.removeEventListener('resize', update);
   }, [collapsed]);
 
-  // Reset user pan/zoom only when scenario topology shape changes (device/link count or IDs).
-  const topologySignature = useMemo(
-    () => `${Object.keys(state.devices).sort().join(',')}|${state.links.map(l => `${l.a}:${l.aIf}-${l.b}:${l.bIf}`).join(';')}`,
-    [state.devices, state.links],
-  );
-
+  // One fixed, automatically fitted view. No pinch, pan or wheel zoom.
+  // ResizeObserver recomputes this only when the canvas size or graph changes.
   useEffect(() => {
-    setUserAdjustedView(false);
-    setSelection(null);
-  }, [topologySignature]);
-
-  useEffect(() => {
-    if (!userAdjustedView) {
-      setTransform(computeFitTransform(containerSize.width, containerSize.height));
-    }
-  }, [containerSize, computeFitTransform, userAdjustedView]);
-
-  const fitView = () => {
-    setUserAdjustedView(false);
     setTransform(computeFitTransform(containerSize.width, containerSize.height));
-  };
+  }, [containerSize.width, containerSize.height, computeFitTransform]);
 
-  const resetAll = () => {
-    setSelection(null);
-    fitView();
-  };
-
-  const zoomAroundCenter = (factor: number) => {
-    setUserAdjustedView(true);
-    const cx = containerSize.width / 2;
-    const cy = containerSize.height / 2;
-    setTransform(prev => {
-      const nextScale = Math.min(2.6, Math.max(0.25, prev.scale * factor));
-      const ratio = nextScale / prev.scale;
-      return keepGraphVisible({
-        scale: nextScale,
-        tx: cx - (cx - prev.tx) * ratio,
-        ty: cy - (cy - prev.ty) * ratio,
-      });
-    });
-  };
-
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const onNativeWheel = (e: WheelEvent) => {
-    e.preventDefault();
-    const el = stageRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const py = e.clientY - rect.top;
-    const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    setUserAdjustedView(true);
-    setTransform(prev => {
-      const nextScale = Math.min(2.6, Math.max(0.25, prev.scale * factor));
-      const ratio = nextScale / prev.scale;
-      return keepGraphVisible({
-        scale: nextScale,
-        tx: px - (px - prev.tx) * ratio,
-        ty: py - (py - prev.ty) * ratio,
-      });
-    });
-    };
-    el.addEventListener('wheel', onNativeWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onNativeWheel);
-  }, [collapsed, keepGraphVisible]);
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    // iOS Safari may cancel a touch when the pointer leaves the SVG stage.
-    // Capture it so gestures remain scoped to this panel, not the whole page.
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* Safari fallback */ }
-    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointersRef.current.size === 1) {
-      dragRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        origTx: transform.tx,
-        origTy: transform.ty,
-        moved: false,
-      };
-      pinchRef.current = null;
-    } else if (pointersRef.current.size === 2) {
-      const pts = [...pointersRef.current.values()];
-      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) || 1;
-      const rect = stageRef.current?.getBoundingClientRect();
-      const midX = (pts[0].x + pts[1].x) / 2 - (rect?.left ?? 0);
-      const midY = (pts[0].y + pts[1].y) / 2 - (rect?.top ?? 0);
-      pinchRef.current = { dist, midX, midY, origTransform: transform };
-      dragRef.current = null;
-    }
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!pointersRef.current.has(e.pointerId)) return;
-    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-    if (pointersRef.current.size === 2 && pinchRef.current) {
-      const pts = [...pointersRef.current.values()];
-      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) || 1;
-      const rect = stageRef.current?.getBoundingClientRect();
-      const curMidX = (pts[0].x + pts[1].x) / 2 - (rect?.left ?? 0);
-      const curMidY = (pts[0].y + pts[1].y) / 2 - (rect?.top ?? 0);
-      const { dist: d0, midX: m0x, midY: m0y, origTransform } = pinchRef.current;
-      const nextScale = Math.min(2.6, Math.max(0.25, origTransform.scale * (dist / d0)));
-      const ratio = nextScale / origTransform.scale;
-      setUserAdjustedView(true);
-      suppressClickRef.current = true;
-      setTransform(keepGraphVisible({
-        scale: nextScale,
-        tx: curMidX - (m0x - origTransform.tx) * ratio,
-        ty: curMidY - (m0y - origTransform.ty) * ratio,
-      }));
-      return;
-    }
-
-    if (pointersRef.current.size === 1 && dragRef.current) {
-      const dx = e.clientX - dragRef.current.startX;
-      const dy = e.clientY - dragRef.current.startY;
-      if (!dragRef.current.moved && Math.hypot(dx, dy) > 5) {
-        dragRef.current.moved = true;
-        suppressClickRef.current = true;
-        setUserAdjustedView(true);
-      }
-      if (dragRef.current.moved) {
-        setTransform(prev => keepGraphVisible({
-          ...prev,
-          tx: dragRef.current!.origTx + dx,
-          ty: dragRef.current!.origTy + dy,
-        }));
-      }
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    pointersRef.current.delete(e.pointerId);
-    if (pointersRef.current.size === 0) {
-      dragRef.current = null;
-      pinchRef.current = null;
-      setTimeout(() => {
-        suppressClickRef.current = false;
-      }, 0);
-    }
-  };
-
-  const guardClick = (fn: () => void) => {
-    if (suppressClickRef.current) return;
-    fn();
-  };
+  const guardClick = (fn: () => void) => fn();
 
   const modeledHosts = useMemo(
     () => Object.values(state.devices).filter(d => d.vendor === 'linux-host'),
@@ -384,8 +214,6 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     ip: 'IP',
   };
 
-  const zoomPercent = Math.round(transform.scale * 100);
-
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70 overflow-hidden shadow-sm">
       {/* Toolbar */}
@@ -404,46 +232,6 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => zoomAroundCenter(0.85)}
-            aria-label="Уменьшить масштаб"
-            title="Уменьшить"
-            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <span className="w-11 text-center font-mono text-[11px] tabular-nums text-slate-600 dark:text-slate-300">
-            {zoomPercent}%
-          </span>
-          <button
-            type="button"
-            onClick={() => zoomAroundCenter(1.18)}
-            aria-label="Увеличить масштаб"
-            title="Увеличить"
-            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={fitView}
-            aria-label="Вписать в экран"
-            className="h-8 px-2 sm:px-2.5 inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 text-[11px] font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap cursor-pointer"
-          >
-            <Maximize2 className="w-3 h-3" />
-            <span className="sm:hidden">Вписать</span>
-            <span className="hidden sm:inline">Вписать в экран</span>
-          </button>
-          <button
-            type="button"
-            onClick={resetAll}
-            title="Сбросить масштаб и положение"
-            className="h-8 px-2 inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap cursor-pointer"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden sm:inline">Сброс</span>
-          </button>
           {onToggleCollapse && (
             <button
               type="button"
@@ -462,11 +250,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
         <div className="flex flex-col min-w-0">
           <div
             ref={stageRef}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-none overscroll-contain cursor-grab active:cursor-grabbing"
+            className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-pan-y"
           >
             <svg
               width="100%"
