@@ -43,6 +43,9 @@ jobs:
       - name: Cisco IOS argument grammar regression
         run: node scripts/cli-arguments.test.mjs
 
+      - name: CLI scenario-specific theory coverage
+        run: node scripts/cli-theory-links.test.mjs
+
       - name: Cisco IOS contextual question-mark help regression
         run: node scripts/cli-contextual-help.test.mjs
 
