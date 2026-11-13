@@ -101,6 +101,7 @@ const samples = {
   'cisco.hostname': 'hostname NETOPS', 'cisco.vlan': 'vlan 20', 'cisco.vlan_name': 'name Users',
   'cisco.interface': 'interface Fa0/1', 'cisco.switchport_access_vlan': 'switchport access vlan 20',
   'cisco.ip_address': 'ip address 192.0.2.1 255.255.255.0', 'cisco.ip_route': 'ip route 0.0.0.0 0.0.0.0 192.0.2.254',
+  'cisco.show_ip_interface': 'show ip interface FastEthernet0/1',
   'cisco.ping': 'ping 192.0.2.1',
   'cisco.do': 'do show ip interface brief',
   'cisco.switchport_trunk_allowed_vlan': 'switchport trunk allowed vlan 10,20',
