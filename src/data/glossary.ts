@@ -6,6 +6,21 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "IGMP Snooping": {"description": "Функция L2-коммутатора, изучающая IGMP-сообщения для ограничения передачи группового трафика по портам получателей и нужным портам к маршрутизаторам.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "IGMP": {"description": "Служебный обмен получателей и multicast-маршрутизаторов для сообщения интереса к группам. Snooping наблюдает этот обмен, но не заменяет multicast routing.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "querier": {"description": "Участник, регулярно отправляющий IGMP queries в VLAN. Ответы помогают поддерживать подписки; snooping querier не обязательно маршрутизирует multicast между сетями.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "multicast group": {"description": "Логическая IPv4-группа, обозначенная multicast-адресом. Передача на неё не означает, что каждый порт VLAN имеет подписчика.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "report suppression": {"description": "В IGMPv1/v2 получатель может не отправить report, услышав подходящий отчёт другого. Коммутатор также может сокращать отчёты вверх, сохраняя локальные порты; поведение зависит от версии и реализации.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "Leave": {"description": "Сообщение IGMPv2 об уходе участника. На shared-порту не доказывает отсутствие других получателей и обычно сопровождается проверкой членства.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "aging": {"description": "Удаление или истечение не обновлявшихся записей по таймерам соответствующего протокола. Для IGMP membership важно наличие queries/reports, а для MAC-таблицы действуют другие правила.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "fast leave": {"description": "Оптимизация ухода из multicast-группы без обычного ожидания проверки оставшихся получателей. Требует подходящей топологии или tracking, иначе может прервать поток другим хостам за тем же портом.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
+  "recursive resolver": {"description": "Узел, получающий DNS-ответ для клиента и использующий кэш по своей политике. Его сохранённая копия не меняется мгновенно от правки авторитативной зоны.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "authoritative server": {"description": "Сервер, отвечающий данными обслуживаемой DNS-зоны. Прямой запрос к нему позволяет отличить текущую запись зоны от кэша рекурсивного резолвера.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "negative caching": {"description": "Сохранение достоверного отсутствия имени или RRset по правилам DNS. При отрицательном ответе с SOA срок связан с минимумом SOA TTL и SOA.MINIMUM, а не с TTL будущей A-записи.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "NODATA": {"description": "Отрицательный DNS-ответ о том, что у существующего имени нет RRset нужного типа. Отличается от NXDOMAIN и не является отдельным кодом RCODE NODATA.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "SOA": {"description": "Запись с параметрами DNS-зоны. Её TTL и MINIMUM участвуют в определении времени отрицательного кэширования по RFC 2308.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "DoH": {"description": "Способ передачи DNS-запросов через HTTPS. Приложение может применять отдельный резолвер и кэш вместо системного пути разрешения.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
+  "serve-stale": {"description": "Поведение резолвера, допускающее использование истёкших данных при определённых условиях отказа обновления и настроенной политике. Не означает бесконечную жизнь обычного кэша.", "relatesTo": "Разрешение DNS-имён, кэш и миграция адресов; L7.", "lessonId": "l7-dns-ttl"},
   "ARP spoofing": {"description": "Ложные ARP-сообщения, заставляющие соседей связать чужой IP с MAC злоумышленника. DAI проверяет такие объявления по разрешённым данным.", "relatesTo": "Защита источника и топологии на коммутаторе; L2–L3.", "lessonId": "l2-dai"},
   "DHCP snooping binding": {"description": "Изученная запись IP, MAC, VLAN, порта и срока аренды. Используется защитными функциями с учётом их отдельной политики; не является криптографической аутентификацией.", "relatesTo": "Защита источника и топологии на коммутаторе; L2–L3.", "lessonId": "l2-dai"},
   "ARP ACL": {"description": "Политика допустимых соответствий IP/MAC, применяемая DAI, в частности для статических узлов. Fallback к DHCP Snooping зависит от режима применения.", "relatesTo": "Защита источника и топологии на коммутаторе; L2–L3.", "lessonId": "l2-dai"},
@@ -1211,6 +1226,21 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "IGMP Snooping": ["IGMP Snooping", "Наблюдение за членством multicast", false],
+  "IGMP": ["Internet Group Management Protocol", "Протокол членства в IPv4 multicast-группах", true],
+  "querier": ["IGMP Querier", "Отправитель запросов членства", false],
+  "multicast group": ["Multicast Group", "Группа получателей", false],
+  "report suppression": ["IGMP Report Suppression", "Подавление избыточных отчётов", false],
+  "Leave": ["IGMP Leave Group", "Уведомление об уходе из группы", false],
+  "aging": ["Dynamic State Aging", "Старение динамического состояния", false],
+  "fast leave": ["Fast Leave", "Ускоренное удаление подписки", false],
+  "recursive resolver": ["Recursive DNS Resolver", "Рекурсивный DNS-резолвер", false],
+  "authoritative server": ["Authoritative DNS Server", "Авторитативный DNS-сервер", false],
+  "negative caching": ["DNS Negative Caching", "Кэширование отрицательных DNS-ответов", false],
+  "NODATA": ["DNS No Data", "Отсутствие записи нужного типа", false],
+  "SOA": ["Start of Authority", "Начало полномочий DNS-зоны", true],
+  "DoH": ["DNS over HTTPS", "DNS поверх HTTPS", true],
+  "serve-stale": ["Serve Stale DNS Data", "Выдача устаревших DNS-данных", false],
   "ARP spoofing": ["ARP Spoofing", "Подмена соответствия IP и MAC", false],
   "DHCP snooping binding": ["DHCP Snooping Binding", "Привязка клиента DHCP", false],
   "ARP ACL": ["ARP Access Control List", "Список разрешений ARP", true],
