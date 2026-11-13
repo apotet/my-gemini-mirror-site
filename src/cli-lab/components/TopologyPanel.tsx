@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getPortDetails } from '../portDetails';
+import { checkHostIpv4Reachability } from '../engine/HostIpv4Reachability';
 import { DeviceState, NetworkState, NetworkLink } from '../engine/types';
 import { interfaceStatus } from '../engine/OperationalState';
 import { deriveSpanningTree, type SpanningTreeResult } from '../engine/SpanningTree';
@@ -10,6 +11,7 @@ interface TopologyPanelProps {
   layer?: TopologyLayer;
   activeDeviceId: string;
   onSelectDevice: (id: string) => void;
+  onToggleLink?: (index: number) => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -64,6 +66,21 @@ function orderByGraph(ids: string[], links: NetworkLink[]): string[] {
 
 function layoutDevices(devices: Record<string, DeviceState>, links: NetworkLink[]): NodePos[] {
   const ids = Object.keys(devices);
+  const hosts = ids.filter(id => devices[id].vendor === 'linux-host');
+  if (hosts.length > 0) {
+    const slots: Record<string,[number,number]> = {
+      sw1: [300,225], sw2: [700,225], sw3: [700,520], sw4: [300,520],
+      pc1v10: [100,120], pc1v20: [100,315],
+      pc2v10: [900,120], pc2v20: [900,315],
+      pc3v10: [900,430], pc3v20: [900,645],
+      pc4v10: [100,430], pc4v20: [100,645],
+    };
+    return ids.map((id,index)=> {
+      const [x,y] = slots[id] ?? [180+(index%4)*210, 120+Math.floor(index/4)*160];
+      return {id,x,y,hostname:devices[id].hostname,width:devices[id].vendor==='linux-host'?120:NODE_W,
+        height:devices[id].vendor==='linux-host'?76:NODE_H };
+    });
+  }
   const n = ids.length;
   if (n === 0) return [];
 
@@ -128,10 +145,13 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   layer = 'stp',
   activeDeviceId,
   onSelectDevice,
+  onToggleLink,
   collapsed = false,
   onToggleCollapse,
 }) => {
   const [selection, setSelection] = useState<{ deviceId: string; interfaceName: string } | null>(null);
+  const [selectedHostId, setSelectedHostId] = useState<string | null>(null);
+  const modeledHosts = Object.values(state.devices).filter(d => d.vendor === 'linux-host');
   const details = selection ? getPortDetails(state, selection.deviceId, selection.interfaceName) : null;
   const selectPort = (deviceId: string, interfaceName: string) => {
     setSelection(current => current?.deviceId === deviceId && current?.interfaceName === interfaceName
@@ -166,8 +186,8 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
     );
   }
 
-  const width = 760;
-  const height = nodes.length > 4 ? 110 + Math.ceil(nodes.length / 3) * 210 : nodes.length === 4 ? 445 : 420;
+  const width = modeledHosts.length ? 1000 : 760;
+  const height = modeledHosts.length ? 745 : nodes.length > 4 ? 110 + Math.ceil(nodes.length / 3) * 210 : nodes.length === 4 ? 445 : 420;
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 overflow-hidden">
@@ -180,7 +200,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
         )}
       </div>
       <div className="p-2 overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="block w-full h-auto min-h-[260px] max-h-[600px]" role="img" aria-label="Сетевая топология">
+        <svg viewBox={`0 0 ${width} ${height}`} className="block w-full h-auto min-h-[260px] max-h-[800px]" role="img" aria-label="Сетевая топология">
           {state.links.map((link, idx) => {
             const na = nodeMap[link.a];
             const nb = nodeMap[link.b];
@@ -267,20 +287,38 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
             return (
               <g
                 key={node.id}
-                onClick={() => onSelectDevice(node.id)}
+                onClick={() => state.devices[node.id].vendor === 'linux-host' ? setSelectedHostId(node.id) : onSelectDevice(node.id)
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    onSelectDevice(node.id);
+                    if (state.devices[node.id].vendor === 'linux-host') setSelectedHostId(node.id);
+                    else onSelectDevice(node.id);
                   }
                 }}
                 style={{ cursor: 'pointer' }}
                 role="button"
                 tabIndex={0}
                 aria-pressed={isActive}
-                aria-label={`Коммутатор ${node.hostname}${isActive ? ', активный' : ''}${isRoot ? ', Root Bridge' : ''}`}
+                aria-label={`${state.devices[node.id].vendor === 'linux-host' ? 'Компьютер' : 'Коммутатор'} ${node.hostname}${isActive ? ', активный' : ''}${isRoot ? ', Root Bridge' : ''}`}
                 className="focus:outline-none"
               >
+                {state.devices[node.id].vendor === 'linux-host' ? (
+                  <>
+                    <rect x={node.x-46} y={node.y-34} width={92} height={52} rx={7}
+                      fill="#123352" stroke="#38bdf8" strokeWidth={2.5} />
+                    <rect x={node.x-39} y={node.y-27} width={78} height={38} rx={3}
+                      fill="#0f172a" stroke="#7dd3fc" />
+                    <path d={`M ${node.x-21} ${node.y+18} V ${node.y+25} H ${node.x+21} V ${node.y+18}`}
+                      fill="none" stroke="#94a3b8" strokeWidth={3} />
+                    <text x={node.x} y={node.y+44} textAnchor="middle" fontSize={15}
+                      fill="#e0f2fe" fontWeight="bold" className="pointer-events-none">{node.hostname}</text>
+                    <text x={node.x} y={node.y+61} textAnchor="middle" fontSize={13}
+                      fill="#bae6fd" className="pointer-events-none">
+                      {state.devices[node.id].interfaces.Ethernet0?.ipv4?.address ?? 'IP не задан'}
+                    </text>
+                  </>
+                ) : (
+                  <>
                 {/* Actual switch chassis, not a tiny abstract pill. */}
                 <rect x={node.x - node.width/2} y={node.y - node.height/2}
                   width={node.width} height={node.height} rx={12}
@@ -306,11 +344,52 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
                     {firstIp.length > 25 ? `${firstIp.slice(0,24)}…` : firstIp}{ip.length > 1 ? ' (+)' : ''}
                   </text>
                 )}
+                  </>
+                )}
               </g>
             );
           })}
         </svg>
       </div>
+      {modeledHosts.length > 0 && (
+        <section className="mx-3 my-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 px-3 py-2 text-xs">
+          <strong className="block mb-2">Проверка ПК (IPv4 + VLAN + CST, без настоящего ICMP)</strong>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {([
+              ['pc1v10','pc3v10'], ['pc2v10','pc4v10'],
+              ['pc1v20','pc3v20'], ['pc2v20','pc4v20'],
+            ] as const).map(([a,b]) => {
+              const result = checkHostIpv4Reachability(state,a,b);
+              return <div key={a+b} className={result.reachable
+                ? 'rounded-lg bg-emerald-500/10 px-2 py-1.5 text-emerald-700 dark:text-emerald-300'
+                : 'rounded-lg bg-red-500/10 px-2 py-1.5 text-red-700 dark:text-red-300'}>
+                {result.reachable ? '✓' : '✗'} {state.devices[a]?.hostname} ↔ {state.devices[b]?.hostname}
+                {result.vlanId ? ` · VLAN ${result.vlanId}` : ''}
+              </div>;
+            })}
+          </div>
+          {selectedHostId && state.devices[selectedHostId]?.vendor === 'linux-host' && (
+            <div className="flex items-center gap-3 mt-2 text-slate-700 dark:text-slate-200">
+              <span>ПК {state.devices[selectedHostId].hostname}: {state.devices[selectedHostId].interfaces.Ethernet0?.ipv4?.address}/24</span>
+              <button type="button" onClick={() => setSelectedHostId(null)} className="underline">Закрыть</button>
+            </div>
+          )}
+        </section>
+      )}
+      {onToggleLink && (
+        <div className="mx-3 my-2 border border-amber-500/30 rounded-xl p-2 space-y-1.5 text-xs">
+          <strong>Физические кабели кольца · испытание отказа</strong>
+          <div className="flex flex-wrap gap-1.5">
+            {state.links.map((link,index) => {
+              if (state.devices[link.a]?.vendor !== 'cisco-ios' || state.devices[link.b]?.vendor !== 'cisco-ios') return null;
+              return <button key={index} type="button" onClick={() => onToggleLink(index)}
+                className={link.up ? 'rounded-lg border border-emerald-500/50 px-2 py-1.5 text-emerald-700 dark:text-emerald-300' : 'rounded-lg border border-red-500/50 px-2 py-1.5 text-red-700 dark:text-red-300'}>
+                {state.devices[link.a].hostname} ↔ {state.devices[link.b].hostname} · {link.up ? 'отключить' : 'восстановить'}
+              </button>;
+            })}
+          </div>
+        </div>
+      )}
       {state.links.length > 0 && (
         <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5" aria-label="Порты соединений">
           {state.links.flatMap((link, index) => ([
