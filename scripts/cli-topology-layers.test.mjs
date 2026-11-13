@@ -14,7 +14,8 @@ export { ciscoL3GatewayScenario } from './src/cli-lab/scenarios/cisco-l3-gateway
 export { ciscoTwoSwitchVlanScenario } from './src/cli-lab/scenarios/cisco-two-switch-vlan';
 export { ciscoTwoSwitchSviScenario } from './src/cli-lab/scenarios/cisco-two-switch-svi';
 export { ciscoThreeSwitchMissingVlanScenario } from './src/cli-lab/scenarios/cisco-three-switch-missing-vlan';
-export { ciscoTwoSwitchTrunkDiagnosticScenario } from './src/cli-lab/scenarios/cisco-two-switch-trunk-diagnostics';`,
+export { ciscoTwoSwitchTrunkDiagnosticScenario } from './src/cli-lab/scenarios/cisco-two-switch-trunk-diagnostics';
+export { ciscoFourSwitchHostRingScenario } from './src/cli-lab/scenarios/cisco-four-switch-host-ring';`,
     resolveDir: process.cwd(), loader: 'ts',
   },
   bundle: true, platform: 'node', format: 'esm', write: false,
@@ -25,8 +26,9 @@ const scenarios=[
   m.ciscoAccessSviFollowupScenario, m.ciscoTrunkScenario, m.ciscoL3GatewayScenario,
   m.ciscoTwoSwitchVlanScenario, m.ciscoTwoSwitchSviScenario,
   m.ciscoThreeSwitchMissingVlanScenario, m.ciscoTwoSwitchTrunkDiagnosticScenario,
+  m.ciscoFourSwitchHostRingScenario,
 ];
-assert.equal(scenarios.length, 10);
+assert.equal(scenarios.length, 11);
 for(const scenario of scenarios){
   const original=structuredClone(scenario);
   const actual=m.defaultTopologyLayer(scenario);
