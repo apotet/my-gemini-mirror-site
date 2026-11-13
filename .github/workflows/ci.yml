@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding, feat/cli-stp-diagnostics]
+    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding, feat/cli-stp-diagnostics, integration/cli-2-stp-theory]
 
 jobs:
   build:
@@ -42,6 +42,9 @@ jobs:
 
       - name: Cisco IOS argument grammar regression
         run: node scripts/cli-arguments.test.mjs
+
+      - name: CLI topology layer selection regression
+        run: node scripts/cli-topology-layers.test.mjs
 
       - name: CLI scenario-specific theory coverage
         run: node scripts/cli-theory-links.test.mjs
