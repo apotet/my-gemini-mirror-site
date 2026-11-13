@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TopologyPanel } from './components/TopologyPanel';
+import { ExperimentalTopology } from './components/ExperimentalTopology';
 import { resolveTopologyLayer, type TopologyLayerChoice } from './topologyLayers';
 import { LabEngine } from './engine/LabEngine';
 import { scenarioTheoryIds } from './scenarioTheory';
@@ -94,7 +95,7 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialScenarioId }) => {
+export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean }> = ({ initialScenarioId, experimentalTopology = false }) => {
   const [scenarioId, setScenarioId] = useState(() =>
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
@@ -571,7 +572,16 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             </span>
           )}
         </div>
-        <TopologyPanel
+        {experimentalTopology ? (
+          <ExperimentalTopology
+            state={engine.getState()}
+            activeDeviceId={selectedDeviceId}
+            onSelectDevice={switchConsole}
+            collapsed={topologyCollapsed}
+            onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+          />
+        ) : (
+          <TopologyPanel
             layer={effectiveTopologyLayer}
             state={engine.getState()}
             activeDeviceId={selectedDeviceId}
@@ -580,6 +590,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string }> = ({ initialS
             collapsed={topologyCollapsed}
             onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
           />
+        )}
         </div>
       )}
 

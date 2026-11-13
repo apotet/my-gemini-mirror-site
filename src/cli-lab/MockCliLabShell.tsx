@@ -2,7 +2,7 @@ import React from 'react';
 import { CliLabShell } from './CliLabShell';
 
 /**
- * The experimental Practice area uses the same CLI engine, scenarios, and UI.
- * Keeping a second independent shell caused stale scenarios and fixes.
+ * Experimental Practice mockup uses the new port-anchored topology.
+ * Live CLI Lab remains unchanged.
  */
-export const MockCliLabShell: React.FC = () => <CliLabShell />;
+export const MockCliLabShell: React.FC = () => <CliLabShell experimentalTopology />;
