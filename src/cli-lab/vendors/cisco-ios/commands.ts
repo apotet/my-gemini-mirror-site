@@ -324,11 +324,11 @@ const baseCommands: CommandSpec[] = [
       // block cannot silently disagree about the IP address or subnet mask.
       const config = formatRunningConfig(device);
       const header = `interface ${name}`;
-      const lines = config.split('\\n');
+      const lines = config.split('\n');
       const start = lines.indexOf(header);
       if (start === -1) return { output: `% Interface ${name} not found in running-config`, error: true };
       const end = lines.indexOf('!', start + 1);
-      return { output: lines.slice(start, end === -1 ? undefined : end).join('\\n') };
+      return { output: lines.slice(start, end === -1 ? undefined : end).join('\n') };
     },
   },
   {
