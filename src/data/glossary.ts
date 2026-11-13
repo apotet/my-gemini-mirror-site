@@ -6,6 +6,15 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "prefix length": {"description":"Количество начальных единиц непрерывной маски. В IPv4 /24 означает 24 сетевых бита и 8 хостовых, а не 24 адреса хостов.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-masks"},
+  "host bits": {"description":"Биты IPv4-адреса справа от границы префикса. Их число равно 32 минус prefix length; в обычной подсети определяют размер адресного блока.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-masks"},
+  "network bits": {"description":"Начальные биты адреса, выделенные непрерывной маской под префикс сети или подсети. При общей маске их совпадение означает принадлежность одному префиксу.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-masks"},
+  "wildcard mask": {"description":"В типичном Cisco ACL нулевой бит означает сравнение, единичный — игнорирование. Инверсия непрерывной subnet mask даёт соответствующий wildcard, но произвольный wildcard не обязан описывать одну CIDR-подсеть.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-masks"},
+  "subnet": {"description":"Блок адресов внутри выделенного адресного пространства с собственной длиной префикса. Корректно выделенные подсети выровнены по границам своих блоков и не пересекаются.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-subnets"},
+  "network address": {"description":"Адрес начала IPv4-подсети, у которого все хостовые биты равны нулю. Вычисляется побитовым AND адреса узла и маски; в обычной подсети не назначается обычному хосту.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-subnets"},
+  "broadcast address": {"description":"IPv4-адрес, у которого все хостовые биты данной обычной подсети равны единице. Завершает её диапазон и не включается в обычный хостовый пул; специальные /31 рассматриваются отдельно.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-subnets"},
+  "usable hosts": {"description":"Число назначаемых обычным хостам адресов подсети: 2^host_bits − 2 при отдельных network и broadcast. Правило не применяется механически к /31 и /32.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-subnets"},
+  "VLSM": {"description":"Использование разных длин префикса для размещения подсетей под разные потребности. Проверяются вместимость, выравнивание, отсутствие пересечений и принадлежность родительскому блоку.","relatesTo":"Маски, префиксы и расчёт IPv4-подсетей; L3.","lessonId":"l3-subnets"},
   "write memory": {"description": "Традиционная команда Cisco IOS для записи текущей конфигурации в постоянную загрузочную копию. При поддержке платформой выполняет ту же задачу, что copy running-config startup-config.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
   "copy": {"description": "Команда Cisco IOS с явно заданными источником и назначением. Направление копирования важно: сохранение running в startup не эквивалентно загрузке startup в running.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
   "reload": {"description": "Команда перезагрузки Cisco IOS. Не является командой сохранения; при обычной загрузке применяются сохранённые настройки, если не заданы особые boot/recovery условия.", "relatesTo": "Управление конфигурацией Cisco IOS.", "lessonId": "cli-save-config"},
@@ -1185,6 +1194,16 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "prefix length": ["Prefix Length","Длина префикса",false],
+  "host bits": ["Host Bits","Хостовые биты",false],
+  "network bits": ["Network Bits","Сетевые биты",false],
+  "wildcard mask": ["Wildcard Mask","Маска выбора битов",false],
+  "subnet": ["Subnet","Подсеть",false],
+  "network address": ["Network Address","Адрес сети",false],
+  "broadcast address": ["Subnet Broadcast Address","Широковещательный адрес подсети",false],
+  "usable hosts": ["Usable Host Addresses","Пригодные адреса хостов",false],
+  "VLSM": ["Variable Length Subnet Mask","Подсети с масками разной длины",true],
+  "subnet mask": ["Subnet Mask", "Маска подсети", false],
   "startup-config": ["Startup Configuration", "Конфигурация следующей загрузки", false],
   "write memory": ["Write Memory", "Сохранение активной конфигурации", false],
   "copy": ["Copy Configuration or File", "Копирование конфигурации или файла", false],

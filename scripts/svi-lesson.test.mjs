@@ -22,7 +22,7 @@ assert.ok(searchLessons('', 'CLI').some(l=>l.id==='l2-svi'), 'SVI visible under 
 assert.ok(searchLessons('', 'L2').some(l=>l.id==='l2-svi'), 'SVI visible under L2');
 assert.ok(searchLessons('', 'L3').some(l=>l.id==='l2-svi'), 'SVI visible under L3');
 assert.equal(searchLessons('', 'CLI').length, 8, 'eight CLI lessons visible in catalog');
-assert.equal(LESSONS.length, 42, 'catalog includes save-config and trunk diagnostics lessons');
+assert.equal(LESSONS.length, 44, 'catalog includes IPv4 masks and subnetting lessons');
 assert.ok(lesson.professional,'SVI has expert explanation');
 assert.ok(lesson.blocks.length>=5 && lesson.professional.blocks.length>=4);
 assert.equal(PRACTICE_DESTINATIONS['cli-svi'].scenarioId,ciscoTwoSwitchSviScenario.id,'practice link opens exact live scenario');
