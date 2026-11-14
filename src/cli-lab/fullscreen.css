@@ -72,3 +72,56 @@
   .cli-fullscreen-side > div { min-width: 0; }
 }
 .cli-fullscreen-side input[type='search'] { min-width: 0; max-width: 100%; }
+
+/* Mobile fullscreen: one working surface at a time. Desktop grid is unchanged. */
+.cli-fullscreen .cli-mobile-tab,
+.cli-fullscreen .cli-mobile-label { display: none; }
+@media (max-width: 600px) {
+  .cli-fullscreen {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .cli-fullscreen-toolbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .cli-fullscreen-devices {
+    grid-column: 1 / -1;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .cli-fullscreen .cli-mobile-tab,
+  .cli-fullscreen .cli-mobile-label { display: inline; }
+  .cli-fullscreen .cli-desktop-label { display: none; }
+  .cli-fullscreen-toolbar > .cli-mobile-tab { grid-column: 1; }
+  .cli-fullscreen-toolbar > .cli-task-toggle { grid-column: 2; }
+  .cli-fullscreen-toolbar > .cli-topology-toggle { grid-column: 3; }
+  .cli-fullscreen-toolbar > .cli-fullscreen-exit {
+    grid-column: 4;
+    margin: 0;
+    padding: 4px 6px;
+  }
+  .cli-fullscreen-toolbar > button {
+    min-width: 0;
+    padding: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .cli-fullscreen-terminal { grid-column: 1; grid-row: 2; }
+  .cli-fullscreen[data-panel='task'] .cli-fullscreen-terminal,
+  .cli-fullscreen[data-panel='topology'] .cli-fullscreen-terminal { display: none; }
+  .cli-fullscreen-side {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+  .cli-fullscreen .cli-fullscreen-topology [data-topology-scroll] {
+    max-width: 100%;
+    touch-action: pan-x pan-y;
+  }
+}
