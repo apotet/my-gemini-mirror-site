@@ -1,0 +1,74 @@
+/* One persistent terminal/topology tree; only its grid placement changes. */
+.cli-fullscreen {
+  position: fixed;
+  top: var(--cli-top, 0);
+  left: var(--cli-left, 0);
+  width: var(--cli-width, 100vw);
+  height: var(--cli-height, 100dvh);
+  padding: 8px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  overflow: hidden;
+  --cli-side-width: clamp(180px, 40vw, 480px);
+}
+.cli-fullscreen[data-panel='task'], .cli-fullscreen[data-panel='topology'] {
+  grid-template-columns: minmax(0, 1fr) var(--cli-side-width);
+}
+.cli-fullscreen-toolbar {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+.cli-fullscreen-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.cli-fullscreen-toolbar button[aria-pressed='true'], .cli-fullscreen-toolbar button[aria-expanded='true'] {
+  border-color: #06b6d4;
+  background: #164e63;
+}
+.cli-fullscreen-devices { display: flex; gap: 4px; overflow-x: auto; max-width: 100%; }
+.cli-fullscreen-toolbar .cli-fullscreen-exit { margin-left: auto; }
+.cli-fullscreen-terminal { grid-row: 2; grid-column: 1; }
+.cli-fullscreen [aria-label='История CLI'] { overflow-wrap: anywhere; overscroll-behavior: contain; }
+.cli-fullscreen-side {
+  grid-row: 2;
+  grid-column: 2;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow-wrap: anywhere;
+}
+.cli-fullscreen-side[hidden] { display: none; }
+@media (max-width: 600px) {
+  .cli-fullscreen { padding: 4px; gap: 4px; --cli-side-width: 50%; }
+  .cli-fullscreen-toolbar { font-size: 11px; }
+  .cli-fullscreen-toolbar button { min-height: 40px; padding: 4px 6px; }
+  .cli-fullscreen-side { padding: 4px; }
+  .cli-fullscreen-side > div { min-width: 0; }
+}
+.cli-fullscreen-side input[type='search'] { min-width: 0; max-width: 100%; }

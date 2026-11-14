@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useId, useEffect, useMemo, useRef, useState } from 'react';
+import './fullscreen.css';
 import { TopologyPanel } from './components/TopologyPanel';
 import { ExperimentalTopology } from './components/ExperimentalTopology';
 import { resolveTopologyLayer, type TopologyLayerChoice } from './topologyLayers';
@@ -192,10 +193,17 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
   const [fullscreen, setFullscreen] = useState(false);
   const [topologyCollapsed, setTopologyCollapsed] = useState(true);
   const [topologyLayerChoice, setTopologyLayerChoice] = useState<TopologyLayerChoice>('auto');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [fullscreenPanel, setFullscreenPanel] = useState<'task' | 'topology' | null>(null);
+  const [windowedHeight, setWindowedHeight] = useState(0);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
 
+  const panelId = useId();
+  const taskPanelId = `${panelId}-task`;
+  const topologyPanelId = `${panelId}-topology`;
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const pagePosition = useRef({ x: 0, y: 0 });
+  const returnFocus = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const stepIndexRef = useRef(0);
@@ -253,10 +261,57 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
 
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && fullscreen) setFullscreen(false);
+      if (e.key === 'Escape' && fullscreen) {
+        e.preventDefault();
+        setTheoryLessonId(null);
+        setFullscreen(false);
+      }
     };
     window.addEventListener('keydown', onEsc);
     return () => window.removeEventListener('keydown', onEsc);
+  }, [fullscreen]);
+
+  useLayoutEffect(() => {
+    if (!fullscreen) return;
+    const root = shellRef.current;
+    if (!root) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const updateViewport = () => {
+      const viewport = window.visualViewport;
+      root.style.setProperty('--cli-height', `${viewport?.height ?? window.innerHeight}px`);
+      root.style.setProperty('--cli-width', `${viewport?.width ?? window.innerWidth}px`);
+      root.style.setProperty('--cli-top', `${viewport?.offsetTop ?? 0}px`);
+      root.style.setProperty('--cli-left', `${viewport?.offsetLeft ?? 0}px`);
+    };
+    updateViewport();
+    const focusFrame = requestAnimationFrame(() => root.querySelector<HTMLButtonElement>('.cli-fullscreen-exit')?.focus({ preventScroll: true }));
+    const keepFocusInside = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || event.defaultPrevented) return;
+      const scope = root.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]') ?? root;
+      const targets = [...scope.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex="0"]')]
+        .filter(element => element.getClientRects().length > 0 && !element.matches(':disabled'));
+      const target = event.shiftKey && document.activeElement === targets[0]
+        ? targets.at(-1) : !event.shiftKey && document.activeElement === targets.at(-1) ? targets[0] : null;
+      if (target) { event.preventDefault(); target.focus({ preventScroll: true }); }
+    };
+    document.addEventListener('keydown', keepFocusInside);
+    window.addEventListener('resize', updateViewport);
+    window.visualViewport?.addEventListener('resize', updateViewport);
+    window.visualViewport?.addEventListener('scroll', updateViewport);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', keepFocusInside);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('resize', updateViewport);
+      window.visualViewport?.removeEventListener('resize', updateViewport);
+      window.visualViewport?.removeEventListener('scroll', updateViewport);
+      requestAnimationFrame(() => {
+        if (!root.isConnected) return;
+        window.scrollTo(pagePosition.current.x, pagePosition.current.y);
+        returnFocus.current?.focus({ preventScroll: true });
+      });
+    };
   }, [fullscreen]);
 
   const toggleCable = (index: number) => {
@@ -413,7 +468,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         : []),
     ]);
     if (line.trim().endsWith('?')) {
-      requestAnimationFrame(() => inputRef.current?.focus());
+      requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
       setInput(line.slice(0, -1));
       return;
     }
@@ -449,7 +504,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
       }
     }
 
-    requestAnimationFrame(() => inputRef.current?.focus());
+    requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
   };
 
   const modes: LabMode[] = ['learn', 'drill', 'task'];
@@ -472,35 +527,22 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     focusCliInput();
   };
 
-  return (
-    <div
-      className={
-        fullscreen
-          ? 'fixed inset-0 z-[60] h-[100dvh] w-screen bg-slate-950 p-3 sm:p-4 overflow-hidden flex flex-col gap-3'
-          : 'space-y-4 max-w-5xl mx-auto'
-      }
-    >
-      {activeTheoryLesson && (
-        <div className="fixed inset-0 z-[90] bg-slate-950/85 p-2 sm:p-5 flex items-center justify-center" role="presentation">
-          <section role="dialog" aria-modal="true" aria-label={`Теория: ${activeTheoryLesson.title}`}
-            className="w-full max-w-3xl max-h-[92dvh] flex flex-col rounded-2xl border border-cyan-500/30 bg-white dark:bg-[#091524] shadow-2xl overflow-hidden">
-            <div className="shrink-0 flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-4 py-3 gap-3">
-              <div className="min-w-0">
-                <div className="text-[11px] font-bold text-cyan-600 dark:text-cyan-300 uppercase">Теория к заданию</div>
-                <div className="truncate text-sm font-semibold text-slate-900 dark:text-white">{scenario.title}</div>
-              </div>
-              <button type="button" onClick={closeTheory}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 cursor-pointer">
-                <X className="w-4 h-4" /> Вернуться в CLI
-              </button>
-            </div>
-            <div className="min-h-0 overflow-y-auto p-4 sm:p-6">
-              <LessonView key={activeTheoryLesson.id} lesson={activeTheoryLesson}
-                onBack={closeTheory} onOpenLesson={openTheory} />
-            </div>
-          </section>
-        </div>
-      )}
+  const hasTopology = engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1;
+  const toggleFullscreen = () => {
+    if (!fullscreen) {
+      pagePosition.current = { x: window.scrollX, y: window.scrollY };
+      returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setWindowedHeight(shellRef.current?.getBoundingClientRect().height ?? 0);
+      setFullscreenPanel(null);
+    }
+    setFullscreen(value => !value);
+  };
+  const closeTopology = () => {
+    if (!fullscreen) { setTopologyCollapsed(value => !value); return; }
+    setFullscreenPanel(null);
+    requestAnimationFrame(() => shellRef.current?.querySelector<HTMLButtonElement>('[data-cli-topology-toggle]')?.focus({ preventScroll: true }));
+  };
+  const learningControls = <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -517,16 +559,6 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
             <TerminalIcon className="w-3.5 h-3.5" /> {commandCatalogOpen ? 'Скрыть команды' : 'Команды Cisco'}
           </button>
-          {fullscreen && (
-            <button
-              type="button"
-              onClick={() => { setSidebarCollapsed((v) => !v); focusCliInput(); }}
-              aria-pressed={sidebarCollapsed}
-              className="rounded-lg border border-cyan-600/60 px-2.5 py-1 text-[11px] font-bold text-cyan-300 hover:bg-cyan-900/40"
-            >
-              {sidebarCollapsed ? 'Показать задание' : 'Скрыть задание'}
-            </button>
-          )}
           {modes.map((m) => (
             <button
               key={m}
@@ -618,7 +650,66 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </div>
       </section>
 
-      {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
+  </>;
+
+  return (
+    <div style={fullscreen ? { height: windowedHeight } : undefined}>
+    <div
+      ref={shellRef}
+      role={fullscreen ? 'dialog' : undefined}
+      aria-modal={fullscreen || undefined}
+      aria-label={fullscreen ? 'Полноэкранная консоль CLI' : undefined}
+      data-cli-shell={fullscreen ? 'fullscreen' : 'windowed'}
+      data-panel={fullscreen ? fullscreenPanel ?? 'closed' : undefined}
+      className={
+        fullscreen
+          ? 'cli-fullscreen z-[60] bg-slate-950'
+          : 'space-y-4 max-w-5xl mx-auto'
+      }
+    >
+      {fullscreen && (
+        <div className="cli-fullscreen-toolbar" role="toolbar" aria-label="Полноэкранный CLI">
+          <div className="cli-fullscreen-devices" aria-label="Выбор консоли устройства">
+            {Object.values(engine.getState().devices).filter(device => device.vendor === 'cisco-ios').map(device => (
+              <button key={device.id} type="button" onClick={() => switchConsole(device.id)}
+                aria-pressed={selectedDeviceId === device.id}>{device.hostname}</button>
+            ))}
+          </div>
+          <button type="button" onClick={() => setFullscreenPanel(value => value === 'task' ? null : 'task')}
+            aria-expanded={fullscreenPanel === 'task'} aria-controls={taskPanelId}>
+            {fullscreenPanel === 'task' ? 'Скрыть задание' : 'Показать задание'}
+          </button>
+          {hasTopology && <button type="button" data-cli-topology-toggle onClick={() => setFullscreenPanel(value => value === 'topology' ? null : 'topology')}
+            aria-expanded={fullscreenPanel === 'topology'} aria-controls={topologyPanelId}>Схема</button>}
+          <button type="button" onClick={toggleFullscreen} className="cli-fullscreen-exit" title="Выйти из полного экрана (Esc)">
+            <Minimize2 className="w-4 h-4" aria-hidden="true" /> Выход
+          </button>
+        </div>
+      )}
+      {activeTheoryLesson && (
+        <div className="fixed inset-0 z-[90] bg-slate-950/85 p-2 sm:p-5 flex items-center justify-center" role="presentation">
+          <section role="dialog" aria-modal="true" aria-label={`Теория: ${activeTheoryLesson.title}`}
+            className="w-full max-w-3xl max-h-[92dvh] flex flex-col rounded-2xl border border-cyan-500/30 bg-white dark:bg-[#091524] shadow-2xl overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-4 py-3 gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold text-cyan-600 dark:text-cyan-300 uppercase">Теория к заданию</div>
+                <div className="truncate text-sm font-semibold text-slate-900 dark:text-white">{scenario.title}</div>
+              </div>
+              <button type="button" onClick={closeTheory}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 cursor-pointer">
+                <X className="w-4 h-4" /> Вернуться в CLI
+              </button>
+            </div>
+            <div className="min-h-0 overflow-y-auto p-4 sm:p-6">
+              <LessonView key={activeTheoryLesson.id} lesson={activeTheoryLesson}
+                onBack={closeTheory} onOpenLesson={openTheory} />
+            </div>
+          </section>
+        </div>
+      )}
+      {!fullscreen && learningControls}
+
+      {!fullscreen && Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').length > 1 && (
         <div className={fullscreen ? 'flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto max-h-[9dvh]' : 'flex flex-wrap items-center gap-2'} aria-label="Выбор консоли устройства">
           <span className="text-xs text-slate-500 dark:text-slate-400">Консоль:</span>
           {Object.values(engine.getState().devices).filter(d => d.vendor === 'cisco-ios').map((device) => (
@@ -634,8 +725,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </div>
       )}
 
-      {!fullscreen && engine.getState().links.length > 0 && Object.keys(engine.getState().devices).length > 1 && (
-        <div className="w-full max-w-5xl mx-auto">
+      {hasTopology && (
+        <div id={topologyPanelId} aria-label="Схема сети" role="region"
+          className={fullscreen ? 'cli-fullscreen-side cli-fullscreen-topology' : 'w-full max-w-5xl mx-auto'}
+          hidden={fullscreen && fullscreenPanel !== 'topology'}>
+          {fullscreen && <p className="mb-2 text-xs text-slate-300">Схема в читаемом масштабе · прокрутка ↔ ↕</p>}
           <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
           {([
             ['auto', 'Авто'],
@@ -666,8 +760,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             activeDeviceId={selectedDeviceId}
             onSelectDevice={switchConsole}
             onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
-            collapsed={topologyCollapsed}
-            onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+            collapsed={fullscreen ? false : topologyCollapsed}
+            scrollable={fullscreen}
+            onToggleCollapse={closeTopology}
           />
         ) : (
           <TopologyPanel
@@ -676,8 +771,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             activeDeviceId={selectedDeviceId}
             onSelectDevice={switchConsole}
             onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
-            collapsed={topologyCollapsed}
-            onToggleCollapse={() => { setTopologyCollapsed(v => !v); focusCliInput(); }}
+            collapsed={fullscreen ? false : topologyCollapsed}
+            scrollable={fullscreen}
+            onToggleCollapse={closeTopology}
           />
         )}
         </div>
@@ -686,13 +782,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
       <div
         className={
           fullscreen
-            ? sidebarCollapsed
-              ? 'grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] gap-3 w-full overflow-hidden'
-              : 'relative grid flex-1 min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)] gap-3 w-full overflow-hidden'
+            ? 'contents'
             : 'grid grid-cols-1 lg:grid-cols-3 gap-4'
         }
       >
-        <div className={fullscreen ? 'min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col gap-3'}>
+        <div className={fullscreen ? 'cli-fullscreen-terminal min-w-0 min-h-0 h-full flex flex-col' : 'lg:col-span-2 flex flex-col gap-3'}>
 
           <div
             className={
@@ -701,7 +795,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
                 : 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-950 text-slate-100 overflow-hidden shadow-xl flex flex-col min-h-[420px] flex-1'
             }
           >
-          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/80">
+          <div className={`${fullscreen ? 'hidden' : 'flex'} items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/80`}>
             <div className="flex items-center gap-2 text-xs font-mono text-cyan-300">
               <TerminalIcon className="w-3.5 h-3.5" />
               {scenario.id}
@@ -709,7 +803,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => { setFullscreen((v) => !v); setSidebarCollapsed(true); focusCliInput(); }}
+                onClick={toggleFullscreen}
                 className="inline-flex text-xs text-slate-400 hover:text-white items-center gap-1 cursor-pointer"
                 title={fullscreen ? 'Выйти из полного экрана (Esc)' : 'Полный экран'}
               >
@@ -727,6 +821,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </div>
 
           <div
+            aria-label="История CLI"
             ref={scrollRef}
             className={`flex-1 min-h-0 overflow-y-auto p-3 font-mono leading-relaxed space-y-1 ${fullscreen ? 'text-[14px] sm:text-base' : 'text-[12px]'}`}
           >
@@ -754,11 +849,12 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </div>
 
           <form
+            aria-label="Командная строка CLI"
             onSubmit={(e) => {
               e.preventDefault();
               submitLine();
             }}
-            className="min-w-0 border-t border-slate-800 bg-slate-900/90 px-2 sm:px-3 py-2 flex items-center gap-1.5 sm:gap-2"
+            className="shrink-0 min-w-0 border-t border-slate-800 bg-slate-900/90 px-2 sm:px-3 py-2 flex items-center gap-1.5 sm:gap-2"
           >
             <span className="font-mono text-[11px] sm:text-[12px] text-emerald-400 shrink-0 max-w-[42%] truncate">
               {engine.getPrompt()}
@@ -768,7 +864,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 min-w-0 bg-transparent border-0 outline-none font-mono text-[12px] text-white placeholder:text-slate-600"
+              className={`flex-1 min-w-0 bg-transparent border-0 outline-none font-mono ${fullscreen ? 'text-base' : 'text-[12px]'} text-white placeholder:text-slate-600`}
               placeholder="command… (Tab · ↑↓ · ?)"
               autoComplete="off"
               spellCheck={false}
@@ -784,7 +880,16 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </div>
         </div>
 
-        {(!fullscreen || !sidebarCollapsed) && <div className={fullscreen ? 'absolute inset-0 z-10 min-w-0 space-y-3 overflow-y-auto rounded-xl bg-slate-950 p-2 lg:static lg:p-0 lg:pr-1 lg:bg-transparent lg:overflow-y-auto lg:min-h-0' : 'space-y-3'}>
+        <div id={taskPanelId} role="region" aria-label="Задание CLI"
+          hidden={fullscreen && fullscreenPanel !== 'task'}
+          className={fullscreen ? 'cli-fullscreen-side space-y-3' : 'space-y-3'}>
+          {fullscreen && <div className="space-y-3">
+            <button type="button" onClick={resetLab} className="inline-flex items-center gap-1 text-xs text-slate-300">
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> Сброс
+            </button>
+            {learningControls}
+          </div>}
+
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
@@ -923,8 +1028,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               <span className="font-mono">gi0/0</span>. Из config: <span className="font-mono">do show …</span>
             </p>
           </div>
-        </div>}
+        </div>
       </div>
+    </div>
     </div>
   );
 };
