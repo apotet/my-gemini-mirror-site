@@ -778,6 +778,16 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     "relatesTo": "Коммутация и тегирование VLAN.",
     "lessonId": "l2-vlan"
   },
+  "TPID": {
+    "description": "Tag Protocol Identifier — 16-битное поле в начале 802.1Q-тега Ethernet, обычно со значением 0x8100.",
+    "relatesTo": "Формат VLAN-тега IEEE 802.1Q.",
+    "lessonId": "l2-vlan"
+  },
+  "TCI": {
+    "description": "Tag Control Information — 16-битное поле после TPID в теге 802.1Q, состоящее из PCP (3 бита), DEI (1 бит) и VID (12 бит).",
+    "relatesTo": "Формат VLAN-тега IEEE 802.1Q.",
+    "lessonId": "l2-vlan"
+  },
   "VID": {
     "description": "Двенадцатибитовое поле идентификатора VLAN в теге 802.1Q. Обычные VLAN используют значения 1–4094; крайние значения имеют специальное назначение.",
     "relatesTo": "Формат VLAN-тега.",
@@ -1226,7 +1236,7 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
-  "IGMP Snooping": ["IGMP Snooping", "Наблюдение за членством multicast", false],
+  "TPID": ["Tag Protocol Identifier", "Идентификатор протокола тега", true],\n  "TCI": ["Tag Control Information", "Управляющая информация тега", true],\n  "VID": ["VLAN Identifier", "Идентификатор VLAN", true],\n  "IGMP Snooping": ["IGMP Snooping", "Наблюдение за членством multicast", false],
   "IGMP": ["Internet Group Management Protocol", "Протокол членства в IPv4 multicast-группах", true],
   "querier": ["IGMP Querier", "Отправитель запросов членства", false],
   "multicast group": ["Multicast Group", "Группа получателей", false],
