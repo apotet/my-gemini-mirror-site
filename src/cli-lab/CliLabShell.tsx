@@ -194,6 +194,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
   const [topologyCollapsed, setTopologyCollapsed] = useState(true);
   const [topologyLayerChoice, setTopologyLayerChoice] = useState<TopologyLayerChoice>('auto');
   const [fullscreenPanel, setFullscreenPanel] = useState<'task' | 'topology' | null>(null);
+  const [mobileTopologyZoom, setMobileTopologyZoom] = useState(1);
   const [windowedHeight, setWindowedHeight] = useState(0);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
@@ -732,7 +733,16 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         <div id={topologyPanelId} aria-label="Схема сети" role="region"
           className={fullscreen ? 'cli-fullscreen-side cli-fullscreen-topology' : 'w-full max-w-5xl mx-auto'}
           hidden={fullscreen && fullscreenPanel !== 'topology'}>
-          {fullscreen && <p className="mb-2 text-xs text-slate-300">Схема в читаемом масштабе · прокрутка ↔ ↕</p>}
+          {fullscreen && <div className="cli-mobile-zoom-controls" role="group" aria-label="Масштаб схемы">
+            <span className="text-xs text-slate-300">Масштаб схемы</span>
+            <button type="button" aria-label="Уменьшить схему" disabled={mobileTopologyZoom <= 0.75}
+              onClick={() => setMobileTopologyZoom(z => Math.max(0.75, +(z - 0.25).toFixed(2)))}>−</button>
+            <output aria-live="polite">{Math.round(mobileTopologyZoom * 100)}%</output>
+            <button type="button" aria-label="Увеличить схему" disabled={mobileTopologyZoom >= 2.5}
+              onClick={() => setMobileTopologyZoom(z => Math.min(2.5, +(z + 0.25).toFixed(2)))}>+</button>
+            <button type="button" onClick={() => setMobileTopologyZoom(1)}>Сброс</button>
+          </div>}
+          {fullscreen && <p className="mb-2 text-xs text-slate-300">Схема · прокрутка ↔ ↕</p>}
           <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
           {([
             ['auto', 'Авто'],
@@ -756,6 +766,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             </span>
           )}
         </div>
+        <div className="cli-topology-zoom-content" style={{ zoom: fullscreen ? mobileTopologyZoom : 1 }}>
         {experimentalTopology ? (
           <ExperimentalTopology
             layer={effectiveTopologyLayer}
@@ -779,6 +790,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             onToggleCollapse={closeTopology}
           />
         )}
+        </div>
         </div>
       )}
 
