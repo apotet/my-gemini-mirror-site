@@ -1385,6 +1385,7 @@ function renderDeviceNode(
     return (
       <g
         key={node.id}
+        data-draggable-device={node.id}
         role="button"
         tabIndex={0}
         aria-label={`Компьютер ${node.hostname}, ${ipText}`}
