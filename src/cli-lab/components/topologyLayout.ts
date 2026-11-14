@@ -213,7 +213,7 @@ function layoutInfraNodes(
   return coords;
 }
 
-export function computeTopologyLayout(state: NetworkState, showBottomMeta = false): TopologyGraph {
+export function computeTopologyLayout(state: NetworkState, showBottomMeta = false, manualPositions: Readonly<Record<string, { x: number; y: number }>> = {}): TopologyGraph {
   const allIds = Object.keys(state.devices);
   const infraIds = allIds.filter(id => state.devices[id].vendor !== 'linux-host');
   const hostIds = allIds.filter(id => state.devices[id].vendor === 'linux-host');
@@ -285,6 +285,15 @@ export function computeTopologyLayout(state: NetworkState, showBottomMeta = fals
         y: maxY + 170,
       };
     });
+  }
+
+  // Apply visual-only drag positions before computing sockets and cable routes.
+  // Network state and connectivity are never mutated.
+  for (const id of allIds) {
+    const position = manualPositions[id];
+    if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
+      coords[id] = { x: position.x, y: position.y };
+    }
   }
 
   const nodes: LayoutNode[] = allIds.map(id => {
