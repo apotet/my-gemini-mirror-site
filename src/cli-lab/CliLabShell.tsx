@@ -890,7 +890,6 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             <button type="button" onClick={resetLab} className="inline-flex items-center gap-1 text-xs text-slate-300">
               <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> Сброс
             </button>
-            {learningControls}
           </div>}
 
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
@@ -924,10 +923,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed">
                 {currentStep.instruction}
               </p>
-              {lessonChoices.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {lessonChoices.map(lesson => (
-                    <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
+              <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
                       className="inline-flex items-center gap-1 rounded-lg border border-cyan-500/40 px-2 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300 cursor-pointer">
                       <BookOpen className="w-3.5 h-3.5" /> Читать: {lesson.title}
                     </button>
