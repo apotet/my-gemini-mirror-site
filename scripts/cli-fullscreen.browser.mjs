@@ -45,7 +45,7 @@ for(const mobile of [false,true]){
    const r=await box(root),t=await box(root.locator('.cli-fullscreen-terminal')),f=await box(form),bar=await box(toolbar);
    const v=page.viewportSize();assert.ok(Math.abs(r.x)<1&&Math.abs(r.y)<1);assert.ok(Math.abs(r.width-v.width)<1&&Math.abs(r.height-v.height)<1);
    assert.ok(Math.abs(f.y+f.height-(r.y+r.height))<=12,'input pinned to bottom');assert.ok(t.y>=bar.y+bar.height,'toolbar separate from terminal');
-   if(panel){const p=await box(panel);assert.ok(p.x>=t.x+t.width-1,'panel never overlays terminal');assert.ok(p.width<r.width*.6);assert.ok(t.width>v.width*.4);}
+   if(panel){const p=await box(panel);if(mobile){assert.ok(p.width>r.width*.9,'mobile panel uses full width');assert.ok(p.x>=0&&p.x+p.width<=r.width+1,'mobile panel stays in viewport');assert.equal(await root.locator('.cli-fullscreen-terminal').isVisible(),false,'mobile terminal hidden while panel active');}else{assert.ok(p.x>=t.x+t.width-1,'panel never overlays terminal');assert.ok(p.width<r.width*.6);assert.ok(t.width>v.width*.4);}}
    assert.deepEqual(await page.evaluate(()=>({x:scrollX,y:scrollY})),originalScroll,'no document scroll');
    return {root:r,terminal:t,input:f,toolbar:bar};
  };
@@ -62,14 +62,14 @@ for(const mobile of [false,true]){
  assert.equal(await input.inputValue(),'show running-config');
  await task.getByText('Шаг 1 / 6',{exact:true}).scrollIntoViewIfNeeded();await task.getByRole('button',{name:'Подсказка',exact:true}).click();
  await task.getByRole('button',{name:'Скрыть подсказку',exact:true}).scrollIntoViewIfNeeded();
- await save('task');await toolbar.getByRole('button',{name:'Схема',exact:true}).click();await geometry(topo);
+ await save('task');await toolbar.getByRole('button',{name:'Схема',exact:true}).click();await geometry(topo);if(mobile){await save('mobile-fullwidth-topology');await toolbar.getByRole('button',{name:'Консоль',exact:true}).click();assert.equal(await root.locator('.cli-fullscreen-terminal').isVisible(),true);assert.equal(await input.inputValue(),'show running-config');await toolbar.getByRole('button',{name:'Схема',exact:true}).click();await geometry(topo);}
  assert.equal(await svg.evaluate(el=>el===window.__fullscreenSvg),true,'one persistent SVG across fullscreen/panel switches');
  assert.equal(await pc.getByRole('textbox').inputValue(),'ping 192.168.10.12');assert.equal(await pc.getByRole('status').innerText(),pcResult);
  const canvas=topo.locator('[data-topology-scroll]');await canvas.evaluate(el=>el.scrollLeft=120);
  const canvasScroll=await canvas.evaluate(el=>el.scrollLeft);assert.ok(canvasScroll>0,'horizontal diagram scroll is available');
  await toolbar.getByRole('button',{name:'Показать задание',exact:true}).click();assert.equal(await task.getByRole('button',{name:'Скрыть подсказку',exact:true}).count(),1);
  await toolbar.getByRole('button',{name:'Схема',exact:true}).click();assert.equal(await canvas.evaluate(el=>el.scrollLeft),canvasScroll,'diagram scroll retained');
- await topo.getByRole('button',{name:'Скрыть',exact:true}).click();assert.ok((await geometry()).terminal.width>taskGeometry.terminal.width+100);
+ await topo.getByRole('button',{name:'Скрыть',exact:true}).click();if(mobile){assert.equal(await root.locator('.cli-fullscreen-terminal').isVisible(),true);assert.ok((await geometry()).terminal.width>viewport.width*.9);}else{assert.ok((await geometry()).terminal.width>taskGeometry.terminal.width+100);}
  assert.equal(await toolbar.getByRole('button',{name:'Схема',exact:true}).evaluate(el=>document.activeElement===el),true);
  // Work while tasks stay open; real commands advance Learn, not panel toggles.
  await toolbar.getByRole('button',{name:'Показать задание',exact:true}).click();
