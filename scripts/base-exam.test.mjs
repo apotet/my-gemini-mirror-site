@@ -25,7 +25,7 @@ const bankBefore = JSON.stringify(ALL_QUESTIONS);
 const base = ALL_QUESTIONS.filter(q => q.difficulty === 'beginner');
 assert.ok(base.length);
 assert.equal(getExamPool('mixed', 'beginner').length, base.length);
-const fixtures = ['beginner', 'applied', 'advanced', 'basic', undefined].map((difficulty, i) => ({ id: String(i), difficulty }));
+const fixtures = ['beginner', 'applied', 'advanced', 'basic', undefined, 'intermediate'].map((difficulty, i) => ({ id: String(i), difficulty }));
 assert.deepEqual(filterExamDifficulty(fixtures, 'beginner').map(q => q.id), ['0']);
 assert.equal(filterExamDifficulty(fixtures, 'mixed').length, fixtures.length);
 for (const mode of QUIZ_MODES) for (const count of [5, 10, 20, 30, ALL_QUESTIONS.length + 1]) {

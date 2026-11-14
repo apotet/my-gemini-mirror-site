@@ -12,7 +12,7 @@ export interface Question {
   template?: boolean;
   family?: string;
   /** beginner kept for bank compatibility (legacy alias of basic). */
-  difficulty?: 'basic' | 'beginner' | 'applied' | 'advanced';
+  difficulty?: 'basic' | 'beginner' | 'intermediate' | 'applied' | 'advanced';
 }
 
 export type QuizModeId =
