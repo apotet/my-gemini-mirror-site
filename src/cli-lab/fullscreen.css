@@ -153,3 +153,20 @@
     overflow-x: auto;
   }
 }
+
+/* Desktop task is a sidebar; topology remains a separate full-width view. */
+@media (min-width: 601px) {
+  .cli-fullscreen[data-panel='task'] {
+    grid-template-columns: minmax(0, 1fr) var(--cli-side-width);
+  }
+  .cli-fullscreen[data-panel='task'] .cli-fullscreen-terminal {
+    display: flex;
+    grid-column: 1;
+  }
+  .cli-fullscreen[data-panel='task'] .cli-fullscreen-side {
+    grid-column: 2;
+    width: 100%;
+  }
+  .cli-fullscreen[data-panel='topology'] .cli-fullscreen-terminal { display: none; }
+  .cli-fullscreen[data-panel='topology'] .cli-fullscreen-side { grid-column: 1; }
+}
