@@ -170,3 +170,16 @@
   .cli-fullscreen[data-panel='topology'] .cli-fullscreen-terminal { display: none; }
   .cli-fullscreen[data-panel='topology'] .cli-fullscreen-side { grid-column: 1; }
 }
+
+/* Desktop: center topology in the entire dedicated tab, not a 640px rail. */
+@media (min-width: 601px) {
+  .cli-fullscreen-topology [data-topology-scroll] {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .cli-fullscreen-topology [data-topology-scroll] > div {
+    width: 100% !important;
+    height: max(480px, 65dvh) !important;
+    cursor: zoom-in;
+  }
+}
