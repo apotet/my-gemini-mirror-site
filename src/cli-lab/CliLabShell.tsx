@@ -892,23 +892,6 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             </button>
           </div>}
 
-          {fullscreen && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700 p-2" role="group" aria-label="Сложность CLI">
-            <span className="text-xs font-semibold text-slate-300">Сложность:</span>
-            {SCENARIO_LEVELS.map(level => (
-              <button key={level.id} type="button"
-                aria-pressed={scenarioLevel === level.id}
-                onClick={() => {
-                  setScenarioLevel(level.id);
-                  if (!level.scenarios.some(item => item.id === scenarioId)) setScenarioId(level.scenarios[0].id);
-                }}
-                className={scenarioLevel === level.id
-                  ? 'rounded-lg border border-cyan-500 bg-cyan-500/15 px-2 py-1.5 text-xs font-semibold text-cyan-200'
-                  : 'rounded-lg border border-slate-600 px-2 py-1.5 text-xs font-semibold text-slate-300'}>
-                {level.label} ({level.scenarios.length})
-              </button>
-            ))}
-          </div>}
-
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
@@ -918,17 +901,17 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               {scenario.description}
             </p>
             {allLessonChoices.length > 0 && (
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-2 space-y-1.5">
-                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Не получается? Открой тему — прогресс сохранится:</p>
-                <div className="flex flex-wrap gap-1.5">
+              <details className="border-t border-slate-200 dark:border-slate-700 pt-2">
+                <summary className="text-xs text-cyan-700 dark:text-cyan-300 cursor-pointer">Теория по заданию</summary>
+                <div className="flex flex-wrap gap-1.5 mt-2">
                   {allLessonChoices.map(lesson => (
                     <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
-                      className="rounded-lg border border-cyan-500/30 px-2 py-1 text-left text-[11px] text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10 cursor-pointer">
+                      className="rounded-lg border border-cyan-500/30 px-2 py-1 text-left text-[11px] text-cyan-700 dark:text-cyan-300 cursor-pointer">
                       {lesson.title}
                     </button>
                   ))}
                 </div>
-              </div>
+              </details>
             )}
           </div>
 
@@ -940,13 +923,6 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed">
                 {currentStep.instruction}
               </p>
-              <button key={lesson.id} type="button" onClick={() => openTheory(lesson.id)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-cyan-500/40 px-2 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300 cursor-pointer">
-                      <BookOpen className="w-3.5 h-3.5" /> Читать: {lesson.title}
-                    </button>
-                  ))}
-                </div>
-              )}
               <button
                 type="button"
                 onClick={() => { setHintOpen((v) => !v); focusCliInput(); }}
