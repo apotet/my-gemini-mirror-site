@@ -183,3 +183,11 @@
     cursor: zoom-in;
   }
 }
+
+.cli-topology-view-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 6px 4px; }
+.cli-topology-view-controls button { border: 1px solid #64748b; border-radius: 7px; padding: 6px 12px; color: #e2e8f0; background: #1e293b; cursor: pointer; }
+@media (min-width: 601px) {
+  .cli-fullscreen-topology [data-topology-scroll] { overscroll-behavior: none; }
+  .cli-fullscreen-topology [data-topology-scroll] > div { touch-action: none; cursor: grab; }
+  .cli-fullscreen-topology [data-topology-scroll] > div:active { cursor: grabbing; }
+}
