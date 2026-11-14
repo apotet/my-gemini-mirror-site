@@ -675,12 +675,15 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
                 aria-pressed={selectedDeviceId === device.id}>{device.hostname}</button>
             ))}
           </div>
-          <button type="button" onClick={() => setFullscreenPanel(value => value === 'task' ? null : 'task')}
-            aria-expanded={fullscreenPanel === 'task'} aria-controls={taskPanelId}>
-            {fullscreenPanel === 'task' ? 'Скрыть задание' : 'Показать задание'}
+          <button type="button" className="cli-mobile-tab" onClick={() => setFullscreenPanel(null)}
+            aria-pressed={fullscreenPanel === null}>Консоль</button>
+          <button type="button" className="cli-task-toggle" onClick={() => setFullscreenPanel(value => value === 'task' ? null : 'task')}
+            aria-expanded={fullscreenPanel === 'task'} aria-pressed={fullscreenPanel === 'task'} aria-controls={taskPanelId}>
+            <span className="cli-desktop-label">{fullscreenPanel === 'task' ? 'Скрыть задание' : 'Показать задание'}</span>
+            <span className="cli-mobile-label">Задание</span>
           </button>
-          {hasTopology && <button type="button" data-cli-topology-toggle onClick={() => setFullscreenPanel(value => value === 'topology' ? null : 'topology')}
-            aria-expanded={fullscreenPanel === 'topology'} aria-controls={topologyPanelId}>Схема</button>}
+          {hasTopology && <button type="button" className="cli-topology-toggle" data-cli-topology-toggle onClick={() => setFullscreenPanel(value => value === 'topology' ? null : 'topology')}
+            aria-expanded={fullscreenPanel === 'topology'} aria-pressed={fullscreenPanel === 'topology'} aria-controls={topologyPanelId}>Схема</button>}
           <button type="button" onClick={toggleFullscreen} className="cli-fullscreen-exit" title="Выйти из полного экрана (Esc)">
             <Minimize2 className="w-4 h-4" aria-hidden="true" /> Выход
           </button>
