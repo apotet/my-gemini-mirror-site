@@ -100,9 +100,10 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
   const [desktopInspectorOpen, setDesktopInspectorOpen] = useState(true);
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 720, height: 420 });
   const [transform, setTransform] = useState<ViewTransform>({ scale: 1, tx: 0, ty: 0 });
+  const [manualPositions, setManualPositions] = useState<Record<string, { x: number; y: number }>>({});
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ pointerId: number; startX: number; startY: number; lastX: number; lastY: number; active: boolean } | null>(null);
+  const dragRef = useRef<{ pointerId: number; startX: number; startY: number; lastX: number; lastY: number; active: boolean; deviceId: string | null } | null>(null);
   const touchPoints = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; centerX: number; centerY: number } | null>(null);
   const suppressClickRef = useRef(false);
@@ -123,7 +124,7 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
     [tree],
   );
 
-  const graph = useMemo(() => computeTopologyLayout(state, layer === 'ip'), [state, layer]);
+  const graph = useMemo(() => computeTopologyLayout(state, layer === 'ip', manualPositions), [state, layer, manualPositions]);
 
   const labelSpecs = useMemo(() => {
     const specs: Record<string, PortLabelSpec> = {};
@@ -181,8 +182,8 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
   const fullBounds = useMemo(() => computeGraphBounds(graph, placedLabels), [graph, placedLabels]);
 
   const topologySignature = useMemo(
-    () => `${Object.keys(state.devices).join(',')}::${state.links.map(l => `${l.a}:${l.aIf}-${l.b}:${l.bIf}`).join(',')}::${layer === 'ip' ? 'ip' : 'l2'}`,
-    [state.devices, state.links, layer],
+    () => `${Object.keys(state.devices).join(',')}::${state.links.map(l => `${l.a}:${l.aIf}-${l.b}:${l.bIf}`).join(',')}`,
+    [state.devices, state.links],
   );
 
   const computeFitTransform = useCallback((w: number, h: number): ViewTransform => {
@@ -227,6 +228,7 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
   useEffect(() => {
     userAdjustedRef.current = false;
     hasFittedRef.current = false;
+    setManualPositions({});
   }, [topologySignature]);
 
   // Fit on initial mount, scenario change, or container resize when user hasn't manually zoomed/panned.
@@ -280,6 +282,12 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
     setTransform(computeFitTransform(containerSize.width, containerSize.height));
   }, [computeFitTransform, containerSize.width, containerSize.height]);
 
+  const resetLayout = () => {
+    setManualPositions({});
+    userAdjustedRef.current = false;
+    hasFittedRef.current = false;
+  };
+
   const tryCapture = (target: EventTarget & HTMLDivElement, pointerId: number) => {
     try {
       target.setPointerCapture(pointerId);
@@ -297,6 +305,9 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
   };
 
   const startPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    const target = event.target as Element;
+    // Ports and cables retain their selection gesture; only device bodies drag.
+    const deviceId = target.closest('[data-draggable-device]')?.getAttribute('data-draggable-device') ?? null;
     if (event.pointerType === 'touch') {
       touchPoints.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (touchPoints.current.size === 1) {
@@ -307,6 +318,7 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
           lastX: event.clientX,
           lastY: event.clientY,
           active: false,
+          deviceId,
         };
       } else if (touchPoints.current.size === 2) {
         const [p, q] = [...touchPoints.current.values()];
@@ -328,6 +340,7 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
       lastX: event.clientX,
       lastY: event.clientY,
       active: false,
+      deviceId,
     };
   };
 
@@ -374,7 +387,17 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
         const dy = event.clientY - drag.lastY;
         drag.lastX = event.clientX;
         drag.lastY = event.clientY;
-        setTransform(t => ({ ...t, tx: t.tx + dx, ty: t.ty + dy }));
+        if (drag.deviceId) {
+          const id = drag.deviceId;
+          const scale = transform.scale;
+          const base = graph.nodeMap[id];
+          if (base) setManualPositions(prev => {
+            const old = prev[id] ?? { x: base.x, y: base.y };
+            return { ...prev, [id]: { x: old.x + dx / scale, y: old.y + dy / scale } };
+          });
+        } else {
+          setTransform(t => ({ ...t, tx: t.tx + dx, ty: t.ty + dy }));
+        }
       }
       return;
     }
@@ -391,7 +414,17 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
       const dy = event.clientY - drag.lastY;
       drag.lastX = event.clientX;
       drag.lastY = event.clientY;
-      setTransform(previous => ({ ...previous, tx: previous.tx + dx, ty: previous.ty + dy }));
+      if (drag.deviceId) {
+        const id = drag.deviceId;
+        const scale = transform.scale;
+        const base = graph.nodeMap[id];
+        if (base) setManualPositions(prev => {
+          const old = prev[id] ?? { x: base.x, y: base.y };
+          return { ...prev, [id]: { x: old.x + dx / scale, y: old.y + dy / scale } };
+        });
+      } else {
+        setTransform(previous => ({ ...previous, tx: previous.tx + dx, ty: previous.ty + dy }));
+      }
     }
   };
 
@@ -865,6 +898,7 @@ export const ExperimentalTopologyV2: React.FC<ExperimentalTopologyV2Props> = ({
             <LocateFixed className="w-3.5 h-3.5 text-cyan-300" aria-hidden="true" />
             Вписать
           </button>
+          <button type="button" data-topology-auto-layout onClick={resetLayout} className="min-h-[36px] px-2 rounded-lg border border-slate-600 text-slate-200 text-xs whitespace-nowrap">Авторасстановка</button>
 
           {/* Desktop collapsible Inspector rail toggle */}
           <button
@@ -1422,6 +1456,7 @@ function renderDeviceNode(
   return (
     <g
       key={node.id}
+      data-draggable-device={node.id}
       role="button"
       tabIndex={0}
       aria-pressed={isActive}
