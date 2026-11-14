@@ -176,11 +176,28 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     return () => window.removeEventListener('resize', update);
   }, [collapsed]);
 
-  // One fixed, automatically fitted view. No pinch, pan or wheel zoom.
-  // ResizeObserver recomputes this only when the canvas size or graph changes.
+  // Fit on resize and graph changes; desktop fullscreen wheel zoom is preserved until resize.
   useEffect(() => {
     setTransform(computeFitTransform(containerSize.width, containerSize.height));
   }, [containerSize.width, containerSize.height, computeFitTransform]);
+
+  const handleWheelZoom = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (!scrollable || !window.matchMedia('(min-width: 601px)').matches) return;
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const factor = Math.exp(-event.deltaY * 0.0015);
+    setTransform(previous => {
+      const scale = Math.max(0.2, Math.min(4, previous.scale * factor));
+      const ratio = scale / previous.scale;
+      return {
+        scale,
+        tx: x - (x - previous.tx) * ratio,
+        ty: y - (y - previous.ty) * ratio,
+      };
+    });
+  };
 
   const guardClick = (fn: () => void) => fn();
 
@@ -255,6 +272,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
           <div className={scrollable ? 'overflow-x-auto' : undefined} style={scrollable ? { overscrollBehaviorX: 'contain' } : undefined} data-topology-scroll={scrollable || undefined}>
           <div
             ref={stageRef}
+            onWheel={handleWheelZoom}
             style={scrollable ? { width: Math.max(640, fullBounds.width + 40), height: Math.max(400, fullBounds.height + 40) } : undefined}
             className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-auto"
           >
