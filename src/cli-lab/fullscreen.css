@@ -125,3 +125,28 @@
     touch-action: pan-x pan-y;
   }
 }
+
+/* Zoom controls are exclusive to the mobile fullscreen topology tab. */
+.cli-mobile-zoom-controls { display: none; }
+@media (max-width: 600px) {
+  .cli-fullscreen .cli-mobile-zoom-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .cli-mobile-zoom-controls button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    background: #1e293b;
+    color: #f8fafc;
+    font-weight: 700;
+  }
+  .cli-mobile-zoom-controls button:disabled { opacity: .35; }
+  .cli-mobile-zoom-controls output { min-width: 48px; text-align: center; color: #f8fafc; }
+  .cli-fullscreen .cli-topology-zoom-content { width: max-content; min-width: 100%; }
+}
