@@ -699,7 +699,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             <span className="cli-mobile-label">Задание</span>
           </button>
           {hasTopology && <button type="button" className="cli-topology-toggle" data-cli-topology-toggle onClick={() => setFullscreenPanel(value => value === 'topology' ? null : 'topology')}
-            aria-expanded={fullscreenPanel === 'topology'} aria-pressed={fullscreenPanel === 'topology'} aria-controls={topologyPanelId}>Схема</button>}
+            aria-expanded={fullscreenPanel === 'topology'} aria-pressed={fullscreenPanel === 'topology'} aria-controls={topologyPanelId}>GUI</button>}
           <button type="button" onClick={toggleFullscreen} className="cli-fullscreen-exit" title="Выйти из полного экрана (Esc)">
             <Minimize2 className="w-4 h-4" aria-hidden="true" /> Выход
           </button>
