@@ -1236,7 +1236,9 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
-  "TPID": ["Tag Protocol Identifier", "Идентификатор протокола тега", true],\n  "TCI": ["Tag Control Information", "Управляющая информация тега", true],\n  "VID": ["VLAN Identifier", "Идентификатор VLAN", true],\n  "IGMP Snooping": ["IGMP Snooping", "Наблюдение за членством multicast", false],
+  "TPID": ["Tag Protocol Identifier", "Идентификатор протокола тега", true],
+  "TCI": ["Tag Control Information", "Управляющая информация тега", true],
+  "IGMP Snooping": ["IGMP Snooping", "Наблюдение за членством multicast", false],
   "IGMP": ["Internet Group Management Protocol", "Протокол членства в IPv4 multicast-группах", true],
   "querier": ["IGMP Querier", "Отправитель запросов членства", false],
   "multicast group": ["Multicast Group", "Группа получателей", false],
