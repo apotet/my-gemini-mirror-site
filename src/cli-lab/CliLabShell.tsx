@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useId, useEffect, useMemo, useRef, useState } f
 import './fullscreen.css';
 import { TopologyPanel } from './components/TopologyPanel';
 import { ExperimentalTopology } from './components/ExperimentalTopology';
+import { ExperimentalTopologyV2 } from './components/ExperimentalTopologyV2';
 import { resolveTopologyLayer, type TopologyLayerChoice } from './topologyLayers';
 import { LabEngine } from './engine/LabEngine';
 import { scenarioTheoryIds } from './scenarioTheory';
@@ -170,7 +171,7 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean }> = ({ initialScenarioId, experimentalTopology = true }) => {
+export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean; topologyUxV2?: boolean }> = ({ initialScenarioId, experimentalTopology = true, topologyUxV2 = false }) => {
   const [scenarioId, setScenarioId] = useState(() =>
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
@@ -542,6 +543,21 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     setFullscreenPanel(null);
     requestAnimationFrame(() => shellRef.current?.querySelector<HTMLButtonElement>('[data-cli-topology-toggle]')?.focus({ preventScroll: true }));
   };
+  const openTopologyFullscreen = () => {
+    if (!fullscreen) {
+      pagePosition.current = { x: window.scrollX, y: window.scrollY };
+      returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setWindowedHeight(shellRef.current?.getBoundingClientRect().height ?? 0);
+      setFullscreen(true);
+    }
+    setFullscreenPanel('topology');
+  };
+  const openDeviceConsoleFromTopology = (id: string) => {
+    switchConsole(id);
+    if (fullscreen) {
+      setFullscreenPanel(null);
+    }
+  };
   const learningControls = <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -730,9 +746,9 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
 
       {hasTopology && (
         <div id={topologyPanelId} aria-label="Схема сети" role="region"
-          className={fullscreen ? 'cli-fullscreen-side cli-fullscreen-topology' : 'w-full max-w-5xl mx-auto'}
+          className={fullscreen ? (topologyUxV2 ? 'cli-fullscreen-side cli-fullscreen-topology-v2' : 'cli-fullscreen-side cli-fullscreen-topology') : 'w-full max-w-5xl mx-auto'}
           hidden={fullscreen && fullscreenPanel !== 'topology'}>
-          
+          {!topologyUxV2 && (
           <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
           {([
             ['auto', 'Авто'],
@@ -756,7 +772,23 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             </span>
           )}
         </div>
-        {experimentalTopology ? (
+          )}
+        {topologyUxV2 ? (
+          <ExperimentalTopologyV2
+            layer={effectiveTopologyLayer}
+            layerChoice={topologyLayerChoice}
+            onChangeLayerChoice={setTopologyLayerChoice}
+            state={engine.getState()}
+            activeDeviceId={selectedDeviceId}
+            onSelectDevice={switchConsole}
+            onOpenDeviceConsole={fullscreen ? openDeviceConsoleFromTopology : undefined}
+            onToggleLink={scenario.allowLinkToggle ? toggleCable : undefined}
+            collapsed={fullscreen ? false : topologyCollapsed}
+            fullscreen={fullscreen}
+            onEnterFullscreen={!fullscreen ? openTopologyFullscreen : undefined}
+            onToggleCollapse={closeTopology}
+          />
+        ) : experimentalTopology ? (
           <ExperimentalTopology
             layer={effectiveTopologyLayer}
             state={engine.getState()}
