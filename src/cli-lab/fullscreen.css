@@ -218,3 +218,11 @@
   }
   .cli-topology-desktop-help { display: none; }
 }
+
+/* Keep mobile topology compact; inspector follows immediately below the canvas. */
+@media (max-width: 600px) {
+  .cli-fullscreen-topology [data-topology-scroll] > div {
+    height: 280px !important;
+    min-height: 0 !important;
+  }
+}

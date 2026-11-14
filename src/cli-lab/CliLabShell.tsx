@@ -732,7 +732,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         <div id={topologyPanelId} aria-label="Схема сети" role="region"
           className={fullscreen ? 'cli-fullscreen-side cli-fullscreen-topology' : 'w-full max-w-5xl mx-auto'}
           hidden={fullscreen && fullscreenPanel !== 'topology'}>
-          {fullscreen && <p className="mb-2 text-xs text-slate-300">Схема в читаемом масштабе · прокрутка ↔ ↕</p>}
+          
           <div className="flex flex-wrap items-center gap-1.5 pb-2" role="group" aria-label="Слой сетевой топологии">
           {([
             ['auto', 'Авто'],
