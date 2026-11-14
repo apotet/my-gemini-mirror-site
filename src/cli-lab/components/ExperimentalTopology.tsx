@@ -75,6 +75,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   const [transform, setTransform] = useState<ViewTransform>({ scale: 1, tx: 0, ty: 0 });
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const tree = useMemo<SpanningTreeResult | null>(() => {
     try {
       return deriveSpanningTree(state, { kind: 'cst' });
@@ -181,22 +182,48 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     setTransform(computeFitTransform(containerSize.width, containerSize.height));
   }, [containerSize.width, containerSize.height, computeFitTransform]);
 
-  const handleWheelZoom = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (!scrollable || !window.matchMedia('(min-width: 601px)').matches) return;
-    event.preventDefault();
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const factor = Math.exp(-event.deltaY * 0.0015);
-    setTransform(previous => {
-      const scale = Math.max(0.2, Math.min(4, previous.scale * factor));
-      const ratio = scale / previous.scale;
-      return {
-        scale,
-        tx: x - (x - previous.tx) * ratio,
-        ty: y - (y - previous.ty) * ratio,
-      };
-    });
+  // A native non-passive wheel listener prevents the page from scrolling while zooming.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || !scrollable) return;
+    const onWheel = (event: WheelEvent) => {
+      if (!window.matchMedia('(min-width: 601px)').matches) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const rect = stage.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rect.height : 1);
+      const factor = Math.exp(-Math.max(-120, Math.min(120, delta)) * 0.002);
+      setTransform(previous => {
+        const scale = Math.max(0.2, Math.min(4, previous.scale * factor));
+        const ratio = scale / previous.scale;
+        return { scale, tx: x - (x - previous.tx) * ratio, ty: y - (y - previous.ty) * ratio };
+      });
+    };
+    stage.addEventListener('wheel', onWheel, { passive: false });
+    return () => stage.removeEventListener('wheel', onWheel);
+  }, [scrollable, collapsed]);
+
+  const startPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!scrollable || !window.matchMedia('(min-width: 601px)').matches || event.button !== 0) return;
+    // Only drag the empty canvas; device and port clicks must remain functional.
+    if (event.target !== event.currentTarget && !(event.target instanceof SVGRectElement)) return;
+    dragRef.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const movePan = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    dragRef.current = { ...drag, x: event.clientX, y: event.clientY };
+    setTransform(previous => ({ ...previous, tx: previous.tx + dx, ty: previous.ty + dy }));
+  };
+  const stopPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
   const guardClick = (fn: () => void) => fn();
@@ -267,12 +294,19 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
 
       {/* Main Two-Zone Workspace */}
       <div className={scrollable ? 'block' : 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_310px]'}>
+        {scrollable && <div className="cli-topology-view-controls">
+          <button type="button" onClick={() => setTransform(computeFitTransform(containerSize.width, containerSize.height))}>Вписать схему</button>
+          <span className="text-xs text-slate-400">Колёсико — масштаб · перетаскивание фона — перемещение</span>
+        </div>}
         {/* Interactive Canvas */}
         <div className="flex flex-col min-w-0">
           <div className={scrollable ? 'overflow-x-auto' : undefined} style={scrollable ? { overscrollBehaviorX: 'contain' } : undefined} data-topology-scroll={scrollable || undefined}>
           <div
             ref={stageRef}
-            onWheel={handleWheelZoom}
+            onPointerDown={startPan}
+            onPointerMove={movePan}
+            onPointerUp={stopPan}
+            onPointerCancel={stopPan}
             style={scrollable ? { width: Math.max(640, fullBounds.width + 40), height: Math.max(400, fullBounds.height + 40) } : undefined}
             className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-auto"
           >
