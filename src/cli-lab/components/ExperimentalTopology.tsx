@@ -76,6 +76,8 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
 
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const touchPoints = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number; centerX: number; centerY: number } | null>(null);
   const tree = useMemo<SpanningTreeResult | null>(() => {
     try {
       return deriveSpanningTree(state, { kind: 'cst' });
@@ -205,14 +207,60 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     return () => stage.removeEventListener('wheel', onWheel);
   }, [scrollable, collapsed]);
 
+  const isMobileCanvas = () => scrollable && window.matchMedia('(max-width: 600px)').matches;
   const startPan = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!scrollable || !window.matchMedia('(min-width: 601px)').matches || event.button !== 0) return;
-    // Only drag the empty canvas; device and port clicks must remain functional.
+    if (!scrollable) return;
+    if (isMobileCanvas() && event.pointerType === 'touch') {
+      touchPoints.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      event.currentTarget.setPointerCapture(event.pointerId);
+      if (touchPoints.current.size === 2) {
+        const [p, q] = [...touchPoints.current.values()];
+        pinchRef.current = {
+          distance: Math.hypot(p.x - q.x, p.y - q.y),
+          centerX: (p.x + q.x) / 2,
+          centerY: (p.y + q.y) / 2,
+        };
+        dragRef.current = null;
+      }
+      return;
+    }
+    if (event.button !== 0 || !window.matchMedia('(min-width: 601px)').matches) return;
     if (event.target !== event.currentTarget && !(event.target instanceof SVGRectElement)) return;
     dragRef.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const movePan = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isMobileCanvas() && event.pointerType === 'touch') {
+      const old = touchPoints.current.get(event.pointerId);
+      if (!old) return;
+      touchPoints.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      const points = [...touchPoints.current.values()];
+      if (points.length === 2) {
+        const [p, q] = points;
+        const distance = Math.max(1, Math.hypot(p.x - q.x, p.y - q.y));
+        const centerX = (p.x + q.x) / 2;
+        const centerY = (p.y + q.y) / 2;
+        const previous = pinchRef.current;
+        if (previous && previous.distance > 0) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          setTransform(t => {
+            const scale = Math.max(0.2, Math.min(4, t.scale * distance / previous.distance));
+            const ratio = scale / t.scale;
+            const ox = previous.centerX - rect.left;
+            const oy = previous.centerY - rect.top;
+            return {
+              scale,
+              tx: centerX - rect.left - (ox - t.tx) * ratio,
+              ty: centerY - rect.top - (oy - t.ty) * ratio,
+            };
+          });
+        }
+        pinchRef.current = { distance, centerX, centerY };
+      } else if (points.length === 1) {
+        setTransform(t => ({ ...t, tx: t.tx + event.clientX - old.x, ty: t.ty + event.clientY - old.y }));
+      }
+      return;
+    }
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const dx = event.clientX - drag.x;
@@ -221,8 +269,11 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
     setTransform(previous => ({ ...previous, tx: previous.tx + dx, ty: previous.ty + dy }));
   };
   const stopPan = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
-    dragRef.current = null;
+    if (event.pointerType === 'touch') {
+      touchPoints.current.delete(event.pointerId);
+      pinchRef.current = null;
+    }
+    if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
@@ -296,7 +347,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
       <div className={scrollable ? 'block' : 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_310px]'}>
         {scrollable && <div className="cli-topology-view-controls">
           <button type="button" onClick={() => setTransform(computeFitTransform(containerSize.width, containerSize.height))}>Вписать схему</button>
-          <span className="text-xs text-slate-400">Колёсико — масштаб · перетаскивание фона — перемещение</span>
+          <span className="cli-topology-desktop-help text-xs text-slate-400">Колёсико — масштаб · перетаскивание фона — перемещение</span>
         </div>}
         {/* Interactive Canvas */}
         <div className="flex flex-col min-w-0">

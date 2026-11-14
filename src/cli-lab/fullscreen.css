@@ -191,3 +191,30 @@
   .cli-fullscreen-topology [data-topology-scroll] > div { touch-action: none; cursor: grab; }
   .cli-fullscreen-topology [data-topology-scroll] > div:active { cursor: grabbing; }
 }
+
+/* Mobile fullscreen topology: gestures on the canvas, one always-visible Fit button. */
+@media (max-width: 600px) {
+  .cli-fullscreen-topology [data-topology-scroll] {
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .cli-fullscreen-topology [data-topology-scroll] > div {
+    width: 100% !important;
+    height: max(340px, 55dvh) !important;
+    touch-action: none;
+  }
+  .cli-fullscreen-topology .cli-topology-view-controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 8px 4px;
+    background: #0f172a;
+  }
+  .cli-fullscreen-topology .cli-topology-view-controls button {
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .cli-topology-desktop-help { display: none; }
+}
