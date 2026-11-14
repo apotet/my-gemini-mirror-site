@@ -892,6 +892,23 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             </button>
           </div>}
 
+          {fullscreen && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700 p-2" role="group" aria-label="Сложность CLI">
+            <span className="text-xs font-semibold text-slate-300">Сложность:</span>
+            {SCENARIO_LEVELS.map(level => (
+              <button key={level.id} type="button"
+                aria-pressed={scenarioLevel === level.id}
+                onClick={() => {
+                  setScenarioLevel(level.id);
+                  if (!level.scenarios.some(item => item.id === scenarioId)) setScenarioId(level.scenarios[0].id);
+                }}
+                className={scenarioLevel === level.id
+                  ? 'rounded-lg border border-cyan-500 bg-cyan-500/15 px-2 py-1.5 text-xs font-semibold text-cyan-200'
+                  : 'rounded-lg border border-slate-600 px-2 py-1.5 text-xs font-semibold text-slate-300'}>
+                {level.label} ({level.scenarios.length})
+              </button>
+            ))}
+          </div>}
+
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               Сценарий
