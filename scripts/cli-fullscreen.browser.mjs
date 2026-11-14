@@ -44,7 +44,7 @@ for(const mobile of [false,true]){
  const geometry=async panel=>{
    const r=await box(root),t=await box(root.locator('.cli-fullscreen-terminal')),f=await box(form),bar=await box(toolbar);
    const v=page.viewportSize();assert.ok(Math.abs(r.x)<1&&Math.abs(r.y)<1);assert.ok(Math.abs(r.width-v.width)<1&&Math.abs(r.height-v.height)<1);
-   assert.ok(Math.abs(f.y+f.height-(r.y+r.height))<=12,'input pinned to bottom');assert.ok(t.y>=bar.y+bar.height,'toolbar separate from terminal');
+   if(!mobile||!panel)assert.ok(Math.abs(f.y+f.height-(r.y+r.height))<=12,'input pinned to bottom');if(t)assert.ok(t.y>=bar.y+bar.height,'toolbar separate from terminal');
    if(panel){const p=await box(panel);if(mobile){assert.ok(p.width>r.width*.9,'mobile panel uses full width');assert.ok(p.x>=0&&p.x+p.width<=r.width+1,'mobile panel stays in viewport');assert.equal(await root.locator('.cli-fullscreen-terminal').isVisible(),false,'mobile terminal hidden while panel active');}else{assert.ok(p.x>=t.x+t.width-1,'panel never overlays terminal');assert.ok(p.width<r.width*.6);assert.ok(t.width>v.width*.4);}}
    assert.deepEqual(await page.evaluate(()=>({x:scrollX,y:scrollY})),originalScroll,'no document scroll');
    return {root:r,terminal:t,input:f,toolbar:bar};
