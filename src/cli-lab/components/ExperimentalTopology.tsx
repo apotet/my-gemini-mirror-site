@@ -22,6 +22,8 @@ interface ExperimentalTopologyProps {
   activeDeviceId: string;
   onSelectDevice: (id: string) => void;
   onToggleLink?: (linkIndex: number) => void;
+  /** Natural-size scrollable canvas for a narrow fullscreen rail. */
+  scrollable?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -64,6 +66,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
   onSelectDevice,
   onToggleLink,
   collapsed = false,
+  scrollable = false,
   onToggleCollapse,
 }) => {
   const [selection, setSelection] = useState<Selection>(null);
@@ -246,11 +249,13 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
       </div>
 
       {/* Main Two-Zone Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_310px]">
+      <div className={scrollable ? 'block' : 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_310px]'}>
         {/* Interactive Canvas */}
         <div className="flex flex-col min-w-0">
+          <div className={scrollable ? 'overflow-x-auto' : undefined} style={scrollable ? { overscrollBehaviorX: 'contain' } : undefined} data-topology-scroll={scrollable || undefined}>
           <div
             ref={stageRef}
+            style={scrollable ? { width: Math.max(640, fullBounds.width + 40), height: Math.max(400, fullBounds.height + 40) } : undefined}
             className="relative w-full h-[210px] sm:h-[350px] lg:h-[400px] bg-[#091220] select-none overflow-hidden touch-auto"
           >
             <svg
@@ -572,6 +577,7 @@ export const ExperimentalTopology: React.FC<ExperimentalTopologyProps> = ({
             </svg>
           </div>
 
+          </div>
           {/* Legend Strip */}
           <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] font-mono text-slate-600 dark:text-slate-400">
             <span><span className="text-emerald-500">━</span> {layer === 'stp' ? 'Forwarding' : 'PHY Up'}</span>

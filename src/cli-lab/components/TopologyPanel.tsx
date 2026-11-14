@@ -13,6 +13,7 @@ interface TopologyPanelProps {
   activeDeviceId: string;
   onSelectDevice: (id: string) => void;
   onToggleLink?: (index: number) => void;
+  scrollable?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -152,6 +153,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
   onSelectDevice,
   onToggleLink,
   collapsed = false,
+  scrollable = false,
   onToggleCollapse,
 }) => {
   const [selection, setSelection] = useState<{ deviceId: string; interfaceName: string } | null>(null);
@@ -205,7 +207,7 @@ export const TopologyPanel: React.FC<TopologyPanelProps> = ({
         )}
       </div>
       <div className="p-2 overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="block w-full h-auto min-h-[260px] max-h-[800px]" role="img" aria-label="Сетевая топология">
+        <svg viewBox={`0 0 ${width} ${height}`} className={scrollable ? 'block max-w-none' : 'block w-full h-auto min-h-[260px] max-h-[800px]'} style={scrollable ? { width: Math.max(960, width), height: Math.max(960, width) * height / width } : undefined} role="img" aria-label="Сетевая топология">
           {state.links.map((link, idx) => {
             const na = nodeMap[link.a];
             const nb = nodeMap[link.b];
