@@ -125,3 +125,31 @@
     touch-action: pan-x pan-y;
   }
 }
+
+/* Fullscreen desktop now uses the same exclusive views as mobile.
+   Keep terminal, task and topology mounted; only visibility changes. */
+@media (min-width: 601px) {
+  .cli-fullscreen[data-panel='task'],
+  .cli-fullscreen[data-panel='topology'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cli-fullscreen .cli-mobile-tab,
+  .cli-fullscreen .cli-mobile-label { display: inline; }
+  .cli-fullscreen .cli-desktop-label { display: none; }
+  .cli-fullscreen-terminal,
+  .cli-fullscreen-side {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    width: 100%;
+  }
+  .cli-fullscreen[data-panel='task'] .cli-fullscreen-terminal,
+  .cli-fullscreen[data-panel='topology'] .cli-fullscreen-terminal { display: none; }
+  .cli-fullscreen-toolbar .cli-mobile-tab,
+  .cli-fullscreen-toolbar .cli-task-toggle,
+  .cli-fullscreen-toolbar .cli-topology-toggle { min-width: 112px; }
+  .cli-fullscreen-topology [data-topology-scroll] {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
