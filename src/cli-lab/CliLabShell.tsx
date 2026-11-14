@@ -245,8 +245,11 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     setHistIndex(null);
     setTick((t) => t + 1);
     setSelectedDeviceId(scenario.initialState.activeDeviceId);
-    // Do not focus the offscreen CLI on entry or mode/scenario switch:
-    // browsers scroll the entire page down to reveal its caret.
+    // Restore keyboard focus without moving the page to the offscreen console.
+    // On touch-only devices, avoid opening the software keyboard automatically.
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+    }
   };
 
   useEffect(() => {
@@ -286,7 +289,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
       root.style.setProperty('--cli-left', `${viewport?.offsetLeft ?? 0}px`);
     };
     updateViewport();
-    const focusFrame = requestAnimationFrame(() => root.querySelector<HTMLButtonElement>('.cli-fullscreen-exit')?.focus({ preventScroll: true }));
+    const focusFrame = requestAnimationFrame(() => { if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) inputRef.current?.focus({ preventScroll: true }); else root.querySelector<HTMLButtonElement>('.cli-fullscreen-exit')?.focus({ preventScroll: true }); });
     const keepFocusInside = (event: KeyboardEvent) => {
       if (event.key !== 'Tab' || event.defaultPrevented) return;
       const scope = root.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]') ?? root;
