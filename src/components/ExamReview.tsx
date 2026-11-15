@@ -1,7 +1,7 @@
 import { PracticeLinkButton } from './PracticeLinkButton';
 import type { PracticeLink } from '../data/practiceLinks';
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Circle, Diamond, Info, RotateCcw, XCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Circle, Diamond, Info, XCircle } from 'lucide-react';
 import { GlossaryText } from './GlossaryText';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
@@ -9,6 +9,7 @@ import type { Question } from '../types/quiz';
 import { getQuestionDeepDive } from '../data/questionExplanations';
 import type { ProgressSession } from '../utils/examProgress';
 import { filteredReview, reviewTotals, type ReviewFilter } from '../utils/examReview';
+import { TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
 import { resolveImageUrl } from '../data/questionsData';
 import { getOrAssignMemeTitle } from '../data/memeTitles';
 import './ExamReview.css';
@@ -114,6 +115,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
     <section aria-label="Разбор завершённого экзамена" className="exam-review">
       <header className="review-overview">
         <h2 className="text-2xl sm:text-3xl font-sans font-bold">{session.trialDeadline === undefined ? 'Итоги экзамена' : 'Итоги пробного экзамена'}</h2>
+        {session.trialDifficulty && <p className="text-sm text-slate-600 dark:text-slate-300">{TRIAL_EXAM_OPTIONS[session.trialDifficulty].title}</p>}
         {session.trialDeadline !== undefined && session.endTime === session.trialDeadline && (
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Время вышло. Учтены подтверждённые ответы.</p>
         )}
@@ -150,6 +152,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
               {totals.wrong ? 'Разобрать ошибки' : totals.unanswered ? 'Разобрать без ответа' : 'Посмотреть ответы'}
             </button>
             <button type="button" onClick={onLearning || onExit} className="review-button">К обучению</button>
+            <button type="button" onClick={onExit} className="review-button">Вернуться к тестам</button>
             {onRetry && <button type="button" onClick={onRetry} className="review-button">{session.trialDeadline === undefined ? 'Новый тест' : 'Повторить пробный экзамен'}</button>}
           </div>
         </div>
@@ -225,7 +228,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
         ))}
       </div>
       {!rows.length && <div className="review-empty"><CheckCircle2 aria-hidden="true" /><h4>{view.filter === 'wrong' ? 'Ошибок в этой попытке нет' : 'В этом фильтре вопросов нет'}</h4><button type="button" className="review-button" onClick={() => setView(current => ({ ...current, filter: 'all' }))}>Показать все ответы</button></div>}
-      <button type="button" className="review-back" onClick={onExit}><RotateCcw aria-hidden="true" />К параметрам экзамена</button>
+      <button type="button" className="review-back" onClick={onExit}><ArrowLeft aria-hidden="true" />Вернуться к тестам</button>
     </section>
   );
 }

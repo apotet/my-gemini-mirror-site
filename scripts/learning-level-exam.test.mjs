@@ -4,7 +4,7 @@ import { bundleEntry } from './load-bank.mjs';
 const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLearningLevel,
   getLearningLevelPool, getLearningLevelQuestions, getTestingPool, getTestingQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
   prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers,
-  expireTrial, TRIAL_MINUTES, TRIAL_QUESTION_COUNT,
+  expireTrial, TRIAL_MINUTES, TRIAL_QUESTION_COUNT, getTrialExamQuestions,
   serializeReview, restoreReview, reviewRows } =
   await bundleEntry('scripts/learning-level-exam-entry.ts', 'learning-level-exam-tests.mjs');
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
@@ -132,9 +132,21 @@ const trialStart = Date.now();
 const trialDeadline = trialStart + 15 * 60_000;
 assert.equal(TRIAL_MINUTES, 15);
 assert.equal(TRIAL_QUESTION_COUNT, 20);
-const trialQuestions = getTestingQuestions('mixed', TRIAL_QUESTION_COUNT, seeded(29), 'mixed');
+for (const [difficulty, expected] of Object.entries({ basic: [20, 0, 0], advanced: [0, 10, 10], mixed: [6, 7, 7] })) {
+  const sample = getTrialExamQuestions(difficulty, seeded(29));
+  assert.equal(new Set(sample.map(q => q.id)).size, 20);
+  const counts = [0, 0, 0];
+  for (const q of sample) {
+    const entry = sourceRegistry[q.id];
+    assert.equal(entry.status, 'ASSIGNED');
+    assert.ok(entry.learningLevel >= 1 && entry.learningLevel <= 3);
+    counts[entry.learningLevel - 1]++;
+  }
+  assert.deepEqual(counts, expected);
+}
+const trialQuestions = getTrialExamQuestions('advanced', seeded(29));
 assert.equal(new Set(trialQuestions.map(q => q.id)).size, 20);
-const trial = { ...prepareAttemptQuestions(trialQuestions, seeded(29)), trialDeadline,
+const trial = { ...prepareAttemptQuestions(trialQuestions, seeded(29)), trialDeadline, trialDifficulty: 'advanced',
   currentIndex: 0, userAnswers: {}, submittedQuestions: {}, isCompleted: false, startTime: trialStart,
   difficulty: 'mixed', mode: 'mixed', feedbackMode: 'exam', progressEpoch: 'trial-epoch', attemptId: 'trial-1' };
 const confirmedTrial = confirmAnswer(trial, trial.questions[0].correct, trialDeadline - 1);
@@ -144,6 +156,9 @@ assert.equal(expireTrial(confirmedTrial, trialDeadline - 1), confirmedTrial);
 assert.equal(restoreSession(JSON.stringify({ ...confirmedTrial, feedbackMode: 'instant' }), ALL_QUESTIONS, trialDeadline), null);
 const restoredTrial = restoreSession(JSON.stringify(confirmedTrial), ALL_QUESTIONS, trialDeadline);
 assert.equal(restoredTrial.trialDeadline, trialDeadline);
+assert.equal(restoredTrial.trialDifficulty, 'advanced');
+assert.ok(restoreSession(JSON.stringify({ ...confirmedTrial, trialDifficulty: undefined }), ALL_QUESTIONS, trialDeadline));
+assert.equal(restoreSession(JSON.stringify({ ...confirmedTrial, trialDifficulty: 'expert' }), ALL_QUESTIONS, trialDeadline), null);
 let writes = 0;
 const record = () => { writes++; return true; };
 recordConfirmedAnswers(restoredTrial, record);

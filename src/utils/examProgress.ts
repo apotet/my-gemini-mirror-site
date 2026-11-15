@@ -1,4 +1,4 @@
-import { EXAM_DIFFICULTIES } from '../types/quiz';
+import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { isLearningLevel } from '../types/learningLevel';
 import { getProgressEpoch, recordQuestionResult } from './userProgress';
@@ -29,9 +29,10 @@ export function identifySession(session: ProgressSession): ProgressSession {
 export const TRIAL_QUESTION_COUNT = 20;
 export const TRIAL_MINUTES = 15;
 
-export function hasValidTrialTiming(session: Pick<ProgressSession, 'startTime' | 'trialDeadline' | 'endTime' | 'feedbackMode' | 'isCompleted'>): boolean {
+export function hasValidTrialTiming(session: Pick<ProgressSession, 'startTime' | 'trialDeadline' | 'trialDifficulty' | 'endTime' | 'feedbackMode' | 'isCompleted'>): boolean {
   const deadline = session.trialDeadline;
-  if (deadline === undefined) return true;
+  if (deadline === undefined) return session.trialDifficulty === undefined;
+  if (session.trialDifficulty !== undefined && !TRIAL_DIFFICULTIES.includes(session.trialDifficulty)) return false;
   return Number.isSafeInteger(deadline) && deadline === session.startTime + TRIAL_MINUTES * 60_000 &&
     session.feedbackMode === 'exam' && (!session.isCompleted || (
       Number.isSafeInteger(session.endTime) && session.endTime! >= session.startTime && session.endTime! <= deadline

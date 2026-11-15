@@ -40,6 +40,9 @@ export interface QuizMode {
 export const EXAM_DIFFICULTIES = ['beginner', 'in-depth', 'applied', 'mixed'] as const;
 export type ExamDifficulty = (typeof EXAM_DIFFICULTIES)[number];
 
+export const TRIAL_DIFFICULTIES = ['basic', 'advanced', 'mixed'] as const;
+export type TrialDifficulty = (typeof TRIAL_DIFFICULTIES)[number];
+
 export interface QuizSession {
   /** Independent registry level for new attempts; absent in legacy sessions. */
   learningLevel?: LearningLevel;
@@ -53,6 +56,7 @@ export interface QuizSession {
   startTime: number;
   endTime?: number;
   trialDeadline?: number;
+  trialDifficulty?: TrialDifficulty;
   isCompleted: boolean;
   mode: QuizModeId;
   feedbackMode: 'instant' | 'exam';
