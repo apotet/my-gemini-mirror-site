@@ -275,7 +275,7 @@
     "src/index.css": "0c2c3e4808a5f5b8aa6ae11e3cae5a9bdd1fc603a0e31cf30146562ea9ba65dc",
     "src/main.tsx": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3",
     "src/projectExporter.ts": "21e5efb52f4fc855ee3ab14b8ba9923c563b25791b304b4a767c3f69472f4f6c",
-    "src/types/quiz.ts": "5d4bebfebba46d142bdd6ae00cc0f5b2d3cf4f38d15b51aa4c5857689ea507c3",
+    "src/types/quiz.ts": "26317e8ab5098704865391b9258dbc346017c19116f11bebe7355a34da117bfd",
     "src/utils/examProgress.ts": "082b7eebc2705c3f160e86dacd97055dcd823ed41867b58774ffd502853c42bf",
     "src/utils/examReview.ts": "37e62f214432fdaa5e3e8f7cc5a96b792a47b89fa972d4c3187e8886a084d7f9",
     "src/utils/glossaryText.ts": "d088ecdebe0cf74b8c15edb025263e97815dc721df5a1bdd4644c1827006679a",
