@@ -9,11 +9,9 @@ import {
 import {
   ALL_QUESTIONS,
   QUIZ_MODES,
-  getRandomQuestions,
-  getExamPool,
-  filterExamDifficulty,
   resolveImageUrl,
 } from '../data/questionsData';
+import { getTestingPool, getTestingQuestions } from '../data/learningLevelExam';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
@@ -139,9 +137,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   };
 
   const beginNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode) => {
-    const questions = customQuestions
-      ? filterExamDifficulty(customQuestions, selectedDifficulty).slice(0, count)
-      : getRandomQuestions(mode, count, Math.random, selectedDifficulty);
+    const questions = getTestingQuestions(mode, count, Math.random, selectedDifficulty, customQuestions);
     if (!questions.length) {
       setStartNotice('В выбранном уровне и теме нет билетов. Выберите другую тему или смешанный уровень.');
       setShowParameters(true);
@@ -281,7 +277,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     const primaryModes = QUIZ_MODES.filter((m) => primaryIds.includes(m.id));
     const moreModes = QUIZ_MODES.filter((m) => !primaryIds.includes(m.id));
     const selectedInMore = moreModes.some((m) => m.id === selectedMode);
-    const availableCount = getExamPool(selectedMode, selectedDifficulty).length;
+    const availableCount = getTestingPool(selectedMode, selectedDifficulty).length;
     return (
       <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6">
         {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
@@ -346,7 +342,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
                 <button key={mode.id} type="button" onClick={() => setSelectedMode(mode.id)} className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${selectedMode === mode.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-cyan-400/50'}`}>
                   <div className="font-semibold text-sm text-slate-900 dark:text-white">{mode.id === 'mixed' ? 'Все темы' : mode.title}</div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400">{mode.subtitle}</div>
-                  <div className="text-[10px] font-mono text-slate-400 mt-1">{getExamPool(mode.id, selectedDifficulty).length} вопр.</div>
+                  <div className="text-[10px] font-mono text-slate-400 mt-1">{getTestingPool(mode.id, selectedDifficulty).length} вопр.</div>
                 </button>
               ))}
             </div>
@@ -364,7 +360,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
                   <button key={mode.id} type="button" onClick={() => setSelectedMode(mode.id)} className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${selectedMode === mode.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-cyan-400/50'}`}>
                     <div className="font-semibold text-sm text-slate-900 dark:text-white">{mode.id === 'mixed' ? 'Все темы' : mode.title}</div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400">{mode.subtitle}</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-1">{getExamPool(mode.id, selectedDifficulty).length} вопр.</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-1">{getTestingPool(mode.id, selectedDifficulty).length} вопр.</div>
                   </button>
                 ))}
               </div>
