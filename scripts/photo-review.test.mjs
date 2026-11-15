@@ -11,7 +11,14 @@ const registry = read('src/data/questionLearningLevels.json');
 const levels = { 'photo-cable-colors': 3, 'l1v2-a-contact-solid': 1, 'l1v2-b-strip-hole': 1,
   'l1v2-b-cleave-sequence': 3, 'l1v2-c-closure-service': 2 };
 const changed = fixture.originalQuestions.map(q => q.id);
-assert.equal(hash(questions.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
+const questionsAtPhotoReview = questions.map(question => {
+  if (question.id !== 'l4-08') return question;
+  // This later audit assigned a family to the TCP RST ticket. Preserve the photo-era content snapshot.
+  const { family, ...original } = question;
+  assert.equal(family, 'tcp-rst-meaning');
+  return original;
+});
+assert.equal(hash(questionsAtPhotoReview.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
   'all other questions, including the three PASS and photo-cable-terminate, remain unchanged');
 const { previousRegistryEntries } = read('docs/audits/issue-171-baseline.json').technicalReviewClosure;
 const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
