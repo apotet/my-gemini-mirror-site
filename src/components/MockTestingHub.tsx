@@ -31,6 +31,10 @@ const layers = [
 // grouped questions are uniquely assigned to an individual OSI layer.
 const groupedLayers: Record<number,number[]> = {1:[1,2],2:[1,2],5:[5,6,7],6:[5,6,7],7:[5,6,7]};
 const settingsKey = 'netops_mock_testing_settings';
+const mockProgressKey = 'netops_mock_testing_progress_v1';
+type MockStats = {rounds:number;answered:number;correct:number;best:number;streak:number};
+const emptyMockStats:MockStats = {rounds:0,answered:0,correct:0,best:0,streak:0};
+function readMockStats():MockStats {try {const v=JSON.parse(localStorage.getItem(mockProgressKey)||'null');if(v&&['rounds','answered','correct','best','streak'].every(k=>Number.isSafeInteger(v[k])&&v[k]>=0))return v;}catch{}return {...emptyMockStats};}
 function initialSettings(): {level:LearningLevel;count:number;mode:TrainingMode;layers:number[];topic:QuizModeId} {
   const defaults = {level:1 as LearningLevel,count:10,mode:'learn' as TrainingMode,layers:[2,3],topic:'mixed' as QuizModeId};
   try {
@@ -51,6 +55,7 @@ export function MockTestingHub() {
   const [sessionExists,setSessionExists] = useState(false);
   const [showPreview,setShowPreview] = useState(false);
   const [showReview,setShowReview] = useState(false);
+  const [mockStats,setMockStats] = useState(readMockStats);
   const mistakesCount = getMistakeQuestions().length;
   const update = (patch:Partial<typeof settings>) => {
     setSettings(prev=>{const next={...prev,...patch};try{localStorage.setItem(settingsKey,JSON.stringify(next));}catch{}return next;});
@@ -101,7 +106,7 @@ export function MockTestingHub() {
     setAnswers(prev=>({...prev,[current.id]:current.correct.length>1?(picked.includes(n)?picked.filter(v=>v!==n):[...picked,n]):[n]}));
   };
   const next=()=>{
-    if(index===questions.length-1){setFinished(true);setSessionExists(false);}
+    if(index===questions.length-1){setFinished(true);setSessionExists(false);setMockStats(prev=>{const result={rounds:prev.rounds+1,answered:prev.answered+questions.length,correct:prev.correct+score,best:Math.max(prev.best,Math.round(score/questions.length*100)),streak:score===questions.length?prev.streak+1:0};try{localStorage.setItem(mockProgressKey,JSON.stringify(result));}catch{}return result;});}
     else {setIndex(v=>v+1);setSubmitted(false);}
   };
   return <div className="max-w-4xl mx-auto space-y-5 pb-16">
@@ -121,7 +126,7 @@ export function MockTestingHub() {
         {settings.mode==='osi'&&<div className="space-y-2"><p className="text-xs text-amber-700 dark:text-amber-300">Банк пока объединяет L1–L2 и L5–L7: выбор любого уровня из этих групп включает всю соответствующую группу. Точная разметка отдельных уровней — следующий этап.</p><label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-50/70 px-3 py-2 text-xs font-semibold text-cyan-800 dark:bg-cyan-950/30 dark:text-cyan-200"><input type="checkbox" checked={osiPhotosOnly} onChange={e=>setOsiPhotosOnly(e.target.checked)} className="accent-cyan-600"/><Camera size={15}/> Только вопросы по фото <span className="font-mono opacity-70">({filterLearningLevel(ALL_QUESTIONS.filter(q=>selectedGroups.has(q.group)&&Boolean(q.image)),settings.level).length})</span></label><div className="grid grid-cols-2 sm:grid-cols-4 gap-2">{layers.map(l=><button key={l.id} type="button" aria-pressed={settings.layers.includes(l.id)} onClick={()=>update({layers:settings.layers.includes(l.id)?settings.layers.filter(n=>n!==l.id):[...settings.layers,l.id]})} className={`rounded-xl border p-3 text-left text-sm ${settings.layers.includes(l.id)?'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40':'border-slate-200 dark:border-slate-700'}`}><span className="font-bold">L{l.id}</span><span className="block text-xs text-slate-500">{l.title}</span>{groupedLayers[l.id]&&<span className="text-[10px] text-amber-600 dark:text-amber-400">Группа L{groupedLayers[l.id].join('–L')}</span>}</button>)}</div></div>}
         <button type="button" aria-expanded={advanced} onClick={()=>setAdvanced(v=>!v)} className="w-full flex items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm font-semibold">Дополнительные настройки <ChevronDown className={`h-4 w-4 transition-transform ${advanced?'rotate-180':''}`}/></button>
         {advanced&&<div className="grid sm:grid-cols-2 gap-3">{settings.mode!=='osi'&&<label className="space-y-1 text-sm block sm:col-span-2"><span>Тема</span><select className="w-full min-h-11 rounded-xl border bg-white text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-600 px-3" value={settings.topic} onChange={e=>update({topic:e.target.value as QuizModeId})}>{QUIZ_MODES.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>}<p className="sm:col-span-2 text-xs text-slate-500">{LEARNING_LEVEL_DESCRIPTIONS[settings.level]}</p></div>}
-        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-slate-500">{settings.mode==='mistakes' ? <>На закреплении: <strong>{mistakesCount}</strong> · по 5 за сеанс</> : <>Доступно: <strong>{pool.length}</strong> вопросов</>}</p><button type="button" onClick={start} disabled={!pool.length} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 min-h-12 font-bold text-slate-950 disabled:opacity-40"><Play size={17}/> Новая тренировка</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-slate-500">{settings.mode==='mistakes' ? <>На закреплении: <strong>{mistakesCount}</strong> · по 5 за сеанс</> : <>Доступно: <strong>{pool.length}</strong> вопросов</>}</p><button type="button" onClick={start} disabled={!pool.length} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 min-h-12 font-bold text-slate-950 disabled:opacity-40"><Play size={17}/> Проверить знания</button></div>
         {notice&&<p role="status" className="text-sm text-amber-600">{notice}</p>}
       </section>
       <div className="[&>div>button]:hidden [&>div>div:last-child]:hidden"><KnowledgeRadar mistakesCount={mistakesCount} totalQuestionsCount={ALL_QUESTIONS.length} hasActiveSession={false} onStartNewExam={start} onStartExam={()=>start()} onReviewMistakes={()=>update({mode:'mistakes'})} onOpenVisualL1={()=>update({mode:'check',topic:'visual-l1'})}/></div>
