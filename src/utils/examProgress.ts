@@ -26,6 +26,23 @@ export function identifySession(session: ProgressSession): ProgressSession {
     attemptId: session.attemptId || `legacy:${session.startTime}:${session.questions.map(q => q.id).join(',')}`,
     progressEpoch: session.progressEpoch || getProgressEpoch() };
 }
+export const TRIAL_QUESTION_COUNT = 20;
+export const TRIAL_MINUTES = 15;
+
+export function hasValidTrialTiming(session: Pick<ProgressSession, 'startTime' | 'trialDeadline' | 'endTime' | 'feedbackMode' | 'isCompleted'>): boolean {
+  const deadline = session.trialDeadline;
+  if (deadline === undefined) return true;
+  return Number.isSafeInteger(deadline) && deadline === session.startTime + TRIAL_MINUTES * 60_000 &&
+    session.feedbackMode === 'exam' && (!session.isCompleted || (
+      Number.isSafeInteger(session.endTime) && session.endTime! >= session.startTime && session.endTime! <= deadline
+    ));
+}
+
+export function expireTrial(session: ProgressSession, now = Date.now()): ProgressSession {
+  if (session.isCompleted || session.trialDeadline === undefined || now < session.trialDeadline) return session;
+  return { ...session, isCompleted: true, endTime: session.trialDeadline };
+}
+
 export function restoreSession(raw: string, bank: readonly Question[], now = Date.now()): ProgressSession | null {
   try {
     const saved = JSON.parse(raw);
@@ -39,6 +56,7 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         (saved.attemptId !== undefined && typeof saved.attemptId !== 'string') ||
         (saved.progressEpoch !== undefined && typeof saved.progressEpoch !== 'string') ||
         (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some((id: unknown) => typeof id !== 'string')))) return null;
+    if (!hasValidTrialTiming(saved)) return null;
     if (saved.difficulty !== undefined && !EXAM_DIFFICULTIES.includes(saved.difficulty)) return null;
     if (saved.learningLevel !== undefined && !isLearningLevel(saved.learningLevel)) return null;
     if (saved.requestedCount !== undefined && (!Number.isSafeInteger(saved.requestedCount) || saved.requestedCount <= 0)) return null;
@@ -69,7 +87,7 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
       if (chosen !== undefined && (!Array.isArray(chosen) || new Set(chosen).size !== chosen.length ||
           chosen.some(i => !Number.isInteger(i) || i < 0 || i >= q.answers.length))) return null;
       const time = saved.answerTimes?.[q.id];
-      if (time !== undefined && (!Number.isSafeInteger(time) || time <= 0 || time > now)) return null;
+      if (time !== undefined && (!Number.isSafeInteger(time) || time <= 0 || time > now || (saved.trialDeadline !== undefined && time >= saved.trialDeadline))) return null;
     }
     return identifySession({ ...saved, questions });
   } catch { return null; }
@@ -80,7 +98,7 @@ export function answerCorrect(chosen: number[], correct: number[]): boolean {
 }
 /** Replay only confirmed answers, including after a save-before-record interruption. */
 export function recordConfirmedAnswers(session: ProgressSession, record = recordQuestionResult) {
-  if (!session.attemptId || !session.progressEpoch) return;
+  if (!session.attemptId || !session.progressEpoch || (session.trialDeadline !== undefined && !session.isCompleted)) return;
   for (const q of session.questions) {
     const chosen = session.userAnswers[q.id];
     if (session.legacySubmittedIds?.includes(q.id) || !session.submittedQuestions[q.id] || !Array.isArray(chosen) || !chosen.length ||
@@ -90,7 +108,7 @@ export function recordConfirmedAnswers(session: ProgressSession, record = record
 }
 export function confirmAnswer(session: ProgressSession, chosen: number[], now = Date.now()): ProgressSession {
   const q = session.questions[session.currentIndex];
-  if (!q || session.isCompleted || session.submittedQuestions[q.id] || !chosen.length ||
+  if (!q || session.isCompleted || (session.trialDeadline !== undefined && now >= session.trialDeadline) || session.submittedQuestions[q.id] || !chosen.length ||
       new Set(chosen).size !== chosen.length || chosen.some(index => !Number.isInteger(index) || index < 0 || index >= q.answers.length)) return session;
   return { ...session, userAnswers: { ...session.userAnswers, [q.id]: [...chosen] },
     answerTimes: { ...session.answerTimes, [q.id]: now },

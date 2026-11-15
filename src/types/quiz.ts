@@ -52,6 +52,7 @@ export interface QuizSession {
   submittedQuestions: Record<string, boolean>;
   startTime: number;
   endTime?: number;
+  trialDeadline?: number;
   isCompleted: boolean;
   mode: QuizModeId;
   feedbackMode: 'instant' | 'exam';
