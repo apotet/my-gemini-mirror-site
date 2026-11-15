@@ -6,6 +6,7 @@ import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
 import { Ipv6Trainer } from './components/Ipv6Trainer';
 import { PracticeHub } from './components/PracticeHub';
 import { MockPracticeHub } from './components/MockPracticeHub';
+import { MockTestingHub } from './components/MockTestingHub';
 import { TheoryView } from './components/TheoryView';
 import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
@@ -161,6 +162,7 @@ export function App() {
         )}
         {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'} initialPracticeLink={practiceRequest?.link} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
+        {activeTab === 'exam-mock' && <MockTestingHub />}
       </main>
 
       <MobileTabBar
