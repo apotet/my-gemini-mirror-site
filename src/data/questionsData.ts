@@ -3,6 +3,7 @@ import { EXTRA_QUESTIONS } from './questionsExtra';
 import { EXTRA_DIFFICULTY_QUESTIONS } from './questionsExtraDifficulty';
 import { Question, QuizMode, QuizModeId, ExamDifficulty } from '../types/quiz';
 import { selectMixedQuestions } from './mixedExam';
+import { selectBeginnerQuestions } from './beginnerExam';
 
 /** Base bank + expansion packs. Existing questions.json is never trimmed. */
 export const ALL_QUESTIONS: Question[] = [
@@ -130,6 +131,7 @@ export function getRandomQuestions(
   // strict sample: photo/group quotas must never pull in a different difficulty.
   if (difficulty === 'mixed' && modeId === 'mixed' && count === 10) return selectMixedQuestions(ALL_QUESTIONS, random);
   const pool = getExamPool(modeId, difficulty);
+  if (difficulty === 'beginner') return selectBeginnerQuestions(pool, count, random);
 
   const shuffled = [...new Map(pool.map(q => [q.id, q])).values()];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -138,6 +140,19 @@ export function getRandomQuestions(
   }
 
   return count >= shuffled.length ? shuffled : shuffled.slice(0, count);
+}
+
+/** New attempts only; custom pools (including mistakes) must never be expanded. */
+export function getNewAttemptQuestions(
+  modeId: QuizModeId,
+  count: number,
+  random: () => number,
+  difficulty: ExamDifficulty,
+  customQuestions?: readonly Question[],
+): Question[] {
+  if (!customQuestions) return getRandomQuestions(modeId, count, random, difficulty);
+  const pool = filterExamDifficulty(customQuestions, difficulty);
+  return difficulty === 'beginner' ? selectBeginnerQuestions(pool, count, random) : pool.slice(0, count);
 }
 
 export function resolveImageUrl(imgPath?: string): string {

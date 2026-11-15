@@ -1,0 +1,44 @@
+{
+  "baseMain": "7f30426817f9d6839d38d8981fbd9ba6f26e4524",
+  "rng": "LCG 1664525/1013904223, uint32 / 2^32",
+  "mixed10": {
+    "seeds": [
+      1,
+      1000
+    ],
+    "sha256": "6896243117c65c664b8e39b91cce13fb892314468571a8041d88f74f63b897be"
+  },
+  "otherMixedModes": {
+    "seeds": [
+      1,
+      17,
+      173,
+      1000
+    ],
+    "counts": [
+      1,
+      5,
+      10,
+      15,
+      20,
+      30
+    ],
+    "sha256": "da3b6e784753a042c02c5a419c0947ea5195233db718fa86f03cfabbdda3b86a"
+  },
+  "beginnerSingle": {
+    "seeds": [
+      1,
+      1000
+    ],
+    "sha256": "da058270bf772b9daa828d214c8231fb82a2ced0586d4ca5a8615be37ea9252f"
+  },
+  "before": {
+    "runs": 1000,
+    "noPhoto": 43,
+    "repeatedFamily": 89,
+    "pool": 244,
+    "photos": 68,
+    "families": 205
+  },
+  "bankSHA256": "1077beb02460ce624ee68a94e9e2f3bbbcc7d02308266da3010de4e709d0c079"
+}
