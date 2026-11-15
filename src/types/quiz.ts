@@ -1,3 +1,5 @@
+import type { LearningLevel } from './learningLevel';
+
 export interface Question {
   id: string;
   group: string;
@@ -38,6 +40,8 @@ export interface QuizMode {
 export type ExamDifficulty = 'beginner' | 'mixed';
 
 export interface QuizSession {
+  /** Independent registry level for new attempts; absent in legacy sessions. */
+  learningLevel?: LearningLevel;
   /** Missing in legacy attempts, which retain their original all-level question set. */
   difficulty?: ExamDifficulty;
   requestedCount?: number;

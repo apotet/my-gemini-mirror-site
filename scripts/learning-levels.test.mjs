@@ -111,10 +111,8 @@ for (const difficulty of [undefined, 'beginner', 'mixed']) {
 }
 assert.equal(JSON.stringify(ALL_QUESTIONS), bankBefore, 'metadata and restore never mutate the bank');
 
-// The runtime import direction remains one-way: application/exam modules cannot consume metadata yet.
-const baseline = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8'));
-for (const path of Object.keys(baseline.protectedFiles)) {
-  if (!/\.[tj]sx?$/.test(path)) continue;
+// Legacy samplers remain independent; the new five-level selector consumes metadata separately.
+for (const path of ['src/data/questionsData.ts', 'src/data/mixedExam.ts', 'src/data/beginnerExam.ts']) {
   assert.doesNotMatch(readFileSync(new URL('../' + path, import.meta.url), 'utf8'), /from\s+['"][^'"]*(?:learningLevels|questionLearningLevels|types\/learningLevel)['"]/);
 }
 console.log('OK: five-level coverage, validation failures, exact audit mapping, legacy pools/selections and six saved-session variants');

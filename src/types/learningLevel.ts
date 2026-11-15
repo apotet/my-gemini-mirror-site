@@ -1,6 +1,10 @@
 /** Educational metadata only; neither Question.difficulty nor ExamDifficulty. */
 export type LearningLevel = 1 | 2 | 3 | 4 | 5;
 
+export function isLearningLevel(value: unknown): value is LearningLevel {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
 export const LEARNING_LEVELS = {
   1: { ru: 'Основы', en: 'Fundamentals' },
   2: { ru: 'Понимание', en: 'Understanding' },

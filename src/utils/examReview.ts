@@ -1,6 +1,7 @@
 import type { ProgressSession } from './examProgress';
 import { answerCorrect } from './examProgress';
 import { getLessonForQuestion } from '../data/lessons';
+import { isLearningLevel } from '../types/learningLevel';
 
 export const LAST_REVIEW_KEY = 'osi_last_exam_review_v1';
 export type ReviewFilter = 'all' | 'wrong' | 'correct';
@@ -40,6 +41,7 @@ export function restoreReview(raw: string, epoch: string): ProgressSession | nul
   try {
     const wrapper = JSON.parse(raw);
     const s = wrapper?.session;
+    if (s?.learningLevel !== undefined && !isLearningLevel(s.learningLevel)) return null;
     const object = (value: unknown) => Boolean(value && typeof value === 'object' && !Array.isArray(value));
     if (wrapper.version !== 1 || !s || s.isCompleted !== true || s.progressEpoch !== epoch ||
         !['instant', 'exam'].includes(s.feedbackMode) || !Array.isArray(s.questions) || !s.questions.length ||

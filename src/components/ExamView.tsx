@@ -3,15 +3,14 @@ import React, { useState, useEffect, useRef, useImperativeHandle } from 'react';
 import {
   Question,
   QuizModeId,
-  ExamDifficulty,
 } from '../types/quiz';
 import {
   ALL_QUESTIONS,
   QUIZ_MODES,
-  getNewAttemptQuestions,
-  getExamPool,
   resolveImageUrl,
 } from '../data/questionsData';
+import { LEARNING_LEVELS, type LearningLevel } from '../types/learningLevel';
+import { getLearningLevelPool, getLearningLevelQuestions, getExamLevelLabel, LEARNING_LEVEL_DESCRIPTIONS, LEARNING_LEVEL_REVIEW_COUNT } from '../data/learningLevelExam';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
@@ -55,7 +54,7 @@ interface ExamViewProps {
 export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning, onOpenPractice }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<ExamDifficulty>('beginner');
+  const [selectedLearningLevel, setSelectedLearningLevel] = useState<LearningLevel>(1);
   const [startNotice, setStartNotice] = useState('');
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [feedbackMode, setFeedbackMode] = useState<'instant' | 'exam'>('instant');
@@ -126,9 +125,9 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }, []);
 
   const beginNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode) => {
-    const questions = getNewAttemptQuestions(mode, count, Math.random, selectedDifficulty, customQuestions);
+    const questions = getLearningLevelQuestions(mode, count, Math.random, selectedLearningLevel, customQuestions);
     if (!questions.length) {
-      setStartNotice('В выбранном уровне и теме нет билетов. Выберите другую тему или смешанный уровень.');
+      setStartNotice('В выбранном уровне и наборе нет вопросов. Выберите другой уровень или тему; вопросы других уровней не добавляются.');
       setShowParameters(true);
       return;
     }
@@ -145,7 +144,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       startTime: Date.now(),
       isCompleted: false,
       mode,
-      difficulty: selectedDifficulty,
+      learningLevel: selectedLearningLevel,
       requestedCount: count,
       feedbackMode,
     };
@@ -265,7 +264,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     const primaryModes = QUIZ_MODES.filter((m) => primaryIds.includes(m.id));
     const moreModes = QUIZ_MODES.filter((m) => !primaryIds.includes(m.id));
     const selectedInMore = moreModes.some((m) => m.id === selectedMode);
-    const availableCount = getExamPool(selectedMode, selectedDifficulty).length;
+    const availableCount = getLearningLevelPool(selectedMode, selectedLearningLevel).length;
     return (
       <div className="space-y-5 max-w-3xl mx-auto pb-16 lg:pb-6">
         {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
@@ -273,22 +272,27 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
         <fieldset className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
           <legend className="px-1 text-sm font-bold text-slate-900 dark:text-white">Уровень тестирования</legend>
-          <div className="grid grid-cols-2 gap-2">
-            {([{ id: 'beginner', title: 'База', description: 'Только beginner' }, { id: 'mixed', title: 'Смешанный', description: 'Все уровни сложности' }] as const).map(level => (
-              <button key={level.id} type="button" aria-pressed={selectedDifficulty === level.id}
-                onClick={() => { setSelectedDifficulty(level.id); setStartNotice(''); }}
-                className={`min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedDifficulty === level.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
-                <span className="block font-bold text-slate-900 dark:text-white">{level.title}</span>
-                <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{level.description}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {([1, 2, 3, 4, 5] as const).map(level => {
+              const count = getLearningLevelPool(selectedMode, level).length;
+              return (
+                <button key={level} type="button" aria-pressed={selectedLearningLevel === level}
+                  onClick={() => { setSelectedLearningLevel(level); setStartNotice(''); }}
+                  className={`min-h-24 min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedLearningLevel === level ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
+                  <span className="block font-bold text-slate-900 dark:text-white">{level} · {LEARNING_LEVELS[level].ru}</span>
+                  <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{LEARNING_LEVEL_DESCRIPTIONS[level]}</span>
+                  <span className="mt-2 block text-xs font-mono text-cyan-700 dark:text-cyan-300">Доступно в теме: {count}</span>
+                </button>
+              );
+            })}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400">На проверке: {LEARNING_LEVEL_REVIEW_COUNT}. Эти вопросы пока не включаются в новые тесты.</p>
+          <p role="status" aria-live="polite" className="text-xs text-slate-500 dark:text-slate-400">
             Доступно по выбранной теме: {availableCount}.
             {availableCount < questionCount && ` Будет ${availableCount} из запрошенных ${questionCount}; другой уровень не добавляется.`}
           </p>
           {session && !session.isCompleted && <p className="text-xs text-slate-500 dark:text-slate-400">
-            Текущая попытка: {session.difficulty === 'beginner' ? 'База' : 'Смешанный'}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
+            Текущая попытка: {getExamLevelLabel(session)}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
           </p>}
         </fieldset>
         {startNotice && <p role="status" className="text-sm text-slate-500 dark:text-slate-400">{startNotice}</p>}
@@ -316,7 +320,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
                 <button key={mode.id} type="button" onClick={() => setSelectedMode(mode.id)} className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${selectedMode === mode.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-cyan-400/50'}`}>
                   <div className="font-semibold text-sm text-slate-900 dark:text-white">{mode.id === 'mixed' ? 'Все темы' : mode.title}</div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400">{mode.subtitle}</div>
-                  <div className="text-[10px] font-mono text-slate-400 mt-1">{getExamPool(mode.id, selectedDifficulty).length} вопр.</div>
+                  <div className="text-[10px] font-mono text-slate-400 mt-1">{getLearningLevelPool(mode.id, selectedLearningLevel).length} вопр.</div>
                 </button>
               ))}
             </div>
@@ -334,7 +338,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
                   <button key={mode.id} type="button" onClick={() => setSelectedMode(mode.id)} className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${selectedMode === mode.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-cyan-400/50'}`}>
                     <div className="font-semibold text-sm text-slate-900 dark:text-white">{mode.id === 'mixed' ? 'Все темы' : mode.title}</div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400">{mode.subtitle}</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-1">{getExamPool(mode.id, selectedDifficulty).length} вопр.</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-1">{getLearningLevelPool(mode.id, selectedLearningLevel).length} вопр.</div>
                   </button>
                 ))}
               </div>
@@ -360,7 +364,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   return (
     <div className="max-w-2xl mx-auto space-y-4 pb-20">
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        Уровень: {session.difficulty === 'beginner' ? 'База' : 'Смешанный'}
+        Уровень: {getExamLevelLabel(session)}
         {session.requestedCount && session.questions.length < session.requestedCount
           ? ` · Доступно ${session.questions.length} из запрошенных ${session.requestedCount}; попытка содержит ${session.questions.length} билетов.`
           : ''}
