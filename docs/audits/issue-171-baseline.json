@@ -7,7 +7,7 @@
     "6877141640"
   ],
   "auditProjectionSHA256": "8d12e0856c779982a2c363f1a70ab3c877db2074177610afd4466dc3828feac8",
-  "bankSHA256": "28717c391057617ac0a77a9d22108cffabac45ae9bb1f09a132fca28b7a4de8c",
+  "bankSHA256": "a7361b2e467fa5f2ca5098973861bba1cd2e94a4f7dbb247216854d0de2c6850",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -208,7 +208,7 @@
     "src/components/TheoryView.tsx": "0c9e18bea9ce63e6a235b4464baaf71ecd26ac4e6b4872481d63dda527e390ae",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
-    "src/data/diagnosticCases177.ts": "098acffd9426d6e7da57f79b610cb861348d53890d369e9ffc61018ba61e280f",
+    "src/data/diagnosticCases177.ts": "075cb2461bfa14c79f31c77abf40e801560a93ece8583e31e2434d5e3b3b4a54",
     "src/data/glossary.ts": "ef51605e35648322f8d4459ac93504faa745209bc8ce9992866df519a85699bb",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
