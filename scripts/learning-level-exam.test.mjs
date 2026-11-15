@@ -288,7 +288,7 @@ console.log('PASS: revised diagnostics preserve saved answers and duplicate fami
 // at least one working glossary term in each layer, and a practice task.
 const diagnosticPack = diagnosticLevel.filter(q => q.id.startsWith('diag177-'));
 const expectedPractices = new Map([
-  ['diag177-ipv4-onlink-return', 'cli-gateway'],
+  ['diag177-ipv4-onlink-return', 'packet'],
   ['diag177-dhcp-renew-rebind', 'dhcp'],
   ['diag177-nat-return-path', 'nat'],
 ]);

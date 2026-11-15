@@ -7,7 +7,7 @@
     "6877141640"
   ],
   "auditProjectionSHA256": "8d12e0856c779982a2c363f1a70ab3c877db2074177610afd4466dc3828feac8",
-  "bankSHA256": "a7361b2e467fa5f2ca5098973861bba1cd2e94a4f7dbb247216854d0de2c6850",
+  "bankSHA256": "3e818d56188b05be41bde05ea270a3c7de39d902b15b23db527144c69855c413",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -208,7 +208,7 @@
     "src/components/TheoryView.tsx": "0c9e18bea9ce63e6a235b4464baaf71ecd26ac4e6b4872481d63dda527e390ae",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
-    "src/data/diagnosticCases177.ts": "075cb2461bfa14c79f31c77abf40e801560a93ece8583e31e2434d5e3b3b4a54",
+    "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
     "src/data/glossary.ts": "ef51605e35648322f8d4459ac93504faa745209bc8ce9992866df519a85699bb",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
@@ -260,7 +260,7 @@
     "src/data/lessons/tls-sni.ts": "03d2f9559a811481419b3961a1c88422b43886c1cada713fd7b94b8f23add7e4",
     "src/data/lessons/ts-copp-storm.ts": "087e603deb5389c7e532e5981e1efe81c5b6108a88e202ea888dc65524300fb4",
     "src/data/lessons/ts-method.ts": "5a758894a3d7e66586ed2f71664c60e0fbf203762972bf1f63c7dce5dc59bc34",
-    "src/data/lessons/ts-optics.ts": "ca621ade75d5dd6a6d9f65513ce30f0e23fff8ad757775a76678a57787360fcb",
+    "src/data/lessons/ts-optics.ts": "47ea3bef9078b0bc43c6e667f8eac678d57f1569dc9f91735f6e6c8bac1f84ca",
     "src/data/lessons/types.ts": "c9d7e59d330a04c5a4eaaefc28379c0132c3a72307cef6ef6c42b333473976d3",
     "src/data/levelNotes.ts": "842ff5d1674e4fa9f4805ef79aa2981eacb04367264e001d5cad31717a474fc5",
     "src/data/memeTitles.ts": "80422ac2e70fb87a699718b8526c73217f4c33a429e7bf0566543ea6fbc67014",
@@ -525,7 +525,8 @@
       "src/data/lessons/l2-stp-guard-design.ts": "5c736d6007920e7b735db7dff36349d80829a9ab2693988e79f79b0b9f2ece71",
       "src/data/lessons/ts-method.ts": "5958b253309a147ebc7ced27d6b29f8fef02ad3400a1cdd425dc00ee4564100a",
       "src/data/questionExplanations.ts": "7c16d5be8947ddd34835eb6a228f2970edf406c8f46981e98171decaa2794fb7",
-      "src/data/questionsData.ts": "04e025c80e89b90bcf424a49936400957cf9e605519ab586379e9806f6b2e05e"
+      "src/data/questionsData.ts": "04e025c80e89b90bcf424a49936400957cf9e605519ab586379e9806f6b2e05e",
+      "src/data/lessons/ts-optics.ts": "ca621ade75d5dd6a6d9f65513ce30f0e23fff8ad757775a76678a57787360fcb"
     }
   }
 }
