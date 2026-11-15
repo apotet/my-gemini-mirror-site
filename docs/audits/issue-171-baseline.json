@@ -99,7 +99,7 @@
     }
   ],
   "protectedFiles": {
-    "src/App.tsx": "7018d5fbe8f06e5f20961b831649529f0b848521e6682798971909b52a385926",
+    "src/App.tsx": "391e6b1ad629f573ac71ec5c7662bd19e6cf6c94f367532cc8d8e26bf90aa7b7",
     "src/cli-lab/CliLabShell.tsx": "8edcb2e60b1cb66515d338601de2bcd0b4d33846495111920c083076d5ef4208",
     "src/cli-lab/ExperimentalCliUxV2Shell.tsx": "97c49290a81fba1bb37a2400071f04074604e3a2f11badc544d38e27a963d07d",
     "src/cli-lab/ExperimentalMockCliLabShell.tsx": "47b0efb3ea28fdab383c4f7ae280681f823c0b59ee0c7da8ec97278baff64071",
@@ -174,7 +174,7 @@
     "src/components/MockPracticeHub.tsx": "7fa2840e7713c4ba6ab7545d93682f4260dab6637ea028fd0b5070e6a888b829",
     "src/components/MockProtocolSimulators.tsx": "3dbf4e12827960936be5d2b91bfdef068d0fb258b03f33dd0e4f45b8abc5b885",
     "src/components/MockVlanSimulator.tsx": "90c9be6e5fb3e683eaabeedd42a62603da8c357dc1fad005456fde28faa5d53e",
-    "src/components/Navbar.tsx": "fed810e029d49b48b83225cc577aebc4f7e06ab3961f6ffcd47597303d88cca3",
+    "src/components/Navbar.tsx": "bedcc1a043967bf9c4264a8ccee56a4640d7deffc71827bda3683649f63748e4",
     "src/components/NetOpsLogo.tsx": "6dfca54fa40a483e86f80bb6a9381c0ef926b3165dc1a0a72db94e637d85a828",
     "src/components/OsiExplorer.tsx": "dedeefc4610a56c60a16b0d1288da248aefc745291d58d42f8997a75bf4b41e2",
     "src/components/PacketJourney.tsx": "5f9894548833fb4e21a93ccb020cd6ba46f65121c1a0a686f59e671435822941",
