@@ -16,6 +16,7 @@ export interface QuestionDeepDive {
   professional?: Omit<ProfessionalExplanation, 'sourceCommit'> & { sourceCommit?: string };
   practiceLink?: PracticeLink;
   hasIndividualDeep: boolean;
+  glossaryInProfessional?: boolean;
   commonTrap: string;
   practicalTip?: string;
   memorizationRule?: string;
@@ -34,7 +35,7 @@ export interface QuestionDeepDive {
 /** Hand-authored deep dives for advanced IDs (no generic L1–L7 paste). */
 const ADVANCED_INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; trap?: string; next?: string; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
+  { brief: string; deep: string; glossaryInProfessional?: boolean; trap?: string; next?: string; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
 > = {
   'l12-d01': {
     "brief": "Сначала проверьте, распознаётся ли подключение компьютера как конечное и настроена ли защита от появления другого коммутатора.",
@@ -245,13 +246,14 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     }
   },
   "tcpip-d01": {
+    glossaryInProfessional: true,
     practiceLink: "packet",
     "brief": "Данные пришли к маршрутизатору по одному участку, а дальше пойдут по другому. Он убирает местную оболочку, выбирает путь по адресу назначения и создаёт новую оболочку для следующего соседа.",
     "deep": "Данные пришли к маршрутизатору по одному участку, а дальше пойдут по другому. Он убирает местную оболочку, выбирает путь по адресу назначения и создаёт новую оболочку для следующего соседа.\n\nЭто декапсуляция L2, решение на L3 и новая инкапсуляция L2. Без NAT конечные IP src/dst обычно сохраняются; в новом Ethernet-кадре Source MAC принадлежит выходному интерфейсу, Destination MAC — следующему узлу. IPv4 TTL уменьшается.\n\nНовая местная доставка не требует менять адрес клиента, транспортные порты или содержимое приложения. Сохранение конечных IP не означает неизменности всего пакета: TTL обновляется, а вместе с ним и контрольная сумма IPv4-заголовка.",
     "trap": "Смотрите точные формулировки стандартов и исключения.",
     "professional": {
-      "brief": "Без NAT IP src/dst end-to-end; на каждом hop переписываются MAC под next-hop.",
-      "deep": "Декапсуляция L2 → lookup L3 → новая L2-инкапсуляция. TTL−1.",
+      "brief": "IPv4-адреса сохраняются, на следующем Ethernet-участке создаётся новый кадр.",
+      "deep": "При обычной IPv4-пересылке без NAT или туннеля маршрутизатор снимает входное Ethernet-обрамление и ищет следующий переход по Destination IP. В выходном кадре Source MAC принадлежит выходному интерфейсу, Destination MAC — следующему узлу. Source IP и Destination IP сохраняются. IPv4 TTL уменьшается минимум на единицу, контрольная сумма IPv4-заголовка обновляется.",
       "trap": "Смотрите точные формулировки стандартов и исключения.",
       "sourceCommit": "1e4c87c03dd99597c57b37476fd834cf01576534"
     }
@@ -327,12 +329,13 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     }
   },
   'ts-d05': {
+    glossaryInProfessional: true,
     "brief": "Проверка источника может отвергнуть законный пакет при разных путях туда и обратно.",
     "deep": "Пакет пришёл по одному интерфейсу, а лучший путь обратно к его отправителю проходит через другой. Проверка может принять это за подделку источника и отбросить пакет. Поэтому после включения защиты нужно сравнить вход и обратный маршрут.\n\nТакой конфликт характерен для strict uRPF: маршрут к Source IP должен соответствовать входному интерфейсу с учётом реализации и настроек. Loose uRPF проверяет достижимость иначе. Уточни режим, таблицу маршрутов и счётчик отказов для конкретного источника.\n\nПроверка не отключает STP и не меняет MAC OUI; она не ограничена DNS. Само наличие легитимного адреса не гарантирует прохождение strict-проверки при асимметрии. Исправление выбирают по схеме, не отключая всю защиту без проверки.",
     "trap": "Не переносить поведение strict uRPF на все его режимы.",
     "professional": {
-      "brief": "Strict uRPF + asymmetry дропает легитимный ingress.",
-      "deep": "Feasible paths, loose mode, или убрать asymmetry на том интерфейсе.",
+      "brief": "При strict uRPF входной интерфейс сравнивают с лучшим обратным путём к Source IP.",
+      "deep": "Маршрутизатор ищет Source IP в FIB. В условии единственный лучший маршрут к этому адресу указывает на другой интерфейс, поэтому strict uRPF отбрасывает легитимный пакет. Для подтверждения сравни входной интерфейс, обратный маршрут и счётчики отбросов. Loose uRPF проверяет наличие допустимого маршрута без требования совпадения интерфейса.",
       "sourceCommit": "ceaba310550ab3e535e2da33816a69a53c3d9f20"
     }
   },
@@ -464,7 +467,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; plain?: string; pro?: string; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
+  { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; ipv6Practice?: boolean; professional?: ProfessionalExplanation; practiceLink?: PracticeLink }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -520,6 +523,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     professional,
     practiceLink: individual?.practiceLink,
     hasIndividualDeep: Boolean(individual),
+    glossaryInProfessional: individual?.glossaryInProfessional,
     commonTrap: individual?.trap || detectCommonTrap(question),
     practicalTip: question.remember || getPracticalTip(category),
     memorizationRule: question.remember,

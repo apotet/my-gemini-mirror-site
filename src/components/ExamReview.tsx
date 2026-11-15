@@ -62,9 +62,9 @@ function EngineeringReview({ question, onOpenPractice }: { question: Question; o
         <h4>Инженерный разбор</h4>
         {deepDive.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
-        <p><GlossaryText key={textMode} enabled={!professional}>{brief}</GlossaryText></p>
+        <p><GlossaryText key={textMode} enabled={!professional || deepDive.glossaryInProfessional}>{brief}</GlossaryText></p>
         <div id={contentId} className="review-engineering-body" data-collapsed={isLong && !expanded}>
-          {analysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}><GlossaryText key={textMode} enabled={!professional}>{paragraph}</GlossaryText></p>)}
+          {analysis.split(/\n\s*\n/).map((paragraph, index) => <p key={index}><GlossaryText key={textMode} enabled={!professional || deepDive.glossaryInProfessional}>{paragraph}</GlossaryText></p>)}
         </div>
         <PracticeLinkButton link={deepDive.practiceLink} onOpenPractice={onOpenPractice} className="review-button mt-3" />
         {isLong && <button type="button" className="review-button review-engineering-toggle"

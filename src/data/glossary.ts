@@ -6,6 +6,12 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "IANA": {"description": "Ведёт реестр номеров служб и диапазонов транспортных портов. Диапазон Dynamic/Private — 49152–65535.", "relatesTo": "Транспортные порты и их регистрация.", "lessonId": "l4-tcp"},
+  "uRPF": {"description": "Проверяет IP-адрес источника по маршрутам. В строгом режиме входной интерфейс должен соответствовать обратному пути по правилам платформы.", "relatesTo": "Проверка источника и диагностика асимметрии маршрутов.", "lessonId": "ts-method"},
+  "EDNS": {"description": "Расширяет формат DNS через псевдозапись OPT, в том числе позволяет сообщить допустимый размер UDP-ответа.", "relatesTo": "Формат и транспорт DNS.", "lessonId": "l7-dns"},
+  "AXFR": {"description": "Передаёт полное содержимое зоны между авторитетными DNS-серверами поверх TCP.", "relatesTo": "Репликация DNS-зоны.", "lessonId": "l7-dns"},
+  "IXFR": {"description": "Передаёт изменения между версиями зоны DNS и может использовать UDP, если ответ помещается в одно сообщение.", "relatesTo": "Репликация DNS-зоны.", "lessonId": "l7-dns"},
+  "FIN": {"description": "Флаг TCP, которым сторона сообщает, что больше не отправит данные в своём направлении.", "relatesTo": "Закрытие одного направления TCP-соединения.", "lessonId": "tcp-window-retransmit"},
   "IGMP Snooping": {"description": "Функция L2-коммутатора, изучающая IGMP-сообщения для ограничения передачи группового трафика по портам получателей и нужным портам к маршрутизаторам.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
   "IGMP": {"description": "Служебный обмен получателей и multicast-маршрутизаторов для сообщения интереса к группам. Snooping наблюдает этот обмен, но не заменяет multicast routing.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
   "querier": {"description": "Участник, регулярно отправляющий IGMP queries в VLAN. Ответы помогают поддерживать подписки; snooping querier не обязательно маршрутизирует multicast между сетями.", "relatesTo": "Членство IPv4 multicast и L2 forwarding.", "lessonId": "l2-igmp-snooping"},
@@ -1236,6 +1242,13 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "IANA": ["Internet Assigned Numbers Authority", "Администрация адресного пространства Интернета", true],
+  "uRPF": ["Unicast Reverse Path Forwarding", "Проверка обратного пути для одноадресного трафика", true],
+  "EDNS": ["Extension Mechanisms for DNS", "Механизмы расширения DNS", true],
+  "AXFR": ["Authoritative Transfer", "Полная передача зоны DNS", true],
+  "IXFR": ["Incremental Zone Transfer", "Инкрементальная передача зоны DNS", true],
+  "FIN": ["Finish", "Завершение передачи TCP", true],
+  "FIB": ["Forwarding Information Base", "Таблица пересылки", true],
   "TPID": ["Tag Protocol Identifier", "Идентификатор протокола тега", true],
   "TCI": ["Tag Control Information", "Управляющая информация тега", true],
   "User EXEC": ["User EXEC mode", "Пользовательский режим IOS", false],
