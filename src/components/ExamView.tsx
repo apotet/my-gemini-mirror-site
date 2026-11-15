@@ -272,20 +272,19 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
         <fieldset className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
           <legend className="px-1 text-sm font-bold text-slate-900 dark:text-white">Уровень тестирования</legend>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {([1, 2, 3, 4, 5] as const).map(level => {
-              const count = getLearningLevelPool(selectedMode, level).length;
-              return (
-                <button key={level} type="button" aria-pressed={selectedLearningLevel === level}
-                  onClick={() => { setSelectedLearningLevel(level); setStartNotice(''); }}
-                  className={`min-h-24 min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedLearningLevel === level ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
-                  <span className="block font-bold text-slate-900 dark:text-white">{level} · {LEARNING_LEVELS[level].ru}</span>
-                  <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{LEARNING_LEVEL_DESCRIPTIONS[level]}</span>
-                  <span className="mt-2 block text-xs font-mono text-cyan-700 dark:text-cyan-300">Доступно в теме: {count}</span>
-                </button>
-              );
-            })}
-          </div>
+          <select
+            aria-label="Уровень тестирования"
+            value={selectedLearningLevel}
+            onChange={event => { setSelectedLearningLevel(Number(event.target.value) as LearningLevel); setStartNotice(''); }}
+            className="w-full min-h-12 rounded-xl border border-cyan-500 bg-cyan-50 dark:bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-900 dark:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+          >
+            {([1, 2, 3, 4, 5] as const).map(level => (
+              <option key={level} value={level}>
+                {level} · {LEARNING_LEVELS[level].ru} — {getLearningLevelPool(selectedMode, level).length}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{LEARNING_LEVEL_DESCRIPTIONS[selectedLearningLevel]}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">На проверке: {LEARNING_LEVEL_REVIEW_COUNT}. Эти вопросы пока не включаются в новые тесты.</p>
           <p role="status" aria-live="polite" className="text-xs text-slate-500 dark:text-slate-400">
             Доступно по выбранной теме: {availableCount}.
