@@ -180,7 +180,7 @@
     "src/components/Ipv4Trainer.tsx": "f34f1dfdd54e1ed54a38578b2c38d27e2d9cf660bedd34329f60142f26ffd0e3",
     "src/components/Ipv6Trainer.tsx": "40c40b94e62118ecdf0bcf1fd0e15ef005a0f0a9ccd72f910c63114da6cdb9f0",
     "src/components/KnowledgeBase.tsx": "7321f9839dc72eb3a391a98b4fd57d34f5efbc09c9c25824261e1e2a58edbc75",
-    "src/components/KnowledgeRadar.tsx": "e28bcb5711d6e6aaf85d2c51104fab955bc550e6810cb1191f6701011676a7af",
+    "src/components/KnowledgeRadar.tsx": "97de56f166ec05d6fbe7a94c61e2f5a834fe6f2eabdf1acca1b73d31acdc5206",
     "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
     "src/components/LessonView.tsx": "d926abffbc72d0198894ac48ccf19439f9753979bafb8fc9c7fe4446a24f8f7c",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
