@@ -37,7 +37,7 @@ export interface QuizMode {
   count: number;
 }
 
-export type ExamDifficulty = 'beginner' | 'mixed';
+export type ExamDifficulty = 'beginner' | 'in-depth' | 'mixed';
 
 export interface QuizSession {
   /** Independent registry level for new attempts; absent in legacy sessions. */
