@@ -219,3 +219,12 @@ for (const [id, [lessonId, terms]] of Object.entries(technicalTopics)) {
   }
 }
 console.log('PASS: nine linked lessons, plain/pro explanations, scoped tooltips and tag cards');
+
+const diagnosticLevel = getLearningLevelPool('mixed', 4);
+assert.equal(diagnosticLevel.length, 53);
+for (const question of diagnosticLevel) {
+  const detail = getQuestionDeepDive(question);
+  assert.ok(detail.hasIndividualDeep, question.id);
+  assert.ok(detail.professional?.brief.trim() && detail.professional.deep.trim(), question.id);
+}
+console.log('PASS: all 53 Diagnostics questions have a visible professional explanation');

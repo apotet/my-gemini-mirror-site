@@ -1,5 +1,6 @@
 import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
+import { DIAGNOSTIC_EXPLANATIONS } from './diagnosticExplanations';
 import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalExplanation } from './questionExplanationsApplied';
 
 export interface QuestionDeepDive {
@@ -477,6 +478,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const category = detectCategory(question);
   const correctText = question.correct.map((idx) => question.answers[idx]).join('; ');
   const individual = INDIVIDUAL_DEEP[question.id];
+  const diagnostic = DIAGNOSTIC_EXPLANATIONS[question.id];
   const baseExpl = (question.explanation || '').trim();
 
   const briefAnswer =
@@ -487,7 +489,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
 
   const deepAnalysis = individual
     ? individual.plain ?? individual.deep
-    : enrichExplanation(question, category, baseExpl);
+    : diagnostic ? baseExpl : enrichExplanation(question, category, baseExpl);
 
   const engineeringDeep =
     question.difficulty === 'advanced' || question.difficulty === 'applied'
@@ -507,7 +509,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
         sourceCommit: individual.professional?.sourceCommit ??
           (/^gap-pack[123]-/.test(question.id) ? GAP_PACK_PRO_SOURCE_COMMIT : undefined),
       }
-    : individual?.professional;
+    : individual?.professional ?? diagnostic;
 
   return {
     questionId: question.id,
@@ -522,8 +524,8 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     engineeringDeep,
     professional,
     practiceLink: individual?.practiceLink,
-    hasIndividualDeep: Boolean(individual),
-    glossaryInProfessional: individual?.glossaryInProfessional,
+    hasIndividualDeep: Boolean(individual || diagnostic),
+    glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
     commonTrap: individual?.trap || detectCommonTrap(question),
     practicalTip: question.remember || getPracticalTip(category),
     memorizationRule: question.remember,
