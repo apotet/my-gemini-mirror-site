@@ -86,7 +86,9 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
   }, [view, viewKey]);
   if (!session.isCompleted) return null;
   const grade = scoreLabel(totals.percentage);
-  const meme = getOrAssignMemeTitle(session.attemptId || String(session.startTime), totals.percentage);
+  const meme = session.trialDeadline === undefined
+    ? getOrAssignMemeTitle(session.attemptId || String(session.startTime), totals.percentage)
+    : null;
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
   const dash = circumference - (totals.percentage / 100) * circumference;
@@ -111,7 +113,10 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
   return (
     <section aria-label="Разбор завершённого экзамена" className="exam-review">
       <header className="review-overview">
-        <h2 className="text-2xl sm:text-3xl font-sans font-bold">Итоги экзамена</h2>
+        <h2 className="text-2xl sm:text-3xl font-sans font-bold">{session.trialDeadline === undefined ? 'Итоги экзамена' : 'Итоги пробного экзамена'}</h2>
+        {session.trialDeadline !== undefined && session.endTime === session.trialDeadline && (
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Время вышло. Учтены подтверждённые ответы.</p>
+        )}
         <div className="review-overview-body">
           <div className="review-score-wrap">
             <div className="review-score-ring" aria-hidden="true">
@@ -121,11 +126,15 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
               </svg>
               <p className="review-score" aria-label={`Результат: ${totals.percentage} процентов`}>{totals.percentage}<span>%</span></p>
             </div>
-            <span className={`review-grade review-grade-${grade.tone}`}>{grade.text}</span>
-            <div className="review-meme" title={meme.setName}>
-              <strong>{meme.title}</strong>
-              <span>{meme.comment}</span>
-            </div>
+            {meme && (
+              <>
+                <span className={`review-grade review-grade-${grade.tone}`}>{grade.text}</span>
+                <div className="review-meme" title={meme.setName}>
+                  <strong>{meme.title}</strong>
+                  <span>{meme.comment}</span>
+                </div>
+              </>
+            )}
           </div>
           <ul className="review-totals" aria-label="Результат попытки">
             <li><CheckCircle2 aria-hidden="true" /><strong>{totals.correct} из {totals.total} верно</strong></li>
@@ -141,7 +150,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, onNavigateToT
               {totals.wrong ? 'Разобрать ошибки' : totals.unanswered ? 'Разобрать без ответа' : 'Посмотреть ответы'}
             </button>
             <button type="button" onClick={onLearning || onExit} className="review-button">К обучению</button>
-            {onRetry && <button type="button" onClick={onRetry} className="review-button">Новый тест</button>}
+            {onRetry && <button type="button" onClick={onRetry} className="review-button">{session.trialDeadline === undefined ? 'Новый тест' : 'Повторить пробный экзамен'}</button>}
           </div>
         </div>
       </header>

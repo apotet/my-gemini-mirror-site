@@ -4,6 +4,7 @@ import { bundleEntry } from './load-bank.mjs';
 const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLearningLevel,
   getLearningLevelPool, getLearningLevelQuestions, getTestingPool, getTestingQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
   prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers,
+  expireTrial, TRIAL_MINUTES, TRIAL_QUESTION_COUNT,
   serializeReview, restoreReview, reviewRows } =
   await bundleEntry('scripts/learning-level-exam-entry.ts', 'learning-level-exam-tests.mjs');
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
@@ -126,3 +127,35 @@ assert.match(getExamLevelLabel({}), /Смешанный/);
 assert.equal(JSON.stringify(ALL_QUESTIONS), originalBank);
 assert.equal(JSON.stringify(registry), originalRegistry);
 console.log('PASS: direct JSON oracle, 1000 samples per level (5000 total), no foreign levels/REVIEW/duplicate IDs, legacy-difficulty independence, counts and 16 old/new session variants');
+
+const trialStart = Date.now();
+const trialDeadline = trialStart + 15 * 60_000;
+assert.equal(TRIAL_MINUTES, 15);
+assert.equal(TRIAL_QUESTION_COUNT, 20);
+const trialQuestions = getTestingQuestions('mixed', TRIAL_QUESTION_COUNT, seeded(29), 'mixed');
+assert.equal(new Set(trialQuestions.map(q => q.id)).size, 20);
+const trial = { ...prepareAttemptQuestions(trialQuestions, seeded(29)), trialDeadline,
+  currentIndex: 0, userAnswers: {}, submittedQuestions: {}, isCompleted: false, startTime: trialStart,
+  difficulty: 'mixed', mode: 'mixed', feedbackMode: 'exam', progressEpoch: 'trial-epoch', attemptId: 'trial-1' };
+const confirmedTrial = confirmAnswer(trial, trial.questions[0].correct, trialDeadline - 1);
+assert.notEqual(confirmedTrial, trial);
+assert.equal(confirmAnswer(trial, trial.questions[0].correct, trialDeadline), trial);
+assert.equal(expireTrial(confirmedTrial, trialDeadline - 1), confirmedTrial);
+assert.equal(restoreSession(JSON.stringify({ ...confirmedTrial, feedbackMode: 'instant' }), ALL_QUESTIONS, trialDeadline), null);
+const restoredTrial = restoreSession(JSON.stringify(confirmedTrial), ALL_QUESTIONS, trialDeadline);
+assert.equal(restoredTrial.trialDeadline, trialDeadline);
+let writes = 0;
+const record = () => { writes++; return true; };
+recordConfirmedAnswers(restoredTrial, record);
+assert.equal(writes, 0);
+const expiredTrial = expireTrial(restoredTrial, trialDeadline + 1000);
+assert.equal(expiredTrial.endTime, trialDeadline);
+assert.equal(expireTrial(expiredTrial, trialDeadline + 2000), expiredTrial);
+recordConfirmedAnswers(expiredTrial, record);
+assert.equal(writes, 1);
+const timedReview = restoreReview(serializeReview(expiredTrial), 'trial-epoch');
+assert.equal(timedReview.trialDeadline, trialDeadline);
+const reviewedRows = reviewRows(timedReview);
+assert.equal(reviewedRows.filter(row => row.status === 'correct').length, 1);
+assert.equal(reviewedRows.filter(row => row.status === 'unanswered').length, 19);
+console.log('PASS: trial deadline survives restore, no late answers or early score, timeout reviews confirmed answers');

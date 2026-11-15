@@ -1,5 +1,5 @@
 import type { ProgressSession } from './examProgress';
-import { answerCorrect } from './examProgress';
+import { answerCorrect, hasValidTrialTiming } from './examProgress';
 import { getLessonForQuestion } from '../data/lessons';
 import { isLearningLevel } from '../types/learningLevel';
 
@@ -46,6 +46,7 @@ export function restoreReview(raw: string, epoch: string): ProgressSession | nul
     if (wrapper.version !== 1 || !s || s.isCompleted !== true || s.progressEpoch !== epoch ||
         !['instant', 'exam'].includes(s.feedbackMode) || !Array.isArray(s.questions) || !s.questions.length ||
         s.questions.length > 617 || !object(s.userAnswers) || !object(s.submittedQuestions)) return null;
+    if (!hasValidTrialTiming(s)) return null;
     const ids = new Set<string>();
     for (const q of s.questions) {
       if (!q || typeof q.id !== 'string' || ids.has(q.id) || typeof q.text !== 'string' || typeof q.topic !== 'string' ||
