@@ -65,7 +65,27 @@ export function MockTestingHub() {
   const start = () => {
     if(!pool.length){setNotice('Для выбранных настроек пока нет вопросов. Измени уровень или тему.');return;}
     // The registry-based selection preserves question-family uniqueness.
-    const chosen = settings.mode==='mistakes' ? selectFamilyQuestions(pool,5,Math.random) : getLearningLevelQuestions('mixed',settings.count,Math.random,settings.level,pool);
+    const requestedCount = settings.mode==='mistakes' ? 5 : settings.count;
+    const photoOnly = settings.mode==='osi' && osiPhotosOnly;
+    const photoPool = pool.filter(q=>Boolean(q.image));
+    const textPool = pool.filter(q=>!q.image);
+    // Mixed sessions cap photo questions at 20%; explicit photo-only sessions remain unrestricted.
+    const photoLimit = photoOnly ? requestedCount : Math.floor(requestedCount/5);
+    const textChosen = selectFamilyQuestions(textPool,requestedCount-photoLimit,Math.random);
+    const photoChosen = selectFamilyQuestions(photoPool,Math.min(photoLimit,requestedCount-textChosen.length),Math.random);
+    const extraText = selectFamilyQuestions(textPool.filter(q=>!textChosen.some(s=>s.id===q.id)),requestedCount-textChosen.length-photoChosen.length,Math.random);
+    const chosen = [...textChosen,...extraText,...photoChosen];
+    // Spread photo questions through the session instead of allowing a run of photo cards.
+    if(photoChosen.length && textChosen.length+extraText.length){
+      const textQuestions = [...textChosen,...extraText];
+      chosen.splice(0,chosen.length);
+      const interval = Math.ceil(requestedCount/(photoChosen.length+1));
+      for(let i=0;i<requestedCount;i++){
+        if((i+1)%interval===0 && photoChosen.length) chosen.push(photoChosen.shift()!);
+        else if(textQuestions.length) chosen.push(textQuestions.shift()!);
+        else if(photoChosen.length) chosen.push(photoChosen.shift()!);
+      }
+    }
     if(!chosen.length){setNotice('Нет доступных вопросов.');return;}
     setQuestions(chosen);setIndex(0);setAnswers({});setSubmitted(false);setFinished(false);setSessionExists(true);setShowPreview(false);setNotice('');
   };
