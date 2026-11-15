@@ -47,5 +47,10 @@
     "families": 203,
     "mixed10SHA256": "08240640491fefb6a86708801a6ddad271218ed89ec936f647898df82fb4fdc0",
     "otherMixedModesSHA256": "28961fafd41b41e129f7258920e16d6bb90fb825e490e143c6ded120bb737a95"
+  },
+  "diagnosticPack177": {
+    "bankSHA256": "28717c391057617ac0a77a9d22108cffabac45ae9bb1f09a132fca28b7a4de8c",
+    "mixed10SHA256": "b6a89bb7306478fcefa2898dfc4b29846d9c2fa81f34d07d45b9acabd69c7810",
+    "otherMixedModesSHA256": "f84c6971fda35edd977c1eb3c5af5fc357851f91f0a1e0d0505fcc50f75e8024"
   }
 }

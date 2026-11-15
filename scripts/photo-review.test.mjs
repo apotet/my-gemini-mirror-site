@@ -20,9 +20,10 @@ const questionsAtPhotoReview = questions.map(question => {
 });
 assert.equal(hash(questionsAtPhotoReview.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
   'all other questions, including the three PASS and photo-cable-terminate, remain unchanged');
-const { previousRegistryEntries } = read('docs/audits/issue-171-baseline.json').technicalReviewClosure;
+const baseline = read('docs/audits/issue-171-baseline.json');
+const { previousRegistryEntries } = baseline.technicalReviewClosure;
 const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
-  .filter(([id]) => !Object.hasOwn(levels, id))
+  .filter(([id]) => !Object.hasOwn(levels, id) && !baseline.diagnosticPack177.added.includes(id))
   .map(([id, entry]) => [id, previousRegistryEntries[id] ?? entry]));
 assert.equal(hash(registryAtPhotoReview),
   fixture.unchangedRegistrySHA256, 'all other metadata, including nine technical REVIEW, remain unchanged');

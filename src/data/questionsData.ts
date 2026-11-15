@@ -1,4 +1,5 @@
 import rawQuestions from './questions.json';
+import { DIAGNOSTIC_QUESTIONS_177 } from './diagnosticCases177';
 import { sharedAssetUrl } from '../config/sharedAssets';
 import { EXTRA_QUESTIONS } from './questionsExtra';
 import { EXTRA_DIFFICULTY_QUESTIONS } from './questionsExtraDifficulty';
@@ -11,6 +12,7 @@ export const ALL_QUESTIONS: Question[] = [
   ...(rawQuestions as Question[]),
   ...EXTRA_QUESTIONS,
   ...EXTRA_DIFFICULTY_QUESTIONS,
+  ...DIAGNOSTIC_QUESTIONS_177,
 ];
 
 /** Unique IDs only — source of truth for UI counters. */

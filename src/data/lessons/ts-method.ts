@@ -33,6 +33,10 @@ export const LESSON_TS_METHOD: Lesson = {
   ],
   "blocks": [
     {
+      "heading": "Сверить состояние промышленного кольца",
+      "body": "На учебной схеме SCALANCE сравни физическое состояние портов с данными MRP. У действующих участников одной петли должны совпадать домен и назначение кольцевых портов по схеме. Менеджер и клиенты выполняют разные роли. После замены сравни текущие параметры с сохранёнными, затем проверь время и источник события Ring Open.\n\nНа рабочей линии начни с чтения WBM и журнала. Перед изменением роли или кольцевых портов проверь требования документации для конкретной модели и согласуй план работ."
+    },
+    {
       "heading": "Как проверить отказ strict uRPF",
       "body": "Защита strict uRPF сравнивает интерфейс, на котором пришёл пакет, с обратным путём к его IP-источнику. Для проверки сопоставь вход с маршрутом к источнику в FIB и счётчиками отбросов. При асимметрии единственный лучший обратный путь может вести в другой интерфейс, и тогда проверка отклоняет даже легитимный пакет. У loose uRPF такого сравнения интерфейсов нет."
     },
@@ -83,6 +87,7 @@ export const LESSON_TS_METHOD: Lesson = {
     "gen-diag-2"
   ],
   "sources": [
+    "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol",
     "RFC 792 — Internet Control Message Protocol",
     "RFC 1122 — Requirements for Internet Hosts — Communication Layers"
   ],

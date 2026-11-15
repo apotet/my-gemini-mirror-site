@@ -6,8 +6,8 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "6aeba18c2185261db1b672aa7cc604b41caeafb82ca093f95e7b45b99cf2dfce",
-  "bankSHA256": "eee9af51f6694ef5c1fb6ab6014428e9f40d9524db1acc218e2c80285f801720",
+  "auditProjectionSHA256": "8d12e0856c779982a2c363f1a70ab3c877db2074177610afd4466dc3828feac8",
+  "bankSHA256": "28717c391057617ac0a77a9d22108cffabac45ae9bb1f09a132fca28b7a4de8c",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -208,7 +208,8 @@
     "src/components/TheoryView.tsx": "0c9e18bea9ce63e6a235b4464baaf71ecd26ac4e6b4872481d63dda527e390ae",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
-    "src/data/glossary.ts": "8faed8915ca664653bf4799005d99f557912eb32c74917f75821a69e30e5d6f0",
+    "src/data/diagnosticCases177.ts": "098acffd9426d6e7da57f79b610cb861348d53890d369e9ffc61018ba61e280f",
+    "src/data/glossary.ts": "ef51605e35648322f8d4459ac93504faa745209bc8ce9992866df519a85699bb",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
@@ -216,7 +217,7 @@
     "src/data/lessons/cli-show-help-tab.ts": "08d45e03af7486eff8b692f50206aedb035360d39f9568ca7a1b10b5e5af5d17",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "a508f3a1be5e83f9e7b4e2b6230242f6b9d353490100019170295a8bbf304409",
+    "src/data/lessons/index.ts": "89e3073e4204992558b3d53b9f93b852528326fe95f852a4c1b1bc445b690212",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
     "src/data/lessons/l2-bpdu-guard.ts": "4c3a64acf6a61da12bfc86e9017d8c8bcf66c2be7e4f270ba55cd870b231df30",
@@ -227,7 +228,7 @@
     "src/data/lessons/l2-mstp-advanced.ts": "9b828c946072ebc17ea17421ffe0674a5f3eca259a5fba1f287865dcd8e8edc8",
     "src/data/lessons/l2-rstp-convergence.ts": "1b0a96141a2d5af32232078470e1a9ba9fbffe790c5f5257f0e21861c0a5a578",
     "src/data/lessons/l2-stp-election.ts": "35b3b86ac48bf9c1968efec1a7897ad64c12ceda14be862b73cc0618e380222d",
-    "src/data/lessons/l2-stp-guard-design.ts": "5c736d6007920e7b735db7dff36349d80829a9ab2693988e79f79b0b9f2ece71",
+    "src/data/lessons/l2-stp-guard-design.ts": "da207adbf40c9a32cdcd7782dbaccd2e8fcba1309e0e288ce401d764cc64e2fc",
     "src/data/lessons/l2-stp-protection.ts": "ce6780e4c9dcf47768724ba0b37a9b6e5bd8ddb5c7d8c4ca4c61255ef530a35b",
     "src/data/lessons/l2-stp.ts": "c07401f821ce9ad1a4ca5ddf130c422ac536e5a7883e8edb1bcc5699a1fee2e4",
     "src/data/lessons/l2-svi.ts": "9855dc17ff3915b05403d613f8240541b006215ccbfb238b24aade7e120e8c9a",
@@ -258,7 +259,7 @@
     "src/data/lessons/tcpip-model.ts": "afd77246f1ff78ec781c5723a49e8f61d9c4016b3a2c87b7663212da374a97a5",
     "src/data/lessons/tls-sni.ts": "03d2f9559a811481419b3961a1c88422b43886c1cada713fd7b94b8f23add7e4",
     "src/data/lessons/ts-copp-storm.ts": "087e603deb5389c7e532e5981e1efe81c5b6108a88e202ea888dc65524300fb4",
-    "src/data/lessons/ts-method.ts": "5958b253309a147ebc7ced27d6b29f8fef02ad3400a1cdd425dc00ee4564100a",
+    "src/data/lessons/ts-method.ts": "5a758894a3d7e66586ed2f71664c60e0fbf203762972bf1f63c7dce5dc59bc34",
     "src/data/lessons/ts-optics.ts": "ca621ade75d5dd6a6d9f65513ce30f0e23fff8ad757775a76678a57787360fcb",
     "src/data/lessons/types.ts": "c9d7e59d330a04c5a4eaaefc28379c0132c3a72307cef6ef6c42b333473976d3",
     "src/data/levelNotes.ts": "842ff5d1674e4fa9f4805ef79aa2981eacb04367264e001d5cad31717a474fc5",
@@ -266,10 +267,10 @@
     "src/data/mixedExam.ts": "b14eb9c8ba34f1293312fc263972486ce3a3573cbbdeff173271ff0464136384",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "7c16d5be8947ddd34835eb6a228f2970edf406c8f46981e98171decaa2794fb7",
+    "src/data/questionExplanations.ts": "7f465a35f0fe8955356011b8d1905e040b0b0964b5b92db337ef431e175267f7",
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
     "src/data/questions.json": "04630cd2d4772b00041c5f72c60d804c78cc21249e38026f4818fc47ab4e4143",
-    "src/data/questionsData.ts": "04e025c80e89b90bcf424a49936400957cf9e605519ab586379e9806f6b2e05e",
+    "src/data/questionsData.ts": "400d535eded21604bcfd4324822509b9d99511f562747662256faa88671ccbe1",
     "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
     "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
@@ -498,6 +499,33 @@
       "src/data/lessons/l3-nat.ts": "18ff5d9f2334b94f86045c7610a409352f93a433db6c17c9595e1ff749140965",
       "src/data/lessons/l4-tcp-loss.ts": "c65ea69c1299ffe5ac0178144fd39c565a09ab63fab07fa3cc4e2f7c96e96f61",
       "src/data/lessons/tcp-window-retransmit.ts": "2450d7a50a188c33bef9f00191e70550effeb8a5ef19c25d06c057d3628c7a66"
+    }
+  },
+  "diagnosticPack177": {
+    "baseMain": "37bd5d5da7527f90088335b3b932c0916763b0ec",
+    "previousBankSHA256": "eee9af51f6694ef5c1fb6ab6014428e9f40d9524db1acc218e2c80285f801720",
+    "previousAuditProjectionSHA256": "6aeba18c2185261db1b672aa7cc604b41caeafb82ca093f95e7b45b99cf2dfce",
+    "added": [
+      "diag177-optical-direction",
+      "diag177-otdr-bidirectional",
+      "diag177-mrp-domain",
+      "diag177-lag-hash",
+      "diag177-igmp-querier",
+      "diag177-ipv4-onlink-return",
+      "diag177-ra-default-lifetime",
+      "diag177-dhcp-renew-rebind",
+      "diag177-dns-secondary-serial",
+      "diag177-tcp-checksum-offload",
+      "diag177-nat-return-path",
+      "diag177-qos-marking"
+    ],
+    "previousProtectedSHA256": {
+      "src/data/glossary.ts": "8faed8915ca664653bf4799005d99f557912eb32c74917f75821a69e30e5d6f0",
+      "src/data/lessons/index.ts": "a508f3a1be5e83f9e7b4e2b6230242f6b9d353490100019170295a8bbf304409",
+      "src/data/lessons/l2-stp-guard-design.ts": "5c736d6007920e7b735db7dff36349d80829a9ab2693988e79f79b0b9f2ece71",
+      "src/data/lessons/ts-method.ts": "5958b253309a147ebc7ced27d6b29f8fef02ad3400a1cdd425dc00ee4564100a",
+      "src/data/questionExplanations.ts": "7c16d5be8947ddd34835eb6a228f2970edf406c8f46981e98171decaa2794fb7",
+      "src/data/questionsData.ts": "04e025c80e89b90bcf424a49936400957cf9e605519ab586379e9806f6b2e05e"
     }
   }
 }

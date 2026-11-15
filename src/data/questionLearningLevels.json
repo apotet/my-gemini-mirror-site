@@ -785,5 +785,17 @@
   "ts-pack1-17": {"status":"ASSIGNED","auditAction":"RELABEL","learningLevel":4,"confidence":"medium","auditRationale":"Проверить причину (Диагностика · ACL): Source port 443 и destination port клиента в ответе"},
   "ts-pack1-18": {"status":"ASSIGNED","auditAction":"RELABEL","learningLevel":4,"confidence":"medium","auditRationale":"Проверить причину (Диагностика · STP): Одинаковую VLAN для нетегированных кадров обоих концов"},
   "ts-pack1-19": {"status":"ASSIGNED","auditAction":"RELABEL","learningLevel":4,"confidence":"medium","auditRationale":"Проверить причину (Диагностика · TCP): K: IPv4-адрес интерфейса контейнера 10.30.0.5, порт 8080"},
-  "ts-pack1-20": {"status":"ASSIGNED","auditAction":"RELABEL","learningLevel":4,"confidence":"medium","auditRationale":"Проверить причину (Диагностика · DNS): В сохранённом ответе рекурсивного резолвера R"}
+  "ts-pack1-20": {"status":"ASSIGNED","auditAction":"RELABEL","learningLevel":4,"confidence":"medium","auditRationale":"Проверить причину (Диагностика · DNS): В сохранённом ответе рекурсивного резолвера R"},
+  "diag177-optical-direction": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Локализовать направление деградации по входным CRC и уровню приёма."},
+  "diag177-otdr-bidirectional": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Выбрать корректную оценку одного стыка по двустороннему измерению."},
+  "diag177-mrp-domain": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Разделить физический Link Up и членство в домене MRP."},
+  "diag177-lag-hash": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"По нагрузке и счётчикам проверить выбор физического канала для потока."},
+  "diag177-igmp-querier": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Связать уход подписки multicast с отсутствием периодических запросов."},
+  "diag177-ipv4-onlink-return": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"По ARP и таблице маршрутов объяснить ошибочный выбор локальной доставки."},
+  "diag177-ra-default-lifetime": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"По RA и таблице маршрутов объяснить отсутствие шлюза при наличии адреса."},
+  "diag177-dhcp-renew-rebind": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Локализовать нарушение прямого пути продления DHCP по сравнению с rebinding."},
+  "diag177-dns-secondary-serial": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"По прямым ответам двух авторитетных серверов проверить версию зоны."},
+  "diag177-tcp-checksum-offload": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Сопоставить точки захвата и отделить offload от повреждения в линии."},
+  "diag177-nat-return-path": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Сопоставить таблицы NAT и путь ответного пакета на двух шлюзах."},
+  "diag177-qos-marking": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Локализовать перемаркировку по двум захватам и политике интерфейса."}
 }
