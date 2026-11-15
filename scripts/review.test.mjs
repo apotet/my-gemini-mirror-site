@@ -85,6 +85,7 @@ const { render } = await import(pathToFileURL(outfile).href);
 // The current UI starts on mistakes when the attempt has any. This fixture has
 // one wrong answer, seven correct answers and two unconfirmed answers.
 const defaultHtml = render(session);
+assert.match(defaultHtml, /class="review-actions"[\s\S]*?Вернуться к тестам<\/button>/);
 assert.equal((defaultHtml.match(/<details\b/g) || []).length, 1, 'default mistakes filter shows the one wrong answer');
 assert.ok(defaultHtml.includes('Показано 1 из 10'));
 assert.ok(defaultHtml.includes('Вопрос 2</span>'), 'default card is the wrong question, not the first question');

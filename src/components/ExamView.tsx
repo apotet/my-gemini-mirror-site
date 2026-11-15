@@ -5,13 +5,15 @@ import {
   QuizModeId,
   ExamDifficulty,
   EXAM_DIFFICULTIES,
+  TRIAL_DIFFICULTIES,
+  type TrialDifficulty,
 } from '../types/quiz';
 import {
   ALL_QUESTIONS,
   QUIZ_MODES,
   resolveImageUrl,
 } from '../data/questionsData';
-import { getTestingPool, getTestingQuestions } from '../data/learningLevelExam';
+import { getTestingPool, getTestingQuestions, getTrialExamQuestions, TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
@@ -79,8 +81,14 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const [showParameters, setShowParameters] = useState(true);
   const parametersRef = useRef<HTMLDivElement>(null);
   const [moreModesOpen, setMoreModesOpen] = useState(false);
+  const [showTrialOptions, setShowTrialOptions] = useState(false);
+  const trialOptionsRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = trialOptionsRef.current;
+    if (showTrialOptions && dialog && !dialog.open) dialog.showModal();
+  }, [showTrialOptions]);
   const [remainingSeconds, setRemainingSeconds] = useState(TRIAL_MINUTES * 60);
-  const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[]; count: number; mode: QuizModeId; trial: boolean } | null>(null);
+  const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[]; count: number; mode: QuizModeId; trial?: TrialDifficulty } | null>(null);
   const epochRef = useRef(getProgressEpoch());
   useEffect(() => subscribeProgress(() => {
     if (sessionRef.current && sessionRef.current.progressEpoch !== getProgressEpoch()) {
@@ -119,6 +127,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       if (expired !== current) {
         saveSession(expired);
         setPendingNewQuiz(null);
+        setShowTrialOptions(false);
         setReviewSession(null);
         setShowParameters(false);
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -178,9 +187,11 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     setStartNotice('');
   };
 
-  const beginNewQuiz = (customQuestions: Question[] | undefined, count: number, mode: QuizModeId, trial: boolean) => {
+  const beginNewQuiz = (customQuestions: Question[] | undefined, count: number, mode: QuizModeId, trial?: TrialDifficulty) => {
     const difficulty = trial ? 'mixed' : selectedDifficulty;
-    const questions = getTestingQuestions(mode, count, Math.random, difficulty, customQuestions);
+    const questions = trial
+      ? getTrialExamQuestions(trial)
+      : getTestingQuestions(mode, count, Math.random, difficulty, customQuestions);
     if (!questions.length || (trial && questions.length !== count)) {
       setStartNotice(trial
         ? 'Пробный экзамен временно недоступен. В банке недостаточно вопросов.'
@@ -204,7 +215,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       userAnswers: {},
       submittedQuestions: {},
       startTime,
-      ...(trial ? { trialDeadline: startTime + TRIAL_MINUTES * 60_000 } : {}),
+      ...(trial ? { trialDeadline: startTime + TRIAL_MINUTES * 60_000, trialDifficulty: trial } : {}),
       isCompleted: false,
       mode,
       difficulty,
@@ -217,7 +228,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     setEmptyMistakes(false);
   };
 
-  const startNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode, trial = false) => {
+  const startNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode, trial?: TrialDifficulty) => {
     if (sessionRef.current && !sessionRef.current.isCompleted) {
       setPendingNewQuiz({ questions: customQuestions, count, mode, trial });
       return;
@@ -225,7 +236,11 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
     beginNewQuiz(customQuestions, count, mode, trial);
   };
 
-  const startTrial = () => startNewQuiz(undefined, TRIAL_QUESTION_COUNT, 'mixed', true);
+  const startTrial = (difficulty: TrialDifficulty) => startNewQuiz(undefined, TRIAL_QUESTION_COUNT, 'mixed', difficulty);
+  const retryAttempt = (attempt: ProgressSession) => {
+    if (attempt.trialDeadline === undefined) startNewQuiz();
+    else startTrial(attempt.trialDifficulty ?? 'mixed');
+  };
 
   const currentQuestion = session ? session.questions[session.currentIndex] : null;
   const isMultiSelect = currentQuestion ? currentQuestion.correct.length > 1 : false;
@@ -330,7 +345,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
 
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <><ExamReview onOpenPractice={onOpenPractice} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : reviewSession.trialDeadline === undefined ? () => startNewQuiz() : startTrial} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
+    return <><ExamReview onOpenPractice={onOpenPractice} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => retryAttempt(reviewSession)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
   }
 
   if (showParameters || !session || !currentQuestion) {
@@ -394,13 +409,32 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
               : `Пробный экзамен в процессе · осталось ${clock}. Таймер продолжает идти в меню.`}
           </p>}
         </fieldset>
-        <button type="button" onClick={startTrial} className="flex w-full items-center gap-3 rounded-xl border border-cyan-500/35 bg-cyan-50/50 px-4 py-3 text-left hover:bg-cyan-100/70 dark:bg-cyan-950/25 dark:hover:bg-cyan-950/50">
+        <button type="button" onClick={() => setShowTrialOptions(true)} className="flex w-full items-center gap-3 rounded-xl border border-cyan-500/35 bg-cyan-50/50 px-4 py-3 text-left hover:bg-cyan-100/70 dark:bg-cyan-950/25 dark:hover:bg-cyan-950/50">
           <Timer className="h-5 w-5 shrink-0 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
           <span>
             <span className="block text-sm font-bold text-slate-900 dark:text-white">Пробный экзамен</span>
             <span className="mt-1 block text-xs text-slate-600 dark:text-slate-300">{TRIAL_QUESTION_COUNT} вопросов · {TRIAL_MINUTES} минут · ответы в конце</span>
           </span>
         </button>
+        {showTrialOptions && (
+          <dialog ref={trialOptionsRef} onClose={() => setShowTrialOptions(false)} aria-labelledby="trial-options-title"
+            className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-cyan-500/35 bg-white p-4 text-slate-900 backdrop:bg-slate-950/75 dark:bg-slate-900 dark:text-slate-100 sm:p-6">
+            <h2 id="trial-options-title" className="text-lg font-bold">Сложность пробного экзамена</h2>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{TRIAL_QUESTION_COUNT} вопросов · {TRIAL_MINUTES} минут · ответы в конце</p>
+            <div className="mt-4 grid gap-2">
+              {TRIAL_DIFFICULTIES.map(difficulty => (
+                <button key={difficulty} type="button"
+                  onClick={() => { setShowTrialOptions(false); startTrial(difficulty); }}
+                  className="min-h-12 rounded-xl border border-slate-200 px-3 py-2 text-left hover:border-cyan-500 dark:border-slate-700 dark:hover:border-cyan-400">
+                  <span className="block font-bold">{TRIAL_EXAM_OPTIONS[difficulty].title}</span>
+                  <span className="block text-xs text-slate-600 dark:text-slate-300">{TRIAL_EXAM_OPTIONS[difficulty].description}</span>
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={() => trialOptionsRef.current?.close()}
+              className="mt-3 min-h-11 rounded-lg px-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Отмена</button>
+          </dialog>
+        )}
         {startNotice && <p role="status" className="text-sm text-slate-500 dark:text-slate-400">{startNotice}</p>}
         <KnowledgeRadar mistakesCount={lastMistakes.length} totalQuestionsCount={ALL_QUESTIONS.length} hasActiveSession={Boolean(session && !session.isCompleted)} onStartNewExam={() => startNewQuiz()} onStartExam={(levelFilter) => {
           if (!levelFilter && sessionRef.current && !sessionRef.current.isCompleted) { setShowParameters(false); return; }
@@ -461,7 +495,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }
 
   if (session.isCompleted) {
-    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview onOpenPractice={onOpenPractice} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session.trialDeadline === undefined ? () => startNewQuiz() : startTrial} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</div>;
+    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview onOpenPractice={onOpenPractice} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => retryAttempt(session)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</div>;
   }
 
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;
@@ -469,7 +503,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   return (
     <div className="max-w-2xl mx-auto space-y-4 pb-20">
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        {session.trialDeadline === undefined ? `Уровень: ${examLevels[session.difficulty ?? 'mixed'].title}` : 'Пробный экзамен'}
+        {session.trialDeadline === undefined ? `Уровень: ${examLevels[session.difficulty ?? 'mixed'].title}` : session.trialDifficulty ? `Пробный экзамен · ${TRIAL_EXAM_OPTIONS[session.trialDifficulty].title}` : 'Пробный экзамен'}
         {session.requestedCount && session.questions.length < session.requestedCount
           ? ` · Доступно ${session.questions.length} из запрошенных ${session.requestedCount}; попытка содержит ${session.questions.length} билетов.`
           : ''}

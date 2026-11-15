@@ -1,4 +1,4 @@
-import type { ExamDifficulty, Question, QuizModeId, QuizSession } from '../types/quiz';
+import type { ExamDifficulty, Question, QuizModeId, QuizSession, TrialDifficulty } from '../types/quiz';
 import { LEARNING_LEVELS, isLearningLevel, type LearningLevel } from '../types/learningLevel';
 import { ALL_QUESTIONS, filterExamDifficulty, getExamPool, getRandomQuestions } from './questionsData';
 import { getLearningLevelMetadata, getLearningLevelStatistics } from './learningLevels';
@@ -26,6 +26,22 @@ export function getLearningLevelQuestions(
 ): Question[] {
   const pool = customQuestions ? filterLearningLevel(customQuestions, level) : getLearningLevelPool(mode, level);
   return selectFamilyQuestions(pool, count, random);
+}
+
+export const TRIAL_EXAM_OPTIONS: Record<TrialDifficulty, {
+  title: string;
+  description: string;
+  quotas: readonly (readonly [level: LearningLevel, count: number])[];
+}> = {
+  basic: { title: 'Базовый', description: '20 вопросов на основы', quotas: [[1, 20]] },
+  advanced: { title: 'Продвинутый', description: '10 на понимание и 10 на применение', quotas: [[2, 10], [3, 10]] },
+  mixed: { title: 'Смешанный', description: '6 на основы, 7 на понимание и 7 на применение', quotas: [[1, 6], [2, 7], [3, 7]] },
+};
+
+export function getTrialExamQuestions(difficulty: TrialDifficulty, random = Math.random): Question[] {
+  const questions = TRIAL_EXAM_OPTIONS[difficulty].quotas.flatMap(([level, count]) =>
+    getLearningLevelQuestions('mixed', count, random, level));
+  return selectFamilyQuestions(questions, questions.length, random);
 }
 
 const UNDERSTANDING_LEVEL = 2;
