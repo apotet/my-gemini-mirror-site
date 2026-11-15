@@ -1,6 +1,6 @@
-import type { Question, QuizModeId, QuizSession } from '../types/quiz';
+import type { ExamDifficulty, Question, QuizModeId, QuizSession } from '../types/quiz';
 import { LEARNING_LEVELS, isLearningLevel, type LearningLevel } from '../types/learningLevel';
-import { ALL_QUESTIONS } from './questionsData';
+import { ALL_QUESTIONS, filterExamDifficulty, getExamPool, getRandomQuestions } from './questionsData';
 import { getLearningLevelMetadata, getLearningLevelStatistics } from './learningLevels';
 import { selectFamilyQuestions } from './beginnerExam';
 
@@ -26,6 +26,26 @@ export function getLearningLevelQuestions(
 ): Question[] {
   const pool = customQuestions ? filterLearningLevel(customQuestions, level) : getLearningLevelPool(mode, level);
   return selectFamilyQuestions(pool, count, random);
+}
+
+const UNDERSTANDING_LEVEL = 2;
+
+export function getTestingPool(mode: QuizModeId, difficulty: ExamDifficulty): Question[] {
+  return difficulty === 'in-depth'
+    ? getLearningLevelPool(mode, UNDERSTANDING_LEVEL)
+    : getExamPool(mode, difficulty);
+}
+
+export function getTestingQuestions(
+  mode: QuizModeId, count: number, random: () => number, difficulty: ExamDifficulty,
+  customQuestions?: readonly Question[],
+): Question[] {
+  if (difficulty === 'in-depth') {
+    return getLearningLevelQuestions(mode, count, random, UNDERSTANDING_LEVEL, customQuestions);
+  }
+  return customQuestions
+    ? filterExamDifficulty(customQuestions, difficulty).slice(0, count)
+    : getRandomQuestions(mode, count, random, difficulty);
 }
 
 export function getExamLevelLabel(session: Pick<QuizSession, 'learningLevel' | 'difficulty'>): string {

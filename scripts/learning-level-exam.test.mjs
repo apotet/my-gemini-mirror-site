@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
 const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLearningLevel,
-  getLearningLevelPool, getLearningLevelQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
+  getLearningLevelPool, getLearningLevelQuestions, getTestingPool, getTestingQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
   prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers,
   serializeReview, restoreReview, reviewRows } =
   await bundleEntry('scripts/learning-level-exam-entry.ts', 'learning-level-exam-tests.mjs');
@@ -15,6 +15,20 @@ const totals = [218, 145, 359, 53, 3];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 9);
 assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 9);
+const understanding = ALL_QUESTIONS.filter(({ id }) =>
+  sourceRegistry[id].status === 'ASSIGNED' && sourceRegistry[id].learningLevel === 2);
+assert.equal(understanding.length, 145);
+for (const { id: mode } of QUIZ_MODES) {
+  const pool = understanding.filter(q => mode === 'mixed' || q.group === mode);
+  assert.deepEqual(getTestingPool(mode, 'in-depth'), pool);
+  const questions = getTestingQuestions(mode, 30, seeded(17), 'in-depth');
+  assert.equal(questions.length, Math.min(pool.length, 30));
+  assert.ok(questions.every(q => pool.includes(q)));
+}
+const understandingCustom = [...understanding.slice(0, 3), ...review];
+assert.deepEqual(new Set(getTestingQuestions('mixed', 10, seeded(17), 'in-depth', understandingCustom)),
+  new Set(understanding.slice(0, 3)));
+assert.deepEqual(getTestingQuestions('mixed', 10, seeded(17), 'in-depth', review), []);
 const assigned = [];
 for (const level of [1, 2, 3, 4, 5]) {
   const all = getLearningLevelPool('mixed', level);

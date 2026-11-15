@@ -112,16 +112,17 @@ export const QUIZ_MODES: QuizMode[] = [
   },
 ];
 
+type LegacyExamDifficulty = Exclude<ExamDifficulty, 'in-depth'>;
+
 const examQuestionDifficulty = {
   beginner: 'beginner',
-  'in-depth': 'intermediate',
   applied: 'applied',
 } as const;
-export function filterExamDifficulty(questions: readonly Question[], difficulty: ExamDifficulty): Question[] {
+export function filterExamDifficulty(questions: readonly Question[], difficulty: LegacyExamDifficulty): Question[] {
   return questions.filter(q => difficulty === 'mixed' || q.difficulty === examQuestionDifficulty[difficulty]);
 }
 
-export function getExamPool(modeId: QuizModeId, difficulty: ExamDifficulty): Question[] {
+export function getExamPool(modeId: QuizModeId, difficulty: LegacyExamDifficulty): Question[] {
   return filterExamDifficulty(ALL_QUESTIONS, difficulty).filter(q =>
     modeId === 'mixed' ? difficulty !== 'mixed' || q.group !== 'visual-l1' : q.group === modeId);
 }
@@ -130,7 +131,7 @@ export function getRandomQuestions(
   modeId: QuizModeId,
   count: number = 10,
   random: () => number = Math.random,
-  difficulty: ExamDifficulty = 'mixed'
+  difficulty: LegacyExamDifficulty = 'mixed'
 ): Question[] {
   // Preserve the existing all-level mixed quotas. Beginner pools have their own
   // strict sample: photo/group quotas must never pull in a different difficulty.
@@ -152,7 +153,7 @@ export function getNewAttemptQuestions(
   modeId: QuizModeId,
   count: number,
   random: () => number,
-  difficulty: ExamDifficulty,
+  difficulty: LegacyExamDifficulty,
   customQuestions?: readonly Question[],
 ): Question[] {
   if (!customQuestions) return getRandomQuestions(modeId, count, random, difficulty);
