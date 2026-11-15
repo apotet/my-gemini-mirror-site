@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
 const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLearningLevel,
   getLearningLevelPool, getLearningLevelQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
@@ -8,6 +9,8 @@ const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLea
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
 const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
+// Independent acceptance oracle: read the source JSON, not the selector's derived pools.
+const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
 const totals = [216, 144, 357, 53, 3];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 14);
@@ -39,10 +42,28 @@ assert.equal(getLearningLevelQuestions('visual-l1', 10, seeded(1), 5).length, 0,
 const appliedWithBeginner = getLearningLevelPool('mixed', 3).find(q => q.difficulty === 'beginner');
 const fundamentalsWithAdvanced = getLearningLevelPool('mixed', 1).find(q => q.difficulty === 'advanced');
 assert.ok(appliedWithBeginner && fundamentalsWithAdvanced, 'registry wins over legacy difficulty');
-for (let seed = 1; seed <= 1000; seed++) {
-  const selected = getLearningLevelQuestions('mixed', 10, seeded(seed), 1);
-  assert.equal(new Set(selected.map(q => q.family || q.id)).size, 10);
-  assert.ok(selected.some(q => q.image), 'shared photo/family guarantees still apply');
+for (const level of [1, 2, 3, 4, 5]) {
+  const expectedIds = ALL_QUESTIONS.filter(q => sourceRegistry[q.id].status === 'ASSIGNED' &&
+    sourceRegistry[q.id].learningLevel === level).map(q => q.id);
+  assert.deepEqual(getLearningLevelPool('mixed', level).map(q => q.id), expectedIds);
+  // Even if every legacy difficulty claims beginner/advanced, registry membership wins.
+  for (const difficulty of ['beginner', 'advanced', undefined]) {
+    const altered = ALL_QUESTIONS.map(q => ({ ...q, difficulty }));
+    assert.deepEqual(filterLearningLevel(altered, level).map(q => q.id), expectedIds);
+  }
+  for (let seed = 1; seed <= 1000; seed++) {
+    const selected = getLearningLevelQuestions('mixed', 10, seeded(seed), level);
+    assert.equal(selected.length, Math.min(10, expectedIds.length));
+    assert.equal(new Set(selected.map(q => q.id)).size, selected.length);
+    for (const q of selected) {
+      assert.equal(sourceRegistry[q.id].status, 'ASSIGNED', `REVIEW leaked into L${level}: ${q.id}`);
+      assert.equal(sourceRegistry[q.id].learningLevel, level, `foreign level leaked into L${level}: ${q.id}`);
+    }
+    if (level === 1) {
+      assert.equal(new Set(selected.map(q => q.family || q.id)).size, 10);
+      assert.ok(selected.some(q => q.image), 'shared photo/family guarantees still apply');
+    }
+  }
 }
 const custom = [review[0], appliedWithBeginner, fundamentalsWithAdvanced, appliedWithBeginner];
 assert.deepEqual(getLearningLevelQuestions('mixed', 10, seeded(2), 3, custom), [appliedWithBeginner]);
@@ -90,4 +111,4 @@ assert.match(getExamLevelLabel({ difficulty: 'beginner' }), /База/);
 assert.match(getExamLevelLabel({}), /Смешанный/);
 assert.equal(JSON.stringify(ALL_QUESTIONS), originalBank);
 assert.equal(JSON.stringify(registry), originalRegistry);
-console.log('PASS: five registry levels, 14 REVIEW excluded, all topics/counts, 1000 samples, shortages, custom mistakes and 16 old/new session variants');
+console.log('PASS: direct JSON oracle, 1000 samples per level (5000 total), no foreign levels/REVIEW/duplicate IDs, legacy-difficulty independence, counts and 16 old/new session variants');
