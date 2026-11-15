@@ -4,6 +4,7 @@ import {
   Question,
   QuizModeId,
   ExamDifficulty,
+  EXAM_DIFFICULTIES,
 } from '../types/quiz';
 import {
   ALL_QUESTIONS,
@@ -39,6 +40,13 @@ import {
   Image as ImageIcon,
   BookOpen,
 } from 'lucide-react';
+
+const examLevels: Record<ExamDifficulty, { title: string; description: string }> = {
+  beginner: { title: 'База', description: 'Основы сетей' },
+  'in-depth': { title: 'Углублённый', description: 'Понимание работы сети' },
+  applied: { title: 'Прикладной', description: 'Применение знаний' },
+  mixed: { title: 'Смешанный', description: 'Все уровни сложности' },
+};
 
 export interface ExamViewHandle {
   returnToParameters: () => void;
@@ -124,6 +132,11 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       setReviewWarning(true);
     }
   }, []);
+
+  const selectDifficulty = (difficulty: ExamDifficulty) => {
+    setSelectedDifficulty(difficulty);
+    setStartNotice('');
+  };
 
   const beginNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode) => {
     const questions = customQuestions
@@ -274,15 +287,29 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         {sessionWarning && <p role="alert">Не удалось прочитать или сохранить сессию. Её продолжение может быть недоступно; скачайте экспорт.</p>}
         {reviewWarning && <p role="status">Последний разбор не удалось прочитать или сохранить. Он может быть недоступен после reload.</p>}
         {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
-        <fieldset className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
-          <div className="text-sm font-bold text-cyan-400">Выбери свой уровень</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {([{ id: 'beginner', title: 'База', description: 'Только beginner' }, { id: 'in-depth', title: 'Углублённый', description: 'Понимание и применение' }, { id: 'mixed', title: 'Смешанный', description: 'Все уровни сложности' }] as const).map(level => (
-              <button key={level.id} type="button" aria-pressed={selectedDifficulty === level.id}
-                onClick={() => { setSelectedDifficulty(level.id); setStartNotice(''); }}
-                className={`min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedDifficulty === level.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
-                <span className="block font-bold text-slate-900 dark:text-white">{level.title}</span>
-                <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{level.description}</span>
+        <fieldset aria-labelledby="exam-level-title" className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
+          <div id="exam-level-title" className="sr-only text-sm font-bold text-cyan-400 sm:not-sr-only">Выбери свой уровень</div>
+          <label className="relative flex min-h-12 items-center justify-between gap-3 rounded-xl border border-cyan-500 px-3 py-2 focus-within:ring-2 focus-within:ring-cyan-500 sm:hidden">
+            <span className="text-sm font-bold text-cyan-400">Выбери свой уровень</span>
+            <span aria-hidden="true" className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-white">
+              {examLevels[selectedDifficulty].title}
+              <ChevronDown className="h-4 w-4 shrink-0" />
+            </span>
+            <select
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              value={selectedDifficulty}
+              onChange={event => selectDifficulty(event.currentTarget.value as ExamDifficulty)}
+            >
+              {EXAM_DIFFICULTIES.map(level => <option key={level} value={level}>{examLevels[level].title}</option>)}
+            </select>
+          </label>
+          <div className="hidden gap-2 sm:grid sm:grid-cols-4">
+            {EXAM_DIFFICULTIES.map(level => (
+              <button key={level} type="button" aria-pressed={selectedDifficulty === level}
+                onClick={() => selectDifficulty(level)}
+                className={`min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedDifficulty === level ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
+                <span className="block font-bold text-slate-900 dark:text-white">{examLevels[level].title}</span>
+                <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{examLevels[level].description}</span>
               </button>
             ))}
           </div>
@@ -291,7 +318,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
             {availableCount < questionCount && ` Будет ${availableCount} из запрошенных ${questionCount}; другой уровень не добавляется.`}
           </p>
           {session && !session.isCompleted && <p className="text-xs text-slate-500 dark:text-slate-400">
-            Текущая попытка: {session.difficulty === 'beginner' ? 'База' : session.difficulty === 'in-depth' ? 'Углублённый' : 'Смешанный'}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
+            Текущая попытка: {examLevels[session.difficulty ?? 'mixed'].title}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
           </p>}
         </fieldset>
         {startNotice && <p role="status" className="text-sm text-slate-500 dark:text-slate-400">{startNotice}</p>}

@@ -28,11 +28,23 @@ assert.equal(getExamPool('mixed', 'beginner').length, base.length);
 const fixtures = ['beginner', 'applied', 'advanced', 'basic', undefined, 'intermediate'].map((difficulty, i) => ({ id: String(i), difficulty }));
 assert.deepEqual(filterExamDifficulty(fixtures, 'beginner').map(q => q.id), ['0']);
 assert.equal(filterExamDifficulty(fixtures, 'mixed').length, fixtures.length);
+assert.deepEqual(filterExamDifficulty(fixtures, 'in-depth').map(q => q.id), ['5']);
+assert.deepEqual(filterExamDifficulty(fixtures, 'applied').map(q => q.id), ['1']);
 for (const mode of QUIZ_MODES) for (const count of [5, 10, 20, 30, ALL_QUESTIONS.length + 1]) {
   const chosen = getRandomQuestions(mode.id, count, seeded(), 'beginner');
   assert.ok(chosen.every(q => q.difficulty === 'beginner'), mode.id + ': no applied/advanced/basic/unlabelled');
   assert.equal(chosen.length, Math.min(count, new Set(getExamPool(mode.id, 'beginner').map(q => q.id)).size));
   assert.equal(new Set(chosen.map(q => q.id)).size, chosen.length);
+}
+for (const [level, bankDifficulty] of [['in-depth', 'intermediate'], ['applied', 'applied']]) {
+  for (const { id: mode } of QUIZ_MODES) {
+    const pool = ALL_QUESTIONS.filter(q => q.difficulty === bankDifficulty && (mode === 'mixed' || q.group === mode));
+    assert.deepEqual(getExamPool(mode, level), pool);
+    const chosen = getRandomQuestions(mode, 30, seeded(), level);
+    assert.equal(chosen.length, Math.min(30, pool.length));
+    assert.equal(new Set(chosen.map(q => q.id)).size, chosen.length);
+    assert.ok(chosen.every(q => pool.includes(q)));
+  }
 }
 const photos = ALL_QUESTIONS.filter(q => q.group === 'visual-l1' && q.difficulty === 'beginner');
 assert.ok(photos.length);
@@ -62,6 +74,10 @@ assert.ok(reviewRows(reviewed).length);
 // Legacy attempts are not filtered/resampled; their saved answers and shuffled order survive.
 const legacyQuestions = ['beginner', 'applied', 'advanced'].map(d => ALL_QUESTIONS.find(q => q.difficulty === d));
 assert.ok(legacyQuestions.every(Boolean));
+for (const level of ['in-depth', 'applied']) {
+  const attempt = createSession(legacyQuestions.filter(q => q.difficulty === 'applied'), level);
+  assert.deepEqual(restoreSession(JSON.stringify(attempt), ALL_QUESTIONS, now), attempt);
+}
 let legacy = createSession(legacyQuestions);
 legacy = confirmAnswer(legacy, legacy.questions[0].correct, now);
 const old = restoreSession(JSON.stringify(legacy), ALL_QUESTIONS, now);
@@ -73,4 +89,4 @@ delete preShuffle.answerOrders;
 assert.deepEqual(restoreSession(JSON.stringify(preShuffle), ALL_QUESTIONS, now).questions, legacyQuestions);
 assert.equal(restoreSession(JSON.stringify({ ...session, difficulty: 'advanced' }), ALL_QUESTIONS, now), null);
 assert.equal(JSON.stringify(ALL_QUESTIONS), bankBefore, 'bank not mutated');
-console.log('PASS: strict beginner pools, shortages without refill, photos, original mixed quotas, session level/order, legacy continuation and review');
+console.log('PASS: strict beginner, in-depth and applied pools, shortages without refill, photos, original mixed quotas, session level/order, legacy continuation and review');
