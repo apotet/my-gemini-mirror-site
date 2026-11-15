@@ -1,4 +1,5 @@
 import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
+import { EXPERT_CASES_177 } from './expertCases177';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from './previousDiagnosticQuestions';
 import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
@@ -522,6 +523,14 @@ const INDIVIDUAL_DEEP: Record<
     brief: item.brief,
     deep: item.sense.join('\n\n'),
     pro: item.pro + '\n\nПрактика. ' + item.exercise,
+    trap: item.trap,
+    practiceLink: item.practiceLink,
+    glossaryInProfessional: true,
+  }])),
+  ...Object.fromEntries(EXPERT_CASES_177.map(item => [item.question.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro,
     trap: item.trap,
     practiceLink: item.practiceLink,
     glossaryInProfessional: true,

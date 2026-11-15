@@ -797,5 +797,8 @@
   "diag177-dns-secondary-serial": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"По прямым ответам двух авторитетных серверов проверить версию зоны."},
   "diag177-tcp-checksum-offload": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Сопоставить точки захвата и отделить offload от повреждения в линии."},
   "diag177-nat-return-path": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Сопоставить таблицы NAT и путь ответного пакета на двух шлюзах."},
-  "diag177-qos-marking": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Локализовать перемаркировку по двум захватам и политике интерфейса."}
+  "diag177-qos-marking": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":4,"confidence":"high","auditRationale":"Локализовать перемаркировку по двум захватам и политике интерфейса."},
+  "expert177-mrp-vlan-failover": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":5,"confidence":"high","auditRationale":"Сопоставить переключение кольца, захваты по сторонам порта и независимый тест второй VLAN. Выбрать ограниченную правку, приёмку и откат."},
+  "expert177-dnat-reply-policy": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":5,"confidence":"high","auditRationale":"Восстановить оба направления DNAT по захватам и состоянию экранов. Выбрать точечный маршрут, сохраняя IP клиента и контрольные соединения."},
+  "expert177-optical-reserve-margin": {"status":"ASSIGNED","auditAction":"KEEP","learningLevel":5,"confidence":"high","auditRationale":"Локализовать событие по OTDR, проверить гипотезу по двум длинам волн, вычислить запас и выбрать критерий возврата с резерва."}
 }

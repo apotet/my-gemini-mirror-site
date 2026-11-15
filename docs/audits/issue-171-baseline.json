@@ -6,8 +6,8 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "8d12e0856c779982a2c363f1a70ab3c877db2074177610afd4466dc3828feac8",
-  "bankSHA256": "3e818d56188b05be41bde05ea270a3c7de39d902b15b23db527144c69855c413",
+  "auditProjectionSHA256": "e8077c9b112eba5578f419ed21b5bbea61146ae7531c8a8c419b87641928c1c5",
+  "bankSHA256": "c4460a03c829a43151f65f088acf3c9ab4406bd63236bd56e76efe4f2112e516",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -209,7 +209,8 @@
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
-    "src/data/glossary.ts": "ef51605e35648322f8d4459ac93504faa745209bc8ce9992866df519a85699bb",
+    "src/data/expertCases177.ts": "612c3d364eda597673509f6aa7081578bf4973780ab34deda5a8c6cdafaea743",
+    "src/data/glossary.ts": "ad12a5ce6856309dc90aecc86d334535eb212a4636c3ac87383caf85a25a6f58",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
@@ -217,7 +218,7 @@
     "src/data/lessons/cli-show-help-tab.ts": "08d45e03af7486eff8b692f50206aedb035360d39f9568ca7a1b10b5e5af5d17",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "89e3073e4204992558b3d53b9f93b852528326fe95f852a4c1b1bc445b690212",
+    "src/data/lessons/index.ts": "5257b77af40f6cae9e9d76b556b717586474b2d8c762697bbb9abf4973a50357",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
     "src/data/lessons/l2-bpdu-guard.ts": "4c3a64acf6a61da12bfc86e9017d8c8bcf66c2be7e4f270ba55cd870b231df30",
@@ -261,16 +262,16 @@
     "src/data/lessons/ts-copp-storm.ts": "087e603deb5389c7e532e5981e1efe81c5b6108a88e202ea888dc65524300fb4",
     "src/data/lessons/ts-method.ts": "5a758894a3d7e66586ed2f71664c60e0fbf203762972bf1f63c7dce5dc59bc34",
     "src/data/lessons/ts-optics.ts": "47ea3bef9078b0bc43c6e667f8eac678d57f1569dc9f91735f6e6c8bac1f84ca",
-    "src/data/lessons/types.ts": "c9d7e59d330a04c5a4eaaefc28379c0132c3a72307cef6ef6c42b333473976d3",
+    "src/data/lessons/types.ts": "c4492a6ff3b6883fd68917e7cfc8053fee610768696fd402b934b5b5b06d401e",
     "src/data/levelNotes.ts": "842ff5d1674e4fa9f4805ef79aa2981eacb04367264e001d5cad31717a474fc5",
     "src/data/memeTitles.ts": "80422ac2e70fb87a699718b8526c73217f4c33a429e7bf0566543ea6fbc67014",
     "src/data/mixedExam.ts": "b14eb9c8ba34f1293312fc263972486ce3a3573cbbdeff173271ff0464136384",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "7f465a35f0fe8955356011b8d1905e040b0b0964b5b92db337ef431e175267f7",
+    "src/data/questionExplanations.ts": "2bd6e5b9a5da54599b471e71669319beea2ca95243c883f96093b02005554791",
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
     "src/data/questions.json": "04630cd2d4772b00041c5f72c60d804c78cc21249e38026f4818fc47ab4e4143",
-    "src/data/questionsData.ts": "400d535eded21604bcfd4324822509b9d99511f562747662256faa88671ccbe1",
+    "src/data/questionsData.ts": "562e53eec013159259a5262cfb18db59bcde63155d3e1c507445d0b253af783b",
     "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
     "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
@@ -527,6 +528,23 @@
       "src/data/questionExplanations.ts": "7c16d5be8947ddd34835eb6a228f2970edf406c8f46981e98171decaa2794fb7",
       "src/data/questionsData.ts": "04e025c80e89b90bcf424a49936400957cf9e605519ab586379e9806f6b2e05e",
       "src/data/lessons/ts-optics.ts": "ca621ade75d5dd6a6d9f65513ce30f0e23fff8ad757775a76678a57787360fcb"
+    }
+  },
+  "expertPack177": {
+    "baseMain": "263aaa7e06f00ad44ae65938cd07958b70961966",
+    "previousBankSHA256": "3e818d56188b05be41bde05ea270a3c7de39d902b15b23db527144c69855c413",
+    "previousAuditProjectionSHA256": "8d12e0856c779982a2c363f1a70ab3c877db2074177610afd4466dc3828feac8",
+    "added": [
+      "expert177-mrp-vlan-failover",
+      "expert177-dnat-reply-policy",
+      "expert177-optical-reserve-margin"
+    ],
+    "previousProtectedSHA256": {
+      "src/data/glossary.ts": "ef51605e35648322f8d4459ac93504faa745209bc8ce9992866df519a85699bb",
+      "src/data/lessons/index.ts": "89e3073e4204992558b3d53b9f93b852528326fe95f852a4c1b1bc445b690212",
+      "src/data/lessons/types.ts": "c9d7e59d330a04c5a4eaaefc28379c0132c3a72307cef6ef6c42b333473976d3",
+      "src/data/questionExplanations.ts": "7f465a35f0fe8955356011b8d1905e040b0b0964b5b92db337ef431e175267f7",
+      "src/data/questionsData.ts": "400d535eded21604bcfd4324822509b9d99511f562747662256faa88671ccbe1"
     }
   }
 }

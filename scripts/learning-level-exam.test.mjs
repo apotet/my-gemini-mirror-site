@@ -13,7 +13,7 @@ const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [220, 151, 360, 65, 3];
+const totals = [220, 151, 360, 65, 6];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 0);
 assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 0);
@@ -51,9 +51,9 @@ for (const level of [1, 2, 3, 4, 5]) {
     }
   }
 }
-assert.equal(assigned.length, 799);
-assert.equal(new Set(assigned).size, 799);
-assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 3, 'no top-up of Expert');
+assert.equal(assigned.length, 802);
+assert.equal(new Set(assigned).size, 802);
+assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 6, 'no top-up of Expert');
 assert.equal(getLearningLevelQuestions('visual-l1', 10, seeded(1), 5).length, 0, 'no foreign topic/level');
 const appliedWithBeginner = getLearningLevelPool('mixed', 3).find(q => q.difficulty === 'beginner');
 const fundamentalsWithAdvanced = getLearningLevelPool('mixed', 1).find(q => q.difficulty === 'advanced');
@@ -313,3 +313,35 @@ for (const q of diagnosticPack) {
   assert.ok(!getTestingPool(q.group, 'applied').includes(q), q.id);
 }
 console.log('PASS: issue #177 pack has 12 linked diagnostics with both layers, glossary, and practice tasks');
+
+const expertPack = getLearningLevelPool('mixed', 5).filter(q => q.id.startsWith('expert177-'));
+assert.equal(expertPack.length, 3);
+for (const q of expertPack) {
+  const detail = getQuestionDeepDive(q);
+  const lesson = getLessonForQuestion(q.id);
+  assert.equal(q.answers.length, 4, q.id);
+  assert.equal(new Set(q.answers).size, 4, q.id);
+  assert.equal(q.correct.length, 1, q.id);
+  assert.equal(lesson?.difficulty, 'advanced', q.id);
+  assert.equal(lesson?.category, 'Экспертные кейсы', q.id);
+  assert.ok(lesson.relatedQuestionIds.includes(q.id), q.id);
+  assert.ok(lesson.sources.every(s => s.includes('https://')), q.id);
+  for (const blocks of [lesson.blocks, lesson.professional?.blocks]) {
+    assert.ok(blocks?.some(block => block.heading.startsWith('Практика')), q.id);
+    assert.ok(blocks.some(block => splitGlossaryText(block.body).some(token => token.term)), q.id);
+    if (q.id === 'expert177-dnat-reply-policy') {
+      assert.ok(blocks.some(block => block.practiceLink === 'nat'));
+      assert.equal(detail.practiceLink, 'nat');
+    }
+  }
+  assert.equal(detail.deepAnalysis.split('\n\n').length, 3, q.id);
+  assert.ok(detail.professional?.deep && detail.glossaryInProfessional, q.id);
+  assert.ok(splitGlossaryText(detail.deepAnalysis).some(token => token.term), q.id);
+  assert.ok(splitGlossaryText(detail.professional.deep).some(token => token.term), q.id);
+  for (const difficulty of ['basic', 'advanced', 'mixed']) {
+    assert.ok(getTrialExamQuestions(difficulty, seeded(29)).every(question => question.id !== q.id), q.id);
+  }
+}
+assert.ok(GLOSSARY.DNAT.description && GLOSSARY.DNAT.relatesTo);
+assert.equal(splitGlossaryText('DNAT')[0]?.term, 'DNAT');
+console.log('PASS: three Expert incidents have layered explanations and advanced lessons with practice');

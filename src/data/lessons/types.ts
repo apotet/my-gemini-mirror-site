@@ -29,7 +29,7 @@ export interface Lesson {
     blocks: LessonBlock[];
     commands?: LessonCommand[];
     sources: string[];
-    sourceCommit: string;
+    sourceCommit?: string;
   };
   summary: string;
   terms: string[];

@@ -52,5 +52,10 @@
     "bankSHA256": "3e818d56188b05be41bde05ea270a3c7de39d902b15b23db527144c69855c413",
     "mixed10SHA256": "b6a89bb7306478fcefa2898dfc4b29846d9c2fa81f34d07d45b9acabd69c7810",
     "otherMixedModesSHA256": "f84c6971fda35edd977c1eb3c5af5fc357851f91f0a1e0d0505fcc50f75e8024"
+  },
+  "expertPack177": {
+    "bankSHA256": "c4460a03c829a43151f65f088acf3c9ab4406bd63236bd56e76efe4f2112e516",
+    "mixed10SHA256": "bae20a87c58ce7861b0fe2488fde4a71253ffdb1141a88888478b0e910c1b1ed",
+    "otherMixedModesSHA256": "d703ea88e3c70afc60f4157af7717d177fe1613b9947fdecbc9d6469f96c243b"
   }
 }
