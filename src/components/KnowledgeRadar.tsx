@@ -124,18 +124,6 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
     setProgress(reset);
   };
 
-  const statusTitle = hasAccuracy
-    ? `Точность ${progress.readinessPercent}%`
-    : towardAccuracy > 0
-      ? `${towardAccuracy}/10 до точности`
-      : 'Точность появится после 10 ответов';
-
-  const statusSub = hasAccuracy
-    ? `${progress.answeredCount} ответов · ${progress.correctCount} верных`
-    : towardAccuracy > 0
-      ? `Ещё ${10 - towardAccuracy} подтверждённых ответов`
-      : 'Пройди короткую сессию';
-
   return (
     <div className="space-y-4 w-full">
       {progress.migrationNotice && !migrationAcknowledged && (
@@ -236,15 +224,28 @@ export const KnowledgeRadar: React.FC<KnowledgeRadarProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => { triggerHaptic('light'); setShowStreakModal((v) => !v); }}
-            className="shrink-0 self-end sm:self-center flex flex-col items-center"
-            title="Непрерывная серия дней"
-          >
-            <Flame className="w-10 h-10 sm:w-8 sm:h-8 text-orange-500 fill-orange-500" />
-            <span className="text-4xl sm:text-3xl font-black text-rose-500 leading-none">{progress.streakDays}</span>
-          </button>
+          <div className="flex items-center justify-between gap-4 sm:shrink-0 sm:gap-5">
+            {showTestingControls && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Твои ответы</p>
+                <p className="mt-1 text-sm font-bold tabular-nums text-slate-900 dark:text-slate-100">
+                  {progress.answeredCount > 0
+                    ? `Верно ${progress.correctCount.toLocaleString('ru-RU')} из ${progress.answeredCount.toLocaleString('ru-RU')}`
+                    : 'Пока нет ответов'}
+                </p>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => { triggerHaptic('light'); setShowStreakModal((v) => !v); }}
+              className="ml-auto shrink-0 flex flex-col items-center"
+              title="Непрерывная серия дней"
+              aria-expanded={showStreakModal}
+            >
+              <Flame className="w-10 h-10 sm:w-8 sm:h-8 text-orange-500 fill-orange-500" />
+              <span className="text-4xl sm:text-3xl font-black text-rose-500 leading-none">{progress.streakDays}</span>
+            </button>
+          </div>
         </div>
 
         {showStreakModal && (
