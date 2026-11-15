@@ -37,7 +37,8 @@ export interface QuizMode {
   count: number;
 }
 
-export type ExamDifficulty = 'beginner' | 'in-depth' | 'mixed';
+export const EXAM_DIFFICULTIES = ['beginner', 'in-depth', 'applied', 'mixed'] as const;
+export type ExamDifficulty = (typeof EXAM_DIFFICULTIES)[number];
 
 export interface QuizSession {
   /** Independent registry level for new attempts; absent in legacy sessions. */

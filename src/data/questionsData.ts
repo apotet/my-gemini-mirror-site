@@ -112,9 +112,13 @@ export const QUIZ_MODES: QuizMode[] = [
   },
 ];
 
-/** Strict level filter: unlabelled/basic questions are not beginner. */
+const examQuestionDifficulty = {
+  beginner: 'beginner',
+  'in-depth': 'intermediate',
+  applied: 'applied',
+} as const;
 export function filterExamDifficulty(questions: readonly Question[], difficulty: ExamDifficulty): Question[] {
-  return questions.filter(q => difficulty === 'mixed' || (difficulty === 'in-depth' ? q.difficulty === 'intermediate' || q.difficulty === 'applied' : q.difficulty === 'beginner'));
+  return questions.filter(q => difficulty === 'mixed' || q.difficulty === examQuestionDifficulty[difficulty]);
 }
 
 export function getExamPool(modeId: QuizModeId, difficulty: ExamDifficulty): Question[] {

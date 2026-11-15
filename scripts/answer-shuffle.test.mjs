@@ -136,6 +136,7 @@ assert.equal(store.export(), before);
 // The common attempt constructor serves sampled, custom/mistake and photo pools.
 const view = readFileSync(resolve(root, 'src/components/ExamView.tsx'), 'utf8');
 assert.ok(view.includes('...prepareAttemptQuestions(questions)'));
-assert.ok(view.includes('getLearningLevelQuestions(mode, count, Math.random, selectedLearningLevel, customQuestions)'));
+assert.ok(view.includes('filterExamDifficulty(customQuestions, selectedDifficulty)'));
+assert.ok(view.includes('getRandomQuestions(mode, count, Math.random, selectedDifficulty)'));
 assert.ok(view.includes('currentQuestion.answers.map('));
 console.log('PASS: single/multi/photo, all 24 permutations, attempt restore/revisit, legacy restore, actual review render, receipts/streak');

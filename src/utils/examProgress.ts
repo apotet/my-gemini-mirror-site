@@ -1,3 +1,4 @@
+import { EXAM_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { isLearningLevel } from '../types/learningLevel';
 import { getProgressEpoch, recordQuestionResult } from './userProgress';
@@ -38,7 +39,7 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         (saved.attemptId !== undefined && typeof saved.attemptId !== 'string') ||
         (saved.progressEpoch !== undefined && typeof saved.progressEpoch !== 'string') ||
         (saved.legacySubmittedIds !== undefined && (!Array.isArray(saved.legacySubmittedIds) || saved.legacySubmittedIds.some((id: unknown) => typeof id !== 'string')))) return null;
-    if (saved.difficulty !== undefined && !['beginner', 'in-depth', 'mixed'].includes(saved.difficulty)) return null;
+    if (saved.difficulty !== undefined && !EXAM_DIFFICULTIES.includes(saved.difficulty)) return null;
     if (saved.learningLevel !== undefined && !isLearningLevel(saved.learningLevel)) return null;
     if (saved.requestedCount !== undefined && (!Number.isSafeInteger(saved.requestedCount) || saved.requestedCount <= 0)) return null;
     if (saved.answerOrders !== undefined && !object(saved.answerOrders)) return null;
