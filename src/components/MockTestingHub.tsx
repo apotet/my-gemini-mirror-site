@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BookOpen, Target, RotateCcw, Shuffle, Layers, ChevronDown, Play, ArrowLeft, Camera, Check } from 'lucide-react';
 import { ALL_QUESTIONS, QUIZ_MODES, resolveImageUrl } from '../data/questionsData';
-import { getLearningLevelQuestions, filterLearningLevel, LEARNING_LEVEL_DESCRIPTIONS } from '../data/learningLevelExam';
+import { filterLearningLevel, LEARNING_LEVEL_DESCRIPTIONS } from '../data/learningLevelExam';
 import { LEARNING_LEVELS, type LearningLevel } from '../types/learningLevel';
 import type { Question, QuizModeId } from '../types/quiz';
 import { getMistakeQuestions } from '../utils/userProgress';
