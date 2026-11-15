@@ -8,9 +8,8 @@ import {
 import {
   ALL_QUESTIONS,
   QUIZ_MODES,
-  getRandomQuestions,
+  getNewAttemptQuestions,
   getExamPool,
-  filterExamDifficulty,
   resolveImageUrl,
 } from '../data/questionsData';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
@@ -127,9 +126,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }, []);
 
   const beginNewQuiz = (customQuestions?: Question[], count = questionCount, mode = selectedMode) => {
-    const questions = customQuestions
-      ? filterExamDifficulty(customQuestions, selectedDifficulty).slice(0, count)
-      : getRandomQuestions(mode, count, Math.random, selectedDifficulty);
+    const questions = getNewAttemptQuestions(mode, count, Math.random, selectedDifficulty, customQuestions);
     if (!questions.length) {
       setStartNotice('В выбранном уровне и теме нет билетов. Выберите другую тему или смешанный уровень.');
       setShowParameters(true);

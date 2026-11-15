@@ -157,7 +157,7 @@
     "src/components/DetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
     "src/components/ExamReview.css": "406cbd974b3d25a331d9b19edd8cee8e18f4b6241e3cdd5a9b523838cafca5ad",
     "src/components/ExamReview.tsx": "90ba832bff5181b27661201364621f64e9407ee1908ee337e3dea55ab318db02",
-    "src/components/ExamView.tsx": "02f1af94074fa8ab0891c3396593a94535cd97e97107fe4b37ed2d162edfbd6a",
+    "src/components/ExamView.tsx": "b56aff0e035e6ee8b0cc0eaed7c55c5c4817dbf926fae06f58c78d972493b1fd",
     "src/components/GlossaryText.css": "eec97a669c42f43cf17c739fee731be3a1ac1b5d8ece0b5e7abd12f908a29f6a",
     "src/components/GlossaryText.tsx": "fa07e0d7b05e5066f98978adc69cb7ddd8b348bddf6bcc520a23cfae5e4a825a",
     "src/components/HomeOsiStack.tsx": "4bd31111870c332a676648f8a34a152797afdc6e0528f996d521ebf0a931d010",
@@ -252,7 +252,7 @@
     "src/data/questionExplanations.ts": "5220e268217334ebd00e176e6b7618e58c2bc713dee8ec60f00d4ad343c15517",
     "src/data/questionExplanationsApplied.ts": "b530d2e9cad46c1fe69b0218e96cc98f323a4e472992489b759d52bd8ecc4980",
     "src/data/questions.json": "2eac7dd3abc14e897fa2a183d2ab9a6d037e8f38ca3c86fae864657233256cdb",
-    "src/data/questionsData.ts": "a71a6a30445cd23181d981cd30ad196decf40e032d9dbf53e058f25b0c2e7800",
+    "src/data/questionsData.ts": "b3050f92978bba43c695900b83a1aac120798346f9d0470bfddd3626475453aa",
     "src/data/questionsExtra.ts": "29a2305782dd765ac9724a1c8b09ca03428184a9b67d746c05050c9ea2cf928b",
     "src/data/questionsExtraDifficulty.ts": "dbfb9839d94723fcc365f23345c48e1a55ebd7fe73ba34000aee0c02fc0be8dc",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
@@ -267,5 +267,21 @@
     "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
     "src/utils/studyTextMode.ts": "f3f445edb541a99643aa7bc817ede0b919f9692154f880552586a1b013d8a27c",
     "src/utils/userProgress.ts": "4c35511876028017d566aac4cd53a976a56771c03db3024633a9602b8dd230ce"
-  }
+  },
+  "authorizedSourceUpdates": [
+    {
+      "issue": 173,
+      "baseMain": "7f30426817f9d6839d38d8981fbd9ba6f26e4524",
+      "path": "src/data/questionsData.ts",
+      "previousSHA256": "a71a6a30445cd23181d981cd30ad196decf40e032d9dbf53e058f25b0c2e7800",
+      "reason": "Beginner-only selection and shared new-attempt call site, including bounded custom pools; all-level behavior and UI rendering unchanged."
+    },
+    {
+      "issue": 173,
+      "baseMain": "7f30426817f9d6839d38d8981fbd9ba6f26e4524",
+      "path": "src/components/ExamView.tsx",
+      "previousSHA256": "02f1af94074fa8ab0891c3396593a94535cd97e97107fe4b37ed2d162edfbd6a",
+      "reason": "Beginner-only selection and shared new-attempt call site, including bounded custom pools; all-level behavior and UI rendering unchanged."
+    }
+  ]
 }
