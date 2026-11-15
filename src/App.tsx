@@ -162,7 +162,7 @@ export function App() {
         )}
         {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'} initialPracticeLink={practiceRequest?.link} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
-        {activeTab === 'exam-mock' && <MockTestingHub onNavigateToLearning={() => setActiveTab('theory')} />}
+        {activeTab === 'exam-mock' && <MockTestingHub />}
       </main>
 
       <MobileTabBar
