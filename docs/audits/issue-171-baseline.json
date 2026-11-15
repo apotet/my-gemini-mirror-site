@@ -6,8 +6,8 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "b01ce6bf26613a54160f741902229bff6ddea85dccb97d94ebff004552dd6c96",
-  "bankSHA256": "1077beb02460ce624ee68a94e9e2f3bbbcc7d02308266da3010de4e709d0c079",
+  "auditProjectionSHA256": "f181149b02c9d3799f1c2254fe2ac8a3f993efa5716252e1067be51d8468e116",
+  "bankSHA256": "9b468ffeb034200bc2588c2ab46a2e840cbd0f1100dede0db08fa7fc862d062c",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -94,6 +94,22 @@
       "id": "l3-vrrp02",
       "fields": [
         "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l1v2-a-contact-solid",
+      "fields": [
+        "imageAlt"
+      ]
+    },
+    {
+      "id": "l1v2-b-strip-hole",
+      "fields": [
+        "text",
+        "imageAlt",
+        "answers",
+        "correct",
         "explanation"
       ]
     }
@@ -251,7 +267,7 @@
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/questionExplanations.ts": "5220e268217334ebd00e176e6b7618e58c2bc713dee8ec60f00d4ad343c15517",
     "src/data/questionExplanationsApplied.ts": "b530d2e9cad46c1fe69b0218e96cc98f323a4e472992489b759d52bd8ecc4980",
-    "src/data/questions.json": "2eac7dd3abc14e897fa2a183d2ab9a6d037e8f38ca3c86fae864657233256cdb",
+    "src/data/questions.json": "db371db9efeb35b39d4ec9656e5fd8b7ef1e375b090db4accaeb02cfd0e4c1fd",
     "src/data/questionsData.ts": "54b5778d1471c9ddb7e8094e6c0a3941717844f6841da2371e0db4bc24842bfd",
     "src/data/questionsExtra.ts": "29a2305782dd765ac9724a1c8b09ca03428184a9b67d746c05050c9ea2cf928b",
     "src/data/questionsExtraDifficulty.ts": "dbfb9839d94723fcc365f23345c48e1a55ebd7fe73ba34000aee0c02fc0be8dc",
@@ -351,5 +367,18 @@
       "previousSHA256": "8ea265f145e9a65e5661f91022eea8602a1a78727c482c54e6b0b3a997a8533e",
       "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
     }
-  ]
+  ],
+  "photoReviewUpdate": {
+    "baseMain": "2354386570ddaf310fcb79f01c6125a6456ec09f",
+    "assetsRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+    "previousBankSHA256": "1077beb02460ce624ee68a94e9e2f3bbbcc7d02308266da3010de4e709d0c079",
+    "previousAuditProjectionSHA256": "b01ce6bf26613a54160f741902229bff6ddea85dccb97d94ebff004552dd6c96",
+    "levels": {
+      "photo-cable-colors": 3,
+      "l1v2-a-contact-solid": 1,
+      "l1v2-b-strip-hole": 1,
+      "l1v2-b-cleave-sequence": 3,
+      "l1v2-c-closure-service": 2
+    }
+  }
 }

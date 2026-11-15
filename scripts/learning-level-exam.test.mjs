@@ -11,10 +11,10 @@ const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [216, 144, 357, 53, 3];
+const totals = [218, 145, 359, 53, 3];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
-assert.equal(review.length, 14);
-assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 14);
+assert.equal(review.length, 9);
+assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 9);
 const assigned = [];
 for (const level of [1, 2, 3, 4, 5]) {
   const all = getLearningLevelPool('mixed', level);
@@ -35,8 +35,8 @@ for (const level of [1, 2, 3, 4, 5]) {
     }
   }
 }
-assert.equal(assigned.length, 773);
-assert.equal(new Set(assigned).size, 773);
+assert.equal(assigned.length, 778);
+assert.equal(new Set(assigned).size, 778);
 assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 3, 'no top-up of Expert');
 assert.equal(getLearningLevelQuestions('visual-l1', 10, seeded(1), 5).length, 0, 'no foreign topic/level');
 const appliedWithBeginner = getLearningLevelPool('mixed', 3).find(q => q.difficulty === 'beginner');

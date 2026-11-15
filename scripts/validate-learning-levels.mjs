@@ -25,7 +25,7 @@ export function verifyLearningLevelBaseline(bank, registry) {
       level: entry.status === 'ASSIGNED' ? entry.learningLevel : entry.auditProposedLevel,
       confidence: entry.confidence, rationale: entry.auditRationale };
   });
-  assert.equal(sha256(JSON.stringify(projection)), baseline.auditProjectionSHA256, 'mapping differs from the published audit CSV');
+  assert.equal(sha256(JSON.stringify(projection)), baseline.auditProjectionSHA256, 'mapping differs from the approved audit baseline');
 }
 
 const { ALL_QUESTIONS, QUESTION_LEARNING_LEVELS, getLearningLevelStatistics } =
@@ -33,4 +33,4 @@ const { ALL_QUESTIONS, QUESTION_LEARNING_LEVELS, getLearningLevelStatistics } =
 verifyLearningLevelBaseline(ALL_QUESTIONS, QUESTION_LEARNING_LEVELS);
 export const statistics = getLearningLevelStatistics();
 console.log(JSON.stringify(statistics, null, 2));
-console.log('OK: learning levels cover every bank ID; audit fidelity and legacy source/content unchanged');
+console.log('OK: learning levels cover every bank ID; approved audit baseline and protected source/content verified');

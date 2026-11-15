@@ -121,6 +121,9 @@ jobs:
       - name: Pinned shared image resources
         run: npm run test:shared-assets
 
+      - name: Photo REVIEW content and scope
+        run: npm run test:photo-review
+
       - name: Production build
         run: npm run build
 

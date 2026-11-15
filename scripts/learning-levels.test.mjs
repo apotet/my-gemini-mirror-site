@@ -14,12 +14,11 @@ verifyLearningLevelBaseline(ALL_QUESTIONS, registry);
 assert.deepEqual(Object.keys(LEARNING_LEVELS), ['1', '2', '3', '4', '5']);
 assert.deepEqual(statistics, getLearningLevelStatistics());
 assert.equal(statistics.total, 787);
-assert.equal(statistics.assigned, 773);
-assert.deepEqual(statistics.levels, { 1: 216, 2: 144, 3: 357, 4: 53, 5: 3 });
-assert.deepEqual(statistics.auditProposals, { 1: 223, 2: 150, 3: 358, 4: 53, 5: 3 });
-assert.deepEqual(statistics.auditActions, { KEEP: 426, RELABEL: 347, REVIEW: 14 });
-assert.deepEqual([...statistics.reviewIds].sort(), ['photo-cable-colors', 'l1v2-a-contact-solid',
-  'l1v2-b-strip-hole', 'l1v2-b-cleave-sequence', 'l1v2-c-closure-service', 'gap-pack2-29',
+assert.equal(statistics.assigned, 778);
+assert.deepEqual(statistics.levels, { 1: 218, 2: 145, 3: 359, 4: 53, 5: 3 });
+assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 151, 3: 360, 4: 53, 5: 3 });
+assert.deepEqual(statistics.auditActions, { KEEP: 426, RELABEL: 352, REVIEW: 9 });
+assert.deepEqual([...statistics.reviewIds].sort(), ['gap-pack2-29',
   'tcpip-x03', 'l4-x05', 'ts-x02', 'ts-x09', 'tcpip-d01', 'ts-d05', 'l3-vrrp02', 'l4-d04'].sort());
 
 for (const id of statistics.reviewIds) {
@@ -27,7 +26,7 @@ for (const id of statistics.reviewIds) {
   assert.equal(entry.status, 'REVIEW');
   assert.equal(Object.hasOwn(entry, 'learningLevel'), false, 'REVIEW is not an assigned level');
 }
-assert.match(getLearningLevelMetadata('l1v2-a-contact-solid').reviewReason, /datasheet/);
+assert.equal(getLearningLevelMetadata('l1v2-a-contact-solid').learningLevel, 1);
 for (const id of ['absent-id', 'toString', '__proto__', 'constructor']) {
   assert.throws(() => getLearningLevelMetadata(id), /unknown ID/);
 }
@@ -42,21 +41,21 @@ invalid(r => delete r['l1-01'], /missing ID/);
 invalid(r => { r.extra = r['l1-01']; }, /unknown ID/);
 for (const level of [0, 6, 1.5, '3', null]) {
   invalid(r => { r['l1-01'].learningLevel = level; }, /invalid assigned/);
-  invalid(r => { r['l1v2-a-contact-solid'].auditProposedLevel = level; }, /invalid REVIEW/);
+  invalid(r => { r['ts-x09'].auditProposedLevel = level; }, /invalid REVIEW/);
 }
 invalid(r => { r['l1-01'].status = 'unknown'; }, /invalid status/);
 invalid(r => { r['l1-01'].auditAction = 'REVIEW'; }, /invalid assigned/);
 invalid(r => { r['l1-01'].confidence = 'low'; }, /invalid audit evidence/);
 invalid(r => { r['l1-01'].auditRationale = ''; }, /invalid audit evidence/);
-invalid(r => { r['l1v2-a-contact-solid'].learningLevel = 1; }, /invalid REVIEW/);
-invalid(r => { delete r['l1v2-a-contact-solid'].reviewReason; }, /invalid REVIEW/);
-invalid(r => { delete r['l1v2-a-contact-solid'].followUp; }, /invalid REVIEW/);
+invalid(r => { r['ts-x09'].learningLevel = 1; }, /invalid REVIEW/);
+invalid(r => { delete r['ts-x09'].reviewReason; }, /invalid REVIEW/);
+invalid(r => { delete r['ts-x09'].followUp; }, /invalid REVIEW/);
 assert.throws(() => validateLearningLevelRegistry(registry, [...ALL_QUESTIONS, ALL_QUESTIONS[0]]), /duplicate bank ID/);
 assert.throws(() => validateLearningLevelRegistry(null, ALL_QUESTIONS), /expected an ID registry/);
 
-// A valid-looking but unaudited level must also fail the published-CSV fingerprint.
+// A valid-looking but unapproved level must also fail the approved-baseline fingerprint.
 const fabricated = copy(); fabricated['l1-01'].learningLevel = 5;
-assert.throws(() => verifyLearningLevelBaseline(ALL_QUESTIONS, fabricated), /published audit CSV/);
+assert.throws(() => verifyLearningLevelBaseline(ALL_QUESTIONS, fabricated), /approved audit baseline/);
 const drifted = structuredClone(ALL_QUESTIONS); drifted[0].correct = [1];
 assert.throws(() => verifyLearningLevelBaseline(drifted, registry), /bank content/);
 
@@ -85,7 +84,7 @@ assert.ok(getExamPool('mixed', 'beginner').some(q => getLearningLevelMetadata(q.
 
 // Restore by ID, with and without legacy difficulty / shuffled answerOrders.
 // Include REVIEW and a new-level-3 legacy beginner; preserve duplicate family in old attempts.
-const source = ['photo-cable-colors', 'l1v2-a-contact-solid', 'l1-01'].map(id => ALL_QUESTIONS.find(q => q.id === id));
+const source = ['ts-x09', 'l1v2-a-contact-solid', 'l1-01'].map(id => ALL_QUESTIONS.find(q => q.id === id));
 const families = new Map();
 for (const q of ALL_QUESTIONS) { const key = q.family || q.id; const list = families.get(key) || []; list.push(q); families.set(key, list); }
 source.push(...[...families.values()].find(list => list.length > 1 && list.every(q => !source.includes(q))).slice(0, 2));
