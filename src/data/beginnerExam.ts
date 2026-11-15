@@ -21,9 +21,14 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
  * in seeded shuffle order. Never expand the pool or shorten for family scarcity.
  */
 export function selectBeginnerQuestions(pool: readonly Question[], count: number, random = Math.random): Question[] {
+  return selectFamilyQuestions(pool.filter(q => q.difficulty === 'beginner'), count, random);
+}
+
+/** Shared bounded sampler; eligibility is decided by the caller, never by legacy difficulty. */
+export function selectFamilyQuestions(pool: readonly Question[], count: number, random = Math.random): Question[] {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Beginner count must be a non-negative safe integer');
   if (count === 0) return [];
-  const candidates = shuffled([...new Map(pool.filter(q => q.difficulty === 'beginner').map(q => [q.id, q])).values()], random);
+  const candidates = shuffled([...new Map(pool.map(q => [q.id, q])).values()], random);
   const target = Math.min(count, candidates.length);
   const chosen: Question[] = [];
   const ids = new Set<string>();

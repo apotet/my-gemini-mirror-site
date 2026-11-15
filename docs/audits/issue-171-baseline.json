@@ -152,12 +152,12 @@
     "src/cli-lab/vendors/cisco-ios/trunkCommands.ts": "8dfe94eeafce1a9ae30d0850fc3441a85f4b57c34cea3f7128953c94ca079aa4",
     "src/components/CliReference.tsx": "efcaf6b699f7499fd3503f7beedd43a7fb618f353d90058c2127335a048404ac",
     "src/components/CliSimulator.tsx": "2a2cff1b32146c12ca635f2a7362974adfee9fe2d47f841ffaf4006e139bd503",
-    "src/components/CommandPalette.tsx": "84e3c7ebec4b975dfede52afc98e381486b0564af6d0cc9306e84278c861ec58",
+    "src/components/CommandPalette.tsx": "8010587c9dd5a6b2f72b0e3e36bc9b0a472b5c7a60a5a33400f2f5deb05881c0",
     "src/components/DeployModal.tsx": "6bbe48fef9185ba1d25f98b34e1d7ec1879fdfef53ffe6a3869970113a85aae4",
     "src/components/DetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
     "src/components/ExamReview.css": "406cbd974b3d25a331d9b19edd8cee8e18f4b6241e3cdd5a9b523838cafca5ad",
     "src/components/ExamReview.tsx": "90ba832bff5181b27661201364621f64e9407ee1908ee337e3dea55ab318db02",
-    "src/components/ExamView.tsx": "b56aff0e035e6ee8b0cc0eaed7c55c5c4817dbf926fae06f58c78d972493b1fd",
+    "src/components/ExamView.tsx": "34fbf56f8887fe088d5c65c9ed60641c3a822dd801c6b3e041dda8e2b3cf6e3c",
     "src/components/GlossaryText.css": "eec97a669c42f43cf17c739fee731be3a1ac1b5d8ece0b5e7abd12f908a29f6a",
     "src/components/GlossaryText.tsx": "fa07e0d7b05e5066f98978adc69cb7ddd8b348bddf6bcc520a23cfae5e4a825a",
     "src/components/HomeOsiStack.tsx": "4bd31111870c332a676648f8a34a152797afdc6e0528f996d521ebf0a931d010",
@@ -168,13 +168,13 @@
     "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
     "src/components/LessonView.tsx": "d926abffbc72d0198894ac48ccf19439f9753979bafb8fc9c7fe4446a24f8f7c",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
-    "src/components/MobileTabBar.tsx": "ae9c48ff1ad1769d2cc71d63ca7125cb917dbead52b9cf6f11b9548966c0b6b9",
+    "src/components/MobileTabBar.tsx": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
     "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
     "src/components/MockPacketJourney.tsx": "a9630696a129548973d8456a4866f4010cd1504189cf493ab7cf91105ce7789f",
     "src/components/MockPracticeHub.tsx": "7fa2840e7713c4ba6ab7545d93682f4260dab6637ea028fd0b5070e6a888b829",
     "src/components/MockProtocolSimulators.tsx": "3dbf4e12827960936be5d2b91bfdef068d0fb258b03f33dd0e4f45b8abc5b885",
     "src/components/MockVlanSimulator.tsx": "90c9be6e5fb3e683eaabeedd42a62603da8c357dc1fad005456fde28faa5d53e",
-    "src/components/Navbar.tsx": "a79a5ddd939426a51b919fc9d560f908f3ffde11c792c38cee020269071a584e",
+    "src/components/Navbar.tsx": "fed810e029d49b48b83225cc577aebc4f7e06ab3961f6ffcd47597303d88cca3",
     "src/components/NetOpsLogo.tsx": "6dfca54fa40a483e86f80bb6a9381c0ef926b3165dc1a0a72db94e637d85a828",
     "src/components/OsiExplorer.tsx": "dedeefc4610a56c60a16b0d1288da248aefc745291d58d42f8997a75bf4b41e2",
     "src/components/PacketJourney.tsx": "5f9894548833fb4e21a93ccb020cd6ba46f65121c1a0a686f59e671435822941",
@@ -252,16 +252,16 @@
     "src/data/questionExplanations.ts": "5220e268217334ebd00e176e6b7618e58c2bc713dee8ec60f00d4ad343c15517",
     "src/data/questionExplanationsApplied.ts": "b530d2e9cad46c1fe69b0218e96cc98f323a4e472992489b759d52bd8ecc4980",
     "src/data/questions.json": "2eac7dd3abc14e897fa2a183d2ab9a6d037e8f38ca3c86fae864657233256cdb",
-    "src/data/questionsData.ts": "b3050f92978bba43c695900b83a1aac120798346f9d0470bfddd3626475453aa",
+    "src/data/questionsData.ts": "c7eb215389afacf7dba9249841761994284be1e7b06f15113e9383100642f655",
     "src/data/questionsExtra.ts": "29a2305782dd765ac9724a1c8b09ca03428184a9b67d746c05050c9ea2cf928b",
     "src/data/questionsExtraDifficulty.ts": "dbfb9839d94723fcc365f23345c48e1a55ebd7fe73ba34000aee0c02fc0be8dc",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
     "src/index.css": "0c2c3e4808a5f5b8aa6ae11e3cae5a9bdd1fc603a0e31cf30146562ea9ba65dc",
     "src/main.tsx": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3",
     "src/projectExporter.ts": "21e5efb52f4fc855ee3ab14b8ba9923c563b25791b304b4a767c3f69472f4f6c",
-    "src/types/quiz.ts": "95756d9d97993b56c22bc6156c1bfcf0b2b7724f9c6ca5a0290501122dfccd57",
-    "src/utils/examProgress.ts": "b1611f61fdd63bb5ef7da3766472f378c5d4a5b0720e4e52ca8b82e40a6a6a7a",
-    "src/utils/examReview.ts": "8ea265f145e9a65e5661f91022eea8602a1a78727c482c54e6b0b3a997a8533e",
+    "src/types/quiz.ts": "5d4bebfebba46d142bdd6ae00cc0f5b2d3cf4f38d15b51aa4c5857689ea507c3",
+    "src/utils/examProgress.ts": "082b7eebc2705c3f160e86dacd97055dcd823ed41867b58774ffd502853c42bf",
+    "src/utils/examReview.ts": "37e62f214432fdaa5e3e8f7cc5a96b792a47b89fa972d4c3187e8886a084d7f9",
     "src/utils/glossaryText.ts": "d088ecdebe0cf74b8c15edb025263e97815dc721df5a1bdd4644c1827006679a",
     "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
     "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
@@ -282,6 +282,74 @@
       "path": "src/components/ExamView.tsx",
       "previousSHA256": "02f1af94074fa8ab0891c3396593a94535cd97e97107fe4b37ed2d162edfbd6a",
       "reason": "Beginner-only selection and shared new-attempt call site, including bounded custom pools; all-level behavior and UI rendering unchanged."
+    },
+    {
+      "task": "reconcile already merged testing rename",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/components/CommandPalette.tsx",
+      "previousSHA256": "84e3c7ebec4b975dfede52afc98e381486b0564af6d0cc9306e84278c861ec58",
+      "acceptedMainSHA256": "8010587c9dd5a6b2f72b0e3e36bc9b0a472b5c7a60a5a33400f2f5deb05881c0",
+      "reason": "Snapshot was stale on untouched main before this task; source file is not changed by this reconciliation."
+    },
+    {
+      "task": "reconcile already merged testing rename",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/components/ExamView.tsx",
+      "previousSHA256": "b56aff0e035e6ee8b0cc0eaed7c55c5c4817dbf926fae06f58c78d972493b1fd",
+      "acceptedMainSHA256": "8dd41c967d6afb711b00f299777c456d9e0648471841a1df65d87e4482e0d1e6",
+      "reason": "Snapshot was stale on untouched main before this task; source file is not changed by this reconciliation."
+    },
+    {
+      "task": "reconcile already merged testing rename",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/components/MobileTabBar.tsx",
+      "previousSHA256": "ae9c48ff1ad1769d2cc71d63ca7125cb917dbead52b9cf6f11b9548966c0b6b9",
+      "acceptedMainSHA256": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
+      "reason": "Snapshot was stale on untouched main before this task; source file is not changed by this reconciliation."
+    },
+    {
+      "task": "reconcile already merged testing rename",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/components/Navbar.tsx",
+      "previousSHA256": "a79a5ddd939426a51b919fc9d560f908f3ffde11c792c38cee020269071a584e",
+      "acceptedMainSHA256": "fed810e029d49b48b83225cc577aebc4f7e06ab3961f6ffcd47597303d88cca3",
+      "reason": "Snapshot was stale on untouched main before this task; source file is not changed by this reconciliation."
+    },
+    {
+      "task": "reconcile already merged testing rename",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/data/questionsData.ts",
+      "previousSHA256": "b3050f92978bba43c695900b83a1aac120798346f9d0470bfddd3626475453aa",
+      "acceptedMainSHA256": "c7eb215389afacf7dba9249841761994284be1e7b06f15113e9383100642f655",
+      "reason": "Snapshot was stale on untouched main before this task; source file is not changed by this reconciliation."
+    },
+    {
+      "task": "five-level testing UI",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/components/ExamView.tsx",
+      "previousSHA256": "8dd41c967d6afb711b00f299777c456d9e0648471841a1df65d87e4482e0d1e6",
+      "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
+    },
+    {
+      "task": "five-level testing UI",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/types/quiz.ts",
+      "previousSHA256": "95756d9d97993b56c22bc6156c1bfcf0b2b7724f9c6ca5a0290501122dfccd57",
+      "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
+    },
+    {
+      "task": "five-level testing UI",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/utils/examProgress.ts",
+      "previousSHA256": "b1611f61fdd63bb5ef7da3766472f378c5d4a5b0720e4e52ca8b82e40a6a6a7a",
+      "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
+    },
+    {
+      "task": "five-level testing UI",
+      "baseMain": "d9f036f10517661d810de70c1f25158d5a7e5dd6",
+      "path": "src/utils/examReview.ts",
+      "previousSHA256": "8ea265f145e9a65e5661f91022eea8602a1a78727c482c54e6b0b3a997a8533e",
+      "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
     }
   ]
 }
