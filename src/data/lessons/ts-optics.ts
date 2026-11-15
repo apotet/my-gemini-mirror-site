@@ -9,7 +9,7 @@ export const LESSON_TS_OPTICS: Lesson = {
     "L2"
   ],
   "difficulty": "applied",
-  "summary": "Поднятый линк ещё не доказывает хороший запас по оптике. Сопоставляем показания модуля и динамику FEC, чтобы заметить ухудшение сигнала и отличить его от уже неисправимых ошибок.",
+  "summary": "Поднятый линк ещё не доказывает хороший запас по оптике. Сопоставляем показания модуля и динамику FEC, чтобы заметить ухудшение сигнала. Двусторонний замер OTDR помогает оценить потери отдельного стыка.",
   "terms": [
     "DOM/DDM",
     "FEC",
@@ -17,7 +17,8 @@ export const LESSON_TS_OPTICS: Lesson = {
     "Rx power",
     "Tx power",
     "BASE-R FEC",
-    "RS-FEC"
+    "RS-FEC",
+    "OTDR"
   ],
   "blocks": [
     {
@@ -35,6 +36,10 @@ export const LESSON_TS_OPTICS: Lesson = {
     {
       "heading": "Проверить режимы и собрать общую картину",
       "body": "BASE-R FEC и RS-FEC — разные варианты кодирования. Концы соединения должны использовать совместимый для этой скорости и среды режим. Несовпадение может не дать поднять линк, а не обязательно оставить его работающим с потерями.\n\nВо время диагностики сравнивают режимы обоих концов, уровни DOM, температуру, исправленные и неисправимые ошибки и фактические потери. Не отключают FEC вслепую ради нулевого счётчика: на некоторых каналах без него соединение не сможет работать корректно."
+    },
+    {
+      "heading": "Как измерить потери одного стыка",
+      "body": "OTDR показывает события по расстоянию вдоль волокна. Один стык может выглядеть как потеря с одной стороны и как прибавка сигнала с другой. Это происходит, когда до и после стыка волокна по-разному рассеивают свет обратно к прибору.\n\nНайди один и тот же стык на двух трассах, полученных на одинаковой длине волны. Сложи показания с их знаками и раздели на два. Этой оценкой пользуются для отдельного события. Общие потери линии проверяют отдельным измерением."
     }
   ],
   "commands": [
@@ -63,10 +68,11 @@ export const LESSON_TS_OPTICS: Lesson = {
     "Network_history_NFA — переработка DOM/DDM: https://t.me/Network_history_NFA/363",
     "Network_history_NFA — переработка FEC: https://t.me/Network_history_NFA/366",
     "SFF-8472 — Diagnostic Monitoring Interface for Optical Transceivers",
-    "IEEE 802.3 — Ethernet PHY and FEC specifications; Linux ethtool documentation"
+    "IEEE 802.3 — Ethernet PHY and FEC specifications; Linux ethtool documentation",
+    "Fluke Networks — OLTS & OTDR: https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
   ],
   "professional": {
-    "summary": "Оптическая телеметрия DOM/DDM, Rx/Tx thresholds и температурные пределы; совместимость BASE-R/RS-FEC, corrected/uncorrectable counters и ограничения выводов по Link Up.",
+    "summary": "Оптическая телеметрия DOM/DDM, Rx/Tx thresholds и температурные пределы; совместимость BASE-R/RS-FEC, corrected/uncorrectable counters, локализация события и компенсация обратного рассеяния при двустороннем OTDR.",
     "terms": [
       "DOM/DDM",
       "FEC",
@@ -74,7 +80,8 @@ export const LESSON_TS_OPTICS: Lesson = {
       "Rx power",
       "Tx power",
       "BASE-R FEC",
-      "RS-FEC"
+      "RS-FEC",
+      "OTDR"
     ],
     "blocks": [
       {
@@ -92,6 +99,10 @@ export const LESSON_TS_OPTICS: Lesson = {
       {
         "heading": "BASE-R, RS и план проверки",
         "body": "BASE-R FEC обычно обозначает семейство Firecode, RS-FEC — Reed–Solomon-кодирование; конкретные варианты определяются стандартом интерфейса. Они различаются исправляющей способностью, задержкой и требованиями к совместимости. Поддержка и необходимость FEC зависят от скорости, модуля, среды и платформы.\n\nСверяют configured и operational FEC на обоих концах; auto не означает одинаковую поддержку согласования для любого канала. Используют ethtool --show-fec, ethtool -S и диагностику модуля либо соответствующие команды коммутатора. Несовместимость может исключить установление линка. Само отключение FEC или сброс счётчиков не является устранением причины роста ошибок."
+      },
+      {
+        "heading": "Двустороннее измерение OTDR",
+        "body": "В оценку потерь события в одном направлении входит вклад разницы коэффициентов обратного рассеяния двух волокон. При переходе к трассе с противоположного конца этот вклад меняет знак. Найди одно и то же событие по привязке к границам проверяемого волокна и усредни две знаковые оценки в дБ.\n\nИспользуй одну длину волны и сопоставимые настройки измерения. Учитывай вводное и приёмное волокно и мёртвые зоны. Измерение оптических потерь на всей линии источником и измерителем мощности проверяет бюджет линии."
       }
     ],
     "commands": [
@@ -119,7 +130,8 @@ export const LESSON_TS_OPTICS: Lesson = {
       "Network_history_NFA — переработка DOM/DDM: https://t.me/Network_history_NFA/363",
       "Network_history_NFA — переработка FEC: https://t.me/Network_history_NFA/366",
       "SFF-8472 — Diagnostic Monitoring Interface for Optical Transceivers",
-      "IEEE 802.3 — Ethernet PHY and FEC specifications; Linux ethtool documentation"
+      "IEEE 802.3 — Ethernet PHY and FEC specifications; Linux ethtool documentation",
+      "Fluke Networks — OLTS & OTDR: https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
     ],
     "sourceCommit": "adapted-network-history-2026-11-13"
   }

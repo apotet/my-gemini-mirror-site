@@ -1,3 +1,4 @@
+import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from './previousDiagnosticQuestions';
 import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
@@ -517,6 +518,14 @@ const INDIVIDUAL_DEEP: Record<
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
+  ...Object.fromEntries(DIAGNOSTIC_CASES_177.map(item => [item.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro + '\n\nПрактика. ' + item.exercise,
+    trap: item.trap,
+    practiceLink: item.practiceLink,
+    glossaryInProfessional: true,
+  }])),
 };
 
 export function getQuestionDeepDive(question: Question): QuestionDeepDive {

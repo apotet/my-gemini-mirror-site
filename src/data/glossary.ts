@@ -6,6 +6,9 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "TAP": {"description": "Даёт копию трафика с линии для независимого захвата.", "relatesTo": "Точка доступа к трафику для анализа.", "lessonId": "l4-tcp"},
+  "WBM": {"description": "Интерфейс SCALANCE для просмотра конфигурации и диагностики, в том числе параметров MRP.", "relatesTo": "Управление через веб-интерфейс.", "lessonId": "ts-method"},
+  "MRP": {"description": "Менеджер контролирует целостность кольца; при разрыве активирует резервный путь.", "relatesTo": "Протокол резервирования кольца.", "lessonId": "ts-method"},
   "IANA": {"description": "Ведёт реестр номеров служб и диапазонов транспортных портов. Диапазон Dynamic/Private — 49152–65535.", "relatesTo": "Транспортные порты и их регистрация.", "lessonId": "l4-tcp"},
   "uRPF": {"description": "Проверяет IP-адрес источника по маршрутам. В строгом режиме входной интерфейс должен соответствовать обратному пути по правилам платформы.", "relatesTo": "Проверка источника и диагностика асимметрии маршрутов.", "lessonId": "ts-method"},
   "EDNS": {"description": "Расширяет формат DNS через псевдозапись OPT, в том числе позволяет сообщить допустимый размер UDP-ответа.", "relatesTo": "Формат и транспорт DNS.", "lessonId": "l7-dns"},
@@ -1721,6 +1724,9 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "LLDP": ["Link Layer Discovery Protocol", "Протокол обнаружения на канальном уровне", true, "Позволяет соседним устройствам сообщать друг другу сведения о себе."],
   "SACK": ["Selective Acknowledgment", "Выборочное подтверждение", true, "Сообщает отправителю, какие блоки данных уже получены помимо непрерывной последовательности."],
   "RTT": ["Round Trip Time", "Время кругового пути", true, "Показывает время от отправки сообщения до получения ответа."],
+  "MRP": ["Media Redundancy Protocol", "Протокол резервирования кольца", true],
+  "WBM": ["Web Based Management", "Управление через веб-интерфейс", true],
+  "TAP": ["Test Access Point", "Точка доступа к трафику для анализа", true],
   "PMTUD": ["Path MTU Discovery", "Определение MTU пути", true, "Помогает подобрать размер пакетов, который проходит по всему пути без IP-фрагментации."],
   "SIP": ["Session Initiation Protocol", "Протокол установления сеансов", true, "Передаёт сигнализацию вызова. Звук обычно идёт отдельным потоком RTP."],
   "RTP": ["Real-time Transport Protocol", "Транспортный протокол реального времени", true, "Переносит аудио или видео и добавляет номера пакетов и временные метки."],
