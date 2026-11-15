@@ -467,6 +467,50 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
   },
 };
 
+// Keep the authored explanations paired with saved versions of these tickets.
+const HISTORICAL_DIAGNOSTIC_DEEP: Partial<Record<string, typeof INDIVIDUAL_DEEP[string]>> = {
+  'l4-d02': {
+    "brief": "Согласованное масштабирование окна не исключает потери и задержки на пути.",
+    "deep": "Передача замедлилась: ответы приходят долго, а некоторые диапазоны отправляются снова. Даже достаточное окно приёма не устранит потери в очереди или ограничение, которое отбрасывает лишний трафик.\n\nУ TCP нужно сопоставить RTT, повторы, interface drops, очереди и policing, а также проверить MTU/PMTUD. Window Scaling расширяет возможное окно приёма, но не исправляет переполнение буферов и не гарантирует прохождение крупных пакетов.\n\nИзолированная проверка native VLAN без признаков ошибки не объяснит всю картину; цвет индикатора и PTR-запись не измеряют потери и задержки потока. Сравни счётчики во времени и захваты с двух сторон, прежде чем объявлять причину найденной.",
+    "trap": "Не считать согласованный Window Scaling доказательством исправного пути.",
+    "professional": {
+      "brief": "Рост retransmits при большом RTT: loss, bufferbloat, police, PMTUD.",
+      "deep": "Смотрите interface drops, queueing, policers, ICMP frag-needed, TCP graphs (window/rtt).",
+      "sourceCommit": "87c118c5f15a33a436d175cfac00e921be41a6d5"
+    }
+  },
+  'ts-d04': {
+    "brief": "Два разных теста транспорта могут по-разному реагировать на один и тот же путь.",
+    "deep": "Поток с подтверждениями работает медленно, хотя тест без обязательного ожидания подтверждений выглядит лучше. Сеть может терять или задерживать данные, и один отправитель будет снижать темп сильнее другого. Нужно сравнить условия и измерить потери.\n\nTCP чувствителен к loss, reordering и RTT; влияют окно приёма, policing, bufferbloat и middlebox. UDP iperf с другим темпом и размером не является эквивалентным тестом. Сопоставь направления, нагрузку, счётчики потерь и графики подтверждений.\n\nПроверка оптической мощности повсюду без локализации, DHCP-пула или цвета шнура не исследует различие этих потоков. Физику проверяют по признакам ошибок, но хороший результат UDP сам по себе не доказывает исправность пути TCP.",
+    "trap": "Не сравнивать TCP и UDP как одинаковые измерения без учёта параметров теста.",
+    "professional": {
+      "brief": "TCP slow / UDP iperf ok → loss-sensitive path, police, bufferbloat, window.",
+      "deep": "Смотрите retransmits, pacing, policers, BQL/CoDel, middlebox.",
+      "sourceCommit": "ceaba310550ab3e535e2da33816a69a53c3d9f20"
+    }
+  },
+  'ts-d06': {
+    "brief": "Телефонный сервис нужно разделить на установление вызова и передачу звука.",
+    "deep": "Доступ к обычным сайтам ещё не проверяет регистрацию телефона, создание вызова и звук в обе стороны. Это разные обмены, которые могут проходить через разные правила. Сначала определи, какой из этапов не работает.\n\nДля SIP/RTP проверяют разрешение имён, адреса и порты сигнализации, медиапотоки, ACL, NAT и влияние ALG. Односторонний звук часто требует сравнить объявленные медиадреса с реальным путём. Используй настройки конкретного сервиса, а не предполагай один набор портов для всех систем.\n\nПерепрошивка коммутаторов, отключение VLAN и удаление default route меняют исправные части без локализации. Сначала собери сообщения регистрации или вызова и направление аудио; затем проверь связанную с этим этапом политику.",
+    "trap": "Не считать рабочий веб-доступ проверкой телефонии и обоих направлений звука.",
+    "professional": {
+      "brief": "SIP/RTP: DNS, NAT/ALG, ACL портов, одностороннее аудио.",
+      "deep": "Проверьте signalling 5060/TLS и RTP range, helper-address, fixup/ALG осторожно.",
+      "sourceCommit": "ceaba310550ab3e535e2da33816a69a53c3d9f20"
+    }
+  },
+  'ts-d08': {
+    "brief": "Повторяемый интервал — повод сопоставить сбой с таймерами, а не назначить одну причину.",
+    "deep": "Связь исчезает примерно через одно и то же время. Это может совпадать с истечением сохранённого состояния или попыткой обновить настройки. Запиши точный момент и проверь, какое состояние изменилось перед отказом.\n\nСреди гипотез — ARP/MAC aging при молчащих узлах и ограничивающей политике, сбой DHCP renewal и firewall session timeout. Само нормальное старение ARP или MAC обычно допускает повторное разрешение или обучение и не обязано ломать связь. Сравни реальные таймеры и события с захватом.\n\nРовно пять минут не являются универсальным сроком всех этих механизмов. Температуру SFP можно проверить по признакам, но она не единственная обязательная причина. В multi-select выбирают рациональные направления проверки, а не объявляют три отказа одновременно доказанными.",
+    "trap": "Не считать нормальное истечение записи самодостаточным доказательством неисправности.",
+    "professional": {
+      "brief": "«Падает через ~5 мин»: ARP/MAC aging, DHCP renew, FW session timeout.",
+      "deep": "Сверьте lease timers, idle timeouts, silent host behavior.",
+      "sourceCommit": "ceaba310550ab3e535e2da33816a69a53c3d9f20"
+    }
+  },
+};
+
 const INDIVIDUAL_DEEP: Record<
   string,
   { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; ipv6Practice?: boolean; professional?: QuestionDeepDive['professional']; practiceLink?: PracticeLink }
@@ -479,7 +523,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const category = detectCategory(question);
   const correctText = question.correct.map((idx) => question.answers[idx]).join('; ');
   const historical = PREVIOUS_DIAGNOSTIC_QUESTIONS[question.id]?.text === question.text;
-  const individual = historical ? undefined : INDIVIDUAL_DEEP[question.id];
+  const individual = historical ? HISTORICAL_DIAGNOSTIC_DEEP[question.id] : INDIVIDUAL_DEEP[question.id];
   const diagnostic = DIAGNOSTIC_EXPLANATIONS[question.id];
   const baseExpl = (question.explanation || '').trim();
 
@@ -491,7 +535,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
 
   const deepAnalysis = individual
     ? individual.plain ?? individual.deep
-    : historical || diagnostic ? baseExpl : enrichExplanation(question, category, baseExpl);
+    : diagnostic ? baseExpl : enrichExplanation(question, category, baseExpl);
 
   const engineeringDeep =
     question.difficulty === 'advanced' || question.difficulty === 'applied'

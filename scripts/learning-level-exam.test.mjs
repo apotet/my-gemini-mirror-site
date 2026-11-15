@@ -243,7 +243,9 @@ for (const [id, previous] of Object.entries(PREVIOUS_DIAGNOSTIC_QUESTIONS)) {
   assert.ok(splitGlossaryText(detail.professional.deep).some(token => token.term));
   assert.match(detail.deepAnalysis, /\n\n[\s\S]+\n\n/);
   const historical = { ...current, ...previous };
-  assert.equal(getQuestionDeepDive(historical).deepAnalysis, previous.explanation);
+  const historicalDetail = getQuestionDeepDive(historical);
+  assert.ok(historicalDetail.professional.deep);
+  assert.notEqual(historicalDetail.professional.deep, detail.professional.deep);
   for (const question of [current, historical]) for (const shuffled of [false, true]) {
     const startTime = 1_800_000_000_000;
     const saved = {
