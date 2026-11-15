@@ -276,7 +276,7 @@
     "src/main.tsx": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3",
     "src/projectExporter.ts": "21e5efb52f4fc855ee3ab14b8ba9923c563b25791b304b4a767c3f69472f4f6c",
     "src/types/quiz.ts": "26317e8ab5098704865391b9258dbc346017c19116f11bebe7355a34da117bfd",
-    "src/utils/examProgress.ts": "082b7eebc2705c3f160e86dacd97055dcd823ed41867b58774ffd502853c42bf",
+    "src/utils/examProgress.ts": "7626089a1d291c9c3a4d6950b37d3e62de84ff8f0e327ece62a32181eb38b637",
     "src/utils/examReview.ts": "37e62f214432fdaa5e3e8f7cc5a96b792a47b89fa972d4c3187e8886a084d7f9",
     "src/utils/glossaryText.ts": "d088ecdebe0cf74b8c15edb025263e97815dc721df5a1bdd4644c1827006679a",
     "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
