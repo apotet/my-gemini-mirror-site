@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { BookOpen, Target, RotateCcw, Shuffle, Layers, ChevronDown, Play, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { BookOpen, Target, RotateCcw, Shuffle, Layers, ChevronDown, Play, ArrowLeft } from 'lucide-react';
 import { ALL_QUESTIONS, QUIZ_MODES, resolveImageUrl } from '../data/questionsData';
 import { getLearningLevelQuestions, filterLearningLevel, LEARNING_LEVEL_DESCRIPTIONS } from '../data/learningLevelExam';
 import { LEARNING_LEVELS, type LearningLevel } from '../types/learningLevel';
@@ -51,7 +51,7 @@ export function MockTestingHub() {
     setSettings(prev=>{const next={...prev,...patch};try{localStorage.setItem(settingsKey,JSON.stringify(next));}catch{}return next;});
     setNotice('');
   };
-  const selectedGroups = useMemo(()=>new Set(layers.filter(l=>settings.layers.includes(l.id)).flatMap(l=>l.groups)),[settings.layers]);
+  const selectedGroups = useMemo(()=>new Set<string>(layers.filter(l=>settings.layers.includes(l.id)).flatMap(l=>l.groups)),[settings.layers]);
   const pool = useMemo(()=>{
     const base = settings.mode==='mistakes' ? getMistakeQuestions() : ALL_QUESTIONS;
     if(settings.mode==='osi') return filterLearningLevel(base.filter(q=>selectedGroups.has(q.group)),settings.level);
