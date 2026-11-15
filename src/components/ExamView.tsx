@@ -276,8 +276,8 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
         <fieldset className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
           <div className="text-sm font-bold text-cyan-400">Выбери свой уровень</div>
-          <div className="grid grid-cols-2 gap-2">
-            {([{ id: 'beginner', title: 'База', description: 'Только beginner' }, { id: 'mixed', title: 'Смешанный', description: 'Все уровни сложности' }] as const).map(level => (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {([{ id: 'beginner', title: 'База', description: 'Только beginner' }, { id: 'in-depth', title: 'Углублённый', description: 'Понимание и применение' }, { id: 'mixed', title: 'Смешанный', description: 'Все уровни сложности' }] as const).map(level => (
               <button key={level.id} type="button" aria-pressed={selectedDifficulty === level.id}
                 onClick={() => { setSelectedDifficulty(level.id); setStartNotice(''); }}
                 className={`min-w-0 rounded-xl border p-3 text-left text-sm transition-colors ${selectedDifficulty === level.id ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40' : 'border-slate-200 dark:border-slate-700'}`}>
@@ -291,7 +291,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
             {availableCount < questionCount && ` Будет ${availableCount} из запрошенных ${questionCount}; другой уровень не добавляется.`}
           </p>
           {session && !session.isCompleted && <p className="text-xs text-slate-500 dark:text-slate-400">
-            Текущая попытка: {session.difficulty === 'beginner' ? 'База' : 'Смешанный'}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
+            Текущая попытка: {session.difficulty === 'beginner' ? 'База' : session.difficulty === 'in-depth' ? 'Углублённый' : 'Смешанный'}. Продолжение сохраняет её уровень; выбор выше относится к новой попытке.
           </p>}
         </fieldset>
         {startNotice && <p role="status" className="text-sm text-slate-500 dark:text-slate-400">{startNotice}</p>}
