@@ -69,7 +69,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const [lastReview, setLastReview] = useState<ProgressSession | null>(null);
   const [reviewSession, setReviewSession] = useState<ProgressSession | null>(null);
   const [reviewWarning, setReviewWarning] = useState(false);
-  const [showParameters, setShowParameters] = useState(false);
+  const [showParameters, setShowParameters] = useState(true);
   const parametersRef = useRef<HTMLDivElement>(null);
   const [moreModesOpen, setMoreModesOpen] = useState(false);
   const [pendingNewQuiz, setPendingNewQuiz] = useState<{ questions?: Question[]; count: number; mode: QuizModeId } | null>(null);
@@ -110,7 +110,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       const saved = localStorage.getItem('osi_active_session');
       if (saved) {
         const completed = restoreReview(JSON.stringify({ version: 1, session: JSON.parse(saved) }), getProgressEpoch());
-        if (completed) { setLastReview(completed); setReviewSession(completed); return; }
+        if (completed) { setLastReview(completed); return; }
         const parsed = restoreSession(saved, ALL_QUESTIONS);
         if (!parsed) { retainProgressBackup('osi_active_session', saved); setSessionWarning(true); return; }
         if (parsed.progressEpoch !== getProgressEpoch()) return;
@@ -224,6 +224,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
 
   useImperativeHandle(ref, () => ({
     returnToParameters: () => {
+      setShowParameters(true);
       if (reviewSession || session?.isCompleted) {
         handleExit();
         return;
@@ -274,7 +275,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
         {reviewWarning && <p role="status">Последний разбор не удалось прочитать или сохранить. Он может быть недоступен после reload.</p>}
         {availableReview && <button type="button" onClick={() => setReviewSession(availableReview)} className="px-4 py-2 rounded-xl border border-cyan-500 text-sm">Посмотреть разбор последней попытки</button>}
         <fieldset className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-4 space-y-3">
-          <legend className="max-w-full px-1 text-sm font-bold leading-snug text-cyan-400 whitespace-normal break-words">Выбери свой уровень</legend>
+          <div className="text-sm font-bold text-cyan-400">Выбери свой уровень</div>
           <div className="grid grid-cols-2 gap-2">
             {([{ id: 'beginner', title: 'База', description: 'Только beginner' }, { id: 'mixed', title: 'Смешанный', description: 'Все уровни сложности' }] as const).map(level => (
               <button key={level.id} type="button" aria-pressed={selectedDifficulty === level.id}
