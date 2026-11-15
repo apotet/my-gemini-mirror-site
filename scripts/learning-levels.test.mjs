@@ -14,17 +14,16 @@ verifyLearningLevelBaseline(ALL_QUESTIONS, registry);
 assert.deepEqual(Object.keys(LEARNING_LEVELS), ['1', '2', '3', '4', '5']);
 assert.deepEqual(statistics, getLearningLevelStatistics());
 assert.equal(statistics.total, 787);
-assert.equal(statistics.assigned, 778);
-assert.deepEqual(statistics.levels, { 1: 218, 2: 145, 3: 359, 4: 53, 5: 3 });
+assert.equal(statistics.assigned, 787);
+assert.deepEqual(statistics.levels, { 1: 220, 2: 151, 3: 360, 4: 53, 5: 3 });
 assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 151, 3: 360, 4: 53, 5: 3 });
-assert.deepEqual(statistics.auditActions, { KEEP: 426, RELABEL: 352, REVIEW: 9 });
-assert.deepEqual([...statistics.reviewIds].sort(), ['gap-pack2-29',
-  'tcpip-x03', 'l4-x05', 'ts-x02', 'ts-x09', 'tcpip-d01', 'ts-d05', 'l3-vrrp02', 'l4-d04'].sort());
-
-for (const id of statistics.reviewIds) {
+assert.deepEqual(statistics.auditActions, { KEEP: 426, RELABEL: 361, REVIEW: 0 });
+assert.deepEqual(statistics.reviewIds, []);
+const { previousRegistryEntries } = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8')).technicalReviewClosure;
+for (const [id, previous] of Object.entries(previousRegistryEntries)) {
   const entry = getLearningLevelMetadata(id);
-  assert.equal(entry.status, 'REVIEW');
-  assert.equal(Object.hasOwn(entry, 'learningLevel'), false, 'REVIEW is not an assigned level');
+  assert.equal(entry.status, 'ASSIGNED');
+  assert.equal(entry.learningLevel, previous.auditProposedLevel);
 }
 assert.equal(getLearningLevelMetadata('l1v2-a-contact-solid').learningLevel, 1);
 for (const id of ['absent-id', 'toString', '__proto__', 'constructor']) {
@@ -35,7 +34,7 @@ assert.throws(() => { registry['absent-id'] = registry['l1-01']; }, TypeError);
 
 // Exercise actual validation with corrupt metadata, not only the current fixture.
 const copy = () => structuredClone(registry);
-const invalid = (change, pattern) => { const value = copy(); change(value); assert.throws(() =>
+const invalid = (change, pattern) => { const value = copy(); value['ts-x09'] = structuredClone(previousRegistryEntries['ts-x09']); change(value); assert.throws(() =>
   validateLearningLevelRegistry(value, ALL_QUESTIONS), pattern); };
 invalid(r => delete r['l1-01'], /missing ID/);
 invalid(r => { r.extra = r['l1-01']; }, /unknown ID/);
@@ -83,7 +82,7 @@ assert.ok(getExamPool('mixed', 'beginner').some(q => getLearningLevelMetadata(q.
   'new Application metadata does not exclude a legacy beginner question');
 
 // Restore by ID, with and without legacy difficulty / shuffled answerOrders.
-// Include REVIEW and a new-level-3 legacy beginner; preserve duplicate family in old attempts.
+// Include a formerly REVIEW ticket and a new-level-3 legacy beginner; preserve duplicate family in old attempts.
 const source = ['ts-x09', 'l1v2-a-contact-solid', 'l1-01'].map(id => ALL_QUESTIONS.find(q => q.id === id));
 const families = new Map();
 for (const q of ALL_QUESTIONS) { const key = q.family || q.id; const list = families.get(key) || []; list.push(q); families.set(key, list); }

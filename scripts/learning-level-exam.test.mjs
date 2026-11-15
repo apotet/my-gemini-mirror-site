@@ -5,20 +5,21 @@ const { ALL_QUESTIONS, QUIZ_MODES, QUESTION_LEARNING_LEVELS: registry, filterLea
   getLearningLevelPool, getLearningLevelQuestions, getTestingPool, getTestingQuestions, getExamLevelLabel, LEARNING_LEVEL_REVIEW_COUNT,
   prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers,
   expireTrial, TRIAL_MINUTES, TRIAL_QUESTION_COUNT, getTrialExamQuestions,
-  serializeReview, restoreReview, reviewRows } =
+  serializeReview, restoreReview, reviewRows, getQuestionDeepDive, getLessonForQuestion,
+  GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText } =
   await bundleEntry('scripts/learning-level-exam-entry.ts', 'learning-level-exam-tests.mjs');
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
 const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [218, 145, 359, 53, 3];
+const totals = [220, 151, 360, 53, 3];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
-assert.equal(review.length, 9);
-assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 9);
+assert.equal(review.length, 0);
+assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 0);
 const understanding = ALL_QUESTIONS.filter(({ id }) =>
   sourceRegistry[id].status === 'ASSIGNED' && sourceRegistry[id].learningLevel === 2);
-assert.equal(understanding.length, 145);
+assert.equal(understanding.length, 151);
 for (const { id: mode } of QUIZ_MODES) {
   const pool = understanding.filter(q => mode === 'mixed' || q.group === mode);
   assert.deepEqual(getTestingPool(mode, 'in-depth'), pool);
@@ -50,8 +51,8 @@ for (const level of [1, 2, 3, 4, 5]) {
     }
   }
 }
-assert.equal(assigned.length, 778);
-assert.equal(new Set(assigned).size, 778);
+assert.equal(assigned.length, 787);
+assert.equal(new Set(assigned).size, 787);
 assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 3, 'no top-up of Expert');
 assert.equal(getLearningLevelQuestions('visual-l1', 10, seeded(1), 5).length, 0, 'no foreign topic/level');
 const appliedWithBeginner = getLearningLevelPool('mixed', 3).find(q => q.difficulty === 'beginner');
@@ -80,7 +81,8 @@ for (const level of [1, 2, 3, 4, 5]) {
     }
   }
 }
-const custom = [review[0], appliedWithBeginner, fundamentalsWithAdvanced, appliedWithBeginner];
+const formerlyReviewed = ALL_QUESTIONS.find(q => q.id === 'ts-x09');
+const custom = [formerlyReviewed, appliedWithBeginner, fundamentalsWithAdvanced, appliedWithBeginner];
 assert.deepEqual(getLearningLevelQuestions('mixed', 10, seeded(2), 3, custom), [appliedWithBeginner]);
 assert.deepEqual(getLearningLevelQuestions('mixed', 10, seeded(2), 1, custom), [fundamentalsWithAdvanced]);
 assert.deepEqual(getLearningLevelQuestions('mixed', 10, seeded(2), 4, custom), []);
@@ -92,7 +94,7 @@ for (const value of [0, 6, '3', null, 1.5]) assert.throws(() => filterLearningLe
 const now = Date.now();
 for (const marker of [{}, { difficulty: 'beginner' }, { difficulty: 'mixed' }, ...[1, 2, 3, 4, 5].map(learningLevel => ({ learningLevel }))]) {
   for (const shuffled of [false, true]) {
-    const source = marker.learningLevel ? getLearningLevelPool('mixed', marker.learningLevel).slice(0, 3) : [review[0], appliedWithBeginner, fundamentalsWithAdvanced];
+    const source = marker.learningLevel ? getLearningLevelPool('mixed', marker.learningLevel).slice(0, 3) : [formerlyReviewed, appliedWithBeginner, fundamentalsWithAdvanced];
     let saved = { ...(shuffled ? prepareAttemptQuestions(source, seeded(1)) : { questions: source }),
       currentIndex: 0, userAnswers: {}, submittedQuestions: {}, startTime: now - 1000,
       isCompleted: false, mode: 'mixed', feedbackMode: 'instant', attemptId: 'levels-compat', progressEpoch: 'level-epoch',
@@ -174,3 +176,46 @@ const reviewedRows = reviewRows(timedReview);
 assert.equal(reviewedRows.filter(row => row.status === 'correct').length, 1);
 assert.equal(reviewedRows.filter(row => row.status === 'unanswered').length, 19);
 console.log('PASS: trial deadline survives restore, no late answers or early score, timeout reviews confirmed answers');
+
+const portQuestion = ALL_QUESTIONS.find(q => q.id === 'l4-x05');
+const preEditPort = { ...portQuestion, answers: portQuestion.answers.map((answer, index) => index === 0
+  ? 'Высоких портов (часто ≥49152 по IANA)' : answer) };
+const preEditAttempt = { ...trial, ...prepareAttemptQuestions([preEditPort], seeded(17)), mode: 'l4' };
+const oldCorrect = preEditAttempt.questions[0].correct;
+const oldConfirmed = confirmAnswer(preEditAttempt, oldCorrect, trialStart + 1000);
+const restoredPort = restoreSession(JSON.stringify(oldConfirmed), ALL_QUESTIONS, trialStart + 1000);
+assert.deepEqual(restoredPort.questions[0].correct, oldCorrect);
+assert.deepEqual(restoredPort.userAnswers[portQuestion.id], oldCorrect);
+assert.equal(restoredPort.questions[0].answers[oldCorrect[0]], '49152–65535');
+
+const technicalTopics = {
+  'gap-pack2-29': ['tcp-window-retransmit', ['TCP', 'FIN']],
+  'tcpip-x03': ['tcpip-encapsulation', ['TCP', 'FCS', '802.1Q']],
+  'l4-x05': ['l4-tcp', ['IANA']],
+  'ts-x02': ['ts-method', ['ICMP', 'NAT']],
+  'ts-x09': ['l3-arp', ['ARP', 'incomplete']],
+  'l4-d04': ['l7-dns', ['TC', 'EDNS', 'AXFR', 'IXFR']],
+  'tcpip-d01': ['tcpip-encapsulation', ['IPv4', 'TTL', 'Ethernet']],
+  'ts-d05': ['ts-method', ['uRPF', 'FIB']],
+  'l3-vrrp02': ['l3-vrrp', ['VRRP', 'VRID', 'VIP']],
+};
+for (const [id, [lessonId, terms]] of Object.entries(technicalTopics)) {
+  const question = ALL_QUESTIONS.find(q => q.id === id);
+  const detail = getQuestionDeepDive(question);
+  assert.ok(detail.hasIndividualDeep, id);
+  assert.ok(detail.deepAnalysis.length > 100, id);
+  assert.ok(detail.professional?.deep.length > 100, id);
+  assert.ok(detail.glossaryInProfessional, id);
+  assert.ok(splitGlossaryText(detail.deepAnalysis).some(t => t.term), id);
+  assert.ok(splitGlossaryText(detail.professional.deep).some(t => t.term), id);
+  const lesson = getLessonForQuestion(id);
+  assert.equal(lesson?.id, lessonId, id);
+  for (const tag of [...lesson.terms, ...(lesson.professional?.terms ?? [])]) {
+    assert.ok(GLOSSARY[tag]?.description && GLOSSARY[tag].relatesTo, `${lessonId}: ${tag}`);
+  }
+  for (const term of terms) {
+    assert.ok(GLOSSARY_TOOLTIPS[term]?.summary, term);
+    assert.equal(splitGlossaryText(term)[0]?.term, term);
+  }
+}
+console.log('PASS: nine linked lessons, plain/pro explanations, scoped tooltips and tag cards');

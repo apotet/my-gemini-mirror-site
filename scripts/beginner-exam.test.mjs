@@ -16,7 +16,10 @@ const hash = value => createHash('sha256').update(JSON.stringify(value)).digest(
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
 const family = q => q.family || q.id;
 const bankBefore = JSON.stringify(ALL_QUESTIONS);
-assert.equal(hash(ALL_QUESTIONS), before.bankSHA256, 'all 787 questions and their order stay unchanged');
+const bankAtBeginnerAudit = ALL_QUESTIONS.map(q => q.id === 'l4-x05'
+  ? { ...q, answers: ['Высоких портов (часто ≥49152 по IANA)', ...q.answers.slice(1)] }
+  : q);
+assert.equal(hash(bankAtBeginnerAudit), before.bankSHA256, 'question content and order match the baseline after accounting for the port wording correction');
 assert.equal(ALL_QUESTIONS.length, 787);
 
 function verify(chosen, pool, count) {

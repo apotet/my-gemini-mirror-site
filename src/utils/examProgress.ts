@@ -76,7 +76,10 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         const answers = order.map(index => question.answers[index]);
         const correct = order.flatMap((index, displayed) => question.correct.includes(index) ? [displayed] : []);
         // Reject bank drift/corrupt snapshots instead of silently changing saved answer meaning.
-        if (JSON.stringify(item?.answers) !== JSON.stringify(answers) || JSON.stringify(item?.correct) !== JSON.stringify(correct)) return null;
+        const savedAnswers = question.id === 'l4-x05' && Array.isArray(item?.answers)
+          ? item.answers.map(answer => answer === 'Высоких портов (часто ≥49152 по IANA)' ? '49152–65535' : answer)
+          : item?.answers;
+        if (JSON.stringify(savedAnswers) !== JSON.stringify(answers) || JSON.stringify(item?.correct) !== JSON.stringify(correct)) return null;
         questions.push({ ...question, answers, correct });
       }
     }

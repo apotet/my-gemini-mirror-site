@@ -13,7 +13,11 @@ const levels = { 'photo-cable-colors': 3, 'l1v2-a-contact-solid': 1, 'l1v2-b-str
 const changed = fixture.originalQuestions.map(q => q.id);
 assert.equal(hash(questions.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
   'all other questions, including the three PASS and photo-cable-terminate, remain unchanged');
-assert.equal(hash(Object.fromEntries(Object.entries(registry).filter(([id]) => !Object.hasOwn(levels, id)))),
+const { previousRegistryEntries } = read('docs/audits/issue-171-baseline.json').technicalReviewClosure;
+const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
+  .filter(([id]) => !Object.hasOwn(levels, id))
+  .map(([id, entry]) => [id, previousRegistryEntries[id] ?? entry]));
+assert.equal(hash(registryAtPhotoReview),
   fixture.unchangedRegistrySHA256, 'all other metadata, including nine technical REVIEW, remain unchanged');
 const byId = Object.fromEntries(questions.map(q => [q.id, q]));
 for (const [id, level] of Object.entries(levels)) {
@@ -60,4 +64,4 @@ const completed = { ...snapshot, isCompleted: true };
 const review = restoreReview(serializeReview(completed), snapshot.progressEpoch);
 assert.ok(review);
 assert.deepEqual(review.questions, snapshot.questions, 'completed review keeps the historical content/key');
-console.log('PASS: five photo levels, four options/one key, unchanged scope and nine technical REVIEW, cable family sampling, safe old-attempt rejection and historical review');
+console.log('PASS: five photo levels, four options/one key, unchanged photo review scope, cable family sampling, safe old-attempt rejection and historical review');
