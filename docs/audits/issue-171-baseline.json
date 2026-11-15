@@ -7,7 +7,7 @@
     "6877141640"
   ],
   "auditProjectionSHA256": "f181149b02c9d3799f1c2254fe2ac8a3f993efa5716252e1067be51d8468e116",
-  "bankSHA256": "9b468ffeb034200bc2588c2ab46a2e840cbd0f1100dede0db08fa7fc862d062c",
+  "bankSHA256": "7ca162beff519219abb26757651213a18c7d16bcc1ff93428f43a5c3f42c5eb7",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -267,7 +267,7 @@
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/questionExplanations.ts": "5220e268217334ebd00e176e6b7618e58c2bc713dee8ec60f00d4ad343c15517",
     "src/data/questionExplanationsApplied.ts": "b530d2e9cad46c1fe69b0218e96cc98f323a4e472992489b759d52bd8ecc4980",
-    "src/data/questions.json": "db371db9efeb35b39d4ec9656e5fd8b7ef1e375b090db4accaeb02cfd0e4c1fd",
+    "src/data/questions.json": "17f7894b79856b7c4b2e3b075f6aaed2d5c860db38d8da0c1685c78f5a7cb1a1",
     "src/data/questionsData.ts": "54b5778d1471c9ddb7e8094e6c0a3941717844f6841da2371e0db4bc24842bfd",
     "src/data/questionsExtra.ts": "29a2305782dd765ac9724a1c8b09ca03428184a9b67d746c05050c9ea2cf928b",
     "src/data/questionsExtraDifficulty.ts": "dbfb9839d94723fcc365f23345c48e1a55ebd7fe73ba34000aee0c02fc0be8dc",

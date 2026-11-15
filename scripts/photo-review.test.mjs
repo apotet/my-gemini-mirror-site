@@ -30,6 +30,9 @@ const contactBefore = fixture.originalQuestions.find(q => q.id === 'l1v2-a-conta
 assert.deepEqual({ ...byId[contactBefore.id], imageAlt: contactBefore.imageAlt }, contactBefore,
   'contact question changes only its alt description');
 const stripBefore = fixture.originalQuestions.find(q => q.id === 'l1v2-b-strip-hole');
+assert.doesNotMatch(`${byId[stripBefore.id].text} ${byId[stripBefore.id].imageAlt}`,
+  /раскрыт|развед|сомкнут|волокна между|слева/i,
+  'condition and alt must not disclose the observed jaw/fibre state or its position');
 for (const field of ['id', 'group', 'topic', 'image', 'template', 'family', 'difficulty']) {
   assert.deepEqual(byId[stripBefore.id][field], stripBefore[field]);
 }
