@@ -40,5 +40,12 @@
     "photos": 68,
     "families": 205
   },
-  "bankSHA256": "7ca162beff519219abb26757651213a18c7d16bcc1ff93428f43a5c3f42c5eb7"
+  "bankSHA256": "7ca162beff519219abb26757651213a18c7d16bcc1ff93428f43a5c3f42c5eb7",
+  "questionQualityUpdate": {
+    "baseMain": "bb4be1ac117e7f231182d92163d95d925c59b128",
+    "bankSHA256": "eee9af51f6694ef5c1fb6ab6014428e9f40d9524db1acc218e2c80285f801720",
+    "families": 203,
+    "mixed10SHA256": "08240640491fefb6a86708801a6ddad271218ed89ec936f647898df82fb4fdc0",
+    "otherMixedModesSHA256": "28961fafd41b41e129f7258920e16d6bb90fb825e490e143c6ded120bb737a95"
+  }
 }

@@ -16,10 +16,8 @@ const hash = value => createHash('sha256').update(JSON.stringify(value)).digest(
 const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
 const family = q => q.family || q.id;
 const bankBefore = JSON.stringify(ALL_QUESTIONS);
-const bankAtBeginnerAudit = ALL_QUESTIONS.map(q => q.id === 'l4-x05'
-  ? { ...q, answers: ['Высоких портов (часто ≥49152 по IANA)', ...q.answers.slice(1)] }
-  : q);
-assert.equal(hash(bankAtBeginnerAudit), before.bankSHA256, 'question content and order match the baseline after accounting for the port wording correction');
+const quality = before.questionQualityUpdate;
+assert.equal(hash(ALL_QUESTIONS), quality.bankSHA256, 'question content and order match the approved revision');
 assert.equal(ALL_QUESTIONS.length, 787);
 
 function verify(chosen, pool, count) {
@@ -36,7 +34,7 @@ function verify(chosen, pool, count) {
 const base = getExamPool('mixed', 'beginner');
 assert.equal(base.length, 244);
 assert.equal(base.filter(isBeginnerPhoto).length, 68);
-assert.equal(new Set(base.map(family)).size, 205);
+assert.equal(new Set(base.map(family)).size, quality.families);
 let noPhoto = 0, repeatedFamily = 0, singlesWithPhoto = 0;
 const photoPositions = new Set();
 const mixedSnapshot = [], singleSnapshot = [];
@@ -56,14 +54,21 @@ assert.equal(noPhoto, 0);
 assert.equal(repeatedFamily, 0);
 assert.equal(photoPositions.size, 10, 'guaranteed photo can occur in every position');
 assert.ok(singlesWithPhoto > 0 && singlesWithPhoto < 1000, 'count=1 does not force or forbid a photo');
-assert.equal(hash(mixedSnapshot), before.mixed10.sha256, '1000 ordered mixed/10 selections exactly match main');
-assert.equal(hash(singleSnapshot), before.beginnerSingle.sha256, '1000 beginner/1 selections exactly match main');
+assert.equal(hash(mixedSnapshot), quality.mixed10SHA256, '1000 ordered mixed/10 selections match the family update');
+assert.equal(hash(singleSnapshot), before.beginnerSingle.sha256, '1000 beginner/1 selections still match the previous snapshot');
 
 const otherSnapshot = [];
 for (const { id: mode } of QUIZ_MODES) {
   for (const count of [1, 5, 10, 15, 20, 30]) {
     for (const seed of [1, 17, 173, 1000]) {
-      otherSnapshot.push({ mode, count, seed, ids: getRandomQuestions(mode, count, seeded(seed), 'mixed').map(q => q.id) });
+      const pool = getExamPool(mode, 'mixed');
+      const chosen = getRandomQuestions(mode, count, seeded(seed), 'mixed');
+      assert.equal(chosen.length, Math.min(count, pool.length));
+      for (const duplicateFamily of ['tcp-rst-meaning', 'tcpip-application-mapping']) {
+        const distinct = pool.filter(q => family(q) !== duplicateFamily).length;
+        assert.ok(chosen.filter(q => family(q) === duplicateFamily).length <= Math.max(1, count - distinct));
+      }
+      otherSnapshot.push({ mode, count, seed, ids: chosen.map(q => q.id) });
     }
     const pool = getExamPool(mode, 'beginner');
     for (let seed = 1; seed <= 25; seed++) {
@@ -76,7 +81,7 @@ for (const { id: mode } of QUIZ_MODES) {
     }
   }
 }
-assert.equal(hash(otherSnapshot), before.otherMixedModes.sha256, 'all 192 all-level mode/size/seed selections match main');
+assert.equal(hash(otherSnapshot), quality.otherMixedModesSHA256, 'all 192 all-level mode/size/seed selections match the family update');
 
 const q = (id, extra = {}) => ({ id, group: 'l3', difficulty: 'beginner', topic: id, text: id,
   answers: ['yes', 'no', 'other', 'none'], correct: [0], explanation: id, ...extra });
@@ -160,5 +165,5 @@ for (const difficulty of [undefined, 'beginner', 'mixed']) for (const shuffled o
 assert.equal(JSON.stringify(ALL_QUESTIONS), bankBefore);
 console.log('PASS: beginner/10 seeds 1–1000:', JSON.stringify({ before: before.before,
   after: { runs: 1000, noPhoto, repeatedFamily }, singlesWithPhoto,
-  mixed10Snapshot: before.mixed10.sha256 }));
+  mixed10Snapshot: quality.mixed10SHA256 }));
 console.log('PASS: all modes/sizes, family shortage fallback, sparse pools, strict levels, 6 legacy restore/review/progress variants');

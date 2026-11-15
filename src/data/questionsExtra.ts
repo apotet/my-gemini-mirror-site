@@ -22,6 +22,7 @@ export const EXTRA_QUESTIONS: Question[] = [
   },
   {
     id: 'tcpip-x02',
+    family: 'tcpip-application-mapping',
     group: 'tcpip',
     topic: 'TCP/IP · Соответствие OSI',
     text: 'Каким уровням OSI соответствует уровень Application в TCP/IP?',
@@ -779,6 +780,7 @@ export const EXTRA_QUESTIONS: Question[] = [
   // ─── L4 (+6) ───────────────────────────────────────────────
   {
     id: 'l4-x01',
+    family: 'tcp-rst-meaning',
     group: 'l4',
     topic: 'L4 · TCP',
     text: 'Флаг RST в TCP означает…',

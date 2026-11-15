@@ -114,6 +114,10 @@ export const QUIZ_MODES: QuizMode[] = [
 
 type LegacyExamDifficulty = Exclude<ExamDifficulty, 'in-depth'>;
 
+// These pairs ask for the same fact. Other families can group distinct skills
+// under a broad topic, which the legacy topic shuffle may sample together.
+const equivalentQuestionFamilies = new Set(['tcp-rst-meaning', 'tcpip-application-mapping']);
+
 const examQuestionDifficulty = {
   beginner: 'beginner',
   applied: 'applied',
@@ -145,7 +149,21 @@ export function getRandomQuestions(
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  return count >= shuffled.length ? shuffled : shuffled.slice(0, count);
+  if (count >= shuffled.length) return shuffled;
+  // Prefer a different skill before drawing a second variant from the same family.
+  const families = new Set<string>();
+  const alternatives: Question[] = [];
+  const distinct = shuffled.filter(question => {
+    const family = question.family;
+    if (!family || !equivalentQuestionFamilies.has(family)) return true;
+    if (families.has(family)) {
+      alternatives.push(question);
+      return false;
+    }
+    families.add(family);
+    return true;
+  });
+  return distinct.concat(alternatives).slice(0, count);
 }
 
 /** New attempts only; custom pools (including mistakes) must never be expanded. */

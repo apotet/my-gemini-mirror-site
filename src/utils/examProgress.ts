@@ -1,3 +1,4 @@
+import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from '../data/previousDiagnosticQuestions';
 import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { isLearningLevel } from '../types/learningLevel';
@@ -63,11 +64,16 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
     if (saved.requestedCount !== undefined && (!Number.isSafeInteger(saved.requestedCount) || saved.requestedCount <= 0)) return null;
     if (saved.answerOrders !== undefined && !object(saved.answerOrders)) return null;
     const questions: Question[] = [];
-    for (const item of saved.questions as Array<{ id?: unknown; answers?: unknown; correct?: unknown } | null>) {
-      const question = bank.find(q => q.id === item?.id);
-      if (!question) return null;
+    for (const item of saved.questions as Array<{ id?: unknown; text?: unknown; answers?: unknown; correct?: unknown } | null>) {
+      const current = bank.find(q => q.id === item?.id);
+      if (!current) return null;
+      const previous = PREVIOUS_DIAGNOSTIC_QUESTIONS[current.id];
+      const usePrevious = previous !== undefined && previous.text === item?.text;
+      const question = usePrevious ? { ...current, ...previous } : current;
       if (saved.answerOrders === undefined) {
         // Old attempts used bank order. Never shuffle an answer already selected there.
+        if (usePrevious && (JSON.stringify(item?.answers) !== JSON.stringify(question.answers) ||
+            JSON.stringify(item?.correct) !== JSON.stringify(question.correct))) return null;
         questions.push(question);
       } else {
         const order = saved.answerOrders[question.id];
