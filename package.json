@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "test:shared-assets": "node scripts/shared-assets.test.mjs",
+    "test:photo-review": "node scripts/photo-review.test.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
