@@ -118,6 +118,9 @@ jobs:
       - name: Typecheck
         run: npm run lint
 
+      - name: Pinned shared image resources
+        run: npm run test:shared-assets
+
       - name: Production build
         run: npm run build
 
