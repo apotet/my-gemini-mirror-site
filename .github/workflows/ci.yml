@@ -28,6 +28,9 @@ jobs:
       - name: Coverage report
         run: npm run coverage:explanations
 
+      - name: Audit lesson coverage
+        run: node scripts/audit-lesson-coverage.mjs
+
       - name: Cisco IOS show diagnosis lab regression
         run: node scripts/cli-show-diagnostic.test.mjs
 
@@ -133,4 +136,6 @@ jobs:
             scripts/.cache/coverage-report.json
             scripts/.cache/coverage-summary.txt
             scripts/.cache/validate-summary.txt
+            docs/audits/generated/lesson-coverage.json
+            docs/audits/generated/lesson-coverage.md
           if-no-files-found: ignore
