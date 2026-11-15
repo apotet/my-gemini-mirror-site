@@ -16,7 +16,7 @@ import {
 import { TOTAL_QUESTION_COUNT } from '../data/questionsData';
 import { NetOpsLogo } from './NetOpsLogo';
 
-export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'practice-mock' | 'osi';
+export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'practice-mock' | 'exam-mock' | 'osi';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -46,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'ipv6', label: 'IPv6 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
     { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-indigo-400" /> },
     { id: 'practice-mock', label: 'Макет практики', icon: <PencilRuler className="w-4 h-4 text-amber-500" /> },
+    { id: 'exam-mock', label: 'Макет тестирования', icon: <PencilRuler className="w-4 h-4 text-cyan-500" /> },
   ];
 
   const handleTabClick = (tab: NavTab) => {
