@@ -1,0 +1,271 @@
+{
+  "baseMain": "3efc3702966b5c14f501a646e22e7c224744ef48",
+  "auditSnapshot": "1a56fdd284dc57959345f9c795356d209cfb94a3",
+  "auditComments": [
+    "6877137083",
+    "6877139540",
+    "6877141640"
+  ],
+  "auditProjectionSHA256": "b01ce6bf26613a54160f741902229bff6ddea85dccb97d94ebff004552dd6c96",
+  "bankSHA256": "1077beb02460ce624ee68a94e9e2f3bbbcc7d02308266da3010de4e709d0c079",
+  "auditDrift": [
+    {
+      "id": "photo-cable-colors",
+      "fields": [
+        "text",
+        "answers",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l1v2-b-cleave-sequence",
+      "fields": [
+        "text",
+        "answers",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l1v2-c-closure-service",
+      "fields": [
+        "text",
+        "answers",
+        "explanation"
+      ]
+    },
+    {
+      "id": "gap-pack2-29",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "tcpip-x03",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "ts-x02",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "ts-x09",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l4-x05",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l4-d04",
+      "fields": [
+        "text",
+        "answers",
+        "explanation"
+      ]
+    },
+    {
+      "id": "tcpip-d01",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "ts-d05",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    },
+    {
+      "id": "l3-vrrp02",
+      "fields": [
+        "text",
+        "explanation"
+      ]
+    }
+  ],
+  "protectedFiles": {
+    "src/App.tsx": "7018d5fbe8f06e5f20961b831649529f0b848521e6682798971909b52a385926",
+    "src/cli-lab/CliLabShell.tsx": "8edcb2e60b1cb66515d338601de2bcd0b4d33846495111920c083076d5ef4208",
+    "src/cli-lab/ExperimentalCliUxV2Shell.tsx": "97c49290a81fba1bb37a2400071f04074604e3a2f11badc544d38e27a963d07d",
+    "src/cli-lab/ExperimentalMockCliLabShell.tsx": "47b0efb3ea28fdab383c4f7ae280681f823c0b59ee0c7da8ec97278baff64071",
+    "src/cli-lab/MockCliLabShell.tsx": "efc041f93b962b76dc86fafb19d960a393439884754ab5bf7cea524b5a5b8aff",
+    "src/cli-lab/components/ExperimentalTopology.tsx": "d2598a96d6efba2d81d8e84676a03b21df8c932c2afb3a1e0d9f294fa0abe944",
+    "src/cli-lab/components/ExperimentalTopologyV2.tsx": "35d862a970e6d7c26807c5f3109119603074fd004f5122723a71867bf51c8b15",
+    "src/cli-lab/components/HostPingPanel.tsx": "5bd9fe338b86fb6f3a33819a85a0bad27df5ddf538fdc1d18e70d74962a95888",
+    "src/cli-lab/components/TopologyPanel.tsx": "ebaa243681f3e526c467afb87830ad9c2c53022cd257bc6d17e76fd7ce56a8dd",
+    "src/cli-lab/components/topologyLayout.ts": "cdea20e9c4db75d5cbb1abd319b9cdd92d86d6b2c0e249bc86dc119b57744c71",
+    "src/cli-lab/engine/CommandResolution.ts": "eb1fb1e37fb65c23282a417ccea5561e45be5ab1b69452cb2769ec9122f4b3b5",
+    "src/cli-lab/engine/ConfigPersistence.ts": "758d0c3a4827019ea4ce9e8cc1c8e955da98de2a89557ae361495aadbd4283b4",
+    "src/cli-lab/engine/ContextualHelp.ts": "041b5089f59fd5620ca350218060e783cc35d059d4e173faa8fc3181edaab8eb",
+    "src/cli-lab/engine/GoalEvaluator.ts": "735e3f7cfe017de3ab045e2e328ae48e1a05c4767e9fc6ed1f9604fc21a34a05",
+    "src/cli-lab/engine/HostIpv4Reachability.ts": "62ce78c035e1f9299c131cc48dc40dfd51df8ccde82cd72ace7264ab1b728434",
+    "src/cli-lab/engine/LabEngine.ts": "80b9d4d205363231262d0c762d9b5ccd5672e2df111d41a5e102502bb265206d",
+    "src/cli-lab/engine/OperationalState.ts": "2aafb38a9ee8fed56d2272d812bcbfa948b388c5ff14e99f14db46e51e15bf03",
+    "src/cli-lab/engine/SpanningTree.ts": "45bdcc7c9e521bb21f40c0d9b91c178ed9de7089b02d723320c13916513dd6d3",
+    "src/cli-lab/engine/SviIpv4Reachability.ts": "31cb98e1b2111b01ed9d309b7539968af9df8d90ccd5bff052619e361abb27d1",
+    "src/cli-lab/engine/VlanForwarding.ts": "c9f8299d1e1daada7cd53e65f12403cbf05f699c14589222c57645aeb0a6f37b",
+    "src/cli-lab/engine/VlanMembership.ts": "85367b8f7197b6b949e41ddb89e18dd82d519c46c1cb1872dea5ec325eb4992e",
+    "src/cli-lab/engine/VlanPath.ts": "0f43edf400dc60b2933892db7f6a20f7c99cce7206fcbb38f8c5455534dbc9a8",
+    "src/cli-lab/engine/completionStatus.ts": "f7512de2f6642888677c2981320fba8cd9043ebbf4cd2d3f9e039c2004a17c1d",
+    "src/cli-lab/engine/types.ts": "258edfc23e9b709526234f678ff3f8560d7200522017cd944ca7e54d9efff63a",
+    "src/cli-lab/fullscreen.css": "cb9c6c5c7484b425e7b2a0922642e2174e2b8efb9a1ee51dad963e4cdad7e2b2",
+    "src/cli-lab/hostPing.ts": "4e900a0817c8bec2651f2e7e7eea07751205447ee91f0de1cfda416c8fae8d61",
+    "src/cli-lab/portDetails.ts": "5d4d1cfdbc5cd12d183bc85a0aca1ba380b9f78f287975cd0f81c163c156eb5d",
+    "src/cli-lab/scenarioTheory.ts": "52b287bebd4c206c273ee117be3616e550b4d34f93e42676f295e7b4ab7c8bca",
+    "src/cli-lab/scenarios/cisco-access-svi-followup.ts": "b0506565d4b7347e9f326aa8a741e9cd43382549a65b6dcfd2dcf0a3302667e8",
+    "src/cli-lab/scenarios/cisco-four-switch-host-ring.ts": "01faa4e1cf70ada9528c6182f210e2f9388b2298f6a8c0e7cb0dd5aba40b3754",
+    "src/cli-lab/scenarios/cisco-ios-modes.ts": "bd92f30dd5be1f5c39b78d6264141f36091661a989313874e470caa779690d3d",
+    "src/cli-lab/scenarios/cisco-l3-gateway.ts": "7047e00f80fba4ab6babcf8ec890e466afd1e1bc4d1d0fd9758cdc5dee75e885",
+    "src/cli-lab/scenarios/cisco-show-diagnostic.ts": "19e82aabf1292731f0f4a8a46cfd560553ad7029655955a5bed89f2c8e68d054",
+    "src/cli-lab/scenarios/cisco-three-switch-missing-vlan.ts": "e5e28438915767098f73423424d107f1497c5420f93009120a6acbb6fc7319b3",
+    "src/cli-lab/scenarios/cisco-trunk.ts": "005773bdf0d23764becfd38682731d243490423df45c3a1ccd92cfaa82d7c46a",
+    "src/cli-lab/scenarios/cisco-two-switch-svi.ts": "89c0b0845aeed2bb3256e780c9925d67dfa45f9ddd659d48e9481681fd5277d7",
+    "src/cli-lab/scenarios/cisco-two-switch-trunk-diagnostics.ts": "eff6f50c6e3962dce40e874b087149c2e7c28961be69d9de7640861163220af1",
+    "src/cli-lab/scenarios/cisco-two-switch-vlan.ts": "8250778f5785adad750b196527d452951bb5b27f42a0aafd2dc0a1ccebc578b3",
+    "src/cli-lab/scenarios/cisco-vlan-access.ts": "f158fe68f464668847a1be2982fa63e257b54c289b731394584313c51e2917c2",
+    "src/cli-lab/topologyLayers.ts": "ad200f8b4934631e4079e2555b4e8dffe1f1a0d24ffe27e5efaf3703060c46e6",
+    "src/cli-lab/vendors/cisco-ios/arguments.ts": "465d47d852d140d1c533f1adc3d0645ba8b2fa915038d505e9ee90ce2b94b9d9",
+    "src/cli-lab/vendors/cisco-ios/commandCatalog.ts": "999bf665de324f1521958bd7db3a5cdba338c1f8038c03ff200495055ac4346c",
+    "src/cli-lab/vendors/cisco-ios/commands.ts": "41cd1cd0a82c60b53c72487a57afa3800b3e921584f0e3ed3fd33810359f7983",
+    "src/cli-lab/vendors/cisco-ios/configFormatter.ts": "4ced28a73956726862928adade89ba3874e446ddf2497dea8e6280bba5920fb1",
+    "src/cli-lab/vendors/cisco-ios/l3Commands.ts": "6417b588620ba9bbc43d2081c04944a2acdd0a9153a31e4dd5b4c4a90e4866d7",
+    "src/cli-lab/vendors/cisco-ios/persistenceCommands.ts": "46924cc84ba7384a27e4b0b833ba96d7a37bb2fdbcf3f2bf61b6975fe036cd42",
+    "src/cli-lab/vendors/cisco-ios/profile.ts": "6fbb91af0f9c2db77a90a6ac6ee80a2d20da76b0e6ff433a3dd6bc38b758546f",
+    "src/cli-lab/vendors/cisco-ios/showInterfaceCommands.ts": "0f7c0176baf3df6ee8531cdd474931ce12f058ca166e1f3a6d716bf003f43235",
+    "src/cli-lab/vendors/cisco-ios/spanningTreeCommands.ts": "ac472d471787249656936c229df171f476a3f0d972fc04b99ffa8a56b82ad5d8",
+    "src/cli-lab/vendors/cisco-ios/spanningTreeConfigCommands.ts": "dccf9cd6cfef3f1617b5a6e745a6683cf650cacc754d28c1f1931cad70fecebe",
+    "src/cli-lab/vendors/cisco-ios/trunkCommands.ts": "8dfe94eeafce1a9ae30d0850fc3441a85f4b57c34cea3f7128953c94ca079aa4",
+    "src/components/CliReference.tsx": "efcaf6b699f7499fd3503f7beedd43a7fb618f353d90058c2127335a048404ac",
+    "src/components/CliSimulator.tsx": "2a2cff1b32146c12ca635f2a7362974adfee9fe2d47f841ffaf4006e139bd503",
+    "src/components/CommandPalette.tsx": "84e3c7ebec4b975dfede52afc98e381486b0564af6d0cc9306e84278c861ec58",
+    "src/components/DeployModal.tsx": "6bbe48fef9185ba1d25f98b34e1d7ec1879fdfef53ffe6a3869970113a85aae4",
+    "src/components/DetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
+    "src/components/ExamReview.css": "406cbd974b3d25a331d9b19edd8cee8e18f4b6241e3cdd5a9b523838cafca5ad",
+    "src/components/ExamReview.tsx": "90ba832bff5181b27661201364621f64e9407ee1908ee337e3dea55ab318db02",
+    "src/components/ExamView.tsx": "02f1af94074fa8ab0891c3396593a94535cd97e97107fe4b37ed2d162edfbd6a",
+    "src/components/GlossaryText.css": "eec97a669c42f43cf17c739fee731be3a1ac1b5d8ece0b5e7abd12f908a29f6a",
+    "src/components/GlossaryText.tsx": "fa07e0d7b05e5066f98978adc69cb7ddd8b348bddf6bcc520a23cfae5e4a825a",
+    "src/components/HomeOsiStack.tsx": "4bd31111870c332a676648f8a34a152797afdc6e0528f996d521ebf0a931d010",
+    "src/components/Ipv4Trainer.tsx": "f34f1dfdd54e1ed54a38578b2c38d27e2d9cf660bedd34329f60142f26ffd0e3",
+    "src/components/Ipv6Trainer.tsx": "40c40b94e62118ecdf0bcf1fd0e15ef005a0f0a9ccd72f910c63114da6cdb9f0",
+    "src/components/KnowledgeBase.tsx": "7321f9839dc72eb3a391a98b4fd57d34f5efbc09c9c25824261e1e2a58edbc75",
+    "src/components/KnowledgeRadar.tsx": "31c5123e03ce9ad05b8ff6e0124ae3ada2ca40d5e83bf2c108b73e51f8409d58",
+    "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
+    "src/components/LessonView.tsx": "d926abffbc72d0198894ac48ccf19439f9753979bafb8fc9c7fe4446a24f8f7c",
+    "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
+    "src/components/MobileTabBar.tsx": "ae9c48ff1ad1769d2cc71d63ca7125cb917dbead52b9cf6f11b9548966c0b6b9",
+    "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
+    "src/components/MockPacketJourney.tsx": "a9630696a129548973d8456a4866f4010cd1504189cf493ab7cf91105ce7789f",
+    "src/components/MockPracticeHub.tsx": "7fa2840e7713c4ba6ab7545d93682f4260dab6637ea028fd0b5070e6a888b829",
+    "src/components/MockProtocolSimulators.tsx": "3dbf4e12827960936be5d2b91bfdef068d0fb258b03f33dd0e4f45b8abc5b885",
+    "src/components/MockVlanSimulator.tsx": "90c9be6e5fb3e683eaabeedd42a62603da8c357dc1fad005456fde28faa5d53e",
+    "src/components/Navbar.tsx": "a79a5ddd939426a51b919fc9d560f908f3ffde11c792c38cee020269071a584e",
+    "src/components/NetOpsLogo.tsx": "6dfca54fa40a483e86f80bb6a9381c0ef926b3165dc1a0a72db94e637d85a828",
+    "src/components/OsiExplorer.tsx": "dedeefc4610a56c60a16b0d1288da248aefc745291d58d42f8997a75bf4b41e2",
+    "src/components/PacketJourney.tsx": "5f9894548833fb4e21a93ccb020cd6ba46f65121c1a0a686f59e671435822941",
+    "src/components/PhotoCredits.tsx": "6bf2885c68138bd56dc661cbd0ff683c3f0beb605cdc1587f30c9350dd041eb9",
+    "src/components/PracticeHub.tsx": "80ac6b0eecf20b00bde2a1d6ef8968470a7e492af2dda6f355a6c5de1d65f7da",
+    "src/components/PracticeLinkButton.tsx": "467f369da88f66ef743a43457351c60d9740735302e2d972102605a0dbcd5f2c",
+    "src/components/ProtocolSimulators.tsx": "d20573ff14823ba5be107b9cfd23bc2d43e56e6f08f55bcdce9f7cfa2d035dad",
+    "src/components/SniDiagram.tsx": "d49242b91806e9f50f1151185e7fcf892d2ff44c33c2a7a6f9fc32f860383914",
+    "src/components/StudyTextToggle.tsx": "c161ead70e9fe5499e7959e34a21591d3601e7b651ac0c4169959e4ddd31153a",
+    "src/components/TheoryCheatsheets.tsx": "74f4c32eb59e4baa72a9d96ebd72c6376b298552621b21eb6c81fb35ba5b3d6f",
+    "src/components/TheoryModels.tsx": "a1005ca6f9b8be38c40564a665d133b30682903c1edbdad6e5112a4805bb5f37",
+    "src/components/TheoryPorts.tsx": "fed1c566940c57bc0731b4a47eb01d96f5be184febb7fbb3fd0d5948cc61e352",
+    "src/components/TheoryRazbory.tsx": "9b9bc143905bb42fc4549d361eea11e4adf5d47bc39418cd0b48d8897f6d02e7",
+    "src/components/TheoryScenarios.tsx": "3545f0c64adadd5ed3f97ca725cfca8d1040ba04f642fc70c08c523c12136992",
+    "src/components/TheoryView.tsx": "0c9e18bea9ce63e6a235b4464baaf71ecd26ac4e6b4872481d63dda527e390ae",
+    "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
+    "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
+    "src/data/glossary.ts": "4338f8040bbbc47ad4700991295a29e9368611bfe7aa3f8b5751e85a3ad21b08",
+    "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
+    "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
+    "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
+    "src/data/lessons/cli-save-config.ts": "9cf2e11b6aa5ac9c30da97112ce50e8ce634a2b4b713bab8e2a6fd2dce489498",
+    "src/data/lessons/cli-show-help-tab.ts": "08d45e03af7486eff8b692f50206aedb035360d39f9568ca7a1b10b5e5af5d17",
+    "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
+    "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
+    "src/data/lessons/index.ts": "a508f3a1be5e83f9e7b4e2b6230242f6b9d353490100019170295a8bbf304409",
+    "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
+    "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
+    "src/data/lessons/l2-bpdu-guard.ts": "4c3a64acf6a61da12bfc86e9017d8c8bcf66c2be7e4f270ba55cd870b231df30",
+    "src/data/lessons/l2-dai.ts": "e43760bd588c9428df6a2b29fdf48c8ae3788560dc4bab947444287b2cc24856",
+    "src/data/lessons/l2-ethernet.ts": "843442e80619c9b18197e33dd282bf3b45ab9c47f1048e3bc8ece5ed9edf6958",
+    "src/data/lessons/l2-igmp-snooping.ts": "9459d03c9140d370ca1b698182cd1cd1f03fb4d115e66cbbaca61c65d2e33fdf",
+    "src/data/lessons/l2-ipsg.ts": "9ab6fca98bd0bdf6fb0cca98bf2a7a8310e2c94ba4bf1c0db82d2a69e18e24a1",
+    "src/data/lessons/l2-mstp-advanced.ts": "9b828c946072ebc17ea17421ffe0674a5f3eca259a5fba1f287865dcd8e8edc8",
+    "src/data/lessons/l2-rstp-convergence.ts": "1b0a96141a2d5af32232078470e1a9ba9fbffe790c5f5257f0e21861c0a5a578",
+    "src/data/lessons/l2-stp-election.ts": "35b3b86ac48bf9c1968efec1a7897ad64c12ceda14be862b73cc0618e380222d",
+    "src/data/lessons/l2-stp-guard-design.ts": "5c736d6007920e7b735db7dff36349d80829a9ab2693988e79f79b0b9f2ece71",
+    "src/data/lessons/l2-stp-protection.ts": "ce6780e4c9dcf47768724ba0b37a9b6e5bd8ddb5c7d8c4ca4c61255ef530a35b",
+    "src/data/lessons/l2-stp.ts": "c07401f821ce9ad1a4ca5ddf130c422ac536e5a7883e8edb1bcc5699a1fee2e4",
+    "src/data/lessons/l2-svi.ts": "9855dc17ff3915b05403d613f8240541b006215ccbfb238b24aade7e120e8c9a",
+    "src/data/lessons/l2-vlan-security.ts": "d79d23c1f279baa2b91ef579193c093a1c163e5ac39702f8c6bc07114611c713",
+    "src/data/lessons/l2-vlan.ts": "03133cf22c3a5b7d3b62b7af70d717e696196f42c7dd467ba365211d8bcee7c0",
+    "src/data/lessons/l3-arp.ts": "71c23b755e551406b9c3f22adcb63a06bce219da7bfd10ae64344ecc9f890467",
+    "src/data/lessons/l3-bgp.ts": "055869352ce40d59f72c3d0739b16c7a3a684e5caf03935404258c822d86b384",
+    "src/data/lessons/l3-eigrp.ts": "f0d5163f740f9af51dc3755bcc2e2e2bef012e519126f3f55cea86554b51b956",
+    "src/data/lessons/l3-ipv6.ts": "28d99fb49d03d170bc3e99c94a09add138b11672ce7044652a94294ca1f2c72f",
+    "src/data/lessons/l3-masks.ts": "52e141901b602851e6d1c42c1ec6c4218fea0594b35e10f3964337c678c0b168",
+    "src/data/lessons/l3-nat.ts": "18ff5d9f2334b94f86045c7610a409352f93a433db6c17c9595e1ff749140965",
+    "src/data/lessons/l3-ospf.ts": "2b9932fbd92b79874ce864cb08abf87b20bad07be95959665dd8750ab6e45fdc",
+    "src/data/lessons/l3-rpki.ts": "1b107139f1b92764c96f78cf78ae34c234a4636e2807aee71bc4bde565a674b9",
+    "src/data/lessons/l3-subnets.ts": "aab62261bc268190a8bdd76910c02f01108b9c264fb91d1553d77227bcf3547e",
+    "src/data/lessons/l3-vrrp.ts": "ddfc79b2102cd84637fae9a747a5bebc15143145212e813083be5fb0668b54f3",
+    "src/data/lessons/l4-load-balancing.ts": "f5be1e60d67705018207cb1a95bd714dbf02f7e6a668361b603aa46ef6340f5d",
+    "src/data/lessons/l4-tcp-loss.ts": "c65ea69c1299ffe5ac0178144fd39c565a09ab63fab07fa3cc4e2f7c96e96f61",
+    "src/data/lessons/l4-tcp.ts": "715603b83fdc87c0334567f642bb5c1b823a7ab7f0424198d45ee1bd836caa58",
+    "src/data/lessons/l7-dhcp.ts": "a4456bb8517808f8162565337c16c6ea151ce62b1ae1e759ce740da3dd1c056c",
+    "src/data/lessons/l7-dns-dhcp.ts": "996d355244c374dc320b139c20bb147ec65d4a25af2cb18509a8f2bc6df61e99",
+    "src/data/lessons/l7-dns-ttl.ts": "876889fc7f6f7b0e075a882706cb8bf1589172659b177970cd201a55d91454c7",
+    "src/data/lessons/l7-dns.ts": "7f6cd8366a2841dfcd74dd4fd6b902157f259a91e9e10f29c74d7e53ef60b04c",
+    "src/data/lessons/l7-services.ts": "7ba5672de9c923ca430a29922f7b2662b9b55b09c0105cd55498bd52baa3bc44",
+    "src/data/lessons/osi-pdu.ts": "9bd512c9b90e27f4485fee5eb378e811ccc7dedb62300fe6b3dca3b983965c66",
+    "src/data/lessons/qos-basics.ts": "fbbbf5fdff597c1dd72986d48386bd79c53b43656295e9a557dc98b7942591ff",
+    "src/data/lessons/tcp-window-retransmit.ts": "2450d7a50a188c33bef9f00191e70550effeb8a5ef19c25d06c057d3628c7a66",
+    "src/data/lessons/tcpip-encapsulation.ts": "468483b0045904b29a4bf7b08694be861ce997fd2cdce3a55b1b173615bcdec9",
+    "src/data/lessons/tcpip-model.ts": "afd77246f1ff78ec781c5723a49e8f61d9c4016b3a2c87b7663212da374a97a5",
+    "src/data/lessons/tls-sni.ts": "03d2f9559a811481419b3961a1c88422b43886c1cada713fd7b94b8f23add7e4",
+    "src/data/lessons/ts-copp-storm.ts": "087e603deb5389c7e532e5981e1efe81c5b6108a88e202ea888dc65524300fb4",
+    "src/data/lessons/ts-method.ts": "518126372a105fc97a1a65d3b3cee59c68dd9a8c73de32318ebd0f81eaa2385f",
+    "src/data/lessons/ts-optics.ts": "ca621ade75d5dd6a6d9f65513ce30f0e23fff8ad757775a76678a57787360fcb",
+    "src/data/lessons/types.ts": "c9d7e59d330a04c5a4eaaefc28379c0132c3a72307cef6ef6c42b333473976d3",
+    "src/data/levelNotes.ts": "1a8713068a382e5bfe894f8c16198f365a69a8a98fecce382bd94d9eaf032c0b",
+    "src/data/memeTitles.ts": "80422ac2e70fb87a699718b8526c73217f4c33a429e7bf0566543ea6fbc67014",
+    "src/data/mixedExam.ts": "b14eb9c8ba34f1293312fc263972486ce3a3573cbbdeff173271ff0464136384",
+    "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
+    "src/data/questionExplanations.ts": "5220e268217334ebd00e176e6b7618e58c2bc713dee8ec60f00d4ad343c15517",
+    "src/data/questionExplanationsApplied.ts": "b530d2e9cad46c1fe69b0218e96cc98f323a4e472992489b759d52bd8ecc4980",
+    "src/data/questions.json": "2eac7dd3abc14e897fa2a183d2ab9a6d037e8f38ca3c86fae864657233256cdb",
+    "src/data/questionsData.ts": "a71a6a30445cd23181d981cd30ad196decf40e032d9dbf53e058f25b0c2e7800",
+    "src/data/questionsExtra.ts": "29a2305782dd765ac9724a1c8b09ca03428184a9b67d746c05050c9ea2cf928b",
+    "src/data/questionsExtraDifficulty.ts": "dbfb9839d94723fcc365f23345c48e1a55ebd7fe73ba34000aee0c02fc0be8dc",
+    "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
+    "src/index.css": "0c2c3e4808a5f5b8aa6ae11e3cae5a9bdd1fc603a0e31cf30146562ea9ba65dc",
+    "src/main.tsx": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3",
+    "src/projectExporter.ts": "21e5efb52f4fc855ee3ab14b8ba9923c563b25791b304b4a767c3f69472f4f6c",
+    "src/types/quiz.ts": "95756d9d97993b56c22bc6156c1bfcf0b2b7724f9c6ca5a0290501122dfccd57",
+    "src/utils/examProgress.ts": "b1611f61fdd63bb5ef7da3766472f378c5d4a5b0720e4e52ca8b82e40a6a6a7a",
+    "src/utils/examReview.ts": "8ea265f145e9a65e5661f91022eea8602a1a78727c482c54e6b0b3a997a8533e",
+    "src/utils/glossaryText.ts": "d088ecdebe0cf74b8c15edb025263e97815dc721df5a1bdd4644c1827006679a",
+    "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
+    "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
+    "src/utils/studyTextMode.ts": "f3f445edb541a99643aa7bc817ede0b919f9692154f880552586a1b013d8a27c",
+    "src/utils/userProgress.ts": "4c35511876028017d566aac4cd53a976a56771c03db3024633a9602b8dd230ce"
+  }
+}
