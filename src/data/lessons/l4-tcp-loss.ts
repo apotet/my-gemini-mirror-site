@@ -41,6 +41,7 @@ export const LESSON_L4_TCP_LOSS: Lesson = {
     }
   ],
   "relatedQuestionIds": [
+    "l4-d02",
     "l4-fr01",
     "tcpip-ntp01"
   ],

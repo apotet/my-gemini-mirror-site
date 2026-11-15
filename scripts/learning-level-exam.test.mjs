@@ -228,3 +228,58 @@ for (const question of diagnosticLevel) {
   assert.ok(detail.professional?.brief.trim() && detail.professional.deep.trim(), question.id);
 }
 console.log('PASS: all 53 Diagnostics questions have a visible professional explanation');
+
+const { PREVIOUS_DIAGNOSTIC_QUESTIONS } = await bundleEntry(
+  'src/data/previousDiagnosticQuestions.ts', 'previous-diagnostic-questions.mjs',
+);
+for (const [id, previous] of Object.entries(PREVIOUS_DIAGNOSTIC_QUESTIONS)) {
+  const current = ALL_QUESTIONS.find(q => q.id === id);
+  assert.notEqual(current.text, previous.text);
+  assert.deepEqual(current.correct, previous.correct);
+  assert.equal(current.answers.length, 4);
+  const detail = getQuestionDeepDive(current);
+  assert.equal(detail.glossaryInProfessional, true);
+  assert.ok(getLessonForQuestion(id));
+  assert.ok(splitGlossaryText(detail.professional.deep).some(token => token.term));
+  assert.match(detail.deepAnalysis, /\n\n[\s\S]+\n\n/);
+  const historical = { ...current, ...previous };
+  const historicalDetail = getQuestionDeepDive(historical);
+  assert.ok(historicalDetail.professional.deep);
+  assert.notEqual(historicalDetail.professional.deep, detail.professional.deep);
+  for (const question of [current, historical]) for (const shuffled of [false, true]) {
+    const startTime = 1_800_000_000_000;
+    const saved = {
+      ...(shuffled ? prepareAttemptQuestions([question], seeded(17)) : { questions: [question] }),
+      currentIndex: 0, userAnswers: {}, submittedQuestions: {}, startTime,
+      isCompleted: false, mode: 'mixed', feedbackMode: 'exam', learningLevel: 4,
+    };
+    const confirmed = confirmAnswer(saved, saved.questions[0].correct, startTime + 100);
+    const restored = restoreSession(JSON.stringify(confirmed), ALL_QUESTIONS, startTime + 200);
+    assert.deepEqual(restored?.questions, confirmed.questions);
+    assert.deepEqual(restored?.userAnswers, confirmed.userAnswers);
+    if (question === historical) {
+      const malformed = { ...confirmed, questions: confirmed.questions.map(q => ({
+        ...q, answers: ['altered', ...q.answers.slice(1)],
+      })) };
+      assert.equal(restoreSession(JSON.stringify(malformed), ALL_QUESTIONS, startTime + 200), null);
+    }
+  }
+}
+for (const term of ['PMTUD', 'SIP', 'RTP', 'SDP']) {
+  assert.ok(GLOSSARY_TOOLTIPS[term]?.summary);
+  assert.equal(splitGlossaryText(term)[0]?.term, term);
+}
+for (const [left, right, family] of [
+  ['l4-08', 'l4-x01', 'tcp-rst-meaning'],
+  ['tcp-02', 'tcpip-x02', 'tcpip-application-mapping'],
+]) {
+  const siblings = [left, right].map(id => ALL_QUESTIONS.find(q => q.id === id));
+  assert.ok(siblings.every(q => q.family === family));
+  const alternative = getLearningLevelPool('mixed', 1).find(q => !q.image && q.family !== family);
+  for (let seed = 1; seed <= 20; seed++) {
+    const sample = getLearningLevelQuestions('mixed', 2, seeded(seed), 1, [...siblings, alternative]);
+    assert.ok(sample.includes(alternative));
+    assert.equal(sample.filter(q => q.family === family).length, 1);
+  }
+}
+console.log('PASS: revised diagnostics preserve saved answers and duplicate families get one slot when alternatives exist');

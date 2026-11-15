@@ -56,6 +56,7 @@ export const LESSON_TCP_WINDOW_RETRANSMIT: Lesson = {
     },
   ],
   relatedQuestionIds: [
+    'ts-d04',
     'gap-pack2-21',
     'gap-pack2-22',
     'gap-pack2-23',
