@@ -40,7 +40,7 @@ export const DUPLICATE_QUESTION_IDS = _bankStats.duplicates;
 export const QUIZ_MODES: QuizMode[] = [
   {
     id: 'mixed',
-    title: 'Смешанный экзамен',
+    title: 'Смешанное тестирование',
     subtitle: 'Все уровни OSI и стек TCP/IP',
     description: 'Комплексный срез знаний по всем темам: от оптики и витой пары до прикладных протоколов.',
     icon: 'Layers',
