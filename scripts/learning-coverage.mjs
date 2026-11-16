@@ -1,21 +1,27 @@
-import { bundleEntry, writeJson } from './load-bank.mjs';
-const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, GLOSSARY } = await bundleEntry('scripts/learning-coverage-entry.ts', 'learning-coverage.mjs');
-const glossary = new Set(Object.keys(GLOSSARY).map(s => s.toUpperCase()));
-const candidates = text => [...new Set((String(text ?? '').match(/\b[A-Z][A-Z0-9-]{2,}\b/g) ?? []).filter(s => !glossary.has(s)))];
-const rows = ALL_QUESTIONS.map(q => {
-  const d = getQuestionDeepDive(q);
-  const lesson = getLessonForQuestion(q.id);
-  const texts = [q.question ?? q.text, ...(q.answers ?? []), d.briefAnswer, d.deepAnalysis, d.professional?.deep];
-  return { id: q.id, why: !!d.briefAnswer?.trim(), plain: !!d.deepAnalysis?.trim(),
-    pro: !!d.professional?.deep?.trim(), lessonId: lesson?.id ?? null,
-    candidateTerms: [...new Set(texts.flatMap(candidates))] };
-});
-if (new Set(rows.map(r => r.id)).size !== rows.length) throw new Error('Duplicate IDs');
-const summary = { questions: rows.length, why: rows.filter(r=>r.why).length,
-  plain: rows.filter(r=>r.plain).length, pro: rows.filter(r=>r.pro).length,
-  lessons: rows.filter(r=>r.lessonId).length, withCandidateTerms: rows.filter(r=>r.candidateTerms.length).length };
-writeJson('docs/audits/learning-coverage-latest.json', { summary, rows, caveats: [
-  'Candidates are NOT confirmed errors; context review required.',
-  'Lesson text, hashtags, tooltip rendering and semantic links NOT checked yet.',
-  'Inventory only; not a required merge check.' ] });
-console.log(summary);
+#!/usr/bin/env node
+import { readFileSync,mkdirSync,writeFileSync,existsSync } from 'node:fs';
+import { resolve,dirname } from 'node:path';
+import { scanRoot,scanRef } from './learning-quality/runtime.mjs';
+import { gate } from './learning-quality/model.mjs';
+const args=process.argv.slice(2),arg=k=>{const i=args.indexOf(k);return i<0?null:args[i+1];};
+const root=resolve(arg('--root')??'.');
+const receiptPath=resolve(root,'docs/learning-quality/reviews.json');
+const receipts=existsSync(receiptPath)?JSON.parse(readFileSync(receiptPath,'utf8')):[];
+const report=await scanRoot(root,receipts);
+const output=resolve(arg('--out')??'docs/audits/learning-coverage-latest.json');
+mkdirSync(dirname(output),{recursive:true});
+if(args.includes('--gate')) {
+  const base=arg('--base');
+  if(!base) throw new Error('--gate requires --base COMMIT; no fail-open default');
+  report.gate=gate(report,await scanRef(root,base),receipts);
+}
+writeFileSync(output,JSON.stringify(report,null,2)+'\n');
+const lines=['# Learning quality registry','',`Questions: ${report.summary.questions}; lessons: ${report.summary.lessons}; glossary: ${report.summary.glossary}; practice destinations: ${report.summary.practice}.`,
+`Structural errors: ${report.summary.technicalErrors}; raw terminology candidates: ${report.summary.candidateOccurrences}; whole-material semantic PASS: ${report.summary.semanticPass}.`,'',
+'Candidates are observations, not confirmed errors. Every material remains REVIEW until an independent, fingerprint-bound review is recorded.','',
+'| Category | Occurrences |','| --- | ---: |',...Object.entries(report.summary.categories).sort().map(([k,v])=>`| ${k} | ${v} |`),'',
+'Per-ID details, source paths, context, dependency fingerprints and review status are in the adjacent JSON. Re-run `npm run quality:scan`; use `npm run quality:packet -- question:ID` for reproducible review packets.','',...report.limits.map(l=>`- ${l}`)];
+if(report.gate) lines.push('',`Differential gate: **${report.gate.status}**; changed materials: ${report.gate.changed.length}; failures: ${report.gate.failures.length}.`);
+writeFileSync(output.replace(/\.json$/,'.md'),lines.join('\n')+'\n');
+console.log(JSON.stringify({summary:report.summary,gate:report.gate},null,2));
+if(report.gate?.status==='FAIL') process.exitCode=1;

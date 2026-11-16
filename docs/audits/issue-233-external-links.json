@@ -1,0 +1,637 @@
+{
+  "summary": {
+    "REACHABLE": 33,
+    "BROKEN_HTTP": 0,
+    "UNVERIFIED": 0
+  },
+  "rows": [
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8110",
+      "references": [
+        {
+          "materialId": "lesson:l12-wifi-standards-roaming",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc8110"
+        },
+        {
+          "materialId": "lesson:l12-wifi-standards-roaming",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc8110"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc8110/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc7664",
+      "references": [
+        {
+          "materialId": "lesson:l2-wifi-security-diagnostics",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc7664"
+        },
+        {
+          "materialId": "lesson:l2-wifi-security-diagnostics",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc7664"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc7664/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/357",
+      "references": [
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/357"
+        },
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/357"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/357",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc4541",
+      "references": [
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4541"
+        },
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4541"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc4541/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc2236",
+      "references": [
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc2236"
+        },
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "professional.sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc2236"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc2236/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc3376",
+      "references": [
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "sources.3",
+          "original": "https://www.rfc-editor.org/rfc/rfc3376"
+        },
+        {
+          "materialId": "lesson:l2-igmp-snooping",
+          "path": "professional.sources.3",
+          "original": "https://www.rfc-editor.org/rfc/rfc3376"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc3376/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/360",
+      "references": [
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/360"
+        },
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/360"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/360",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc1034",
+      "references": [
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc1034"
+        },
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc1034"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc1034/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc2308",
+      "references": [
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc2308"
+        },
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "professional.sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc2308"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc2308/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8767",
+      "references": [
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "sources.3",
+          "original": "https://www.rfc-editor.org/rfc/rfc8767"
+        },
+        {
+          "materialId": "lesson:l7-dns-ttl",
+          "path": "professional.sources.3",
+          "original": "https://www.rfc-editor.org/rfc/rfc8767"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc8767/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/352",
+      "references": [
+        {
+          "materialId": "lesson:l2-dai",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/352"
+        },
+        {
+          "materialId": "lesson:l2-dai",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/352"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/352",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/362",
+      "references": [
+        {
+          "materialId": "lesson:l2-ipsg",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/362"
+        },
+        {
+          "materialId": "lesson:l2-ipsg",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/362"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/362",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/370",
+      "references": [
+        {
+          "materialId": "lesson:l2-bpdu-guard",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/370"
+        },
+        {
+          "materialId": "lesson:l2-bpdu-guard",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/370"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/370",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/363",
+      "references": [
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "sources.0",
+          "original": "https://t.me/Network_history_NFA/363"
+        },
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "professional.sources.0",
+          "original": "https://t.me/Network_history_NFA/363"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/363",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://t.me/Network_history_NFA/366",
+      "references": [
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "sources.1",
+          "original": "https://t.me/Network_history_NFA/366"
+        },
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "professional.sources.1",
+          "original": "https://t.me/Network_history_NFA/366"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://t.me/Network_history_NFA/366",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy",
+      "references": [
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "sources.4",
+          "original": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
+        },
+        {
+          "materialId": "lesson:ts-optics",
+          "path": "professional.sources.4",
+          "original": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
+        },
+        {
+          "materialId": "lesson:expert-optical-reserve-margin",
+          "path": "sources.1",
+          "original": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
+        },
+        {
+          "materialId": "lesson:expert-optical-reserve-margin",
+          "path": "professional.sources.1",
+          "original": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.flukenetworks.com/edocs/olts-otdr-complete-testing-strategy",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc950",
+      "references": [
+        {
+          "materialId": "lesson:l3-masks",
+          "path": "sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc950"
+        },
+        {
+          "materialId": "lesson:l3-masks",
+          "path": "professional.sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc950"
+        },
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc950"
+        },
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "professional.sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc950"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc950/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc4632",
+      "references": [
+        {
+          "materialId": "lesson:l3-masks",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4632"
+        },
+        {
+          "materialId": "lesson:l3-masks",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4632"
+        },
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4632"
+        },
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4632"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc4632/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc3021",
+      "references": [
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc3021"
+        },
+        {
+          "materialId": "lesson:l3-subnets",
+          "path": "professional.sources.2",
+          "original": "https://www.rfc-editor.org/rfc/rfc3021"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc3021/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc7868",
+      "references": [
+        {
+          "materialId": "lesson:l3-eigrp",
+          "path": "sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc7868"
+        },
+        {
+          "materialId": "lesson:l3-eigrp",
+          "path": "professional.sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc7868"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc7868/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/16-10/configuration_guide/rtng/b_1610_rtng_9400_cg/configuring_eigrp.pdf",
+      "references": [
+        {
+          "materialId": "lesson:l3-eigrp",
+          "path": "sources.1",
+          "original": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/16-10/configuration_guide/rtng/b_1610_rtng_9400_cg/configuring_eigrp.pdf"
+        },
+        {
+          "materialId": "lesson:l3-eigrp",
+          "path": "professional.sources.1",
+          "original": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/16-10/configuration_guide/rtng/b_1610_rtng_9400_cg/configuring_eigrp.pdf"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9400/software/release/16-10/configuration_guide/rtng/b_1610_rtng_9400_cg/configuring_eigrp.pdf",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc4271",
+      "references": [
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc4271"
+        },
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "professional.sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc4271"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc4271/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc4456",
+      "references": [
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4456"
+        },
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "professional.sources.1",
+          "original": "https://www.rfc-editor.org/rfc/rfc4456"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/info/rfc4456/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html",
+      "references": [
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "sources.2",
+          "original": "https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html"
+        },
+        {
+          "materialId": "lesson:l3-bgp",
+          "path": "professional.sources.2",
+          "original": "https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://docs.haproxy.org/3.0/configuration.html",
+      "references": [
+        {
+          "materialId": "lesson:l4-lb",
+          "path": "sources.0",
+          "original": "https://docs.haproxy.org/3.0/configuration.html"
+        },
+        {
+          "materialId": "lesson:l4-lb",
+          "path": "professional.sources.0",
+          "original": "https://docs.haproxy.org/3.0/configuration.html"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://docs.haproxy.org/3.0/configuration.html",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/",
+      "references": [
+        {
+          "materialId": "lesson:l4-lb",
+          "path": "sources.1",
+          "original": "https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/"
+        },
+        {
+          "materialId": "lesson:l4-lb",
+          "path": "professional.sources.1",
+          "original": "https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.cisco.com/c/en/us/support/docs/lan-switching/etherchannel/12023-4.html",
+      "references": [
+        {
+          "materialId": "lesson:l2-stp-guard-design",
+          "path": "sources.0",
+          "original": "https://www.cisco.com/c/en/us/support/docs/lan-switching/etherchannel/12023-4.html"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.cisco.com/c/en/us/support/docs/lan-switching/etherchannel/12023-4.html",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol",
+      "references": [
+        {
+          "materialId": "lesson:ts-method",
+          "path": "sources.0",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol"
+        },
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "sources.0",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol"
+        },
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "professional.sources.0",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/useful-information/redundancy-mode/mrp/mrp-media-redundancy-protocol",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/show-information/redundancy/ring-redundancy",
+      "references": [
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "sources.1",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/show-information/redundancy/ring-redundancy"
+        },
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "professional.sources.1",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/show-information/redundancy/ring-redundancy"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/show-information/redundancy/ring-redundancy",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/configuring-layer-2-functions/vlan/port-assignment",
+      "references": [
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "sources.2",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/configuring-layer-2-functions/vlan/port-assignment"
+        },
+        {
+          "materialId": "lesson:expert-mrp-vlan-failover",
+          "path": "professional.sources.2",
+          "original": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/configuring-layer-2-functions/vlan/port-assignment"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://docs.tia.siemens.cloud/r/en-us/v20/configuring-scalance-x/w/m/configuring-scalance-x/configuring-layer-2-functions/vlan/port-assignment",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc3022.html",
+      "references": [
+        {
+          "materialId": "lesson:expert-dnat-reply-policy",
+          "path": "sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc3022.html#section-1"
+        },
+        {
+          "materialId": "lesson:expert-dnat-reply-policy",
+          "path": "professional.sources.0",
+          "original": "https://www.rfc-editor.org/rfc/rfc3022.html#section-1"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.rfc-editor.org/rfc/rfc3022.html",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/221481-8605-13.html",
+      "references": [
+        {
+          "materialId": "lesson:expert-dnat-reply-policy",
+          "path": "sources.1",
+          "original": "https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/221481-8605-13.html"
+        },
+        {
+          "materialId": "lesson:expert-dnat-reply-policy",
+          "path": "professional.sources.1",
+          "original": "https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/221481-8605-13.html"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/221481-8605-13.html",
+      "status": "REACHABLE"
+    },
+    {
+      "url": "https://www.flukenetworks.com/support/knowledge-base/multifibertm-pro/benefits-testing-two-wavelengths-multifiber-pro",
+      "references": [
+        {
+          "materialId": "lesson:expert-optical-reserve-margin",
+          "path": "sources.0",
+          "original": "https://www.flukenetworks.com/support/knowledge-base/multifibertm-pro/benefits-testing-two-wavelengths-multifiber-pro"
+        },
+        {
+          "materialId": "lesson:expert-optical-reserve-margin",
+          "path": "professional.sources.0",
+          "original": "https://www.flukenetworks.com/support/knowledge-base/multifibertm-pro/benefits-testing-two-wavelengths-multifiber-pro"
+        }
+      ],
+      "httpStatus": 200,
+      "finalUrl": "https://www.flukenetworks.com/support/knowledge-base/multifibertm-pro/benefits-testing-two-wavelengths-multifiber-pro",
+      "status": "REACHABLE"
+    }
+  ],
+  "limits": [
+    "HTTP status is not semantic relevance or validity of URL fragment.",
+    "403/429/timeouts remain UNVERIFIED, never PASS or confirmed broken."
+  ]
+}

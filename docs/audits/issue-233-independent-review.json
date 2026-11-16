@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "independent_review",
+  "author": "wifi_content",
+  "result": "REVIEW",
+  "scope": "changed-claims",
+  "materials": [
+    "lesson:l2-wifi-security-diagnostics",
+    "lesson:l12-wifi-standards-roaming",
+    "glossary:PSK", "glossary:PMK", "glossary:PMKID", "glossary:PTK",
+    "glossary:GTK", "glossary:PAKE", "glossary:RU", "glossary:MLO",
+    "glossary:PSC", "glossary:RNR", "glossary:CAC", "glossary:PHY",
+    "glossary:QAM", "glossary:EIRP", "glossary:WPA3", "glossary:4-way handshake"
+  ],
+  "acceptedClaims": [
+    "WPA2-Personal passphrase and SSID derive PSK used as PMK; passphrase is not the literal 256-bit key.",
+    "PTK is derived for the pair; GTK is distributed by the AP.",
+    "PMKID is an identifier, not a separate frame; a suitable WPA2-Personal capture can support offline guessing.",
+    "Correct SAE provides passive offline-guessing resistance and forward secrecy; WPA2 Transition connections do not inherit SAE properties.",
+    "SAE anti-clogging is computational exhaustion mitigation, not a substitute for password attempt rate limiting.",
+    "6 GHz availability depends on regulatory domain; Enhanced Open provides encryption without peer authentication.",
+    "1/6/11 is a common channel plan, not the sole plan worldwide; corporate 40 MHz use has no universal prohibition.",
+    "SNR alone does not guarantee a QAM/MCS value; 802.11k reduces discovery work and 802.11r does not guarantee a fixed roam duration.",
+    "The 14 added glossary definitions have technically appropriate expansions and relevant lesson targets."
+  ],
+  "reviewerAuthoredCorrectionsRequiringAnotherReviewer": [
+    "RADIUS certificate renewal need not change CA; account/certificate revocation does not necessarily terminate existing sessions immediately.",
+    "PMF protects robust management frames after key establishment, not every frame or radio jamming.",
+    "Useful throughput has no universal fixed percentage of PHY rate.",
+    "DHCP troubleshooting includes VLAN, relay, server, filtering and local versus controller switching.",
+    "DFS CAC and post-radar Non-Occupancy Period are distinct; CAC does not replace the typical minimum 30-minute prohibition."
+  ],
+  "criteria": {
+    "technical": "Changed claims and new definitions independently read against IEEE RSNA/DFS terminology and cited RFC 7664/8110. Reviewer-authored corrections still need root review.",
+    "beginner": "Changed claims explain password/key distinction, practical WPA3 limits and regulatory context. Whole-lesson terminology dispositions remain incomplete.",
+    "answerConsistency": "No question keys or answer options changed. Full question-bank answer correctness was not reviewed by this reviewer.",
+    "lessonRelevance": "All 14 new glossary targets match their Wi-Fi security or radio-planning topic. Exact browser navigation requires separate test evidence.",
+    "terminology": "New definitions accepted in scope; no claim that every raw candidate in both full lessons has been independently dispositioned."
+  },
+  "evidence": [
+    "src/data/glossary.ts",
+    "src/data/lessons/l2-wifi-security-diagnostics.ts",
+    "src/data/lessons/l12-wifi-standards-roaming.ts",
+    "https://www.rfc-editor.org/rfc/rfc7664",
+    "https://www.rfc-editor.org/rfc/rfc8110"
+  ],
+  "limitations": [
+    "This is scoped review evidence, not an executable whole-material PASS receipt.",
+    "No browser screenshots or full navigation proof were produced by this reviewer.",
+    "No claim of independent semantic acceptance of the whole bank or every term in these lessons."
+  ]
+}

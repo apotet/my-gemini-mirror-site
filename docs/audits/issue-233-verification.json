@@ -1,0 +1,306 @@
+{
+  "baseSHA": "7c48941f3b3fb3286e1b51ebeb4df821ae43b41e",
+  "tests": [
+    {
+      "test": "scripts/advanced-glossary.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/answer-shuffle.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/base-exam.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/beginner-exam.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/bgp-lb-applied.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-abbreviations.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-access-svi-followup.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-arguments.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-canonical-resolution.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-command-catalog.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-completion-status.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-contextual-help.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-diagnostic-hints.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-experimental-topology.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/cli-four-switch-host-ring.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-host-ping.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-ios-modes-lab.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-lesson-terms.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-operational-state.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-persistence.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-reference.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-show-diagnostic.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-show-interfaces.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-spanning-tree.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-stp-configuration.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-stp-forwarding.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-stp.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-svi-show.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-tab.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-theory-links.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-three-switch.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-topology-label-overlap.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-topology-layers.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-topology-port-details.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-trunk-allowed-ops.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-trunk-diagnostics.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-two-switch-svi.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/cli-two-switch.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/explanations-quality.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/glossary-hover.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/glossary.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/igp-applied.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/l2-security.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/learning-level-exam.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/learning-levels.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/learning-quality.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/mixed-exam.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/photo-review.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/practice-links.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/progress.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/quiz-logic.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/review-navigation.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/review.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/shared-assets.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/stp-lesson-links.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "test": "scripts/stp-questions.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/study-text.test.mjs",
+      "exitCode": 1
+    },
+    {
+      "test": "scripts/svi-lesson.test.mjs",
+      "exitCode": 0
+    }
+  ],
+  "baselineRechecks": [
+    {
+      "test": "base-exam",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "cli-experimental-topology",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "glossary",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "l2-security",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "practice-links",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "stp-questions",
+      "baselineExitCode": 1
+    },
+    {
+      "test": "study-text",
+      "baselineExitCode": 1
+    }
+  ],
+  "build": "PASS",
+  "typecheck": "PASS",
+  "realComponentNavigation": {
+    "questions": 862,
+    "result": "PASS"
+  },
+  "browser": {
+    "engine": "Chromium /usr/bin/chromium",
+    "widths": [
+      375,
+      1440
+    ],
+    "reviewMatrix": "12 fixtures × seven surfaces PASS",
+    "explanations": "both widths PASS",
+    "PSK": "actual raw WPA2-PSK heading: mobile tap, desktop hover and keyboard focus PASS",
+    "limitations": [
+      "No real iPhone Safari or WebKit run."
+    ]
+  },
+  "mutation": "ANSWER_KEY deliberate fixture exited1; stale/self/partial review and missing layers/links covered",
+  "unrelatedContentGate": "actual unchanged baseline bank PASS despite legacy backlog",
+  "currentPilotGate": "FAIL:18 whole-material independent reviews absent; no merge",
+  "rootIndependentReview": {
+    "author": "independent_review",
+    "reviewer": "root",
+    "scope": "only reviewer-authored Wi-Fi corrections",
+    "acceptedClaims": [
+      "RADIUS certificate renewal does not necessarily change CA; revoked authorization is not immediate live-session termination.",
+      "PMF robust-frame protection is scoped after key establishment and does not prevent all frame attacks or RF jamming.",
+      "No universal goodput-to-PHY percentage.",
+      "DHCP failures include VLAN/relay/server/filtering and AP/controller forwarding architecture.",
+      "DFS Channel Move Time, CAC and post-radar NOP have distinct purposes; local regulatory qualification preserved."
+    ],
+    "evidence": [
+      "src/data/lessons/l2-wifi-security-diagnostics.ts",
+      "src/data/lessons/l12-wifi-standards-roaming.ts"
+    ],
+    "wholeMaterialResult": "REVIEW"
+  }
+}

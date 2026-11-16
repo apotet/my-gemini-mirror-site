@@ -66,7 +66,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>·</span>
           <span>{lesson.difficulty}</span>
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lesson.title}</h2>
+        <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText>{lesson.title}</GlossaryText></h2>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         <FormattedExplanation text={content.summary} />
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} />

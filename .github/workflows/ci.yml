@@ -147,6 +147,7 @@ jobs:
           done
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
+          node scripts/learning-quality-browser.mjs
 
       - name: Upload coverage artifact
         if: always()
@@ -160,4 +161,5 @@ jobs:
             scripts/.cache/review-browser/*.png
             scripts/.cache/review-browser/matrix-evidence.json
             scripts/.cache/validate-summary.txt
+            scripts/.cache/quality-browser/
           if-no-files-found: ignore
