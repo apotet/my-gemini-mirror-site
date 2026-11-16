@@ -67,7 +67,9 @@ jobs:
 
       - name: Validate changes
         run: |
-          git diff --exit-code -- .github/workflows .github/actions || { echo "Workflow edits are forbidden"; exit 1; }
+          if [ -n "$(git status --porcelain -- .github)" ]; then
+            echo "Changes under .github are forbidden"; exit 1
+          fi
           npm ci --no-fund --no-audit
           npm run validate:questions
           npm run lint
@@ -85,8 +87,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          if git diff --cached --name-only | grep -E '(^|/)\.github/|(^|/)\.env|\.(pem|key) -m "Gemini: implement issue #${ISSUE_NUMBER}"
+          gh auth setup-git
+          git push origin HEAD
+          gh pr create --base main --head "$(git branch --show-current)" \
+            --title "Gemini: #${ISSUE_NUMBER} — ${ISSUE_TITLE}" \
+            --body "Automated draft from #${ISSUE_NUMBER}. Requires independent review before merging. Staging only." \
+            --draft
+; then
+            echo "Protected paths in staged changes"; exit 1
+          fi
           git commit -m "Gemini: implement issue #${ISSUE_NUMBER}"
-          git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push origin HEAD
+          gh auth setup-git
+          git push origin HEAD
           gh pr create --base main --head "$(git branch --show-current)" \
             --title "Gemini: #${ISSUE_NUMBER} — ${ISSUE_TITLE}" \
             --body "Automated draft from #${ISSUE_NUMBER}. Requires independent review before merging. Staging only." \
