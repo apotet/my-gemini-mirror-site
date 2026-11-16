@@ -9,6 +9,8 @@ export const LESSON_OSI_PDU: Lesson = {
     "L2",
     "L3",
     "L4",
+    "L5",
+    "L6",
     "L7"
   ],
   "difficulty": "beginner",
@@ -48,6 +50,10 @@ export const LESSON_OSI_PDU: Lesson = {
     }
   ],
   "relatedQuestionIds": [
+    "l5-01",
+    "l6-02",
+    "gen-osi-a-9",
+    "gen-osi-a-12",
     "l3-01",
     "l3-14",
     "l4-01",
