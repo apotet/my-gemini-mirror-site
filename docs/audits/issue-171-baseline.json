@@ -209,7 +209,7 @@
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
-    "src/data/glossary.ts": "0997460221ef83cad88a8ee74eec91aa4e3697a17a1f111629cae83e949d2de0",
+    "src/data/glossary.ts": "ed954b381f32a5f512a0af1503677cd4defaaeee736da8b55358e4dbc941b300",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
