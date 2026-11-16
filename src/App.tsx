@@ -110,9 +110,8 @@ export function App() {
   };
 
   const handleNavigateToIpv4 = (prefix?: number, mode?: 'calc' | 'trainer') => {
-    if (prefix) setIpv4InitialPrefix(prefix);
-    if (mode === 'calc') setIpv4InitialSubTab('calculator');
-    else if (mode === 'trainer') setIpv4InitialSubTab('practice');
+    setIpv4InitialPrefix(prefix);
+    setIpv4InitialSubTab(mode === 'calc' ? 'calculator' : mode === 'trainer' ? 'practice' : undefined);
     setActiveTab('ipv4');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -131,7 +130,7 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView onOpenPractice={handleOpenPractice} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+          <ExamView onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
             setActiveTab('theory');
@@ -162,7 +161,7 @@ export function App() {
         )}
         {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'} initialPracticeLink={practiceRequest?.link} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
-        {activeTab === 'exam-mock' && <MockTestingHub />}
+        {activeTab === 'exam-mock' && <MockTestingHub onNavigateToTheory={handleNavigateToTheory} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} />}
       </main>
 
       <MobileTabBar

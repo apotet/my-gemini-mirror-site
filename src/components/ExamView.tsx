@@ -1,4 +1,4 @@
-import type { PracticeLink } from '../data/practiceLinks';
+import { EngineeringReview, type ExplanationNavigation } from './EngineeringReview';
 import React, { useState, useEffect, useCallback, useRef, useImperativeHandle } from 'react';
 import {
   Question,
@@ -53,16 +53,14 @@ export interface ExamViewHandle {
   returnToParameters: () => void;
 }
 
-interface ExamViewProps {
-  onOpenPractice?: (link: PracticeLink) => void;
+interface ExamViewProps extends ExplanationNavigation {
   ref?: React.Ref<ExamViewHandle>;
   soundEnabled: boolean;
   onNavigateToLearning?: () => void;
-  onNavigateToTheory?: (questionId: string) => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning, onOpenPractice }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToLearning, ...navigation }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExamDifficulty>('beginner');
@@ -345,7 +343,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
 
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <><ExamReview onOpenPractice={onOpenPractice} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => retryAttempt(reviewSession)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
+    return <><ExamReview {...navigation} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => retryAttempt(reviewSession)} />{replacementDialog}</>;
   }
 
   if (showParameters || !session || !currentQuestion) {
@@ -495,7 +493,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }
 
   if (session.isCompleted) {
-    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview onOpenPractice={onOpenPractice} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => retryAttempt(session)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</div>;
+    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview {...navigation} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => retryAttempt(session)} />{replacementDialog}</div>;
   }
 
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;
@@ -543,8 +541,8 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
             );
           })}
         </div>
-        {isAnswerSubmitted && session.feedbackMode === 'instant' && currentQuestion.explanation && (
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300">{currentQuestion.explanation}</div>
+        {isAnswerSubmitted && session.feedbackMode === 'instant' && (
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300"><EngineeringReview key={currentQuestion.id} question={currentQuestion} {...navigation} /></div>
         )}
         <div className="flex flex-wrap gap-2 pt-2">
           {!isAnswerSubmitted ? (
