@@ -130,6 +130,9 @@ jobs:
       - name: Quiz logic unit tests
         run: npm run test:logic
 
+      - name: Explanations quality
+        run: npm run test:explanations
+
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
