@@ -1,3 +1,4 @@
+import { ipv4CalculationPrefix } from '../ipv4ExplanationPractice';
 import { WIFI_CASES } from '../wifiCases';
 import { EXPERT_CASES_225 } from '../expertCases225';
 import { LESSON_L12_WIFI_STANDARDS_ROAMING } from './l12-wifi-standards-roaming';
@@ -76,7 +77,9 @@ export function getLesson(id: string): Lesson | undefined {
 }
 
 export function getLessonForQuestion(questionId: string): Lesson | undefined {
-  return LESSONS.find((l) => l.relatedQuestionIds.includes(questionId));
+  const related = LESSONS.find((l) => l.relatedQuestionIds.includes(questionId));
+  if (related || ipv4CalculationPrefix(questionId) === undefined) return related;
+  return getLesson(questionId.startsWith('gen-mask-') || questionId === 'l3-06' ? 'l3-masks' : 'l3-subnets');
 }
 
 export function searchLessons(query: string, layer?: string): Lesson[] {

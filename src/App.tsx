@@ -88,6 +88,7 @@ export function App() {
   };
 
   const handleTabChange = (tab: NavTab) => {
+    if (tab === 'ipv6') setIpv6InitialMode(undefined);
     if (tab === 'practice') setPracticeRequest(null);
     if (tab === 'exam' && activeTab === 'exam') examViewRef.current?.returnToParameters();
     setActiveTab(tab);
@@ -104,7 +105,9 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavigateToIpv6 = () => {
+  const [ipv6InitialMode, setIpv6InitialMode] = useState<'concept' | 'type'>();
+  const handleNavigateToIpv6 = (mode: 'concept' | 'type') => {
+    setIpv6InitialMode(mode);
     setActiveTab('ipv6');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -151,7 +154,7 @@ export function App() {
             }}
           />
         )}
-        {activeTab === 'ipv6' && <Ipv6Trainer />}
+        {activeTab === 'ipv6' && <Ipv6Trainer key={ipv6InitialMode} initialMode={ipv6InitialMode} />}
         {activeTab === 'ipv4' && (
           <Ipv4Trainer
             soundEnabled={soundEnabled}
@@ -173,7 +176,8 @@ export function App() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
-          if (tab === 'practice') setPracticeRequest(null);
+          if (tab === 'ipv6') setIpv6InitialMode(undefined);
+    if (tab === 'practice') setPracticeRequest(null);
           setActiveTab(tab);
           if (tab !== 'theory') {
             setTheoryQuestionId(null);

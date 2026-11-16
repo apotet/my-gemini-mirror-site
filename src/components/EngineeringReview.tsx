@@ -12,20 +12,21 @@ export interface ExplanationNavigation {
   onNavigateToTheory?: (questionId: string) => void;
   onOpenPractice?: (link: PracticeLink) => void;
   onNavigateToIpv4?: (prefix?: number, mode?: 'calc' | 'trainer') => void;
-  onNavigateToIpv6?: () => void;
+  onNavigateToIpv6?: (mode: NonNullable<QuestionDeepDive['ipv6Practice']>['targetMode']) => void;
 }
 
 export function ExplanationPractice({ deep, onOpenPractice, onNavigateToIpv4, onNavigateToIpv6 }:
   ExplanationNavigation & { deep: QuestionDeepDive }) {
   const ipv4 = deep.ipv4Practice;
-  if (!(deep.practiceLink && onOpenPractice || ipv4?.enabled && onNavigateToIpv4 || deep.ipv6Practice?.enabled && onNavigateToIpv6)) return null;
+  const ipv6 = deep.ipv6Practice;
+  if (!(deep.practiceLink && onOpenPractice || ipv4?.enabled && onNavigateToIpv4 || ipv6 && onNavigateToIpv6)) return null;
   const buttonClass = 'inline-flex min-h-9 items-center rounded-lg border border-cyan-500/40 px-3 py-2 text-sm font-bold text-cyan-700 dark:text-cyan-300';
   return <div className="flex flex-wrap gap-2">
     <PracticeLinkButton link={deep.practiceLink} onOpenPractice={onOpenPractice} />
     {ipv4?.enabled && onNavigateToIpv4 && <button type="button" className={buttonClass}
       onClick={() => onNavigateToIpv4(ipv4.targetPrefix, ipv4.targetMode)}>Открыть IPv4-тренажёр</button>}
-    {deep.ipv6Practice?.enabled && onNavigateToIpv6 && <button type="button" className={buttonClass}
-      onClick={onNavigateToIpv6}>Открыть IPv6-тренажёр</button>}
+    {ipv6 && onNavigateToIpv6 && <button type="button" className={buttonClass}
+      onClick={() => onNavigateToIpv6(ipv6.targetMode)}>Открыть IPv6-тренажёр</button>}
   </div>;
 }
 
@@ -51,6 +52,7 @@ export function EngineeringReview({ question, ...navigation }: ExplanationNaviga
     </details>}
     {lesson && <button type="button"
       className="inline-flex min-h-9 flex-wrap items-center gap-x-2 rounded-lg border border-cyan-500/40 px-3 py-2 text-sm font-bold text-cyan-700 dark:text-cyan-300"
+      aria-label={`Разобрать подробнее: ${lesson.title}`}
       onClick={() => navigation.onNavigateToTheory?.(question.id)}>
       <BookOpen size={16} aria-hidden="true" />
       <span>Разобрать подробнее</span><span className="text-xs font-medium">{lesson.title}</span>

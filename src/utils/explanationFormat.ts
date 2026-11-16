@@ -1,8 +1,14 @@
+export function explanationText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  return !text || /RESTORED_FULL_CONTENT|UPDATED_CONTENT|FULL_FILE_CONTENT_WILL_BE_INCLUDED|^(?:TODO|TBD|undefined|null)$/i.test(text) ? null : text;
+}
+
 export type ExplanationBlock =
   | { kind: 'paragraph' | 'code'; text: string }
   | { kind: 'list'; ordered: boolean; start: number; items: string[] };
 
-const command = /^(?:\$ |(?:[\w.-]+(?:\([\w-]+\))?)[#>]\s|(?:sudo\s+)?(?:ss|netstat|ping6?|traceroute6?|tracert|ethtool|dig|ipconfig|tcpdump|nslookup|curl|show|display|arp)\s+(?:-\S|[a-z0-9][a-z0-9.:/-]*)(?:\s|$)|(?:sudo\s+)?ip\s+(?:-\S+\s+)?(?:addr(?:ess)?|neigh|route|rule|link)\b)/;
+const command = /^(?:\$ |(?:[\w.-]+(?:\([\w-]+\))?)[#>]\s|(?:sudo\s+)?(?:ss|netstat|ping6?|traceroute6?|tracert|ethtool|dig|ipconfig|tcpdump|nslookup|curl|show|display|arp)\s+(?:-\S+|[a-z0-9][a-z0-9.:/-]*)(?:\s|$)|(?:sudo\s+)?ip\s+(?:-\S+\s+)?(?:addr(?:ess)?|neigh|route|rule|link)\b)/;
 const terminalOutput = /^(?:(?:LISTEN|UNCONN|ESTAB|ESTABLISHED|SYN-SENT|TIME-WAIT)[ \t]+\d|(?:State|Netid|Proto)\s+.*(?:Recv-Q|Local Address)|(?:default|[\da-f.:]+\/\d{1,3})\s+(?:via|dev)\s|\d+\s+from\s+(?:all|[\da-f.:/]+)\s+lookup\s|(?:PING|Reply from|Ответ от)\s|\d+ bytes from\s)/i;
 
 export function formatExplanation(text: string): ExplanationBlock[] {

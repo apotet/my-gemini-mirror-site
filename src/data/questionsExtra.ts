@@ -552,7 +552,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'show ip interface brief на Cisco полезен, чтобы…',
     answers: ['Увидеть статус интерфейсов и IP', 'Показать всю running-config ACL', 'Вывести MAC-таблицу целиком', 'Запустить traceroute'],
     correct: [0],
-    explanation: 'ip addr (или ifconfig) показывает административный и операционный статус интерфейса, IP-адреса и маски. Позволяет быстро проверить, поднят ли интерфейс и какой адрес назначен.',
+    explanation: 'В Cisco IOS команда показывает IPv4-адрес, состояние интерфейса (Status) и линейного протокола (Protocol). Маска подсети в краткий вывод не входит.',
     difficulty: 'beginner',
   },
   {
@@ -625,7 +625,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'ss -tulpn или netstat -tulpn показывают…',
     answers: ['Слушающие сокеты и процессы', 'Только ARP-кэш', 'Только optical dBm', 'Только STP port roles'],
     correct: [0],
-    explanation: 'Команды ss -tulpn и netstat -tulpn показывают слушающие (LISTEN) TCP/UDP-сокеты и связанные с ними процессы (PID/имя). Это позволяет проверить, действительно ли сервис открыл нужный порт локально.',
+    explanation: 'Команды показывают TCP-сокеты в LISTEN и UDP-сокеты, ожидающие датаграммы. Флаг -p показывает процесс, если хватает прав. Локальный сокет позволяет проверить адрес и порт привязки сервиса.',
     difficulty: 'beginner',
   },
   {

@@ -27,7 +27,7 @@ interface Props {
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
-  onNavigateToIpv6: () => void;
+  onNavigateToIpv6: (mode: 'concept' | 'type') => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
   onOpenLesson?: (lessonId: string, fromQuestionId?: string) => void;
