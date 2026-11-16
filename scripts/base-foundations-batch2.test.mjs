@@ -41,7 +41,7 @@ for (const [id, expectedLesson] of Object.entries(expected)) {
   assert.equal(dive.hasIndividualDeep, true, id + ': individual explanation');
   assert.ok(dive.briefAnswer.length > 20, id + ': specific why');
   assert.ok(dive.deepAnalysis.length > 150, id + ': meaningful plain explanation');
-  assert.ok(dive.deepAnalysis.split(/\\n\\s*\\n/).length >= 3, id + ': plain mechanism in paragraphs');
+  assert.ok(dive.deepAnalysis.split(/\n\s*\n/).length >= 3, id + ': plain mechanism in paragraphs');
   assert.ok(dive.pro?.length > 150, id + ': substantial professional explanation');
   assert.equal(dive.professional?.deep, dive.pro, id + ': active pro resolver');
   assert.notEqual(dive.pro, dive.deepAnalysis, id + ': independent layers');
