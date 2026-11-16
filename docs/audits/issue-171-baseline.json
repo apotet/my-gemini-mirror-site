@@ -278,7 +278,7 @@
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
     "src/data/questions.json": "cd10f9a74bf58e68721378bd55b07b47e338e052c20ef147c4e0fe4d15c9fa62",
     "src/data/questionsData.ts": "9c5494e3dbbfdc9c97f04028fca59594d11d80d92b835c343c1976a6c9c8d189",
-    "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
+    "src/data/questionsExtra.ts": "560aaa4ebb5b8bcf27a2433b57eadab1e121be11bed2b81c862edd590fdf8c2a",
     "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
     "src/data/wifiCases.ts": "47ea9c62898a4bc0e57fec250c10fb6d3df151c269974b97bfe78bdc7a79996b",
