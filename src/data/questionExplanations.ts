@@ -76,6 +76,55 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     deep: "Команда выводит default gateway, сети, метрики и интерфейсы. При проблемах с удалёнными сетями сначала смотрят, есть ли маршрут и какой шлюз выбран.\n\nПример: ip route show default\n\nОтсутствие маршрута или неправильный gateway — частая причина недоступности.",
     trap: "Путать таблицу хоста с таблицей маршрутизатора.",
   },
+  'l3-04': {
+    brief: "Префикс /0 соответствует default route и совпадает с любым IPv4-адресом.",
+    deep: "Маршрут 0.0.0.0/0 (default) используется, когда нет более конкретного совпадения в таблице маршрутизации. LPM выбирает самый длинный префикс; /0 — самый короткий и срабатывает последним.\n\nДля передачи пакета маршрутизатор должен определить выходной интерфейс и способ доставки до next-hop. Если next-hop находится в непосредственно подключённой сети, используется соответствующий интерфейс; иначе маршрут к next-hop может определяться рекурсивным поиском. Тип маршрута (например, статический) — отдельное понятие.",
+    trap: "Считать /0 обычной сетью, а не запасным маршрутом.",
+    practiceLink: "cli-gateway",
+    professional: {
+      brief: "Default route 0.0.0.0/0 — наименее специфичный маршрут, срабатывает по LPM только при отсутствии более длинного префикса.",
+      deep: "Longest Prefix Match: маршрутизатор выбирает запись с наибольшей длиной префикса. /0 имеет нулевую длину и используется только если нет better match.\n\nNext-hop resolution: адрес следующего узла должен разрешаться в выходной интерфейс — через непосредственно подключённую сеть или рекурсивный поиск маршрута к next-hop. Тип маршрута (static/connected/dynamic) не является способом разрешения next-hop.\n\nCisco IOS:\n```text\nip route 0.0.0.0 0.0.0.0 192.0.2.1\nshow ip route\n```\n\nLinux:\n```text\nip route add default via 192.0.2.1\nip route\n```\n\nАдреса примеров заменяются на адрес реального шлюза; выходной интерфейс и доступность next-hop необходимо проверить.",
+    },
+  },
+  'l3-13': {
+    brief: "Ping использует ICMP Echo Request/Reply для проверки достижимости.",
+    deep: "ICMPv4: Echo Request тип 8, Echo Reply тип 0. ICMPv6: Echo Request 128, Echo Reply 129.\n\nУспех подтверждает L3-достижимость и что ICMP не фильтруется. Ping не проверяет работу приложений на портах TCP/UDP.",
+    trap: "Интерпретировать отсутствие ответа как полную недоступность хоста.",
+    practiceLink: "packet",
+    professional: {
+      brief: "Успешный ping подтверждает только IP-достижимость и прохождение ICMP; не доказывает работу сервисов.",
+      deep: "ICMPv4: 8/0. ICMPv6: 128/129. Фильтрация ICMP даёт timeout без потери хоста.\n\nКоманды: ping, ping6. Для сервисов: telnet, nc, curl.",
+    },
+  },
+  'l3-14': {
+    brief: "TTL уменьшается на каждом маршрутизаторе; при 0 пакет отбрасывается.",
+    deep: "Каждый hop уменьшает TTL на ≥1. При достижении 0 маршрутизатор отбрасывает пакет и обычно посылает ICMP Time Exceeded (тип 11). Исключения: некоторые устройства могут не генерировать ICMP.\n\nTraceroute использует это поведение. Это не DNS TTL.",
+    trap: "Путать IP TTL с DNS TTL или TCP window.",
+    practiceLink: "packet",
+    professional: {
+      brief: "TTL — hop limit; при 0 генерируется ICMP Time Exceeded (тип 11), если не запрещено.",
+      deep: "IPv4 TTL (RFC 791). Каждый маршрутизатор уменьшает на ≥1. При 0 — discard + ICMP Time Exceeded (если разрешено).\n\nTraceroute: TTL=1,2,3… собирает Time Exceeded. Не путать с DNS TTL.",
+    },
+  },
+  'l4-01': {
+    brief: "TCP использует термин сегмент, UDP — датаграмма.",
+    deep: "На транспортном уровне единица TCP называется сегментом, единица UDP — датаграммой. Пример: SYN/ACK — поля Sequence, Acknowledgment, Flags в TCP-сегменте.\n\nИнкапсуляция: сегмент/датаграмма помещается в IP-пакет, затем в кадр.",
+    trap: "Называть TCP-единицу пакетом или кадром.",
+    practiceLink: "tcp",
+    professional: {
+      brief: "PDU: TCP segment, UDP datagram; оба инкапсулируются в IP packet.",
+      deep: "OSI/TCP-IP terminology: Transport PDU для TCP — segment, для UDP — datagram. IP layer — packet/datagram. Link — frame.\n\nSYN/ACK: Sequence Number, Acknowledgment Number, SYN/ACK flags. Не путать с application-layer message.",
+    },
+  },
+  'tcp-01': {
+    brief: "Internet layer TCP/IP соответствует Network layer OSI и отвечает за IP-маршрутизацию.",
+    deep: "В TCP/IP Internet layer выполняет функции, которые в OSI относятся к Network: адресация IP, маршрутизация, фрагментация. Транспорт (TCP/UDP) — отдельный слой выше.",
+    trap: "Приписывать IP функции транспортного уровня.",
+    professional: {
+      brief: "Internet layer ≈ OSI Network, но модели не тождественны один-к-одному.",
+      deep: "TCP/IP Internet: IP, ICMP, routing. OSI Network: logical addressing, routing, congestion control. Session/Presentation в TCP/IP часто входят в Application.\n\nНе утверждать полного тождества уровней.",
+    },
+  },
   'ts-x13': {
     brief: "Сначала фиксируют симптомы и baseline, затем меняют конфигурацию.",
     deep: "Правило предотвращает «лечение» наугад. Записывают текущие симптомы, вывод команд и состояние до изменений. После правки сравнивают с baseline.\n\nЭто позволяет понять, помогло изменение или нет, и безопасно откатываться.",
