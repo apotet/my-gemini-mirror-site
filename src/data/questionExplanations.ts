@@ -80,26 +80,46 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     brief: "Префикс /0 соответствует default route и совпадает с любым IPv4-адресом.",
     deep: "Маршрут 0.0.0.0/0 (default) используется, когда нет более конкретного совпадения в таблице маршрутизации. LPM выбирает самый длинный префикс; /0 — самый короткий и срабатывает последним.\n\nЭто не означает, что пакет всегда уйдёт в интернет: шлюз default должен быть достижим.",
     trap: "Считать /0 обычной сетью, а не запасным маршрутом.",
+    professional: {
+      brief: "Default route 0.0.0.0/0 — наименее специфичный маршрут, срабатывает по LPM только при отсутствии более длинного префикса.",
+      deep: "Longest Prefix Match: маршрутизатор выбирает запись с наибольшей длиной префикса. /0 имеет нулевую длину и используется только если нет better match.\n\nУсловия: next-hop должен быть разрешён (connected, recursive или static). Default не заменяет более специфичные маршруты.\n\nДиагностика: ip route, show ip route, traceroute.",
+    },
   },
   'l3-13': {
     brief: "Ping использует ICMP Echo Request/Reply для проверки достижимости.",
     deep: "ICMP Echo Request (тип 8) отправляется на цель, которая отвечает Echo Reply (тип 0). Успех подтверждает L3-достижимость и что ICMP не фильтруется на пути.\n\nPing не проверяет работу приложений на портах TCP/UDP.",
     trap: "Интерпретировать отсутствие ответа как полную недоступность хоста.",
+    professional: {
+      brief: "Успешный ping подтверждает только IP-достижимость и прохождение ICMP; не доказывает работу сервисов.",
+      deep: "Типы: Echo Request = 8, Echo Reply = 0. Фильтрация ICMP на промежуточных узлах или на цели даёт timeout без потери самого хоста.\n\nКоманды: ping, ping -c, traceroute. Для сервисов нужны TCP/UDP проверки (telnet, nc, curl).",
+    },
   },
   'l3-14': {
     brief: "TTL уменьшается на каждом маршрутизаторе; при 0 пакет отбрасывается.",
     deep: "Каждый hop уменьшает TTL на 1. При достижении 0 маршрутизатор отбрасывает пакет и обычно посылает ICMP Time Exceeded. Это защищает от петель.\n\nTraceroute использует это поведение, постепенно увеличивая TTL.",
     trap: "Путать TTL с Time to Live в секундах или с TCP window.",
+    professional: {
+      brief: "TTL — hop limit; при 0 генерируется ICMP Time Exceeded (тип 11).",
+      deep: "IPv4 TTL (RFC 791). Каждый маршрутизатор уменьшает на ≥1. При 0 — discard + ICMP Time Exceeded.\n\nTraceroute: отправляет с TTL=1,2,3… и собирает ответы Time Exceeded от промежуточных узлов.",
+    },
   },
   'l4-01': {
     brief: "TCP использует термин сегмент, UDP — датаграмма.",
     deep: "На транспортном уровне единица TCP называется сегментом, единица UDP — датаграммой. Это терминология модели, а не различие в размере.\n\nИнкапсуляция: сегмент/датаграмма помещается в IP-пакет, затем в кадр.",
     trap: "Называть TCP-единицу пакетом или кадром.",
+    professional: {
+      brief: "PDU: TCP segment, UDP datagram; оба инкапсулируются в IP packet.",
+      deep: "OSI/TCP-IP terminology: Transport PDU для TCP — segment, для UDP — datagram. IP layer — packet/datagram. Link — frame.\n\nНе путать с application-layer message или с Ethernet frame.",
+    },
   },
   'tcp-01': {
     brief: "Internet layer TCP/IP соответствует Network layer OSI и отвечает за IP-маршрутизацию.",
     deep: "В TCP/IP Internet layer выполняет функции, которые в OSI относятся к Network: адресация IP, маршрутизация, фрагментация. Транспорт (TCP/UDP) — отдельный слой выше.",
     trap: "Приписывать IP функции транспортного уровня.",
+    professional: {
+      brief: "Internet layer ≈ OSI Network, но модели не тождественны один-к-одному.",
+      deep: "TCP/IP Internet: IP, ICMP, routing. OSI Network: logical addressing, routing, congestion control. Session/Presentation в TCP/IP часто входят в Application.\n\nНе утверждать полного тождества уровней.",
+    },
   },
   'ts-x13': {
     brief: "Сначала фиксируют симптомы и baseline, затем меняют конфигурацию.",
