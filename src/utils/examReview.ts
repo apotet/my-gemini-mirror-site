@@ -1,3 +1,5 @@
+import { explanationText } from './explanationFormat';
+export { explanationText } from './explanationFormat';
 import type { ProgressSession } from './examProgress';
 import { answerCorrect, hasValidTrialTiming } from './examProgress';
 import { getLessonForQuestion } from '../data/lessons';
@@ -5,11 +7,6 @@ import { isLearningLevel } from '../types/learningLevel';
 
 export const LAST_REVIEW_KEY = 'osi_last_exam_review_v1';
 export type ReviewFilter = 'all' | 'wrong' | 'correct';
-export function explanationText(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const text = value.trim();
-  return !text || /RESTORED_FULL_CONTENT|UPDATED_CONTENT|FULL_FILE_CONTENT_WILL_BE_INCLUDED|^(?:TODO|TBD|undefined|null)$/i.test(text) ? null : text;
-}
 /** Read-only projection of the saved attempt, never of a newly sampled bank. */
 export function reviewRows(session: ProgressSession) {
   if (!session.isCompleted) return [];

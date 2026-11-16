@@ -1,4 +1,5 @@
-import { PracticeLinkButton } from './PracticeLinkButton';
+import { ExplanationPractice } from './EngineeringReview';
+import { FormattedExplanation } from './FormattedExplanation';
 import type { PracticeLink } from '../data/practiceLinks';
 import { GlossaryText } from './GlossaryText';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +27,7 @@ interface Props {
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
-  onNavigateToIpv6: () => void;
+  onNavigateToIpv6: (mode: 'concept' | 'type') => void;
   onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
   onClearInitialQuestion?: () => void;
   onOpenLesson?: (lessonId: string, fromQuestionId?: string) => void;
@@ -150,12 +151,9 @@ export const TheoryRazbory: React.FC<Props> = ({
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line break-words">
-            <GlossaryText key={textMode} enabled={!professional || deep.glossaryInProfessional}>{brief}</GlossaryText>
-          </p>
+          <FormattedExplanation text={brief} />
         </div>
 
-        <PracticeLinkButton link={deep.practiceLink} onOpenPractice={onOpenPractice} />
 
         {(isAdvanced || deep.engineeringDeep || deep.deepAnalysis) && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -178,9 +176,7 @@ export const TheoryRazbory: React.FC<Props> = ({
               <div className="px-4 pb-4 space-y-3 border-t border-slate-200 dark:border-slate-800">
                 {deep.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
                 {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words pt-3">
-                  <GlossaryText key={textMode} enabled={!professional || deep.glossaryInProfessional}>{engineering}</GlossaryText>
-                </p>
+                <FormattedExplanation text={engineering} />
                 {nextStudy && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {nextStudy}</p>
                 )}
@@ -230,24 +226,8 @@ export const TheoryRazbory: React.FC<Props> = ({
           </div>
         )}
 
-        {deep.ipv4Practice?.enabled && (
-          <button
-            type="button"
-            onClick={() => onNavigateToIpv4(deep.ipv4Practice?.targetPrefix, deep.ipv4Practice?.targetMode)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold cursor-pointer"
-          >
-            Открыть IPv4-тренажёр
-          </button>
-        )}
-        {deep.ipv6Practice?.enabled && (
-          <button
-            type="button"
-            onClick={onNavigateToIpv6}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold cursor-pointer"
-          >
-            Открыть IPv6-тренажёр
-          </button>
-        )}
+        <ExplanationPractice deep={deep} onOpenPractice={onOpenPractice}
+          onNavigateToIpv4={onNavigateToIpv4} onNavigateToIpv6={onNavigateToIpv6} />
       </div>
     );
   };

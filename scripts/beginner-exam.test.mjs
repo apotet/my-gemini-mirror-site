@@ -18,8 +18,12 @@ const family = q => q.family || q.id;
 const bankBefore = JSON.stringify(ALL_QUESTIONS);
 const quality = before.questionQualityUpdate;
 const combinedPack = before.expertPack177;
-const bankBeforeExpert = ALL_QUESTIONS.filter(q => !q.id.startsWith('expert177-'));
-assert.equal(hash(ALL_QUESTIONS), combinedPack.bankSHA256, 'bank includes Expert #177 and #225');
+const explanationQuality = before.explanationQuality228;
+assert.equal(hash(ALL_QUESTIONS), explanationQuality.bankSHA256, 'bank includes only the approved explanation edits');
+const priorBank = ALL_QUESTIONS.map(q => Object.hasOwn(explanationQuality.priorExplanations, q.id)
+  ? { ...q, explanation: explanationQuality.priorExplanations[q.id] } : q);
+assert.equal(hash(priorBank), combinedPack.bankSHA256, 'other bank content, all answers and difficulties are unchanged');
+const bankBeforeExpert = priorBank.filter(q => !q.id.startsWith('expert177-'));
 assert.equal(hash(bankBeforeExpert), before.expertPack225.bankSHA256, 'the prior staging bank is intact');
 assert.equal(hash(bankBeforeExpert.filter(q => !q.id.startsWith('diag177-') && !q.id.startsWith('mon-') && !q.id.startsWith('wifi-') && !q.id.startsWith('exp225-'))), quality.bankSHA256,
   'all questions from the previous revision keep their content and order');

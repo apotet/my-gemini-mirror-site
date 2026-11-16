@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -132,6 +132,17 @@ jobs:
 
       - name: Explanations quality
         run: npm run test:explanations
+
+      - name: Responsive explanation flows
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/explanations.browser.mjs
 
       - name: Upload coverage artifact
         if: always()

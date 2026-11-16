@@ -1,3 +1,5 @@
+import { explanationText } from '../utils/explanationFormat';
+import { explainGeneratedMask, ipv4CalculationPrefix } from './ipv4ExplanationPractice';
 import { EXPERT_CASES_177 } from './expertCases177';
 import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
 import { MONITORING_CASES } from './monitoringCases';
@@ -34,7 +36,7 @@ export interface QuestionDeepDive {
     targetPrefix?: number;
     targetMode?: 'calc' | 'trainer';
   };
-  ipv6Practice?: { enabled: boolean };
+  ipv6Practice?: { targetMode: 'concept' | 'type' };
   keyTakeaways: string[];
   nextStudy?: string;
 }
@@ -78,9 +80,43 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     deep: "Правило предотвращает «лечение» наугад. Записывают текущие симптомы, вывод команд и состояние до изменений. После правки сравнивают с baseline.\n\nЭто позволяет понять, помогло изменение или нет, и безопасно откатываться.",
     trap: "Менять несколько вещей сразу без фиксации исходного состояния.",
   },
+  'ts-x05': {
+    brief: 'В Cisco IOS команда показывает IP-адрес и два состояния на одной строке: интерфейс и его линейный протокол.',
+    deep: `Начни с краткого обзора, чтобы выбрать интерфейс для дальнейшей проверки:
+
+\`\`\`text
+SW1# show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+Vlan10                 192.0.2.1       YES manual up                    up
+GigabitEthernet0/1     unassigned      YES unset  administratively down down
+\`\`\`
+
+- \`IP-Address\` показывает IPv4-адрес. \`unassigned\` означает, что адрес не назначен.
+- \`Status\` показывает состояние интерфейса, включая административное выключение. \`Protocol\` показывает состояние линейного протокола.
+- Для маски и параметров IPv4 используй \`show ip interface vlan 10\`. Для счётчиков и подробностей порта — \`show interfaces GigabitEthernet0/1\`.`,
+    trap: 'В кратком выводе нет маски подсети. На L2-порту отсутствие IP-адреса может быть нормой.',
+  },
   'ts-x12': {
-    brief: "ss -tulpn и netstat -tulpn показывают слушающие TCP/UDP-сокеты и процессы, которые их открыли.",
-    deep: "Команды ss -tulpn и netstat -tulpn выводят локальные сокеты в состоянии LISTEN (и UDP) вместе с PID и именем процесса.\n\nКлючи:\n-t — TCP\n-u — UDP\n-l — только слушающие\n-p — процесс (нужны права)\n-n — числовые адреса и порты\n\nПример вывода (упрощённо):\nLISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:((\"sshd\",pid=1234,fd=3))\n\nЭто подтверждает, что сервис открыл порт локально. Это не доказывает, что порт доступен извне (firewall, NAT, binding на 127.0.0.1).\n\nНеправильные варианты: ARP-кэш смотрит ip neigh / arp -n; оптический уровень — show interface transceiver; STP — show spanning-tree.",
+    brief: 'TCP в состоянии LISTEN и UDP-сокеты, ожидающие датаграммы, показывают, на каких локальных адресах и портах сервис принимает трафик.',
+    deep: `Начни с команды:
+
+\`\`\`sh
+ss -tulpn
+\`\`\`
+
+- -t выбирает TCP, -u добавляет UDP.
+- -l оставляет принимающие сокеты: в выводе \`ss\` у TCP это \`LISTEN\`, у UDP обычно \`UNCONN\`.
+- -p показывает PID и имя процесса, если хватает прав. -n печатает числовые адреса и порты.
+
+Сокращённый вывод \`ss\`:
+
+\`\`\`text
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:Port  Process
+tcp   LISTEN 0      128    0.0.0.0:22          0.0.0.0:*         users:(("sshd",pid=1234,fd=3))
+udp   UNCONN 0      0      127.0.0.1:53        0.0.0.0:*
+\`\`\`
+
+По адресу \`0.0.0.0:22\` видно, что SSH принимает соединения на всех локальных IPv4-адресах. UDP на \`127.0.0.1:53\` принимает пакеты только через loopback. Чтобы проверить доступность из сети, проверь подключение с клиента и правила межсетевого экрана.`,
     trap: "Путать локальный LISTEN с доступностью порта из сети.",
   },
   'l12-d03': {
@@ -126,9 +162,10 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
     }
   },
   'l3-d02': {
-    brief: '192.168.5.64/27 → блок 64–95, broadcast 192.168.5.95.',
-    deep: `/27 = шаг 32. Подсети …0, 32, 64, 96…
-Диапазон 64–95: network 64, hosts 65–94, broadcast 95.`,
+    brief: 'В /27 остаётся 5 битов для адресов, поэтому блок из 32 адресов начинается с .64 и заканчивается на .95. Последний адрес — broadcast.',
+    deep: `1. Вычти длину префикса из 32: 32 − 27 = 5 битов. Размер блока равен 2⁵ = 32.
+2. Следующая сеть после 192.168.5.64 начинается с .64 + 32 = .96. Предыдущий адрес .95 завершает текущий блок.
+3. .64 — адрес сети, .65–.94 — адреса узлов, .95 — широковещательный адрес.`,
   },
   'l3-d03': {
     brief: 'Longest prefix match: /25 побеждает /24; metric сравнивают при равной специфичности.',
@@ -585,15 +622,16 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const category = detectCategory(question);
   const correctText = question.correct.map((idx) => question.answers[idx]).join('; ');
   const historical = PREVIOUS_DIAGNOSTIC_QUESTIONS[question.id]?.text === question.text;
-  const individual = historical ? HISTORICAL_DIAGNOSTIC_DEEP[question.id] : INDIVIDUAL_DEEP[question.id];
-  const diagnostic = DIAGNOSTIC_EXPLANATIONS[question.id];
-  const baseExpl = (question.explanation || '').trim();
+  const individual: (typeof INDIVIDUAL_DEEP)[string] | undefined = historical ? HISTORICAL_DIAGNOSTIC_DEEP[question.id] : INDIVIDUAL_DEEP[question.id] ?? explainGeneratedMask(question.id);
+  const diagnostic = historical ? undefined : DIAGNOSTIC_EXPLANATIONS[question.id];
+  const ipv4Prefix = ipv4CalculationPrefix(question.id);
+  const baseExpl = explanationText(question.explanation) ?? '';
 
   const briefAnswer =
     individual?.brief ||
-    (baseExpl.length > 0 && baseExpl.length <= 220
+    (baseExpl.length > 0
       ? baseExpl
-      : `Правильный ответ: «${correctText}».`);
+      : 'Индивидуальное объяснение в сохранённом вопросе отсутствует.');
 
   const deepAnalysis = individual
     ? individual.plain ?? individual.deep
@@ -638,8 +676,14 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     practicalTip: question.remember || getPracticalTip(category),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
-    ipv4Practice: detectIpv4Practice(question),
-    ipv6Practice: individual?.ipv6Practice ? { enabled: true } : undefined,
+    ipv4Practice: ipv4Prefix === undefined ? undefined : {
+      enabled: true,
+      reason: 'Вопрос опирается на расчёт маски или границ подсети.',
+      targetPrefix: ipv4Prefix,
+      targetMode: 'calc',
+    },
+    ipv6Practice: question.id === 'l3-d06' ? { targetMode: 'type' }
+      : individual?.ipv6Practice ? { targetMode: 'concept' } : undefined,
     keyTakeaways: generateKeyTakeaways(question, category, correctText),
     nextStudy: individual?.next,
   };
@@ -695,35 +739,6 @@ function getCategoryColor(category: QuestionDeepDive['category']): string {
     default:
       return 'from-slate-500/20 to-slate-500/10 text-slate-300 border-slate-500/30';
   }
-}
-
-/** Only real subnet/mask math — not ARP/routing mentions alone. */
-function detectIpv4Practice(q: Question): QuestionDeepDive['ipv4Practice'] | undefined {
-  const text = `${q.text} ${q.topic} ${q.explanation || ''}`.toLowerCase();
-  const hasPrefix = /\/(8|9|[12]\d|30)\b/.test(text);
-  const hasMaskWords =
-    text.includes('маск') ||
-    text.includes('подсет') ||
-    text.includes('cidr') ||
-    text.includes('usable host') ||
-    text.includes('broadcast у');
-  if (!hasPrefix && !hasMaskWords) return undefined;
-  // Avoid false positives: pure ARP/NAT without calculation
-  if (text.includes('arp') && !hasPrefix && !hasMaskWords) return undefined;
-
-  let targetPrefix: number | undefined;
-  const m = text.match(/\/(\d{1,2})/);
-  if (m) {
-    const n = Number(m[1]);
-    if (n >= 8 && n <= 30) targetPrefix = n;
-  }
-
-  return {
-    enabled: true,
-    reason: 'Вопрос опирается на расчёт маски или границ подсети.',
-    targetPrefix,
-    targetMode: 'trainer',
-  };
 }
 
 function enrichExplanation(
