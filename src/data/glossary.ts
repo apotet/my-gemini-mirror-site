@@ -6,6 +6,19 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "PDU": {"description":"Protocol Data Unit: единица данных конкретного протокола; для Ethernet это кадр, для IP пакет, для TCP сегмент.","relatesTo":"Единицы данных и инкапсуляция.","lessonId":"osi-pdu"},
+  "ICMP": {"description":"Internet Control Message Protocol: служебные сообщения IP; ping использует Echo Request/Reply без TCP/UDP-портов.","relatesTo":"Диагностика и ошибки IP.","lessonId":"osi-pdu"},
+  "ARP": {"description":"Address Resolution Protocol: сопоставляет IPv4-адрес соседнего узла или шлюза с MAC в локальном L2-домене.","relatesTo":"Определение MAC следующего IPv4-перехода.","lessonId":"l3-arp"},
+  "RFC": {"description":"Request for Comments: серия опубликованных технических документов Internet; статус и обязательность конкретного RFC нужно проверять отдельно.","relatesTo":"Документация протоколов и стандарты.","lessonId":"tcpip-model"},
+  "RFC 1918": {"description":"RFC, выделивший частные IPv4-диапазоны: 10.0.0.0/8, 172.16.0.0/12 и 192.168.0.0/16.","relatesTo":"Частная адресация IPv4.","lessonId":"l3-private-ipv4"},
+  "MTU": {"description":"Maximum Transmission Unit: максимальный размер передаваемого IP-пакета на данном сетевом канале в типичном случае IP over Ethernet; не равен полному размеру Ethernet-кадра.","relatesTo":"Ограничение размера сетевого пакета.","lessonId":"tcpip-encapsulation"},
+  "MSS": {"description":"Maximum Segment Size: объявленный в TCP SYN предел количества TCP-данных за сегмент для принимающей стороны; не включает IP/TCP-заголовки.","relatesTo":"Размер TCP-данных и MTU.","lessonId":"tcpip-encapsulation"},
+  "PPP": {"description":"Point-to-Point Protocol: протокол канального соединения; для IPv4 после согласования IPCP используется PPP Protocol 0x0021.","relatesTo":"Передача IP по точка-точка каналу.","lessonId":"tcpip-encapsulation"},
+  "GRE": {"description":"Generic Routing Encapsulation: туннельное обрамление, переносящее внутренний пакет во внешнем сетевом пакете.","relatesTo":"Туннелирование и внешняя маршрутизация.","lessonId":"tcpip-encapsulation"},
+  "FCS": {"description":"Frame Check Sequence: контрольное поле Ethernet-кадра, проверяемое CRC на данном канальном участке; не доказывает неизменность данных между участками.","relatesTo":"Контроль ошибок на L2.","lessonId":"tcpip-encapsulation"},
+  "L5": {"description":"Пятый уровень OSI — сеансовый: организация диалога и управление сеансом в учебной функциональной модели.","relatesTo":"Сеанс в OSI и Application в TCP/IP.","lessonId":"osi-pdu"},
+  "L6": {"description":"Шестой уровень OSI — представления: согласование форматов, кодирования и способа представления данных.","relatesTo":"Представление данных в модели OSI.","lessonId":"osi-pdu"},
+  "Ethernet": {"description":"Семейство стандартов IEEE 802.3 для локальной передачи кадров; MAC обеспечивает адресацию в пределах канального участка.","relatesTo":"L2 кадры и локальная доставка.","lessonId":"l2-ethernet"},
   "TAP": {"description": "Даёт копию трафика с линии для независимого захвата.", "relatesTo": "Точка доступа к трафику для анализа.", "lessonId": "l4-tcp"},
   "WBM": {"description": "Интерфейс SCALANCE для просмотра конфигурации и диагностики, в том числе параметров MRP.", "relatesTo": "Управление через веб-интерфейс.", "lessonId": "ts-method"},
   "MRP": {"description": "Менеджер контролирует целостность кольца; при разрыве активирует резервный путь.", "relatesTo": "Протокол резервирования кольца.", "lessonId": "ts-method"},
