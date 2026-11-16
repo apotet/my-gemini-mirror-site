@@ -1327,6 +1327,126 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     relatesTo: "Диагностика нестабильных оптических/медных линков и настройка сглаживания триггеров.",
     lessonId: "ts-zabbix-monitoring",
   },
+  "Wi-Fi": {
+    description: "Семейство беспроводных локальных сетей на базе стандартов IEEE 802.11. Работает в нелицензируемых диапазонах 2,4, 5 и 6 ГГц с разделяемым радиоэфиром.",
+    relatesTo: "Беспроводные сети доступа, радиопланирование и роуминг.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.11ax": {
+    description: "Стандарт Wi-Fi 6 и Wi-Fi 6E, добавляющий OFDMA с разделением канала на Resource Units (RU), восходящий/нисходящий MU-MIMO и работу в диапазоне 6 ГГц.",
+    relatesTo: "Эффективность плотных беспроводных сетей и малая задержка.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.11be": {
+    description: "Стандарт Wi-Fi 7 с каналами шириной до 320 МГц в 6 ГГц, модуляцией 4096-QAM и агрегацией нескольких радиоканалов MLO (Multi-Link Operation).",
+    relatesTo: "Высокоскоростные беспроводные каналы нового поколения.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "DFS": {
+    description: "Dynamic Frequency Selection — обязательный механизм на части каналов 5 ГГц (52–64, 100–144), освобождающий частоту при обнаружении радара с предварительной проверкой CAC.",
+    relatesTo: "Планирование каналов 5 ГГц и предотвращение внезапных обрывов.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "OFDMA": {
+    description: "Orthogonal Frequency-Division Multiple Access — деление ширины радиоканала 802.11ax на ресурсные блоки RU для одновременной передачи множеству клиентов в одном кадре.",
+    relatesTo: "Снижение задержек и накладных расходов в плотном Wi-Fi.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "MU-MIMO": {
+    description: "Multi-User MIMO — одновременная передача независимых пространственных потоков нескольким клиентам с помощью формирования луча антеннами точки доступа.",
+    relatesTo: "Пропускная способность многоантенных точек доступа Wi-Fi.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "SSID": {
+    description: "Service Set Identifier — текстовое имя беспроводной сети, объявляемое в кадрах Beacon и Probe Response. Скрытие SSID не защищает сеть от обнаружения.",
+    relatesTo: "Идентификация и разделение беспроводных сетей (WLAN).",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "BSSID": {
+    description: "Basic Service Set Identifier — уникальный 48-битный MAC-адрес конкретного радиоинтерфейса (соты) точки доступа, к которому привязан клиент.",
+    relatesTo: "Различение точек доступа с одинаковым SSID и анализ роуминга.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "RSSI": {
+    description: "Received Signal Strength Indicator — измеренный уровень принимаемого радиосигнала (обычно в дБм, например −62 дБм). Сам по себе без уровня шума не гарантирует высокое качество канала.",
+    relatesTo: "Оценка радиопокрытия и порогов роуминга.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "SNR": {
+    description: "Signal-to-Noise Ratio — разница в децибелах между уровнем полезного сигнала RSSI и шумовой полкой эфира. Именно SNR определяет устойчивый индекс модуляции MCS.",
+    relatesTo: "Скорость и стабильность радиолинка при наличии помех.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.11k": {
+    description: "Поправка IEEE 802.11k (Radio Resource Measurement): точка доступа заранее передаёт клиенту список соседних AP и их каналов (Neighbor Report), сокращая время сканирования при роуминге.",
+    relatesTo: "Быстрый и предсказуемый роуминг клиентов Wi-Fi.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.11v": {
+    description: "Поправка IEEE 802.11v (BSS Transition Management): точка доступа подсказывает клиенту перейти на более удачную соседнюю AP перед принудительным разрывом связи.",
+    relatesTo: "Борьба со sticky clients и балансировка нагрузки между AP.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.11r": {
+    description: "Поправка IEEE 802.11r (Fast BSS Transition): ускоряет роуминг в сетях WPA2/WPA3-Enterprise и PSK, сокращая повторный обмен ключами без полного обращения к серверу RADIUS.",
+    relatesTo: "Бесшовный роуминг для голоса (VoWiFi) и видео.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "Sticky client": {
+    description: "Клиентское устройство, которое продолжает удерживать ассоциацию с дальней точкой доступа при слабом сигнале вместо своевременного переключения на ближайшую AP.",
+    relatesTo: "Деградация скорости клиента и замедление общего радиоэфира.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "WPA2": {
+    description: "Wi-Fi Protected Access 2 — стандарт защиты беспроводных сетей с шифрованием AES-CCMP. В режиме PSK уязвим к оффлайн-перебору перехваченного 4-way handshake.",
+    relatesTo: "Шифрование и аутентификация беспроводных сетей.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "WPA3": {
+    description: "Wi-Fi Protected Access 3 — современный стандарт защиты Wi-Fi: заменяет PSK на устойчивый к оффлайн-перебору обмен SAE и делает защиту управляющих кадров PMF обязательной.",
+    relatesTo: "Современная безопасность личных и корпоративных Wi-Fi сетей.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "SAE": {
+    description: "Simultaneous Authentication of Equals (протокол Dragonfly) — метод обмена ключами в WPA3-Personal, обеспечивающий Forward Secrecy и защиту от оффлайн-перебора пароля.",
+    relatesTo: "Защита домашнего и малого офисного Wi-Fi в WPA3-Personal.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "PMF": {
+    description: "Protected Management Frames (IEEE 802.11w) — криптографическая защита управляющих кадров (Deauthentication, Disassociation), предотвращающая принудительный сброс клиентов злоумышленником.",
+    relatesTo: "Защита от DoS-атак поддельными Deauth-кадрами и обязательный элемент WPA3.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "KRACK": {
+    description: "Key Reinstallation Attack — атака на 4-way handshake WPA2, при которой повтор третьего сообщения вынуждает клиента заново установить уже использованный сеансовый ключ и сбросить счётчик.",
+    relatesTo: "Уязвимости реализации handshake и важность патчей клиентов/AP.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "4-way handshake": {
+    description: "Четырёхшаговый обмен кадрами EAPOL-Key после аутентификации Wi-Fi, в ходе которого клиент и точка доступа подтверждают знание PMK и формируют сеансовые ключи PTK и GTK.",
+    relatesTo: "Установление зашифрованного канала в WPA2 и WPA3.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "CSMA/CA": {
+    description: "Carrier-Sense Multiple Access with Collision Avoidance — полудуплексный метод доступа к общему радиоэфиру с проверкой занятости канала CCA и случайным окном отсрочки backoff.",
+    relatesTo: "Разделение эфирного времени и рост задержек при высокой утилизации.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "RTS/CTS": {
+    description: "Request to Send / Clear to Send — необязательный обмен короткими кадрами перед передачей данных, резервирующий эфир через поле NAV для защиты от скрытых узлов.",
+    relatesTo: "Диагностика скрытых узлов и снижение числа коллизий в радиоэфире.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "CCI": {
+    description: "Co-Channel Interference — совмещённые помехи от соседних точек доступа и клиентов на одном и том же канале: устройства делят эфирное время по CSMA/CA, снижая пропускную способность.",
+    relatesTo: "Частотное планирование и выбор ширины каналов 20/40/80 МГц.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "ACI": {
+    description: "Adjacent-Channel Interference — разрушительные помехи от перекрывающихся соседних каналов (например, каналы 1 и 3 в 2,4 ГГц), вызывающие битые кадры и повторные передачи.",
+    relatesTo: "Выбор неперекрывающихся каналов 1, 6, 11 в 2,4 ГГц.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
 };
 
 // Alternative names share one definition instead of duplicating its text.
@@ -1870,6 +1990,30 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "Hysteresis": ["Trigger Hysteresis", "Гистерезис триггера с раздельным порогом восстановления", false],
   "ifOutDiscards": ["ifOutDiscards (IF-MIB)", "Счётчик отброшенных исходящих пакетов в очередях", false],
   "Flapping": ["Link / Alert Flapping", "Частое переключение состояния Up/Down или Problem/OK", false],
+  "Wi-Fi": ["Wi-Fi (название технологии, не расшифровываемая аббревиатура)", "Беспроводная локальная сеть IEEE 802.11", false],
+  "802.11ax": ["IEEE 802.11ax (Wi-Fi 6 / 6E)", "Стандарт Wi-Fi 6 и Wi-Fi 6E", false],
+  "802.11be": ["IEEE 802.11be (Wi-Fi 7)", "Стандарт Wi-Fi 7", false],
+  "DFS": ["Dynamic Frequency Selection", "Динамический выбор частоты (защита от радаров)", true],
+  "OFDMA": ["Orthogonal Frequency-Division Multiple Access", "Ортогональный частотный множественный доступ", true],
+  "MU-MIMO": ["Multi-User Multiple-Input Multiple-Output", "Многопользовательский MIMO", true],
+  "SSID": ["Service Set Identifier", "Идентификатор имени беспроводной сети", true],
+  "BSSID": ["Basic Service Set Identifier", "MAC-адрес радиосоты точки доступа", true],
+  "RSSI": ["Received Signal Strength Indicator", "Уровень принимаемого сигнала в дБм", true],
+  "SNR": ["Signal-to-Noise Ratio", "Отношение сигнал/шум", true],
+  "802.11k": ["IEEE 802.11k Radio Resource Measurement", "Отчёты о соседних точках доступа", false],
+  "802.11v": ["IEEE 802.11v BSS Transition Management", "Управление переключением клиентов (BSS Transition)", false],
+  "802.11r": ["IEEE 802.11r Fast BSS Transition", "Быстрый роуминг Fast Transition", false],
+  "Sticky client": ["Sticky Client", "«Липкий» клиент, не переключающийся на ближнюю AP", false],
+  "WPA2": ["Wi-Fi Protected Access 2", "Стандарт безопасности Wi-Fi на базе AES-CCMP", true],
+  "WPA3": ["Wi-Fi Protected Access 3", "Стандарт безопасности Wi-Fi с SAE и PMF", true],
+  "SAE": ["Simultaneous Authentication of Equals", "Аутентификация Dragonfly в WPA3-Personal", true],
+  "PMF": ["Protected Management Frames (IEEE 802.11w)", "Защита управляющих кадров Wi-Fi", true],
+  "KRACK": ["Key Reinstallation Attack", "Атака повторной установки ключа в WPA2", true],
+  "4-way handshake": ["EAPOL 4-Way Handshake", "Четырёхшаговый обмен ключами Wi-Fi", false],
+  "CSMA/CA": ["Carrier-Sense Multiple Access with Collision Avoidance", "Множественный доступ с контролем несущей и избеганием коллизий", true],
+  "RTS/CTS": ["Request to Send / Clear to Send", "Резервирование эфира запросом и подтверждением", true],
+  "CCI": ["Co-Channel Interference", "Межсотовая интерференция на одном канале", true],
+  "ACI": ["Adjacent-Channel Interference", "Помехи от перекрывающихся соседних каналов", true],
 };
 
 export const GLOSSARY_TOOLTIPS: Record<string, GlossaryTooltip> = {};
