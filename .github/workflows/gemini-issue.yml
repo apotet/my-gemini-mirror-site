@@ -87,14 +87,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          if git diff --cached --name-only | grep -E '(^|/)\.github/|(^|/)\.env|\.(pem|key) -m "Gemini: implement issue #${ISSUE_NUMBER}"
-          gh auth setup-git
-          git push origin HEAD
-          gh pr create --base main --head "$(git branch --show-current)" \
-            --title "Gemini: #${ISSUE_NUMBER} — ${ISSUE_TITLE}" \
-            --body "Automated draft from #${ISSUE_NUMBER}. Requires independent review before merging. Staging only." \
-            --draft
-; then
+          if git diff --cached --name-only | grep -E '(^|/)\\.github/|(^|/)\\.env|\\.(pem|key)$'; then
             echo "Protected paths in staged changes"; exit 1
           fi
           git commit -m "Gemini: implement issue #${ISSUE_NUMBER}"
