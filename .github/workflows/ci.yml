@@ -133,6 +133,9 @@ jobs:
       - name: Explanations quality
         run: npm run test:explanations
 
+      - name: Review lesson links and missing materials
+        run: npm run test:review-navigation
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
@@ -143,6 +146,7 @@ jobs:
             sleep 1
           done
           node scripts/explanations.browser.mjs
+          node scripts/review-materials.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
@@ -152,5 +156,8 @@ jobs:
           path: |
             scripts/.cache/coverage-report.json
             scripts/.cache/coverage-summary.txt
+            scripts/.cache/review-material-coverage.json
+            scripts/.cache/review-browser/*.png
+            scripts/.cache/review-browser/matrix-evidence.json
             scripts/.cache/validate-summary.txt
           if-no-files-found: ignore

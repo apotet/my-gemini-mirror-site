@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
 import { loadBankWithExplanations } from './load-bank.mjs';
 
 const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playwright');
@@ -18,17 +19,18 @@ const progressSnapshot = JSON.stringify({
   version: 4, epoch: fixture.progressEpoch, questions: {}, receipts: {}, dates: [], backup: {}, migrationNotice: false,
 });
 const activeSnapshot = JSON.stringify({
-  ...fixture, questions: [get('ts-x12')], currentIndex: 0, feedbackMode: 'instant', isCompleted: false,
+  ...fixture, questions: [get('ts-x12'), get('ts-x05')], currentIndex: 0, feedbackMode: 'instant', isCompleted: false,
   attemptId: 'explanation-instant-fixture', submittedQuestions: {}, userAnswers: {},
 });
 
+mkdirSync('scripts/.cache/review-browser', { recursive: true });
 const browser = await chromium.launch({
   ...(process.env.NETOPS_CHROMIUM_PATH ? { executablePath: process.env.NETOPS_CHROMIUM_PATH } : {}),
 });
 try {
   for (const width of [375, 1440]) {
     const mobile = width < 500;
-    const page = await browser.newPage({ viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile });
+    const page = await browser.newPage({ viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile, ignoreHTTPSErrors: process.env.NETOPS_IGNORE_HTTPS_ERRORS === '1' });
     page.setDefaultTimeout(12000);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -64,6 +66,9 @@ try {
     await page.getByText('5 из 5 верно').waitFor();
     const socket = await openRow('ss -tulpn или netstat -tulpn');
     await openDetail(socket);
+    await socket.getByText('Урок по этой теме пока не подготовлен', {exact:true}).waitFor();
+    await socket.getByText('Профессиональный разбор пока не подготовлен', {exact:true}).waitFor();
+    assert.equal(await socket.getByRole('group', {name:'Стиль объяснения'}).count(), 0);
     await socket.locator('pre code').filter({ hasText: /udp\s+UNCONN/ }).waitFor();
     assert.equal(await socket.locator('pre [data-glossary-term]').count(), 0);
     const term = socket.locator('[data-glossary-term]').first();
@@ -78,10 +83,18 @@ try {
 
     const layered = await openRow(get('l57-d02').text);
     await openDetail(layered);
+    const shortBefore = await layered.locator('h4').locator('..').innerText();
+    const plainBefore = await layered.locator('details').innerText();
     await button('По делу', layered).click();
+    assert.equal(await layered.locator('h4').locator('..').innerText(), shortBefore, 'short explanation is independent of detail style');
+    assert.notEqual(await layered.locator('details').innerText(), plainBefore, 'professional body actually changes');
+    assert.equal(await button('По делу', socket).count(), 0, 'global pro preference cannot invent pro on another question');
+    await socket.getByText('Профессиональный разбор пока не подготовлен', {exact:true}).waitFor();
     assert.equal(await button('По делу', layered).getAttribute('aria-pressed'), 'true');
     await button('Простыми словами', layered).click();
     assert.equal(await button('Простыми словами', layered).getAttribute('aria-pressed'), 'true');
+
+    await page.screenshot({ path: `scripts/.cache/review-browser/review-${width}.png`, fullPage: true });
 
     const cidr = await openRow(get('l3-d01').text);
     await button('Открыть IPv4-тренажёр', cidr).click();
@@ -94,8 +107,7 @@ try {
     await home();
     await openReview();
     const cisco = await openRow(get('ts-x05').text);
-    await button(/^Разобрать подробнее:/, cisco).click();
-    await button('Изучить тему подробно').click();
+    await button(/^Перейти к уроку:/, cisco).click();
     await page.locator('pre code').filter({ hasText: /^show ip interface brief$/ }).waitFor();
     await noPageOverflow();
 
@@ -107,6 +119,13 @@ try {
     await page.locator('pre code').filter({ hasText: /UNCONN/ }).waitFor();
     assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')), lastSnapshot);
     await noPageOverflow();
+    await button('Следующий вопрос').click();
+    const wrong = get('ts-x05').answers.find((_, index) => !get('ts-x05').correct.includes(index));
+    await button(new RegExp(wrong)).click();
+    await button('Подтвердить').click();
+    await button(/^Перейти к уроку:/).click();
+    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
+    await home();
 
     if (mobile) await button('Открыть меню').click();
     await button('Макет тестирования').click();
@@ -115,14 +134,39 @@ try {
     await button('Ответить').click();
     await openDetail(page);
     await page.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();
+    await page.getByText('Профессиональный разбор пока не подготовлен', {exact:true}).waitFor();
+    await button(/^Перейти к уроку:/).click();
+    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
+    if (mobile) await button('Открыть меню').click();
+    await button('Макет тестирования').click();
+    await button('Продолжить').click();
     await button('Завершить').click();
     await button('Посмотреть ответы').click();
     const mock = await openRow(get('ts-x05').text);
     await openDetail(mock);
     await mock.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();
     await noPageOverflow();
+    await button(/^Перейти к уроку:/, mock).click();
+    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
+    assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')), lastSnapshot, 'saved completed attempt remains byte-identical');
+    await home();
+    await button(/Работа над ошибками/).click();
+    if (await button('Заменить попытку').isVisible()) await button('Заменить попытку').click();
+    await button(new RegExp(get('ts-x05').answers[get('ts-x05').correct[0]])).click();
+    await button('Подтвердить').click();
+    await button(/^Перейти к уроку:/).click();
+    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
+    assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')), lastSnapshot);
+    await home();
+    await button('Продолжить тестирование').click();
+    await button('Завершить').click();
+    const fresh = await openRow(get('ts-x05').text);
+    await button(/^Перейти к уроку:/, fresh).click();
+    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
+    await noPageOverflow();
+    await page.screenshot({ path: `scripts/.cache/review-browser/lesson-${width}.png`, fullPage: true });
     assert.deepEqual(errors, []);
-    console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, Cisco lesson, and mock feedback/results`);
+    console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, direct lesson in instant/final/last/mistake and mock feedback/results, material gaps and immutable historical review`);
     await page.close();
   }
 } finally {

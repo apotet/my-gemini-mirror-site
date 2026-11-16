@@ -115,7 +115,7 @@
     }
   ],
   "protectedFiles": {
-    "src/App.tsx": "cc2882af912909847008ac6ea4bca098578f640a04de381a85a2727950bd6a27",
+    "src/App.tsx": "76ec231342f70f325d2877154dee6ec23ff2d8f4883ca64aa5e3382ffb8463a5",
     "src/cli-lab/CliLabShell.tsx": "8edcb2e60b1cb66515d338601de2bcd0b4d33846495111920c083076d5ef4208",
     "src/cli-lab/ExperimentalCliUxV2Shell.tsx": "97c49290a81fba1bb37a2400071f04074604e3a2f11badc544d38e27a963d07d",
     "src/cli-lab/ExperimentalMockCliLabShell.tsx": "47b0efb3ea28fdab383c4f7ae280681f823c0b59ee0c7da8ec97278baff64071",
@@ -203,9 +203,9 @@
     "src/components/TheoryCheatsheets.tsx": "74f4c32eb59e4baa72a9d96ebd72c6376b298552621b21eb6c81fb35ba5b3d6f",
     "src/components/TheoryModels.tsx": "a1005ca6f9b8be38c40564a665d133b30682903c1edbdad6e5112a4805bb5f37",
     "src/components/TheoryPorts.tsx": "fed1c566940c57bc0731b4a47eb01d96f5be184febb7fbb3fd0d5948cc61e352",
-    "src/components/TheoryRazbory.tsx": "9697ed0774641ffaaf1acbb6a6e32251669d7531f7d04681a5b98ba47504c9a3",
+    "src/components/TheoryRazbory.tsx": "7db94b8e84732c008f62837a826b94a5f303c4536015887bbef05f1080e92d08",
     "src/components/TheoryScenarios.tsx": "3545f0c64adadd5ed3f97ca725cfca8d1040ba04f642fc70c08c523c12136992",
-    "src/components/TheoryView.tsx": "9e07c204ed6d2eb28f26e9166cf90d273a8f3d4c85d0003135fe60c4de44d1c8",
+    "src/components/TheoryView.tsx": "36e7b4abcce32311b660306d2161a13505eb26b9ee0269824e29451113f12176",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
