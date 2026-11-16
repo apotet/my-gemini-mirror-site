@@ -6,8 +6,8 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "9efce456503b52c7c9bc8273509adaf851eccd133d610f0b70e795da8395bdec",
-  "bankSHA256": "ba05a4214fb3b5380cc1b218b8339fd5efd24f8a545848f4725298d70521dccd",
+  "auditProjectionSHA256": "35246bbaa8ca10c196093cf7653c44c630871ae375214b2fd0ecdf9b13c8505d",
+  "bankSHA256": "ad005cca3c810130ca0da85cafca9db826154e71ee9775533b5e994e0fa7f797",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -209,7 +209,7 @@
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
-    "src/data/glossary.ts": "932f59e85ec7d6ac446273e97aecb7508f4b057a85069a4f0baac20e1b0456fe",
+    "src/data/glossary.ts": "0997460221ef83cad88a8ee74eec91aa4e3697a17a1f111629cae83e949d2de0",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
@@ -217,7 +217,8 @@
     "src/data/lessons/cli-show-help-tab.ts": "08d45e03af7486eff8b692f50206aedb035360d39f9568ca7a1b10b5e5af5d17",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "3ccf4edff866169a7d54c333180662027e46adcb3d0cf9b5dff2e529e6b3026b",
+    "src/data/lessons/index.ts": "06f9b4189aa582910f4185ad01e0bb2d8667dae95ffe3df1ed0c97faad691ccb",
+    "src/data/lessons/l12-wifi-standards-roaming.ts": "23b355e2ce1c3cc42c33c13da1af7917140cc678b0fc6a37002a32975cc4c9d2",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
     "src/data/lessons/l2-bpdu-guard.ts": "4c3a64acf6a61da12bfc86e9017d8c8bcf66c2be7e4f270ba55cd870b231df30",
@@ -234,6 +235,7 @@
     "src/data/lessons/l2-svi.ts": "9855dc17ff3915b05403d613f8240541b006215ccbfb238b24aade7e120e8c9a",
     "src/data/lessons/l2-vlan-security.ts": "d79d23c1f279baa2b91ef579193c093a1c163e5ac39702f8c6bc07114611c713",
     "src/data/lessons/l2-vlan.ts": "03133cf22c3a5b7d3b62b7af70d717e696196f42c7dd467ba365211d8bcee7c0",
+    "src/data/lessons/l2-wifi-security-diagnostics.ts": "361c726a5e3cefb2861d92292c322ee2ab9ffa6bd42d5f845250507dcb2e784b",
     "src/data/lessons/l3-arp.ts": "71c23b755e551406b9c3f22adcb63a06bce219da7bfd10ae64344ecc9f890467",
     "src/data/lessons/l3-bgp.ts": "055869352ce40d59f72c3d0739b16c7a3a684e5caf03935404258c822d86b384",
     "src/data/lessons/l3-eigrp.ts": "f0d5163f740f9af51dc3755bcc2e2e2bef012e519126f3f55cea86554b51b956",
@@ -270,13 +272,14 @@
     "src/data/monitoringCases.ts": "325649898219baeaeb7cd7569d29174dc7b3938509f0225a2ddebf610beb2b68",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "40797cef6afb636d3691b2dae8f88d5951e0703685ebaaf8848e8a616cd6b496",
+    "src/data/questionExplanations.ts": "4c5b7fc5125c7e5805439b35d46555588556879dd65532acd4df92caa54cb414",
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
     "src/data/questions.json": "04630cd2d4772b00041c5f72c60d804c78cc21249e38026f4818fc47ab4e4143",
-    "src/data/questionsData.ts": "cd90c1b67ceb532648180515a85039b376e4a81914a166d004216f6fc520f2b5",
+    "src/data/questionsData.ts": "4ab931538f4af4b5dcd6e3b46a2fa68491bdedb198e3c112062b16287426bd66",
     "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
     "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
+    "src/data/wifiCases.ts": "47ea9c62898a4bc0e57fec250c10fb6d3df151c269974b97bfe78bdc7a79996b",
     "src/index.css": "0c2c3e4808a5f5b8aa6ae11e3cae5a9bdd1fc603a0e31cf30146562ea9ba65dc",
     "src/main.tsx": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3",
     "src/projectExporter.ts": "21e5efb52f4fc855ee3ab14b8ba9923c563b25791b304b4a767c3f69472f4f6c",
@@ -563,6 +566,39 @@
       "src/data/lessons/index.ts": "89e3073e4204992558b3d53b9f93b852528326fe95f852a4c1b1bc445b690212",
       "src/data/questionExplanations.ts": "7f465a35f0fe8955356011b8d1905e040b0b0964b5b92db337ef431e175267f7",
       "src/data/questionsData.ts": "400d535eded21604bcfd4324822509b9d99511f562747662256faa88671ccbe1"
+    }
+  },
+  "wifiPack": {
+    "baseMain": "861e988a40e4d9b401e316e2f2ae0cce9b9f7645",
+    "previousBankSHA256": "ba05a4214fb3b5380cc1b218b8339fd5efd24f8a545848f4725298d70521dccd",
+    "previousAuditProjectionSHA256": "9efce456503b52c7c9bc8273509adaf851eccd133d610f0b70e795da8395bdec",
+    "added": [
+      "wifi-std-01",
+      "wifi-std-02",
+      "wifi-std-03",
+      "wifi-std-04",
+      "wifi-std-05",
+      "wifi-roam-01",
+      "wifi-roam-02",
+      "wifi-roam-03",
+      "wifi-roam-04",
+      "wifi-roam-05",
+      "wifi-sec-01",
+      "wifi-sec-02",
+      "wifi-sec-03",
+      "wifi-sec-04",
+      "wifi-sec-05",
+      "wifi-diag-01",
+      "wifi-diag-02",
+      "wifi-diag-03",
+      "wifi-diag-04",
+      "wifi-diag-05"
+    ],
+    "previousProtectedSHA256": {
+      "src/data/glossary.ts": "932f59e85ec7d6ac446273e97aecb7508f4b057a85069a4f0baac20e1b0456fe",
+      "src/data/lessons/index.ts": "3ccf4edff866169a7d54c333180662027e46adcb3d0cf9b5dff2e529e6b3026b",
+      "src/data/questionExplanations.ts": "40797cef6afb636d3691b2dae8f88d5951e0703685ebaaf8848e8a616cd6b496",
+      "src/data/questionsData.ts": "cd90c1b67ceb532648180515a85039b376e4a81914a166d004216f6fc520f2b5"
     }
   }
 }

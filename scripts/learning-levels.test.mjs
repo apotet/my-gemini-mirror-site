@@ -13,11 +13,11 @@ const bankBefore = JSON.stringify(ALL_QUESTIONS);
 verifyLearningLevelBaseline(ALL_QUESTIONS, registry);
 assert.deepEqual(Object.keys(LEARNING_LEVELS), ['1', '2', '3', '4', '5']);
 assert.deepEqual(statistics, getLearningLevelStatistics());
-assert.equal(statistics.total, 819);
-assert.equal(statistics.assigned, 819);
-assert.deepEqual(statistics.levels, { 1: 220, 2: 155, 3: 368, 4: 73, 5: 3 });
-assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 155, 3: 368, 4: 73, 5: 3 });
-assert.deepEqual(statistics.auditActions, { KEEP: 458, RELABEL: 361, REVIEW: 0 });
+assert.equal(statistics.total, 839);
+assert.equal(statistics.assigned, 839);
+assert.deepEqual(statistics.levels, { 1: 220, 2: 160, 3: 376, 4: 80, 5: 3 });
+assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 160, 3: 376, 4: 80, 5: 3 });
+assert.deepEqual(statistics.auditActions, { KEEP: 478, RELABEL: 361, REVIEW: 0 });
 assert.deepEqual(statistics.reviewIds, []);
 const { previousRegistryEntries } = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8')).technicalReviewClosure;
 for (const [id, previous] of Object.entries(previousRegistryEntries)) {
@@ -77,7 +77,7 @@ for (const { id: mode } of QUIZ_MODES) {
     }
   }
 }
-assert.equal(getExamPool('mixed', 'beginner').length, 248);
+assert.equal(getExamPool('mixed', 'beginner').length, 253);
 assert.ok(getExamPool('mixed', 'beginner').some(q => getLearningLevelMetadata(q.id).learningLevel === 3),
   'new Application metadata does not exclude a legacy beginner question');
 

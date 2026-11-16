@@ -8,8 +8,8 @@ export const sha256 = value => createHash('sha256').update(value).digest('hex');
 /** Versioned stage-2 boundary: future content migrations must update it explicitly. */
 export function verifyLearningLevelBaseline(bank, registry) {
   const baseline = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8'));
-  assert.equal(bank.length, 819);
-  assert.equal(new Set(bank.map(q => q.id)).size, 819);
+  assert.equal(bank.length, 839);
+  assert.equal(new Set(bank.map(q => q.id)).size, 839);
   // One ID per line is the reviewable registry format; JSON.parse alone hides duplicate keys.
   const source = readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8');
   const keys = [...source.matchAll(/^  ("(?:[^"\\]|\\.)*"):/gm)].map(match => JSON.parse(match[1]));

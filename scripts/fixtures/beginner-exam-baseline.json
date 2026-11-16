@@ -60,5 +60,13 @@
     "beginnerSingleSHA256": "dc0f9842d5d2b582f20029cae4e91adb69fd77eb10681fbd5005a8c5f2b3a0ec",
     "mixed10SHA256": "577ef6856a3491daec70019d4334356887372b3243c7ca0ef207169a439ab727",
     "otherMixedModesSHA256": "07db9a5cbbf7e2186f8e08b8a97ab24b836d41b684bd08c2319e544137f3be9d"
+  },
+  "wifiPack": {
+    "bankSHA256": "ad005cca3c810130ca0da85cafca9db826154e71ee9775533b5e994e0fa7f797",
+    "beginnerPool": 253,
+    "families": 212,
+    "beginnerSingleSHA256": "70c914488913273fa07fc36c6b0e5489cdf2d1f2b1184b2cd9b6573684d6c8b0",
+    "mixed10SHA256": "c414f3ae656987162179c4622ad80a06aa1279d9ed0741d4839734687032802f",
+    "otherMixedModesSHA256": "b415595b2dd5e1dac6041b73bf26afcf6ea90abeb2ee2e1db3ddb5626c192333"
   }
 }
