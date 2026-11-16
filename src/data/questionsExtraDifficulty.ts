@@ -596,7 +596,7 @@ export const EXTRA_DIFFICULTY_QUESTIONS: Question[] = [
       'только ethtool --blink',
     ],
     correct: [0],
-    explanation: 'Policy routing смотрят через ip rule и таблицы.',
+    explanation: 'Policy routing на Linux смотрят командами ip rule (правила выбора таблицы) и ip route show table <имя/номер> (содержимое выбранной таблицы). Это позволяет понять, по какому пути пакет уйдёт в зависимости от source, fwmark и т.д.',
     difficulty: 'advanced',
   },
   {

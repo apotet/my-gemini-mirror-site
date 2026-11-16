@@ -1,3 +1,14 @@
+
+## Аудит качества разборов (16.11.2026)
+
+Ветка `audit/explanations-quality`:
+- Полный скрининг 862 вопросов.
+- Исправлены слабые CLI/диагностические разборы (включая ts-x12 и пакет ts-x*).
+- Добавлен отчёт `docs/audits/explanations-quality-audit.md`.
+- Добавлен регрессионный скрипт `scripts/explanations-quality.test.mjs`.
+
+Точная статистика после пакета: PASS 677 / FIX 126 / REVIEW 59.
+
 # NetOps — карта развития
 
 ## История совместной разработки: Gemini + ChatGPT (16.11.2026)
