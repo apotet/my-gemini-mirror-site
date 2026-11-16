@@ -17,11 +17,11 @@ const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>
 const family = q => q.family || q.id;
 const bankBefore = JSON.stringify(ALL_QUESTIONS);
 const quality = before.questionQualityUpdate;
-const wifiPack = before.wifiPack;
-assert.equal(hash(ALL_QUESTIONS), wifiPack.bankSHA256, 'bank includes the approved wifi pack');
-assert.equal(hash(ALL_QUESTIONS.filter(q => !q.id.startsWith('diag177-') && !q.id.startsWith('mon-') && !q.id.startsWith('wifi-'))), quality.bankSHA256,
+const wifiPack = before.expertPack225;
+assert.equal(hash(ALL_QUESTIONS), wifiPack.bankSHA256, 'bank includes the approved expert #225 pack');
+assert.equal(hash(ALL_QUESTIONS.filter(q => !q.id.startsWith('diag177-') && !q.id.startsWith('mon-') && !q.id.startsWith('wifi-') && !q.id.startsWith('exp225-'))), quality.bankSHA256,
   'all questions from the previous revision keep their content and order');
-assert.equal(ALL_QUESTIONS.length, 839);
+assert.equal(ALL_QUESTIONS.length, 859);
 
 function verify(chosen, pool, count) {
   const unique = [...new Map(pool.filter(q => q.difficulty === 'beginner').map(q => [q.id, q])).values()];
