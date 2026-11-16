@@ -7,7 +7,7 @@
     "6877141640"
   ],
   "auditProjectionSHA256": "f9a2b686e0a7d7f6751df61d0df7572d6277635308b6f300b1e1419464b994a2",
-  "bankSHA256": "0c307c7812bc2fe8ca7cce129c9b4ff3f967c8806ddada08fe4b732cfb327adc",
+  "bankSHA256": "b17a6f910cf5f80cd452448be01eef3b68143ad02227b96eb49cf571507ad59d",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
