@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { bundleEntry } from './load-bank.mjs';
 
 const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion } =
-  await bundleEntry('scripts/inventory-entry.ts', 'fundamentals-batch.mjs');
+  await bundleEntry('scripts/explanations-test-entry.ts', 'fundamentals-batch.mjs');
 
 const expected = {
   'l2-03': { lesson: 'l2-ethernet', practice: 'packet', answer: 'Source MAC и входной порт' },
