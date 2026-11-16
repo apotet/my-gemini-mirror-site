@@ -9,6 +9,7 @@ import { TheoryRazbory } from './TheoryRazbory';
 import { KnowledgeBase } from './KnowledgeBase';
 
 interface TheoryViewProps {
+  initialLessonId?: string | null;
   onOpenPractice?: (link: PracticeLink) => void;
   initialQuestionId?: string | null;
   fromExam?: boolean;
@@ -31,6 +32,7 @@ const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = 
 
 export const TheoryView: React.FC<TheoryViewProps> = ({
   onOpenPractice,
+  initialLessonId,
   initialQuestionId,
   fromExam,
   onReturnToExam,
@@ -38,17 +40,21 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
   onNavigateToIpv6,
   onClearInitialQuestion,
 }) => {
-  const [section, setSection] = useState<TheorySection>('razbory');
-  const [lessonId, setLessonId] = useState<string | null>(null);
-  const [returnQuestionId, setReturnQuestionId] = useState<string | null>(null);
+  const [section, setSection] = useState<TheorySection>(initialLessonId ? 'knowledge' : 'razbory');
+  const [lessonId, setLessonId] = useState<string | null>(initialLessonId || null);
+  const [returnQuestionId, setReturnQuestionId] = useState<string | null>(initialLessonId ? initialQuestionId || null : null);
   const [focusQuestionId, setFocusQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialQuestionId) {
+    if (initialLessonId) {
+      setLessonId(initialLessonId);
+      setReturnQuestionId(initialQuestionId || null);
+      setSection('knowledge');
+    } else if (initialQuestionId) {
       setSection('razbory');
       setFocusQuestionId(initialQuestionId);
     }
-  }, [initialQuestionId]);
+  }, [initialQuestionId, initialLessonId]);
 
   const openLesson = (id: string, fromQuestionId?: string) => {
     setLessonId(id);
