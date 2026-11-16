@@ -48,6 +48,7 @@ export const LESSON_OSI_PDU: Lesson = {
     }
   ],
   "relatedQuestionIds": [
+    "l3-01",
     "l3-14",
     "l4-01",
     "tcp-04",
