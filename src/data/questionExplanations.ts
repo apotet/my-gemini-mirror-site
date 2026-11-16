@@ -11,6 +11,7 @@ import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
 import { DIAGNOSTIC_EXPLANATIONS } from './diagnosticExplanations';
 import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalExplanation } from './questionExplanationsApplied';
+import { BASE_FOUNDATION_UPGRADES } from './baseFoundations';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -629,6 +630,17 @@ const INDIVIDUAL_DEEP: Record<
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
+  // Preserve existing, reviewed plain explanations; fill only their missing pro layer.
+  ...Object.fromEntries(Object.entries(BASE_FOUNDATION_UPGRADES).map(([id, patch]) => {
+    const original = APPLIED_INDIVIDUAL_DEEP[id] ?? ADVANCED_INDIVIDUAL_DEEP[id];
+    return [id, {
+      ...original,
+      ...patch,
+      brief: patch.brief ?? original?.brief ?? '',
+      deep: patch.plain ?? original?.deep ?? '',
+      glossaryInProfessional: true,
+    }];
+  })),
   ...Object.fromEntries(DIAGNOSTIC_CASES_177.map(item => [item.id, {
     brief: item.brief,
     deep: item.sense.join('\n\n'),
