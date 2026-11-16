@@ -1,3 +1,4 @@
+import { AUDITED_QUESTION_EXPLANATIONS } from './auditedQuestionExplanations';
 import { explanationText } from '../utils/explanationFormat';
 import { explainGeneratedMask, ipv4CalculationPrefix } from './ipv4ExplanationPractice';
 import { EXPERT_CASES_177 } from './expertCases177';
@@ -625,22 +626,23 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const individual: (typeof INDIVIDUAL_DEEP)[string] | undefined = historical ? HISTORICAL_DIAGNOSTIC_DEEP[question.id] : INDIVIDUAL_DEEP[question.id] ?? explainGeneratedMask(question.id);
   const diagnostic = historical ? undefined : DIAGNOSTIC_EXPLANATIONS[question.id];
   const ipv4Prefix = ipv4CalculationPrefix(question.id);
-  const baseExpl = explanationText(question.explanation) ?? '';
+  const audited = historical ? undefined : AUDITED_QUESTION_EXPLANATIONS[question.id];
+  const baseExpl = audited?.brief ?? explanationText(question.explanation) ?? '';
 
   const briefAnswer =
-    individual?.brief ||
+    audited?.brief || individual?.brief ||
     (baseExpl.length > 0
       ? baseExpl
       : 'Индивидуальное объяснение в сохранённом вопросе отсутствует.');
 
-  const deepAnalysis = individual
+  const deepAnalysis = audited?.deep ?? (individual
     ? individual.plain ?? individual.deep
-    : diagnostic ? baseExpl : enrichExplanation(question, category, baseExpl);
+    : diagnostic ? baseExpl : enrichExplanation(question, category, baseExpl));
 
-  const engineeringDeep =
+  const engineeringDeep = audited?.deep ?? (
     question.difficulty === 'advanced' || question.difficulty === 'applied'
       ? (individual ? deepAnalysis : undefined) || (baseExpl.length > 80 ? baseExpl : undefined)
-      : (individual ? deepAnalysis : undefined);
+      : (individual ? deepAnalysis : undefined));
 
   // The existing theory/review toggle consumes professional. Layered entries
   // change only the detailed text; their brief and trap stay the same in both modes.
@@ -670,10 +672,10 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     engineeringDeep,
     professional,
     practiceLink: individual?.practiceLink,
-    hasIndividualDeep: Boolean(individual || diagnostic),
+    hasIndividualDeep: Boolean(individual || diagnostic || audited?.deep),
     glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
-    commonTrap: individual?.trap || detectCommonTrap(question),
-    practicalTip: question.remember || getPracticalTip(category),
+    commonTrap: audited?.trap ?? (individual?.trap || detectCommonTrap(question)),
+    practicalTip: audited?.practicalTip ?? (question.remember || getPracticalTip(category)),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: ipv4Prefix === undefined ? undefined : {
@@ -684,7 +686,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     },
     ipv6Practice: question.id === 'l3-d06' ? { targetMode: 'type' }
       : individual?.ipv6Practice ? { targetMode: 'concept' } : undefined,
-    keyTakeaways: generateKeyTakeaways(question, category, correctText),
+    keyTakeaways: generateKeyTakeaways(question, correctText, ipv4Prefix !== undefined),
     nextStudy: individual?.next,
   };
 }
@@ -801,11 +803,11 @@ function generateDiagramForQuestion(q: Question): string | undefined {
 
 function generateKeyTakeaways(
   q: Question,
-  category: QuestionDeepDive['category'],
-  correctText: string
+  correctText: string,
+  hasIpv4Practice: boolean
 ): string[] {
   const tips = [`Правильный ответ: ${correctText}`, `Тема: ${q.topic}`];
-  if (category === 'l3' && /\/\d+/.test(q.text)) {
+  if (hasIpv4Practice) {
     tips.push('Расчёт маски можно закрепить в IPv4-тренажёре');
   }
   return tips;

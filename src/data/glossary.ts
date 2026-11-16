@@ -1493,6 +1493,14 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     relatesTo: "Питание точек доступа Wi-Fi 6 и диагностика show power inline.",
     lessonId: "l12-wifi-standards-roaming",
   },
+  "PSE": {
+    description: "Power Sourcing Equipment — оборудование, подающее питание через Ethernet, например PoE-коммутатор или инжектор.",
+    relatesTo: "Роль источника питания в PoE.",
+  },
+  "PD": {
+    description: "Powered Device — устройство, получающее питание через Ethernet, например IP-камера или точка доступа.",
+    relatesTo: "Роль потребителя питания в PoE.",
+  },
   "802.3at": {
     description: "Стандарт IEEE 802.3at (PoE+) с подачей до 30 Вт от источника питания (25,5 Вт на потребителе), необходимый для полноценной работы большинства точек доступа Wi-Fi 6.",
     relatesTo: "Бюджет PoE и предотвращение режима пониженной мощности MIMO.",
@@ -2085,6 +2093,8 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "MCS": ["Modulation and Coding Scheme", "Индекс модуляции и кодирования в 802.11", true],
   "OKC": ["Opportunistic Key Caching", "Кэширование PMK для быстрого роуминга 802.1X", true],
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
+  "PSE": ["Power Sourcing Equipment", "Источник питания PoE", true],
+  "PD": ["Powered Device", "Потребитель питания PoE", true],
   "802.3at": ["IEEE 802.3at (PoE+)", "Стандарт PoE+ мощностью до 30 Вт на порт", false],
   "RRM": ["Radio Resource Management", "Автоматическое управление каналами и мощностью Wi-Fi", true],
   "CCA": ["Clear Channel Assessment", "Проверка занятости радиоканала перед передачей", true],

@@ -53,6 +53,10 @@ export const LESSON_L4_TCP: Lesson = {
     }
   ],
   "relatedQuestionIds": [
+    "gen-osi-a-11",
+    "gen-osi-a-13",
+    "tcpip-x08",
+    "tcpip-x13",
     "l4-x05",
 
     "l4-02",

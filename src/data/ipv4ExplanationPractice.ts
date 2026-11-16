@@ -5,6 +5,7 @@ const BASE_CALCULATIONS: Readonly<Record<string, number>> = {
   'l3-10': 27,
   'l3-d01': 30,
   'l3-d02': 27,
+  'new-l3-23': 23,
 };
 
 export function ipv4CalculationPrefix(questionId: string): number | undefined {
