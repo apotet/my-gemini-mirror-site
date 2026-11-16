@@ -80,7 +80,7 @@ const ADVANCED_INDIVIDUAL_DEEP: Record<
   },
   'ts-x12': {
     brief: "ss -tulpn и netstat -tulpn показывают слушающие TCP/UDP-сокеты и процессы, которые их открыли.",
-    deep: "Команды ss -tulpn и netstat -tulpn выводят локальные сокеты в состоянии LISTEN (и UDP) вместе с PID и именем процесса.\n\nКлючи:\n-t — TCP\n-u — UDP\n-l — только слушающие\n-p — процесс (нужны права)\n-n — числовые адреса и порты\n\nПример вывода (упрощённо):\nLISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:((\"sshd\",pid=1234,fd=3))\n\nЭто подтверждает, что сервис открыл порт локально. Это не доказывает, что порт доступен извне (firewall, NAT, binding на 127.0.0.1).\n\nНеправильные варианты: ARP-кэш смотрит ip neigh / arp -n; оптический уровень — show interface transceiver; STP — show spanning-tree.",
+    deep: "Команды ss -tulpn и netstat -tulpn показывают локальные TCP-сокеты в состоянии LISTEN и UDP-сокеты, ожидающие датаграммы. С флагом -p отображаются PID и имя процесса, если хватает прав.\n\nКлючи:\n-t — TCP\n-u — UDP\n-l — только слушающие\n-p — процесс (нужны права)\n-n — числовые адреса и порты\n\nПример вывода (упрощённо):\nLISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:((\"sshd\",pid=1234,fd=3))\n\nЭто подтверждает, что сервис открыл порт локально. Это не доказывает, что порт доступен извне (firewall, NAT, binding на 127.0.0.1).\n\nНеправильные варианты: ARP-кэш смотрит ip neigh / arp -n; оптический уровень — show interface transceiver; STP — show spanning-tree.",
     trap: "Путать локальный LISTEN с доступностью порта из сети.",
   },
   'l12-d03': {
@@ -591,9 +591,9 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
 
   const briefAnswer =
     individual?.brief ||
-    (baseExpl.length > 0 && baseExpl.length <= 220
+    (baseExpl.length > 0
       ? baseExpl
-      : `Правильный ответ: «${correctText}».`);
+      : `Разбор для этого вопроса пока не подготовлен. Проверьте тему «${question.topic}» в учебных материалах.`);
 
   const deepAnalysis = individual
     ? individual.plain ?? individual.deep
