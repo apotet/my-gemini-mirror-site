@@ -219,7 +219,7 @@
     "src/data/lessons/cli-show-help-tab.ts": "87d68822e17bf17810671ec3d9dcd413dee612c47141ed4f74f1d306607f4397",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "88d7f9deff8a6c8e2a0e5680d7fe7d234faf76a89631ed69b1fbbe68947fa48f",
+    "src/data/lessons/index.ts": "774a48910f29e70ba28d125102ac64755f0b324065e6755e7a622e59575394aa",
     "src/data/lessons/l12-wifi-standards-roaming.ts": "23b355e2ce1c3cc42c33c13da1af7917140cc678b0fc6a37002a32975cc4c9d2",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
