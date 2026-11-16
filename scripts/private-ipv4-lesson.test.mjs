@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { bundleEntry } from './load-bank.mjs';
+const { ALL_QUESTIONS, getLessonForQuestion } = await bundleEntry('scripts/explanations-test-entry.ts', 'private-ipv4-lesson.mjs');
+const q = ALL_QUESTIONS.find(q => q.id === 'l3-12');
+assert.ok(q, 'l3-12 exists');
+const lesson = getLessonForQuestion(q.id);
+assert.equal(lesson?.id, 'l3-private-ipv4');
+assert.ok(lesson.blocks.length >= 3);
+assert.ok(lesson.professional?.blocks.length >= 2);
+assert.match(lesson.blocks.map(x => x.body).join(' '), /172\.31\.255\.255/);
+assert.match(lesson.professional.blocks.map(x => x.body).join(' '), /RFC 6598/);
+assert.ok(lesson.relatedQuestionIds.includes(q.id));
+console.log('l3-12 has a dedicated two-level RFC1918 lesson');
