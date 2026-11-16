@@ -136,6 +136,9 @@ jobs:
       - name: Review lesson links and missing materials
         run: npm run test:review-navigation
 
+      - name: Base foundations 20-ticket content and lesson coverage
+        run: node scripts/base-foundations-batch2.test.mjs
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
