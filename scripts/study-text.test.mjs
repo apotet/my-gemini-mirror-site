@@ -43,7 +43,7 @@ const rewrittenL4DualIds = ["gen-transport-6", "gen-transport-7", "gen-transport
 ids.push(...rewrittenL4DualIds);
 const rewrittenL4MeaningOnlyIds = ["k-01", "k-02", "k-03", "k-04", "k-05", "k-07", "gen-transport-0", "gen-transport-1", "gen-transport-2", "gen-transport-3", "gen-transport-4", "gen-transport-5", "gen-transport-9", "gen-transport-10", "gen-transport-11", "gen-transport-12", "gen-transport-13", "gen-transport-14", "gen-transport-15", "gen-transport-16", "gen-transport-17", "new-l4-udp-pdu"];
 const rewrittenL57DualIds = ["l7-02", "l7-03", "l7-04", "gen-osi-a-19", "new-l7-dns", "new-l7-dhcp", "review-ptp-16", "review-syslog-23", "review-osi-34", "review-osi-35", "gen-port-6", "gen-port-7", "gen-port-8", "l57-x02", "l57-x04", "l57-x05", "l57-x06", "l57-x07", "l57-x08", "l57-x12", "l57-x14", "l57-x18", "l57-x19", "l57-x20", "l57-d01", "l57-d03", "l57-d04", "l57-d05", "l57-d06"];
-const rewrittenL57MeaningOnlyIds = ["l6-01", "l7-01", "l7-05", "gen-osi-a-18", "review-ptp-17", "review-ptp-18", "gen-port-9", "gen-port-11", "gen-port-13", "gen-port-14", "l57-x09", "l57-x10", "l57-x15", "l57-x16"];
+const rewrittenL57MeaningOnlyIds = ["l6-01", "l7-01", "gen-osi-a-18", "review-ptp-17", "review-ptp-18", "gen-port-9", "gen-port-11", "gen-port-13", "gen-port-14", "l57-x09", "l57-x10", "l57-x15", "l57-x16"];
 ids.push(...["l7-02", "l7-03", "l7-04", "gen-osi-a-19", "new-l7-dns", "new-l7-dhcp", "review-ptp-16", "review-syslog-23", "gen-port-6", "gen-port-7", "gen-port-8", "l57-x04", "l57-x05", "l57-x06", "l57-x14", "l57-x19", "l57-x20", "l57-d04", "l57-d06"]);
 const newDiagnosticDualIds = ['tr-03', 'tr-05', 'tr-10', 'gen-diag-6', 'gen-diag-8', 'gen-diag-11', 'new-ts-photo-panel', 'new-ts-vlan'];
 const newL3DualIds = ['l3-05', 'l3-16'];
@@ -62,13 +62,14 @@ for (const id of diagnosticSkippedIds.filter(id => !Object.hasOwn(DIAGNOSTIC_EXP
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 const fundamentalsBatchIds = ['l2-03', 'l2-05', 'l3-01', 'l4-02', 'tcp-02'];
-ids.push(...fundamentalsBatchIds);
+const modelBatchIds = ['l6-02', 'tcp-08', 'l7-05', 'l3-12', 'tcp-04'];
+ids.push(...fundamentalsBatchIds, ...modelBatchIds);
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids, ...Object.keys(DIAGNOSTIC_EXPLANATIONS)].sort());
 assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['expert-dnat-reply-policy', 'expert-mrp-vlan-failover', 'expert-optical-reserve-margin', 'l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-copp-storm', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);
-  if (stpIds.includes(id) || issue177Ids.includes(id) || fundamentalsBatchIds.includes(id)) assert.equal(deep.professional.sourceCommit, undefined, 'new prose has no historical source revision');
+  if (stpIds.includes(id) || issue177Ids.includes(id) || fundamentalsBatchIds.includes(id) || modelBatchIds.includes(id)) assert.equal(deep.professional.sourceCommit, undefined, 'new prose has no historical source revision');
   else assert.match(deep.professional.sourceCommit, /^[a-f0-9]{40}$/);
   assert.equal(deep.deepAnalysis.split(/\n\s*\n/).length, fourParagraphDualIds.includes(id) ? 4 : 3, id + ': plain paragraph structure');
   if (fourParagraphDualIds.includes(id)) {
@@ -150,7 +151,7 @@ for (const id of ethernetMeaningOnlyIds) {
 }
 
 // Model questions without an individual explanation remain absent.
-for (const id of ['tcp-01', 'tcp-04', 'tcp-08', 'tcpip-x01', 'tcpip-x02', 'tcpip-x03', 'tcpip-x04', 'tcpip-x05', 'tcpip-x13', 'tcpip-x15', 'k-06', 'new-tcpip-payload']) {
+for (const id of ['tcp-01', 'tcpip-x01', 'tcpip-x02', 'tcpip-x03', 'tcpip-x04', 'tcpip-x05', 'tcpip-x13', 'tcpip-x15', 'k-06', 'new-tcpip-payload']) {
   const deep = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
   assert.equal(deep.hasIndividualDeep, false, id);
   assert.equal(deep.professional, undefined, id);
