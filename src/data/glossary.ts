@@ -1990,7 +1990,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "Hysteresis": ["Trigger Hysteresis", "Гистерезис триггера с раздельным порогом восстановления", false],
   "ifOutDiscards": ["ifOutDiscards (IF-MIB)", "Счётчик отброшенных исходящих пакетов в очередях", false],
   "Flapping": ["Link / Alert Flapping", "Частое переключение состояния Up/Down или Problem/OK", false],
-  "Wi-Fi": ["Wireless Fidelity (IEEE 802.11)", "Беспроводная локальная сеть IEEE 802.11", false],
+  "Wi-Fi": ["Wi-Fi (название технологии, не расшифровываемая аббревиатура)", "Беспроводная локальная сеть IEEE 802.11", false],
   "802.11ax": ["IEEE 802.11ax (Wi-Fi 6 / 6E)", "Стандарт Wi-Fi 6 и Wi-Fi 6E", false],
   "802.11be": ["IEEE 802.11be (Wi-Fi 7)", "Стандарт Wi-Fi 7", false],
   "DFS": ["Dynamic Frequency Selection", "Динамический выбор частоты (защита от радаров)", true],
