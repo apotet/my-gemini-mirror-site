@@ -50,6 +50,8 @@ export const LESSON_TCPIP_MODEL: Lesson = {
     "tcp-01",
     "tcp-02",
     "tcp-03",
+    "l6-02",
+    "tcp-08",
     "tcpip-x01",
     "tcpip-x02",
     "tcpip-x05",
