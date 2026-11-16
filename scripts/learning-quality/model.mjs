@@ -48,8 +48,8 @@ export function scan(data, splitText, receipts = []) {
     }
   };
   const practice = (row, value, path) => {
-    if (value && !data.practice[value]) row.error('BROKEN_PRACTICE',path,value);
-    if (value && data.practice[value]) row.dependencies.push(`practice:${value}`);
+    if (value && !Object.hasOwn(data.practice,value)) row.error('BROKEN_PRACTICE',path,value);
+    if (value && Object.hasOwn(data.practice,value)) row.dependencies.push(`practice:${value}`);
   };
   const counts = new Map();
   for (const q of data.questions) {
@@ -75,7 +75,7 @@ export function scan(data, splitText, receipts = []) {
     for (const [mode,content] of [['plain',lesson],['pro',lesson.professional]]) {
       if (!content || !present(content.summary) || !content.blocks?.length || content.blocks.some(b => !present(b.heading) || !present(b.body))) row.error(`MISSING_${mode.toUpperCase()}_BLOCKS`,mode,'Summary and nonempty blocks required');
       for (const term of content?.terms ?? []) {
-        if (!data.glossary[term]) row.error('BROKEN_TAG',`${mode}.terms`,term);
+        if (!Object.hasOwn(data.glossary,term)) row.error('BROKEN_TAG',`${mode}.terms`,term);
         else {row.dependencies.push(`glossary:${term}`); occurrences.set(term,(occurrences.get(term) ?? 0)+1);}
       }
       for (const [i,b] of (content?.blocks ?? []).entries()) practice(row,b.practiceLink,`${mode}.blocks.${i}.practiceLink`);
@@ -117,8 +117,10 @@ export function scan(data, splitText, receipts = []) {
     row.dependencyHash=hash([...reachable].sort().map(id=>[id,byId.get(id)?.contentHash ?? null]));
     row.technical=row.diagnostics.some(d=>d.severity==='ERROR')?'FAIL':'CHECKED';
     const receipt=receipts.find(r=>validReceipt(r,row));
-    if(receipt) row.semantic=receipt.scope==='whole-material'?'PASS':'REVIEW';
     row.reviewReceipt=receipt?.id ?? null;
+    for(const diagnostic of row.diagnostics) if(approvedException(receipt,row,diagnostic)) {diagnostic.severity='EXCEPTION';diagnostic.receiptId=receipt.id;}
+    row.technical=row.diagnostics.some(d=>d.severity==='ERROR')?'FAIL':'CHECKED';
+    row.semantic=receipt && row.technical==='CHECKED'?'PASS':'REVIEW';
     delete row.error; delete row.observe;
   }
   const categories={};
@@ -129,6 +131,9 @@ export function scan(data, splitText, receipts = []) {
 export function validReceipt(receipt,row) {
   return receipt?.id && receipt.materialId===row.id && receipt.contentHash===row.contentHash && receipt.dependencyHash===row.dependencyHash && receipt.candidateDigest===row.candidateDigest && receipt.author && receipt.reviewer && receipt.author!==receipt.reviewer && receipt.scope==='whole-material' && receipt.result==='PASS' && Array.isArray(receipt.evidence) && receipt.evidence.length>0 && receipt.evidence.every(present) && ['technical','beginner','answerConsistency','lessonRelevance','terminology'].every(k=>present(receipt.criteria?.[k])) && Array.isArray(receipt.candidateDecisions) && receipt.candidateDecisions.length===row.candidates.length && receipt.candidateDecisions.every((d,i)=>d.path===row.candidates[i].path && d.token===row.candidates[i].token && ['defined-in-context','not-a-learning-term','defined-interactively'].includes(d.decision) && present(d.reason));
 }
+export function approvedException(receipt,row,diagnostic) {
+  return row.kind==='question' && ['MISSING_LESSON','MISSING_PRO'].includes(diagnostic.code) && validReceipt(receipt,row) && ['photo-identification','obvious-fact'].includes(receipt.triviality) && present(receipt.exceptionReason) && Array.isArray(receipt.exceptions) && receipt.exceptions.length>0 && new Set(receipt.exceptions).size===receipt.exceptions.length && receipt.exceptions.every(c=>['MISSING_PRO','MISSING_LESSON'].includes(c)) && receipt.exceptions.includes(diagnostic.code);
+}
 const signature=d=>JSON.stringify(d);
 export function gate(head,base,receipts=[]) {
   if(!base?.rows) throw new Error('A valid base snapshot is required; gate fails closed');
@@ -138,7 +143,7 @@ export function gate(head,base,receipts=[]) {
     const old=previous.get(row.id),direct=!old || old.contentHash!==row.contentHash;
     if(direct) {
       changed.push(row.id);
-      for(const d of row.diagnostics.filter(d=>d.severity==='ERROR')) failures.push({id:row.id,code:d.code,path:d.path});
+      for(const d of row.diagnostics.filter(d=>d.severity==='ERROR' && !receipts.some(r=>approvedException(r,row,d)))) failures.push({id:row.id,code:d.code,path:d.path});
       if(!receipts.some(r=>validReceipt(r,row))) failures.push({id:row.id,code:'INDEPENDENT_REVIEW_REQUIRED'});
     } else {
       const oldErrors=new Set(old.diagnostics.filter(d=>d.severity==='ERROR').map(signature));

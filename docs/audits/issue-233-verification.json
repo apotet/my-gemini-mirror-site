@@ -302,5 +302,12 @@
       "src/data/lessons/l12-wifi-standards-roaming.ts"
     ],
     "wholeMaterialResult": "REVIEW"
+  },
+  "ciEvidence": {
+    "commit": "261aed3a4bc878675110763473d3ee1165f427a9",
+    "learningQualityRun": "https://github.com/apotet/my-gemini-mirror-site/actions/runs/43845025231",
+    "learningGate": "FAIL:18 exact materials require whole independent review; mutation proof/inventory/external check passed",
+    "registryArtifact": "https://github.com/apotet/my-gemini-mirror-site/actions/runs/43845025231/artifacts/14213329791",
+    "branchProtection": "HTTP403 Resource not accessible by integration; required checks unverified"
   }
 }

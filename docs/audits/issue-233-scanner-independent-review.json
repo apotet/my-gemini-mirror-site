@@ -5,9 +5,9 @@
   "result": "ACCEPTED_WITH_LIMITS",
   "scope": "scanner-gate-code-and-title-wiring",
   "fileHashes": {
-    "scripts/learning-quality/model.mjs": "2c4afd216cd00cbf96d5a20bcacaa4f9710d20ff0ddad69e4610a9c82ae669c2",
+    "scripts/learning-quality/model.mjs": "f19c8d39aeac4c8049d1eb6e461dcfebb505b68f960c0530612d9efe216c4b4b",
     "scripts/learning-quality/runtime.mjs": "92689c8953c2c90035820d194ffe3dbcdb5ea0a126379d5118d65ed33050c09f",
-    "scripts/learning-quality.test.mjs": "9e0b96c0a35ec592ab6a8c7ad13d22860529eaede339c3d8bca5d1d6de9468b0",
+    "scripts/learning-quality.test.mjs": "45a4d1c8030d6450ae387d3e246ea58e923141388015fe4f9c5fc845ccb0e926",
     "scripts/learning-coverage.mjs": "92e30830ed73b68815a108932ec2e765c42fe372e21337208d77f429035a4b1c",
     ".github/workflows/learning-quality.yml": "a2c8e22ee60b9c8757ed6504088aa69ca0032b9760b9b2a4b2dbe74048a164a2",
     "src/components/LessonView.tsx": "09063a1611796ae3c6f471e180bac52e0648f03f4ae09e3e7ca625c808d368b8",
@@ -22,7 +22,9 @@
     "ci": "Workflow invokes mutation proof and differential gate against exact base SHA, preserves registry artifact even after failure. Branch protection unavailable; workflow success is not an enforced branch lock.",
     "ui": "Title GlossaryText plus explicit aria-label preserves the original heading accessible name. Narrow baseline update independently inspected: exactly LessonView, glossary and two Wi-Fi lesson hashes; no bank hashes changed. Code-level acceptance only; root supplies browser evidence. Final exact heading locator reviewed: PSK selected inside actual WPA2-PSK heading. Root-produced evidence.json inspected: 375px tap and 1440px hover/focus PASS. This reviewer did not independently launch the browser.",
     "externalLinks": "Optional checker classifies successful HTTP, 404/410, and unavailable/403/timeout results separately; never uses reachability as semantic PASS. Scope is explicit URL references in sources, not every source label or every URL in content.",
-    "queue": "Bounded deterministic queue preserves full unresolved registry; skips only fingerprint-matching recorded FIX/REVIEW and never manufactures PASS. Independent run selected exactly 2 lesson packets with 1540 pending records."
+    "queue": "Bounded deterministic queue preserves full unresolved registry; skips only fingerprint-matching recorded FIX/REVIEW and never manufactures PASS. Independent run selected exactly 2 lesson packets with 1540 pending records.",
+    "exceptions": "Final exact-ID trivial-question exemptions independently reviewed: valid whole-material receipt, author/reviewer distinction, all hashes and contextual candidate decisions, photo-identification or obvious-fact with explicit reason. Exception codes must be a nonempty unique array drawn only from MISSING_PRO and MISSING_LESSON; answer key, plain and why cannot be waived. Structural errors prevent semantic PASS even when a receipt claims PASS.",
+    "prototypeKeys": "Object.hasOwn rejects inherited constructor/toString names as glossary terms or practice destinations."
   },
   "actualInventory": {
     "questions": 862,
@@ -57,7 +59,8 @@
     "Final full inventory: 862 questions, 57 lessons, 609 glossary, 12 practice; 1014 structural errors; 29982 candidates; 0 semantic PASS",
     "Independent transitive invalidation through question -> lesson -> glossary and cycle: exit 0",
     "scripts/.cache/quality-browser/evidence.json inspected: exact PSK heading, mobile tap and desktop hover/focus",
-    "npm run quality:queue -- --kind lesson --limit 2 --out /tmp/netops-independent-queue.json: exit 0; exactly 2 packets"
+    "npm run quality:queue -- --kind lesson --limit 2 --out /tmp/netops-independent-queue.json: exit 0; exactly 2 packets",
+    "Final quality:test rerun after exception and prototype-key changes: exit 0; malformed string, extra ANSWER_KEY, duplicate exception list rejected; unresolved bad key stays semantic REVIEW"
   ],
   "limits": [
     "No whole-bank semantic PASS. Technical errors and raw candidates remain in registry.",

@@ -13,6 +13,8 @@ check('missing pro',d=>delete d.questions[0].deep.professional,'MISSING_PRO');
 check('missing plain',d=>d.questions[0].deep.deepAnalysis='','MISSING_PLAIN');
 check('missing why',d=>d.questions[0].deep.briefAnswer='','MISSING_WHY');
 check('bad lesson ID',d=>d.questions[0].lessonId='absent','BROKEN_LESSON');
+check('prototype name is not a glossary tag',d=>d.lessons[0].terms.push('constructor'),'BROKEN_TAG');
+check('prototype name is not a practice destination',d=>d.lessons[0].blocks[0].practiceLink='toString','BROKEN_PRACTICE');
 check('broken raw hashtag',d=>d.lessons[0].terms.push('Absent'),'BROKEN_TAG');
 check('missing translation metadata',d=>delete d.tooltips.Ethernet.russian,'MISSING_TOOLTIP');
 check('missing glossary context',d=>delete d.glossary.Ethernet.relatesTo,'MISSING_GLOSSARY_CONTEXT');
@@ -34,6 +36,13 @@ for(const tweak of [r=>r.reviewer=r.author,r=>r.contentHash='stale',r=>r.depende
 const glossaryChange=structuredClone(seed);glossaryChange.glossary.Ethernet.description+=' Updated.';
 const dependency=scan(glossaryChange,split,baseline.rows.map(review));
 assert.equal(dependency.rows.find(r=>r.id==='lesson:l1').semantic,'REVIEW','Dependency changes invalidate prior semantic review');
+const trivial=structuredClone(seed);delete trivial.questions[0].deep.professional;trivial.questions[0].lessonId=null;
+const trivialReport=scan(trivial,split),trivialReceipts=trivialReport.rows.map(review);
+Object.assign(trivialReceipts.find(r=>r.materialId==='question:q1'),{triviality:'obvious-fact',exceptionReason:'Synthetic fixture explicit independent determination',exceptions:['MISSING_PRO','MISSING_LESSON']});
+assert.equal(gate(trivialReport,baseline,trivialReceipts).status,'PASS','Only exact-ID independently reviewed trivial exceptions');
+for(const exceptions of ['MISSING_PRO,MISSING_LESSON',['MISSING_PRO','ANSWER_KEY'],['MISSING_PRO','MISSING_PRO']]) {const malformed=structuredClone(trivialReceipts);malformed.find(r=>r.materialId==='question:q1').exceptions=exceptions;assert.equal(gate(trivialReport,baseline,malformed).status,'FAIL','Exception schema fails closed');}
+const dangerous=structuredClone(trivial);dangerous.questions[0].correct=[999];const bad=scan(dangerous,split),badReceipts=bad.rows.map(review);Object.assign(badReceipts.find(r=>r.materialId==='question:q1'),{triviality:'photo-identification',exceptionReason:'Cannot waive answer key',exceptions:['ANSWER_KEY']});assert.ok(gate(bad,baseline,badReceipts).failures.some(f=>f.code==='ANSWER_KEY'));
+assert.equal(scan(dangerous,split,badReceipts).rows.find(r=>r.id==='question:q1').semantic,'REVIEW','Unresolved structural failure never receives semantic PASS');
 console.log('PASS: raw discovery, differential scope, destructive changes, independent review schema and dependency invalidation');
 // Real exit-code contract used by CI, without corrupting production fixtures.
 if(process.argv.includes('--broken-fixture')) {
