@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { bundleEntry } from './load-bank.mjs';
 
 const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, formatExplanation,
-  formatInlineExplanation, serializeReview, restoreReview, reviewTotals } =
+  formatInlineExplanation, serializeReview, restoreReview, reviewTotals, splitGlossaryText } =
   await bundleEntry('scripts/explanations-test-entry.ts', 'explanations-test.mjs');
 
 const all = new Map(ALL_QUESTIONS.map(question => [question.id, question]));
@@ -78,6 +78,37 @@ for (let prefix = 25; prefix <= 30; prefix++) {
   assert.ok(get(id).deepAnalysis.includes(mask), id);
   assert.equal(get(id).ipv4Practice.targetPrefix, prefix);
   assert.equal(getLessonForQuestion(id).id, 'l3-masks');
+}
+
+// The first content audit fixes the rendered explanation while leaving the bank snapshot intact.
+assert.match(get('tcp-09').briefAnswer, /1500 − 20 − 20 = 1460/);
+assert.match(get('tcp-09').deepAnalysis, /12 байтах опций TCP останется до 1448/);
+assert.equal(formatExplanation(get('tcp-09').deepAnalysis)[0].kind, 'list');
+assert.match(get('tcpip-x07').briefAnswer, /самый длинный совпадающий префикс/);
+assert.match(get('tcpip-x08').commonTrap, /TCP и UDP/);
+assert.match(get('l4-01').practicalTip, /TCP-сегмент вложен в IP-пакет/);
+assert.ok(splitGlossaryText(get('review-poe-29').briefAnswer).some(part => part.term === 'PSE'));
+assert.ok(splitGlossaryText(get('review-poe-29').briefAnswer).some(part => part.term === 'PD'));
+assert.ok(!get('l3-04').keyTakeaways.some(text => text.includes('IPv4-тренажёре')));
+assert.equal(get('l3-04').ipv4Practice, undefined);
+assert.equal(get('new-l3-23').ipv4Practice.targetPrefix, 23);
+assert.equal(get('new-l3-23').ipv4Practice.targetMode, 'calc');
+assert.ok(get('new-l3-23').keyTakeaways.some(text => text.includes('IPv4-тренажёре')));
+const auditLessons = {
+  'cli-ip-static-route': ['l3-04'],
+  'ts-method': ['l3-13'],
+  'osi-pdu': ['l3-14', 'l4-01', 'tcp-04', 'gen-osi-a-7', 'tcpip-x07'],
+  'tcpip-encapsulation': ['tcp-07', 'tcp-09', 'new-tcpip-payload', 'tcpip-x04'],
+  'l4-tcp': ['gen-osi-a-11', 'gen-osi-a-13', 'tcpip-x08', 'tcpip-x13'],
+  'l3-subnets': ['new-l3-23'],
+  'ts-optics': ['diag177-otdr-bidirectional'],
+};
+for (const [lessonId, ids] of Object.entries(auditLessons)) {
+  for (const id of ids) {
+    const lesson = getLessonForQuestion(id);
+    assert.equal(lesson?.id, lessonId, id);
+    assert.ok(lesson.relatedQuestionIds.includes(id), id + ': reverse lesson link');
+  }
 }
 
 const savedQuestion = { ...all.get('ts-x05'), explanation: 'Старый снимок пояснения' };

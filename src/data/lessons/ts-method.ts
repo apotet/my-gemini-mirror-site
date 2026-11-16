@@ -78,6 +78,7 @@ export const LESSON_TS_METHOD: Lesson = {
     }
   ],
   "relatedQuestionIds": [
+    "l3-13",
     "ts-d05",
 
     "tr-01",

@@ -20,7 +20,7 @@ export const LESSON_CLI_IP_STATIC_ROUTE: Lesson = {
     { title: 'Сводка', cmd: 'show ip interface brief', note: 'Маску не выводит.' },
     { title: 'Маршрут по умолчанию', cmd: 'ip route 0.0.0.0 0.0.0.0 192.168.10.254' },
   ],
-  relatedQuestionIds: [],
+  relatedQuestionIds: ['l3-04'],
   sources: ['Cisco IOS IP Addressing Configuration Guide', 'Cisco IOS IP Routing command reference', 'NetOps Cisco IOS CLI Lab supported subset'],
   professional: {
     summary: 'Interface addressing, SVI operational readiness, valid unicast host address, default route and running/startup verification.',

@@ -47,6 +47,10 @@ export const LESSON_TCPIP_ENCAPSULATION: Lesson = {
     },
   ],
   relatedQuestionIds: [
+    'tcp-07',
+    'tcp-09',
+    'new-tcpip-payload',
+    'tcpip-x04',
     'tcpip-x03',
     'tcpip-d01',
     'gap-pack2-01',
