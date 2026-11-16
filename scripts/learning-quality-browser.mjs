@@ -26,7 +26,9 @@ try {
   await page.screenshot({path:`${output}/psk-${width}.png`});
   assert.ok(await heading.locator('[data-glossary-term]').count()>0,'Actual lesson title contains interactive terms');
   await page.keyboard.press('Escape');
-  evidence.push({width,tooltip:'PSK in raw WPA2-PSK heading',actions:width===375?['tap']:['hover','keyboard focus'],titleInteractive:true});
+  const headings=await page.locator('h3').evaluateAll(elements=>elements.map(e=>({text:e.textContent,scroll:e.scrollWidth,client:e.clientWidth})));
+  for(const item of headings) assert.ok(item.scroll<=item.client+1,`Heading clipped: ${JSON.stringify(item)}`);
+  evidence.push({width,tooltip:'PSK in raw WPA2-PSK heading',actions:width===375?['tap']:['hover','keyboard focus'],titleInteractive:true,headingsContained:true});
   await page.close();
  }
 } finally {await browser.close();writeFileSync(`${output}/evidence.json`,JSON.stringify(evidence,null,2));}

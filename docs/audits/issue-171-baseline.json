@@ -182,7 +182,7 @@
     "src/components/KnowledgeBase.tsx": "7321f9839dc72eb3a391a98b4fd57d34f5efbc09c9c25824261e1e2a58edbc75",
     "src/components/KnowledgeRadar.tsx": "97de56f166ec05d6fbe7a94c61e2f5a834fe6f2eabdf1acca1b73d31acdc5206",
     "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
-    "src/components/LessonView.tsx": "09063a1611796ae3c6f471e180bac52e0648f03f4ae09e3e7ca625c808d368b8",
+    "src/components/LessonView.tsx": "41376fece51cb4321815731f2d1307adddb8a479b4e0aea7667cecf2eac0f656",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
     "src/components/MobileTabBar.tsx": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
     "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",

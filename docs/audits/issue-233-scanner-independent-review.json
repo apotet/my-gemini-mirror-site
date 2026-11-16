@@ -10,10 +10,10 @@
     "scripts/learning-quality.test.mjs": "45a4d1c8030d6450ae387d3e246ea58e923141388015fe4f9c5fc845ccb0e926",
     "scripts/learning-coverage.mjs": "92e30830ed73b68815a108932ec2e765c42fe372e21337208d77f429035a4b1c",
     ".github/workflows/learning-quality.yml": "a2c8e22ee60b9c8757ed6504088aa69ca0032b9760b9b2a4b2dbe74048a164a2",
-    "src/components/LessonView.tsx": "09063a1611796ae3c6f471e180bac52e0648f03f4ae09e3e7ca625c808d368b8",
+    "src/components/LessonView.tsx": "41376fece51cb4321815731f2d1307adddb8a479b4e0aea7667cecf2eac0f656",
     "scripts/learning-links.mjs": "556af5c7212e047a2e48eb2921cd97ee56077e18b1c5da92826e1554d049eada",
-    "scripts/learning-quality-browser.mjs": "e654ec69d9ad6e605d714aff3f485fe2e979206d8782d5e9dffbb43e6b8cea5e",
-    "docs/audits/issue-171-baseline.json": "7421c82392fe057d3cae9afb64229a38810431be5c8e87c94f3f4dc2085af080",
+    "scripts/learning-quality-browser.mjs": "c0e96255454262755b88c1a74287d3973aeb1d4fb3d5fee1d39a5957a79d9f7d",
+    "docs/audits/issue-171-baseline.json": "b10d6a3ae2ff42e678f9e26bf7da502bb5ea0610d5f451cfd922c37f9a3d3aa9",
     "scripts/learning-review-queue.mjs": "ded602dd3cd255e7a5d9f69a81311ceb3ba5e1f43cedde78e72733cde081b66c"
   },
   "criteria": {
@@ -24,7 +24,8 @@
     "externalLinks": "Optional checker classifies successful HTTP, 404/410, and unavailable/403/timeout results separately; never uses reachability as semantic PASS. Scope is explicit URL references in sources, not every source label or every URL in content.",
     "queue": "Bounded deterministic queue preserves full unresolved registry; skips only fingerprint-matching recorded FIX/REVIEW and never manufactures PASS. Independent run selected exactly 2 lesson packets with 1540 pending records.",
     "exceptions": "Final exact-ID trivial-question exemptions independently reviewed: valid whole-material receipt, author/reviewer distinction, all hashes and contextual candidate decisions, photo-identification or obvious-fact with explicit reason. Exception codes must be a nonempty unique array drawn only from MISSING_PRO and MISSING_LESSON; answer key, plain and why cannot be waived. Structural errors prevent semantic PASS even when a receipt claims PASS.",
-    "prototypeKeys": "Object.hasOwn rejects inherited constructor/toString names as glossary terms or practice destinations."
+    "prototypeKeys": "Object.hasOwn rejects inherited constructor/toString names as glossary terms or practice destinations.",
+    "mobileHeadingLayout": "Independently reviewed narrow flex-layout repair: block heading text is one min-w-0 span flex item instead of individual GlossaryText fragment children. Existing h3, icon, content and tooltip interaction retained. Actual browser test now asserts every rendered h3 scrollWidth <= clientWidth + 1; root-produced evidence at 375px and 1440px has headingsContained true. Reviewer inspected code and recorded outcomes; root executed browser."
   },
   "actualInventory": {
     "questions": 862,
@@ -60,7 +61,8 @@
     "Independent transitive invalidation through question -> lesson -> glossary and cycle: exit 0",
     "scripts/.cache/quality-browser/evidence.json inspected: exact PSK heading, mobile tap and desktop hover/focus",
     "npm run quality:queue -- --kind lesson --limit 2 --out /tmp/netops-independent-queue.json: exit 0; exactly 2 packets",
-    "Final quality:test rerun after exception and prototype-key changes: exit 0; malformed string, extra ANSWER_KEY, duplicate exception list rejected; unresolved bad key stays semantic REVIEW"
+    "Final quality:test rerun after exception and prototype-key changes: exit 0; malformed string, extra ANSWER_KEY, duplicate exception list rejected; unresolved bad key stays semantic REVIEW",
+    "scripts/.cache/quality-browser/evidence.json inspected after heading wrapper fix: headingsContained true at 375 and 1440; exact PSK tap/hover/focus still PASS"
   ],
   "limits": [
     "No whole-bank semantic PASS. Technical errors and raw candidates remain in registry.",

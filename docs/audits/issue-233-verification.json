@@ -281,7 +281,8 @@
     "PSK": "actual raw WPA2-PSK heading: mobile tap, desktop hover and keyboard focus PASS",
     "limitations": [
       "No real iPhone Safari or WebKit run."
-    ]
+    ],
+    "headings": "PASS: every h3 scrollWidth <= clientWidth+1; mobile clipping from flex Fragment fixed"
   },
   "mutation": "ANSWER_KEY deliberate fixture exited1; stale/self/partial review and missing layers/links covered",
   "unrelatedContentGate": "actual unchanged baseline bank PASS despite legacy backlog",
