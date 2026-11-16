@@ -29,12 +29,14 @@ try {
   for (const width of [375, 1440]) {
     const mobile = width < 500;
     const page = await browser.newPage({ viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile });
+    page.setDefaultTimeout(12000);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(({ lastSnapshot, progressSnapshot, activeSnapshot }) => {
       localStorage.setItem('osi_last_exam_review_v1', lastSnapshot);
       localStorage.setItem('osi_user_progress_v4', progressSnapshot);
       localStorage.setItem('osi_active_session', activeSnapshot);
+      localStorage.setItem('netops_mock_testing_settings', JSON.stringify({ mode: 'mistakes' }));
       localStorage.setItem('netops_mock_testing_active_v1', JSON.stringify({
         ids: ['ts-x05'], index: 0, answers: {}, submitted: false,
       }));
@@ -64,8 +66,11 @@ try {
     await openDetail(socket);
     await socket.locator('pre code').filter({ hasText: /udp\s+UNCONN/ }).waitFor();
     assert.equal(await socket.locator('pre [data-glossary-term]').count(), 0);
-    await socket.locator('[data-glossary-term]').first().waitFor();
-    assert.equal(await socket.locator('ul li').count(), 3);
+    const term = socket.locator('[data-glossary-term]').first();
+    if (mobile) await term.tap();
+    else await term.hover();
+    await page.getByRole('tooltip').waitFor();
+    assert.equal(await socket.locator('details ul li').count(), 3);
     const pre = await socket.locator('pre').last().evaluate(el => [el.clientWidth, el.scrollWidth, getComputedStyle(el).overflowX]);
     assert.equal(pre[2], 'auto');
     if (mobile) assert.ok(pre[1] > pre[0], 'wide terminal output scrolls inside the pre');
@@ -111,6 +116,7 @@ try {
     await openDetail(page);
     await page.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();
     await button('Завершить').click();
+    await button('Посмотреть ответы').click();
     const mock = await openRow(get('ts-x05').text);
     await openDetail(mock);
     await mock.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();

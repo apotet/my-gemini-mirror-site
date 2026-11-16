@@ -16,7 +16,7 @@ export function FormattedExplanation({ text, command = false }: { text: string; 
     {formatExplanation(text).map((block, index) => {
       if (block.kind === 'code') return <pre key={index} className={codeClass}><code>{block.text}</code></pre>;
       if (block.kind === 'list') {
-        const items = block.items.map((item, itemIndex) => <li key={itemIndex}><InlineExplanation text={item} /></li>);
+        const items = block.items.map((item, itemIndex) => <li key={itemIndex} className="whitespace-pre-line"><InlineExplanation text={item} /></li>);
         return block.ordered
           ? <ol key={index} start={block.start} className="list-decimal space-y-1 pl-6">{items}</ol>
           : <ul key={index} className="list-disc space-y-1 pl-6">{items}</ul>;

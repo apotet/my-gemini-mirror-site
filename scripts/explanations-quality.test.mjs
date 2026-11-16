@@ -8,10 +8,15 @@ const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, formatExplanat
 const all = new Map(ALL_QUESTIONS.map(question => [question.id, question]));
 assert.equal(ALL_QUESTIONS.length, 862);
 assert.equal(all.size, ALL_QUESTIONS.length);
+const normalized = text => text.toLowerCase().replace(/[\p{P}\p{Z}\p{S}]+/gu, '');
 for (const question of ALL_QUESTIONS) {
   const dive = getQuestionDeepDive(question);
   assert.ok(question.explanation?.trim(), question.id + ': missing fallback');
   assert.ok(dive.briefAnswer.trim() && dive.deepAnalysis.trim(), question.id + ': missing explanation');
+  const key = normalized(question.correct.map(index => question.answers[index]).join(' '));
+  if (key.length > 2) {
+    assert.notEqual(normalized(dive.briefAnswer), key, question.id + ': brief repeats the key verbatim');
+  }
   for (const text of [dive.briefAnswer, dive.deepAnalysis, dive.professional?.deep].filter(Boolean)) {
     assert.ok(formatExplanation(text).length, question.id + ': formatter dropped all content');
   }
@@ -38,6 +43,17 @@ assert.deepEqual(formatInlineExplanation('-t — TCP, `show ip interface brief`,
   { text: '--help', code: true },
   { text: '.', code: false },
 ]);
+
+assert.deepEqual(formatExplanation('ip route показывает маршруты.\n\nПример: ip route show default\ndefault via 192.0.2.1 dev eth0'), [
+  { kind: 'paragraph', text: 'ip route показывает маршруты.' },
+  { kind: 'paragraph', text: 'Пример:' },
+  { kind: 'code', text: 'ip route show default\ndefault via 192.0.2.1 dev eth0' },
+]);
+assert.deepEqual(formatExplanation('- Проверь интерфейс\n  Смотри счётчики\n- Сверь MTU'), [
+  { kind: 'list', ordered: false, start: 1, items: ['Проверь интерфейс\nСмотри счётчики', 'Сверь MTU'] },
+]);
+assert.ok(formatInlineExplanation('Сигнал -15 dBm, ключ --family=inet').some(part => part.text === '--family=inet' && part.code));
+assert.ok(formatInlineExplanation('Сигнал -15 dBm').every(part => !part.code));
 
 const get = id => getQuestionDeepDive(all.get(id));
 assert.match(get('ts-x05').deepAnalysis, /Status\s+Protocol/);

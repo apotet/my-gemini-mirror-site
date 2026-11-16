@@ -42,7 +42,7 @@ export function EngineeringReview({ question, ...navigation }: ExplanationNaviga
   return <div className="min-w-0 max-w-full space-y-3 text-sm">
     <div className="space-y-2">
       <h4 className="font-bold">Почему так</h4>
-      <FormattedExplanation text={deep.briefAnswer} />
+      <FormattedExplanation text={professional?.brief ?? deep.briefAnswer} />
     </div>
     {canExpand && <details className="space-y-2">
       <summary className="cursor-pointer font-bold text-cyan-700 dark:text-cyan-300">Подробный разбор</summary>

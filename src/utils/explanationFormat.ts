@@ -11,6 +11,9 @@ export type ExplanationBlock =
 const command = /^(?:\$ |(?:[\w.-]+(?:\([\w-]+\))?)[#>]\s|(?:sudo\s+)?(?:ss|netstat|ping6?|traceroute6?|tracert|ethtool|dig|ipconfig|tcpdump|nslookup|curl|show|display|arp)\s+(?:-\S+|[a-z0-9][a-z0-9.:/-]*)(?:\s|$)|(?:sudo\s+)?ip\s+(?:-\S+\s+)?(?:addr(?:ess)?|neigh|route|rule|link)\b)/;
 const terminalOutput = /^(?:(?:LISTEN|UNCONN|ESTAB|ESTABLISHED|SYN-SENT|TIME-WAIT)[ \t]+\d|(?:State|Netid|Proto)\s+.*(?:Recv-Q|Local Address)|(?:default|[\da-f.:]+\/\d{1,3})\s+(?:via|dev)\s|\d+\s+from\s+(?:all|[\da-f.:/]+)\s+lookup\s|(?:PING|Reply from|Ответ от)\s|\d+ bytes from\s)/i;
 
+const namedCommand = /^(Пример(?: команды)?|Команда|Проверка):\s+(.+)$/iu;
+const naturalLanguage = /[А-Яа-яЁё]/u;
+
 export function formatExplanation(text: string): ExplanationBlock[] {
   const blocks: ExplanationBlock[] = [];
   let pending: string[] = [];
@@ -63,9 +66,20 @@ export function formatExplanation(text: string): ExplanationBlock[] {
       adjacent = true;
       continue;
     }
-    if (/^(?: {4}|\t)/.test(line) || command.test(trimmed) || terminalOutput.test(trimmed)) {
+    const previous = blocks.at(-1);
+    if (adjacent && previous?.kind === 'list' && /^ {2,3}\S/.test(line)) {
+      previous.items[previous.items.length - 1] += '\n' + trimmed;
+      continue;
+    }
+    const example = trimmed.match(namedCommand);
+    if (example && command.test(example[2]) && !naturalLanguage.test(example[2]) && !example[2].includes(',')) {
       flush();
-      const previous = blocks.at(-1);
+      blocks.push({ kind: 'paragraph', text: example[1] + ':' }, { kind: 'code', text: example[2] });
+      adjacent = true;
+      continue;
+    }
+    if (/^(?: {4}|\t)/.test(line) || command.test(trimmed) && !naturalLanguage.test(trimmed) || terminalOutput.test(trimmed)) {
+      flush();
       if (adjacent && previous?.kind === 'code') previous.text += '\n' + line;
       else blocks.push({ kind: 'code', text: line });
       adjacent = true;
@@ -80,10 +94,10 @@ export function formatExplanation(text: string): ExplanationBlock[] {
 }
 
 export function formatInlineExplanation(text: string): { text: string; code: boolean }[] {
-  return text.split(/(`[^`\n]+`|(?:^|(?<=[\s(,]))--?[\p{L}\d][\p{L}\d-]*(?=$|[\s),.;:]))/gu)
+  return text.split(/(`[^`\n]+`|(?:^|(?<=[\s(,]))--?[a-zA-Z][a-zA-Z\d-]*(?:=[^\s),.;:]+)?(?=$|[\s),.;:]))/gu)
     .filter(Boolean)
     .map(part => ({
       text: part.startsWith('`') && part.endsWith('`') ? part.slice(1, -1) : part,
-      code: /^`[^`\n]+`$|^--?[\p{L}\d][\p{L}\d-]*$/u.test(part),
+      code: /^`[^`\n]+`$|^--?[a-zA-Z][a-zA-Z\d-]*(?:=[^\s),.;:]+)?$/u.test(part),
     }));
 }
