@@ -59,10 +59,12 @@ interface ExamViewProps {
   soundEnabled: boolean;
   onNavigateToLearning?: () => void;
   onNavigateToTheory?: (questionId: string) => void;
+  onNavigateToIpv4?: (prefix?: number, mode?: 'calc' | 'trainer') => void;
+  onNavigateToIpv6?: () => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning, onOpenPractice }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToTheory, onNavigateToLearning, onOpenPractice, onNavigateToIpv4, onNavigateToIpv6 }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExamDifficulty>('beginner');
@@ -345,7 +347,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
 
   const availableReview = lastReview?.progressEpoch === getProgressEpoch() ? lastReview : null;
   if (reviewSession && reviewSession.progressEpoch === getProgressEpoch()) {
-    return <><ExamReview onOpenPractice={onOpenPractice} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => retryAttempt(reviewSession)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
+    return <><ExamReview onOpenPractice={onOpenPractice} onNavigateToIpv4={onNavigateToIpv4} onNavigateToIpv6={onNavigateToIpv6} key={reviewSession.attemptId || reviewSession.startTime} session={reviewSession} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={session && !session.isCompleted ? undefined : () => retryAttempt(reviewSession)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</>;
   }
 
   if (showParameters || !session || !currentQuestion) {
@@ -495,7 +497,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }
 
   if (session.isCompleted) {
-    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview onOpenPractice={onOpenPractice} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => retryAttempt(session)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</div>;
+    return <div className="space-y-3">{reviewWarning && <p role="status">Разбор доступен сейчас, но его сохранение не удалось.</p>}<ExamReview onOpenPractice={onOpenPractice} onNavigateToIpv4={onNavigateToIpv4} onNavigateToIpv6={onNavigateToIpv6} key={session.attemptId || session.startTime} session={session} onExit={handleExit} onLearning={onNavigateToLearning} onRetry={() => retryAttempt(session)} onNavigateToTheory={onNavigateToTheory} />{replacementDialog}</div>;
   }
 
   const progress = ((session.currentIndex + 1) / session.questions.length) * 100;

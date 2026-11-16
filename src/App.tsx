@@ -131,7 +131,7 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView onOpenPractice={handleOpenPractice} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+          <ExamView onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
             setActiveTab('theory');

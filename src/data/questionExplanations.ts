@@ -639,7 +639,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: detectIpv4Practice(question),
-    ipv6Practice: individual?.ipv6Practice ? { enabled: true } : undefined,
+    ipv6Practice: individual?.ipv6Practice || detectIpv6Practice(question) ? { enabled: true } : undefined,
     keyTakeaways: generateKeyTakeaways(question, category, correctText),
     nextStudy: individual?.next,
   };
@@ -695,6 +695,12 @@ function getCategoryColor(category: QuestionDeepDive['category']): string {
     default:
       return 'from-slate-500/20 to-slate-500/10 text-slate-300 border-slate-500/30';
   }
+}
+
+
+function detectIpv6Practice(q: Question): boolean {
+  const text = `${q.text} ${q.topic || ''} ${q.explanation || ''}`.toLowerCase();
+  return text.includes('ipv6') || text.includes('slaac') || text.includes('ndp') || text.includes('link-local') || text.includes('fe80');
 }
 
 /** Only real subnet/mask math — not ARP/routing mentions alone. */
