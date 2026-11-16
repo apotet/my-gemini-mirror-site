@@ -1,0 +1,99 @@
+name: Gemini from GitHub Issue (staging only)
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+concurrency:
+  group: gemini-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  implement:
+    if: >-
+      github.event.label.name == 'gemini-run' &&
+      github.event.issue.user.login == 'apotet' &&
+      github.actor == 'apotet' &&
+      github.repository == 'apotet/my-gemini-mirror-site'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout staging
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Prepare task and branch
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git switch -c "gemini/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
+          python3 - <<'PY'
+          import json, os, pathlib
+          event=json.load(open(os.environ["GITHUB_EVENT_PATH"]))
+          issue=event["issue"]
+          task=f"""You are editing the NetOps staging repository only.
+          GitHub Issue #{issue['number']}: {issue['title']}
+          {issue.get('body') or ''}
+
+          Requirements:
+          - Read relevant code, docs/ROADMAP.md, tests, and existing material before editing.
+          - Implement only the requested issue; do not touch PR #219 or production.
+          - No deployment, no git push, no commits, no secrets, no workflow or CI edits.
+          - Preserve existing functionality, avoid duplicate questions and lessons.
+          - Add appropriate tests and explanations where relevant.
+          - Report what you changed. The runner will validate and create a PR.
+          """
+          pathlib.Path("/tmp/netops-gemini-task.txt").write_text(task)
+          PY
+
+      - name: Run Gemini CLI
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          test -n "$GEMINI_API_KEY" || { echo "Missing GEMINI_API_KEY secret"; exit 1; }
+          npx --yes @google/gemini-cli --approval-mode yolo --prompt "$(cat /tmp/netops-gemini-task.txt)"
+
+      - name: Validate changes
+        run: |
+          if [ -n "$(git status --porcelain -- .github)" ]; then
+            echo "Changes under .github are forbidden"; exit 1
+          fi
+          npm ci --no-fund --no-audit
+          npm run validate:questions
+          npm run lint
+          npm run build
+
+      - name: Create PR for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Gemini produced no changes"; exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --name-only | grep -E '(^|/)\\.github/|(^|/)\\.env|\\.(pem|key)$'; then
+            echo "Protected paths in staged changes"; exit 1
+          fi
+          git commit -m "Gemini: implement issue #${ISSUE_NUMBER}"
+          gh auth setup-git
+          git push origin HEAD
+          gh pr create --base main --head "$(git branch --show-current)" \
+            --title "Gemini: #${ISSUE_NUMBER} — ${ISSUE_TITLE}" \
+            --body "Automated draft from #${ISSUE_NUMBER}. Requires independent review before merging. Staging only." \
+            --draft
