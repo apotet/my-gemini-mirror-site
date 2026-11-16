@@ -17,14 +17,13 @@ const seeded = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>
 const family = q => q.family || q.id;
 const bankBefore = JSON.stringify(ALL_QUESTIONS);
 const quality = before.questionQualityUpdate;
-const diagnosticPack = before.diagnosticPack177;
-const expertPack = before.expertPack177;
+const combinedPack = before.expertPack177;
 const bankBeforeExpert = ALL_QUESTIONS.filter(q => !q.id.startsWith('expert177-'));
-assert.equal(hash(ALL_QUESTIONS), expertPack.bankSHA256, 'bank includes the expert pack');
-assert.equal(hash(bankBeforeExpert), diagnosticPack.bankSHA256, 'the prior diagnostic bank retains its content and order');
-assert.equal(hash(bankBeforeExpert.filter(q => !q.id.startsWith('diag177-'))), quality.bankSHA256,
+assert.equal(hash(ALL_QUESTIONS), combinedPack.bankSHA256, 'bank includes Expert #177 and #225');
+assert.equal(hash(bankBeforeExpert), before.expertPack225.bankSHA256, 'the prior staging bank is intact');
+assert.equal(hash(bankBeforeExpert.filter(q => !q.id.startsWith('diag177-') && !q.id.startsWith('mon-') && !q.id.startsWith('wifi-') && !q.id.startsWith('exp225-'))), quality.bankSHA256,
   'all questions from the previous revision keep their content and order');
-assert.equal(ALL_QUESTIONS.length, 802);
+assert.equal(ALL_QUESTIONS.length, 862);
 
 function verify(chosen, pool, count) {
   const unique = [...new Map(pool.filter(q => q.difficulty === 'beginner').map(q => [q.id, q])).values()];
@@ -38,9 +37,9 @@ function verify(chosen, pool, count) {
 }
 
 const base = getExamPool('mixed', 'beginner');
-assert.equal(base.length, 244);
+assert.equal(base.length, combinedPack.beginnerPool);
 assert.equal(base.filter(isBeginnerPhoto).length, 68);
-assert.equal(new Set(base.map(family)).size, quality.families);
+assert.equal(new Set(base.map(family)).size, combinedPack.families);
 let noPhoto = 0, repeatedFamily = 0, singlesWithPhoto = 0;
 const photoPositions = new Set();
 const mixedSnapshot = [], singleSnapshot = [];
@@ -60,8 +59,8 @@ assert.equal(noPhoto, 0);
 assert.equal(repeatedFamily, 0);
 assert.equal(photoPositions.size, 10, 'guaranteed photo can occur in every position');
 assert.ok(singlesWithPhoto > 0 && singlesWithPhoto < 1000, 'count=1 does not force or forbid a photo');
-assert.equal(hash(mixedSnapshot), expertPack.mixed10SHA256, '1000 ordered mixed/10 selections match the expanded bank');
-assert.equal(hash(singleSnapshot), before.beginnerSingle.sha256, '1000 beginner/1 selections still match the previous snapshot');
+assert.equal(hash(mixedSnapshot), combinedPack.mixed10SHA256, '1000 ordered mixed/10 selections match the expanded bank');
+assert.equal(hash(singleSnapshot), combinedPack.beginnerSingleSHA256, '1000 beginner/1 selections still match the previous snapshot');
 
 const otherSnapshot = [];
 for (const { id: mode } of QUIZ_MODES) {
@@ -87,7 +86,7 @@ for (const { id: mode } of QUIZ_MODES) {
     }
   }
 }
-assert.equal(hash(otherSnapshot), expertPack.otherMixedModesSHA256, 'all 192 all-level mode/size/seed selections match the expanded bank');
+assert.equal(hash(otherSnapshot), combinedPack.otherMixedModesSHA256, 'all 192 all-level mode/size/seed selections match the expanded bank');
 
 const q = (id, extra = {}) => ({ id, group: 'l3', difficulty: 'beginner', topic: id, text: id,
   answers: ['yes', 'no', 'other', 'none'], correct: [0], explanation: id, ...extra });
@@ -171,5 +170,5 @@ for (const difficulty of [undefined, 'beginner', 'mixed']) for (const shuffled o
 assert.equal(JSON.stringify(ALL_QUESTIONS), bankBefore);
 console.log('PASS: beginner/10 seeds 1–1000:', JSON.stringify({ before: before.before,
   after: { runs: 1000, noPhoto, repeatedFamily }, singlesWithPhoto,
-  mixed10Snapshot: expertPack.mixed10SHA256 }));
+  mixed10Snapshot: combinedPack.mixed10SHA256 }));
 console.log('PASS: all modes/sizes, family shortage fallback, sparse pools, strict levels, 6 legacy restore/review/progress variants');

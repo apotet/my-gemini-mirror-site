@@ -53,9 +53,36 @@
     "mixed10SHA256": "b6a89bb7306478fcefa2898dfc4b29846d9c2fa81f34d07d45b9acabd69c7810",
     "otherMixedModesSHA256": "f84c6971fda35edd977c1eb3c5af5fc357851f91f0a1e0d0505fcc50f75e8024"
   },
+  "monitoringPack": {
+    "bankSHA256": "ba05a4214fb3b5380cc1b218b8339fd5efd24f8a545848f4725298d70521dccd",
+    "beginnerPool": 248,
+    "families": 207,
+    "beginnerSingleSHA256": "dc0f9842d5d2b582f20029cae4e91adb69fd77eb10681fbd5005a8c5f2b3a0ec",
+    "mixed10SHA256": "577ef6856a3491daec70019d4334356887372b3243c7ca0ef207169a439ab727",
+    "otherMixedModesSHA256": "07db9a5cbbf7e2186f8e08b8a97ab24b836d41b684bd08c2319e544137f3be9d"
+  },
+  "wifiPack": {
+    "bankSHA256": "ad005cca3c810130ca0da85cafca9db826154e71ee9775533b5e994e0fa7f797",
+    "beginnerPool": 253,
+    "families": 212,
+    "beginnerSingleSHA256": "70c914488913273fa07fc36c6b0e5489cdf2d1f2b1184b2cd9b6573684d6c8b0",
+    "mixed10SHA256": "c414f3ae656987162179c4622ad80a06aa1279d9ed0741d4839734687032802f",
+    "otherMixedModesSHA256": "b415595b2dd5e1dac6041b73bf26afcf6ea90abeb2ee2e1db3ddb5626c192333"
+  },
+  "expertPack225": {
+    "bankSHA256": "0665cdcca6c55259af02342a3c1064690e7bf1ac65364a95de8a1ce3c8aef602",
+    "beginnerPool": 253,
+    "families": 212,
+    "beginnerSingleSHA256": "70c914488913273fa07fc36c6b0e5489cdf2d1f2b1184b2cd9b6573684d6c8b0",
+    "mixed10SHA256": "2dc8c0ee6b2038c4c19db3416a98f4fdfe5d7a578ed4942bd525f10af6f6bb9d",
+    "otherMixedModesSHA256": "6b4db610aee9c2a2dce0a2cb791ca86c4eced279f0b68d5da982387485401f3f"
+  },
   "expertPack177": {
-    "bankSHA256": "c4460a03c829a43151f65f088acf3c9ab4406bd63236bd56e76efe4f2112e516",
-    "mixed10SHA256": "bae20a87c58ce7861b0fe2488fde4a71253ffdb1141a88888478b0e910c1b1ed",
-    "otherMixedModesSHA256": "d703ea88e3c70afc60f4157af7717d177fe1613b9947fdecbc9d6469f96c243b"
+    "bankSHA256": "0c307c7812bc2fe8ca7cce129c9b4ff3f967c8806ddada08fe4b732cfb327adc",
+    "beginnerPool": 253,
+    "families": 212,
+    "beginnerSingleSHA256": "70c914488913273fa07fc36c6b0e5489cdf2d1f2b1184b2cd9b6573684d6c8b0",
+    "mixed10SHA256": "38cb2e20504146338b1bbdf451a876c694617fe9879b683b7134f7dbaf4edb6b",
+    "otherMixedModesSHA256": "84f8b4561cd4dc28873c59017f9374f1977984432c389660951b56ed0333551f"
   }
 }

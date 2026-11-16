@@ -1,5 +1,8 @@
-import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
 import { EXPERT_CASES_177 } from './expertCases177';
+import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
+import { MONITORING_CASES } from './monitoringCases';
+import { WIFI_CASES } from './wifiCases';
+import { EXPERT_CASES_225 } from './expertCases225';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from './previousDiagnosticQuestions';
 import type { PracticeLink } from './practiceLinks';
 import { Question } from '../types/quiz';
@@ -525,6 +528,27 @@ const INDIVIDUAL_DEEP: Record<
     pro: item.pro + '\n\nПрактика. ' + item.exercise,
     trap: item.trap,
     practiceLink: item.practiceLink,
+    glossaryInProfessional: true,
+  }])),
+  ...Object.fromEntries(MONITORING_CASES.map(item => [item.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro + '\n\nПрактика. ' + item.exercise,
+    trap: item.trap,
+    glossaryInProfessional: true,
+  }])),
+  ...Object.fromEntries(WIFI_CASES.map(item => [item.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro + '\n\nПрактика. ' + item.exercise,
+    trap: item.trap,
+    glossaryInProfessional: true,
+  }])),
+  ...Object.fromEntries(EXPERT_CASES_225.map(item => [item.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro + '\n\nПрактика. ' + item.exercise,
+    trap: item.trap,
     glossaryInProfessional: true,
   }])),
   ...Object.fromEntries(EXPERT_CASES_177.map(item => [item.question.id, {
