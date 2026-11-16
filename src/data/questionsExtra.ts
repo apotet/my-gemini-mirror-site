@@ -625,7 +625,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'ss -tulpn или netstat -tulpn показывают…',
     answers: ['Слушающие сокеты и процессы', 'Только ARP-кэш', 'Только optical dBm', 'Только STP port roles'],
     correct: [0],
-    explanation: 'Проверка, что сервис действительно слушает порт.',
+    explanation: 'Команды ss -tulpn и netstat -tulpn показывают слушающие (LISTEN) TCP/UDP-сокеты и связанные с ними процессы (PID/имя). Это позволяет проверить, действительно ли сервис открыл нужный порт локально.',
     difficulty: 'beginner',
   },
   {
