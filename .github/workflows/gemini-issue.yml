@@ -61,6 +61,7 @@ jobs:
       - name: Run Gemini CLI
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
         run: |
           test -n "$GEMINI_API_KEY" || { echo "Missing GEMINI_API_KEY secret"; exit 1; }
           npx --yes @google/gemini-cli --approval-mode yolo --prompt "$(cat /tmp/netops-gemini-task.txt)"
