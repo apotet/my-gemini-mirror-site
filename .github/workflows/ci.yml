@@ -155,5 +155,7 @@ jobs:
           path: |
             scripts/.cache/coverage-report.json
             scripts/.cache/coverage-summary.txt
+            scripts/.cache/review-material-coverage.json
+            scripts/.cache/review-browser/*.png
             scripts/.cache/validate-summary.txt
           if-no-files-found: ignore

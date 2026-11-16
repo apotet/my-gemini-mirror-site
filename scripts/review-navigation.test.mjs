@@ -21,10 +21,12 @@ await build({ stdin: { contents: `
 const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, getLesson, render } =
   await import(pathToFileURL(outfile).href);
 const missingLessonIds = [], missingProfessionalIds = [];
+const materialCombinations = new Set();
 const escape = value => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#x27;');
 for (const q of ALL_QUESTIONS) {
   const before = JSON.stringify(q), lesson = getLessonForQuestion(q.id), deep = getQuestionDeepDive(q);
   const html = render(q);
+  materialCombinations.add(`${Boolean(lesson)}:${Boolean(deep.professional?.deep.trim())}`);
   if (lesson) {
     assert.equal(getLesson(lesson.id)?.id, lesson.id);
     assert.ok(html.includes(`aria-label="Перейти к уроку: ${escape(lesson.title)}"`), q.id);
@@ -44,6 +46,7 @@ for (const q of ALL_QUESTIONS) {
   }
   assert.equal(JSON.stringify(q), before, 'rendering never mutates saved question content');
 }
+assert.equal(materialCombinations.size, 4, 'all lesson/pro availability combinations are exercised');
 assert.ok(missingLessonIds.length && missingLessonIds.length < ALL_QUESTIONS.length);
 assert.ok(missingProfessionalIds.length && missingProfessionalIds.length < ALL_QUESTIONS.length);
 const audit = { baseCommit: '0eb8f5b11b62f949b48554236664ab33f2de3957', totalQuestions: ALL_QUESTIONS.length,

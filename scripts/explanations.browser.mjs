@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
 import { loadBankWithExplanations } from './load-bank.mjs';
 
 const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playwright');
@@ -22,6 +23,7 @@ const activeSnapshot = JSON.stringify({
   attemptId: 'explanation-instant-fixture', submittedQuestions: {}, userAnswers: {},
 });
 
+mkdirSync('scripts/.cache/review-browser', { recursive: true });
 const browser = await chromium.launch({
   ...(process.env.NETOPS_CHROMIUM_PATH ? { executablePath: process.env.NETOPS_CHROMIUM_PATH } : {}),
 });
@@ -92,6 +94,8 @@ try {
     await button('Простыми словами', layered).click();
     assert.equal(await button('Простыми словами', layered).getAttribute('aria-pressed'), 'true');
 
+    await page.screenshot({ path: `scripts/.cache/review-browser/review-${width}.png`, fullPage: true });
+
     const cidr = await openRow(get('l3-d01').text);
     await button('Открыть IPv4-тренажёр', cidr).click();
     await page.getByText(/Префикс маски: \/30/).waitFor();
@@ -160,6 +164,7 @@ try {
     await button(/^Перейти к уроку:/, fresh).click();
     await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
     await noPageOverflow();
+    await page.screenshot({ path: `scripts/.cache/review-browser/lesson-${width}.png`, fullPage: true });
     assert.deepEqual(errors, []);
     console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, direct lesson in instant/final/last/mistake and mock feedback/results, material gaps and immutable historical review`);
     await page.close();
