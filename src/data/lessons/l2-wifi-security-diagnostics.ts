@@ -80,9 +80,9 @@ export const LESSON_L2_WIFI_SECURITY_DIAGNOSTICS: Lesson = {
       note: 'Обращайте внимание на tx retries, tx failed, signal avg и текущие tx/rx bitrate.',
     },
     {
-      title: 'Просмотр загрузки эфира, шума и ошибок по радиомодулям на Cisco WLC',
+      title: 'Cisco AireOS WLC: сведения о точке доступа и её радиомодулях',
       cmd: 'show ap summary\nshow ap config 802.11b <ap-name>\nshow ap config 802.11a <ap-name>',
-      note: 'Channel Utilization около 70% — распространённый диагностический ориентир, а не универсальный норматив. Высокий Noise Floor указывает на не-Wi-Fi помеху.',
+      note: 'Команды этой секции относятся к AireOS WLC, не к Catalyst 9800. Синтаксис зависит от версии ПО. Channel Utilization около 70% — ориентир для расследования, а не универсальный норматив; высокий Noise Floor может указывать на внешние радиопомехи.',
     },
     {
       title: 'Проверка портов и тегированных VLAN коммутатора под точкой доступа',
@@ -159,7 +159,7 @@ export const LESSON_L2_WIFI_SECURITY_DIAGNOSTICS: Lesson = {
         cmd: 'iw dev wlan0 station dump\niw phy phy0 info',
       },
       {
-        title: 'Проверка радиоэфира и клиентов на Cisco IOS-XE WLC',
+        title: 'Cisco Catalyst 9800 (IOS-XE): сведения о радио и клиентах',
         cmd: 'show ap dot11 5ghz summary\nshow ap auto-rf 802.11a\nshow wireless client summary',
       },
       {
