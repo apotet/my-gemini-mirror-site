@@ -22,8 +22,8 @@ jobs:
             const missing = [];
             for (let i = 1; i <= 10; i++) {
               const id = 'GATE-' + String(i).padStart(2, '0');
-              const line = body.split(/\\r?\\n/).find(s => s.includes('[' + id + ']'));
-              if (!line || !/^\\s*- \\[x\\] \\[GATE-\\d{2}\\]/i.test(line)) missing.push(id);
+              const line = body.split(/\r?\n/).find(s => s.includes('[' + id + ']'));
+              if (!line || !/^\s*- \[x\] \[GATE-\d{2}\]/i.test(line)) missing.push(id);
             }
             if (missing.length) core.setFailed('Unconfirmed mandatory checks: ' + missing.join(', ') + '. Complete the PR template with evidence before merge.');
             else core.info('All ten mandatory PR checklist items confirmed. Human review and branch protection are still required.');
