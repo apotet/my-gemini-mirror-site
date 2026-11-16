@@ -7,7 +7,7 @@
     "6877141640"
   ],
   "auditProjectionSHA256": "f9a2b686e0a7d7f6751df61d0df7572d6277635308b6f300b1e1419464b994a2",
-  "bankSHA256": "0c307c7812bc2fe8ca7cce129c9b4ff3f967c8806ddada08fe4b732cfb327adc",
+  "bankSHA256": "b17a6f910cf5f80cd452448be01eef3b68143ad02227b96eb49cf571507ad59d",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -274,12 +274,12 @@
     "src/data/monitoringCases.ts": "325649898219baeaeb7cd7569d29174dc7b3938509f0225a2ddebf610beb2b68",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "1275f3c55e3829f6e8d84ffb858c786abfc4c5eccc90e156523739514672708a",
+    "src/data/questionExplanations.ts": "3caa8ed49df78e48059351560bb029ec046b20c7624403fdf95ff85e1141ce37",
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
-    "src/data/questions.json": "04630cd2d4772b00041c5f72c60d804c78cc21249e38026f4818fc47ab4e4143",
+    "src/data/questions.json": "cd10f9a74bf58e68721378bd55b07b47e338e052c20ef147c4e0fe4d15c9fa62",
     "src/data/questionsData.ts": "9c5494e3dbbfdc9c97f04028fca59594d11d80d92b835c343c1976a6c9c8d189",
-    "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
-    "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
+    "src/data/questionsExtra.ts": "560aaa4ebb5b8bcf27a2433b57eadab1e121be11bed2b81c862edd590fdf8c2a",
+    "src/data/questionsExtraDifficulty.ts": "ede81ffb6135bb9d3aef5809f278de33a7cbb4c3cd867e8b148dbe3f2a7e56b0",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
     "src/data/wifiCases.ts": "47ea9c62898a4bc0e57fec250c10fb6d3df151c269974b97bfe78bdc7a79996b",
     "src/index.css": "0c2c3e4808a5f5b8aa6ae11e3cae5a9bdd1fc603a0e31cf30146562ea9ba65dc",

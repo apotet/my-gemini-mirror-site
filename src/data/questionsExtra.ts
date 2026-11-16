@@ -470,7 +470,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Код 404 означает…',
     answers: ['Ресурс не найден', 'Успешное создание', 'Перенаправление', 'Ошибка шлюза 502'],
     correct: [0],
-    explanation: '404 Not Found.',
+    explanation: 'Код 404 означает, что ресурс по указанному URL не найден на сервере. Клиент получил ответ, но запрошенный документ отсутствует.',
     difficulty: 'beginner',
   },
   {
@@ -512,7 +512,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Нет link на порту. С чего начать?',
     answers: ['Кабель, SFP, admin/oper status порта (L1/L2)', 'Сразу traceroute до 8.8.8.8', 'Очистка ARP на всех роутерах', 'Смена OSPF area'],
     correct: [0],
-    explanation: 'Без линка верхние уровни бессмысленны — bottom-up.',
+    explanation: 'Диагностику начинают с L1: нет физического линка — бессмысленно проверять IP, DNS или приложение. Сначала подтвердите линк, скорость, duplex и ошибки на порту.',
     difficulty: 'applied',
   },
   {
@@ -532,7 +532,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Ping по IP сайта работает, по имени — нет. Вероятная причина?',
     answers: ['Проблема DNS (резолв)', 'Обрыв оптики на магистрали', 'Неверный native VLAN на всех транках', 'Переполнен CAM'],
     correct: [0],
-    explanation: 'IP доступен → сеть есть; имя не резолвится → DNS.',
+    explanation: 'Если по IP сервис отвечает, а по имени — нет, проблема в разрешении имён (DNS). Проверяют резолвер, записи A/AAAA и доступность DNS-серверов.',
     difficulty: 'applied',
   },
   {
@@ -542,7 +542,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Какая команда Linux покажет маршруты?',
     answers: ['ip route (или route -n)', 'show vlan brief', 'netstat -e only', 'dig only'],
     correct: [0],
-    explanation: 'ip route / route -n — таблица маршрутизации хоста.',
+    explanation: 'ip route (или route -n) показывает таблицу маршрутизации хоста: default gateway, сети и метрики. Это первый шаг при проблемах с доступностью удалённых сетей.',
     difficulty: 'beginner',
   },
   {
@@ -552,7 +552,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'show ip interface brief на Cisco полезен, чтобы…',
     answers: ['Увидеть статус интерфейсов и IP', 'Показать всю running-config ACL', 'Вывести MAC-таблицу целиком', 'Запустить traceroute'],
     correct: [0],
-    explanation: 'Краткая сводка admin/oper и адресов.',
+    explanation: 'ip addr (или ifconfig) показывает административный и операционный статус интерфейса, IP-адреса и маски. Позволяет быстро проверить, поднят ли интерфейс и какой адрес назначен.',
     difficulty: 'beginner',
   },
   {
@@ -562,7 +562,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Полудуплекс с одной стороны и full с другой часто даёт…',
     answers: ['Ошибки, коллизии, деградацию скорости', 'Только рост TTL', 'Автоматический выбор VLAN 1', 'Отключение DNS'],
     correct: [0],
-    explanation: 'Duplex mismatch — классика L1/L2 проблем.',
+    explanation: 'Несовпадение duplex (full/half) между портами приводит к коллизиям, CRC-ошибкам и нестабильной работе. Проверяют скорость и duplex на обеих сторонах линка.',
     difficulty: 'applied',
   },
   {
@@ -585,7 +585,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Traceroute показывает «* * *» на части хопов. Это обязательно значит обрыв?',
     answers: ['Нет: ICMP/UDP может фильтроваться, путь при этом есть', 'Да, всегда полный down', 'Да, и DNS сломан', 'Да, и STP остановил весь core'],
     correct: [0],
-    explanation: 'Фильтрация ICMP time-exceeded даёт звёздочки без полного обрыва.',
+    explanation: 'Звёздочки в traceroute часто означают, что промежуточный узел фильтрует ICMP Time Exceeded, а не полный обрыв пути. Сервис при этом может быть доступен.',
     difficulty: 'applied',
   },
   {
@@ -605,7 +605,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'После внедрения ACL «пропал» один сервис, ping проходит. Куда смотреть?',
     answers: ['Правила ACL по портам/протоколу этого сервиса', 'Только speed/duplex', 'Только длину патч-корда', 'Только root bridge STP'],
     correct: [0],
-    explanation: 'ICMP может быть разрешён, а TCP/UDP сервиса — нет.',
+    explanation: 'Успешный ping не гарантирует доступность сервиса: ICMP может быть разрешён, а TCP/UDP-порт — закрыт или фильтрован. Проверяют конкретный порт (ss, nc, curl).',
     difficulty: 'applied',
   },
   {
@@ -615,7 +615,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Крупные пакеты не проходят, мелкий ping проходит. Подозрение на…',
     answers: ['MTU/MSS и фильтрацию ICMP Fragmentation Needed (PMTUD)', 'Только wrong DNS', 'Только half-open STP', 'Только exhausted DHCP pool'],
     correct: [0],
-    explanation: 'Классика Path MTU Discovery black hole.',
+    explanation: 'Крупные пакеты не проходят при работающем мелком ping — типичный признак PMTUD black hole: промежуточный узел блокирует ICMP Fragmentation Needed. Проверяют MTU и ICMP.',
     difficulty: 'advanced',
   },
   {
@@ -625,7 +625,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'ss -tulpn или netstat -tulpn показывают…',
     answers: ['Слушающие сокеты и процессы', 'Только ARP-кэш', 'Только optical dBm', 'Только STP port roles'],
     correct: [0],
-    explanation: 'Проверка, что сервис действительно слушает порт.',
+    explanation: 'Команды ss -tulpn и netstat -tulpn показывают слушающие (LISTEN) TCP/UDP-сокеты и связанные с ними процессы (PID/имя). Это позволяет проверить, действительно ли сервис открыл нужный порт локально.',
     difficulty: 'beginner',
   },
   {
@@ -635,7 +635,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     text: 'Правило «сначала подтверди симптомы, потом меняй конфиг» нужно, чтобы…',
     answers: ['Не «чинить» случайно и иметь baseline', 'Ускорить только reboot', 'Игнорировать L1', 'Всегда начинать с ACL deny any'],
     correct: [0],
-    explanation: 'Фиксация симптомов и baseline экономит время и откаты.',
+    explanation: 'Сначала фиксируют симптомы и текущее состояние (baseline), затем вносят изменения. Это позволяет отличить эффект правки от исходной проблемы и безопасно откатываться.',
     difficulty: 'applied',
   },
 
