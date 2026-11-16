@@ -18,7 +18,13 @@
     "test:review-navigation": "node scripts/review-navigation.test.mjs",
     "prebuild": "node scripts/validate-questions.mjs && node scripts/stp-lesson-links.test.mjs && node scripts/advanced-glossary.test.mjs && node scripts/cli-two-switch-svi.test.mjs && node scripts/svi-lesson.test.mjs && node scripts/cli-access-svi-followup.test.mjs && node scripts/cli-completion-status.test.mjs && npm run validate:learning-levels",
     "validate:learning-levels": "node scripts/validate-learning-levels.mjs",
-    "test:learning-levels": "node scripts/learning-levels.test.mjs"
+    "test:learning-levels": "node scripts/learning-levels.test.mjs",
+    "quality:scan": "node scripts/learning-coverage.mjs",
+    "quality:gate": "node scripts/learning-coverage.mjs --gate",
+    "quality:test": "node scripts/learning-quality.test.mjs",
+    "quality:packet": "node scripts/learning-review-packet.mjs",
+    "quality:links": "node scripts/learning-links.mjs",
+    "quality:queue": "node scripts/learning-review-queue.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

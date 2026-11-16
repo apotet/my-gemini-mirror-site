@@ -1,0 +1,52 @@
+name: Learning quality
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  learning-content-gate:
+    name: Learning content gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-fund --no-audit
+      - name: Scanner and review-gate regression tests
+        run: npm run quality:test
+      - name: Prove corrupt content exits nonzero
+        shell: bash
+        run: |
+          set +e
+          node scripts/learning-quality.test.mjs --broken-fixture > /tmp/mutation.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/mutation.log
+          test "$status" -eq 1
+          grep -q 'ANSWER_KEY' /tmp/mutation.log
+      - name: Full bank inventory
+        run: npm run quality:scan -- --out scripts/.cache/learning-quality/inventory.json
+      - name: Check external source references
+        continue-on-error: true
+        run: npm run quality:links
+      - name: Block incomplete or unreviewed content changes
+        if: github.event_name == 'pull_request'
+        env:
+          QUALITY_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: npm run quality:gate -- --base "$QUALITY_BASE_SHA" --out scripts/.cache/learning-quality/gate.json
+      - name: Preserve per-ID registry even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: learning-quality-registry
+          path: scripts/.cache/learning-quality/
+          if-no-files-found: warn
