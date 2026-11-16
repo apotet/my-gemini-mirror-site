@@ -52,7 +52,7 @@ const gapPackIds = ALL_QUESTIONS.filter(q => /^gap-pack[123]-(?:0[1-9]|[12]\d|30
 const stpIds = Array.from({ length: 15 }, (_, i) => `stp-new-${String(i + 1).padStart(2, '0')}`);
 const fourParagraphDualIds = [...newDiagnosticDualIds, ...newL3DualIds, ...newPhotoDualIds, ...gapPackIds, ...stpIds];
 ids.push(...fourParagraphDualIds);
-const issue177Ids = ALL_QUESTIONS.filter(q => q.id.startsWith('diag177-')).map(q => q.id);
+const issue177Ids = ALL_QUESTIONS.filter(q => /^(?:diag|expert)177-/.test(q.id)).map(q => q.id);
 ids.push(...issue177Ids);
 const diagnosticSkippedIds = ["ts-pack1-01","ts-pack1-02","ts-pack1-03","ts-pack1-07","ts-pack1-08","ts-pack1-09","ts-pack1-10","ts-pack1-11","ts-pack1-12","ts-pack1-13","ts-pack1-14","ts-pack1-15","ts-pack1-16","ts-pack1-17","ts-pack1-18","ts-pack1-19"];
 for (const id of diagnosticSkippedIds.filter(id => !Object.hasOwn(DIAGNOSTIC_EXPLANATIONS, id))) {
@@ -62,7 +62,7 @@ for (const id of diagnosticSkippedIds.filter(id => !Object.hasOwn(DIAGNOSTIC_EXP
   assert.equal(getQuestionDeepDive(q).professional, undefined);
 }
 assert.deepEqual(ALL_QUESTIONS.filter(q => getQuestionDeepDive(q).professional).map(q => q.id).sort(), [...ids, ...Object.keys(DIAGNOSTIC_EXPLANATIONS)].sort());
-assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-copp-storm', 'ts-method']);
+assert.deepEqual(LESSONS.filter(l => l.professional).map(l => l.id).sort(), ['expert-dnat-reply-policy', 'expert-mrp-vlan-failover', 'expert-optical-reserve-margin', 'l2-access-auth', 'l2-access-guard', 'l2-ethernet', 'l2-stp', 'l2-vlan', 'l3-arp', 'l3-ipv6', 'l3-nat', 'l3-ospf', 'l3-rpki', 'l3-vrrp', 'l4-tcp', 'l4-tcp-loss', 'l7-dhcp', 'l7-dns', 'osi-pdu', 'tcpip-model', 'tls-sni', 'ts-copp-storm', 'ts-method']);
 for (const id of ids) {
   const q = ALL_QUESTIONS.find(q => q.id === id), deep = getQuestionDeepDive(q);
   assert.ok(deep.professional.brief && deep.professional.deep);

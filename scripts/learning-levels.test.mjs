@@ -13,11 +13,11 @@ const bankBefore = JSON.stringify(ALL_QUESTIONS);
 verifyLearningLevelBaseline(ALL_QUESTIONS, registry);
 assert.deepEqual(Object.keys(LEARNING_LEVELS), ['1', '2', '3', '4', '5']);
 assert.deepEqual(statistics, getLearningLevelStatistics());
-assert.equal(statistics.total, 859);
-assert.equal(statistics.assigned, 859);
-assert.deepEqual(statistics.levels, { 1: 220, 2: 160, 3: 376, 4: 88, 5: 15 });
-assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 160, 3: 376, 4: 88, 5: 15 });
-assert.deepEqual(statistics.auditActions, { KEEP: 498, RELABEL: 361, REVIEW: 0 });
+assert.equal(statistics.total, 862);
+assert.equal(statistics.assigned, 862);
+assert.deepEqual(statistics.levels, { 1: 220, 2: 160, 3: 376, 4: 88, 5: 18 });
+assert.deepEqual(statistics.auditProposals, { 1: 220, 2: 160, 3: 376, 4: 88, 5: 18 });
+assert.deepEqual(statistics.auditActions, { KEEP: 501, RELABEL: 361, REVIEW: 0 });
 assert.deepEqual(statistics.reviewIds, []);
 const { previousRegistryEntries } = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8')).technicalReviewClosure;
 for (const [id, previous] of Object.entries(previousRegistryEntries)) {

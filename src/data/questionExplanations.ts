@@ -1,3 +1,4 @@
+import { EXPERT_CASES_177 } from './expertCases177';
 import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
 import { MONITORING_CASES } from './monitoringCases';
 import { WIFI_CASES } from './wifiCases';
@@ -548,6 +549,14 @@ const INDIVIDUAL_DEEP: Record<
     deep: item.sense.join('\n\n'),
     pro: item.pro + '\n\nПрактика. ' + item.exercise,
     trap: item.trap,
+    glossaryInProfessional: true,
+  }])),
+  ...Object.fromEntries(EXPERT_CASES_177.map(item => [item.question.id, {
+    brief: item.brief,
+    deep: item.sense.join('\n\n'),
+    pro: item.pro,
+    trap: item.trap,
+    practiceLink: item.practiceLink,
     glossaryInProfessional: true,
   }])),
 };
