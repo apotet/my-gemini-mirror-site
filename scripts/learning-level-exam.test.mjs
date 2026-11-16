@@ -13,7 +13,7 @@ const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [220, 160, 376, 80, 3];
+const totals = [220, 160, 376, 88, 15];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 0);
 assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 0);
@@ -51,9 +51,9 @@ for (const level of [1, 2, 3, 4, 5]) {
     }
   }
 }
-assert.equal(assigned.length, 839);
-assert.equal(new Set(assigned).size, 839);
-assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 3, 'no top-up of Expert');
+assert.equal(assigned.length, 859);
+assert.equal(new Set(assigned).size, 859);
+assert.equal(getLearningLevelQuestions('mixed', 30, seeded(1), 5).length, 15, 'no top-up of Expert');
 assert.equal(getLearningLevelQuestions('visual-l1', 10, seeded(1), 5).length, 0, 'no foreign topic/level');
 const appliedWithBeginner = getLearningLevelPool('mixed', 3).find(q => q.difficulty === 'beginner');
 const fundamentalsWithAdvanced = getLearningLevelPool('mixed', 1).find(q => q.difficulty === 'advanced');
@@ -221,13 +221,13 @@ for (const [id, [lessonId, terms]] of Object.entries(technicalTopics)) {
 console.log('PASS: nine linked lessons, plain/pro explanations, scoped tooltips and tag cards');
 
 const diagnosticLevel = getLearningLevelPool('mixed', 4);
-assert.equal(diagnosticLevel.length, 80);
+assert.equal(diagnosticLevel.length, 88);
 for (const question of diagnosticLevel) {
   const detail = getQuestionDeepDive(question);
   assert.ok(detail.hasIndividualDeep, question.id);
   assert.ok(detail.professional?.brief.trim() && detail.professional.deep.trim(), question.id);
 }
-console.log('PASS: all 80 Diagnostics questions have a visible professional explanation');
+console.log('PASS: all 88 Diagnostics questions have a visible professional explanation');
 
 const { PREVIOUS_DIAGNOSTIC_QUESTIONS } = await bundleEntry(
   'src/data/previousDiagnosticQuestions.ts', 'previous-diagnostic-questions.mjs',
@@ -351,3 +351,24 @@ for (const q of wifiPack) {
   assert.ok(splitGlossaryText(detail.professional.deep).some(token => token.term), q.id + ' pro glossary');
 }
 console.log('PASS: wifi pack has 20 linked 802.11/roaming/security/diagnostics questions with both layers, hints, and glossary');
+
+const expertPack225 = ALL_QUESTIONS.filter(q => q.id.startsWith('exp225-'));
+assert.equal(expertPack225.length, 20);
+assert.equal(expertPack225.filter(q => registry[q.id].learningLevel === 4).length, 8);
+assert.equal(expertPack225.filter(q => registry[q.id].learningLevel === 5).length, 12);
+for (const q of expertPack225) {
+  const detail = getQuestionDeepDive(q);
+  const lesson = getLessonForQuestion(q.id);
+  assert.ok(lesson?.relatedQuestionIds.includes(q.id), q.id);
+  assert.equal(q.answers.length, 4, q.id);
+  assert.equal(new Set(q.answers).size, 4, q.id);
+  assert.equal(q.correct.length, 1, q.id);
+  assert.ok(!q.text.includes(q.answers[q.correct[0]]), q.id);
+  assert.ok(q.remember?.trim(), q.id + ' remember');
+  assert.equal(detail.deepAnalysis.split('\n\n').length, 3, q.id);
+  assert.ok(detail.professional?.deep.includes('\n\nПрактика. '), q.id);
+  assert.ok(detail.glossaryInProfessional, q.id);
+  assert.ok(splitGlossaryText(detail.deepAnalysis).some(token => token.term), q.id + ' plain glossary');
+  assert.ok(splitGlossaryText(detail.professional.deep).some(token => token.term), q.id + ' pro glossary');
+}
+console.log('PASS: issue #225 expert pack has 20 linked L4/L5 diagnostics (8 L4, 12 L5) with both layers, hints, and glossary');

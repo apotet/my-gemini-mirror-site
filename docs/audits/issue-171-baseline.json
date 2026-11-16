@@ -6,8 +6,8 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "35246bbaa8ca10c196093cf7653c44c630871ae375214b2fd0ecdf9b13c8505d",
-  "bankSHA256": "ad005cca3c810130ca0da85cafca9db826154e71ee9775533b5e994e0fa7f797",
+  "auditProjectionSHA256": "beb12f82814f14640caf591bdb1028b5f3162fa42f187e018bd027e14873ec95",
+  "bankSHA256": "0665cdcca6c55259af02342a3c1064690e7bf1ac65364a95de8a1ce3c8aef602",
   "auditDrift": [
     {
       "id": "photo-cable-colors",
@@ -209,7 +209,8 @@
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
-    "src/data/glossary.ts": "ed954b381f32a5f512a0af1503677cd4defaaeee736da8b55358e4dbc941b300",
+    "src/data/expertCases225.ts": "d714ba4489a10e5ed3dde244e2f0fc807b8923777fed6510384352b70e7d1d8d",
+    "src/data/glossary.ts": "cd8155c9f847b5872018b7e9533e9d2ea6437a08a7d62cfa2b56d8b6dd909833",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "e973405b56595b139428548e391a2f1057cfda78ccd884e272e8686fb2a0785b",
@@ -217,7 +218,7 @@
     "src/data/lessons/cli-show-help-tab.ts": "08d45e03af7486eff8b692f50206aedb035360d39f9568ca7a1b10b5e5af5d17",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "06f9b4189aa582910f4185ad01e0bb2d8667dae95ffe3df1ed0c97faad691ccb",
+    "src/data/lessons/index.ts": "0924a2b65a0025a9c935cc986bd2254f5199c63dc351ff16f4e4a0b52b313f20",
     "src/data/lessons/l12-wifi-standards-roaming.ts": "23b355e2ce1c3cc42c33c13da1af7917140cc678b0fc6a37002a32975cc4c9d2",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
@@ -272,10 +273,10 @@
     "src/data/monitoringCases.ts": "325649898219baeaeb7cd7569d29174dc7b3938509f0225a2ddebf610beb2b68",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "4c5b7fc5125c7e5805439b35d46555588556879dd65532acd4df92caa54cb414",
+    "src/data/questionExplanations.ts": "64f9b3fdf56023aa6a2136bcb6623eed74d18eaf15d449f81efca85f8158d474",
     "src/data/questionExplanationsApplied.ts": "b598ae94902e5ecb1ebe9a984bc55efe4d5d878db9f4fdccaf47310919c8acfd",
     "src/data/questions.json": "04630cd2d4772b00041c5f72c60d804c78cc21249e38026f4818fc47ab4e4143",
-    "src/data/questionsData.ts": "4ab931538f4af4b5dcd6e3b46a2fa68491bdedb198e3c112062b16287426bd66",
+    "src/data/questionsData.ts": "05f3d495e3e36fa2c1756b395bb9bca1ea71df0bd1cc888a6c79b95dad3700da",
     "src/data/questionsExtra.ts": "f193f545a1d503bf372739b6a35bea99bd5aed7fc26f258282ee85bfdd1fe666",
     "src/data/questionsExtraDifficulty.ts": "0b949ac134676d7e07ae1389fdbd9058a8633eaa9dd0b75fc174f4157211f50b",
     "src/data/wellKnownPorts.ts": "9c67f47da6628ee68d7f3d2ff510e787dc81943dbbb0e52d339c1311c8a9abeb",
@@ -599,6 +600,39 @@
       "src/data/lessons/index.ts": "3ccf4edff866169a7d54c333180662027e46adcb3d0cf9b5dff2e529e6b3026b",
       "src/data/questionExplanations.ts": "40797cef6afb636d3691b2dae8f88d5951e0703685ebaaf8848e8a616cd6b496",
       "src/data/questionsData.ts": "cd90c1b67ceb532648180515a85039b376e4a81914a166d004216f6fc520f2b5"
+    }
+  },
+  "expertPack225": {
+    "baseMain": "79dfedcbb0553c24e14721b1dbc10801a62463a0",
+    "previousBankSHA256": "ad005cca3c810130ca0da85cafca9db826154e71ee9775533b5e994e0fa7f797",
+    "previousAuditProjectionSHA256": "35246bbaa8ca10c196093cf7653c44c630871ae375214b2fd0ecdf9b13c8505d",
+    "added": [
+      "exp225-l2-macflap-01",
+      "exp225-l2-trunk-pruning-02",
+      "exp225-l2-stp-udld-loop-03",
+      "exp225-l2-mstp-digest-04",
+      "exp225-l2-storm-copp-vs-stp-05",
+      "exp225-l3-lpm-summary-06",
+      "exp225-l3-vrrp-split-07",
+      "exp225-l3-asym-ecmp-nat-08",
+      "exp225-l3-arp-garp-proxy-09",
+      "exp225-l3-acl-urpf-order-10",
+      "exp225-mon-ifindex-shift-11",
+      "exp225-mon-counter-12",
+      "exp225-mon-poller-saturation-13",
+      "exp225-mon-syslog-clock-correlation-14",
+      "exp225-mon-snmp-rootcause-15",
+      "exp225-wifi-roam-pmf-ft-16",
+      "exp225-wifi-dfs-channel-plan-17",
+      "exp225-wifi-interference-snr-18",
+      "exp225-wifi-radius-roaming-mixed-19",
+      "exp225-wifi-mixed-switch-ap-20"
+    ],
+    "previousProtectedSHA256": {
+      "src/data/glossary.ts": "ed954b381f32a5f512a0af1503677cd4defaaeee736da8b55358e4dbc941b300",
+      "src/data/lessons/index.ts": "06f9b4189aa582910f4185ad01e0bb2d8667dae95ffe3df1ed0c97faad691ccb",
+      "src/data/questionExplanations.ts": "4c5b7fc5125c7e5805439b35d46555588556879dd65532acd4df92caa54cb414",
+      "src/data/questionsData.ts": "4ab931538f4af4b5dcd6e3b46a2fa68491bdedb198e3c112062b16287426bd66"
     }
   }
 }

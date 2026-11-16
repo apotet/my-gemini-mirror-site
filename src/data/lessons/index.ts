@@ -1,4 +1,5 @@
 import { WIFI_CASES } from '../wifiCases';
+import { EXPERT_CASES_225 } from '../expertCases225';
 import { LESSON_L12_WIFI_STANDARDS_ROAMING } from './l12-wifi-standards-roaming';
 import { LESSON_L2_WIFI_SECURITY_DIAGNOSTICS } from './l2-wifi-security-diagnostics';
 import { MONITORING_CASES } from '../monitoringCases';
@@ -62,6 +63,7 @@ export const LESSONS: Lesson[] = [LESSON_L12_WIFI_STANDARDS_ROAMING, LESSON_L2_W
     ...DIAGNOSTIC_CASES_177.filter(item => item.lessonId === lesson.id).map(item => item.id),
     ...MONITORING_CASES.filter(item => item.lessonId === lesson.id).map(item => item.id),
     ...WIFI_CASES.filter(item => item.lessonId === lesson.id).map(item => item.id),
+    ...EXPERT_CASES_225.filter(item => item.lessonId === lesson.id).map(item => item.id),
   ];
   return addedIds.length
     ? { ...lesson, relatedQuestionIds: [...lesson.relatedQuestionIds, ...addedIds] }

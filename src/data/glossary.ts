@@ -1447,6 +1447,66 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     relatesTo: "Выбор неперекрывающихся каналов 1, 6, 11 в 2,4 ГГц.",
     lessonId: "l2-wifi-security-diagnostics",
   },
+  "LPM": {
+    description: "Longest Prefix Match — правило маршрутизации, по которому при пересылке пакета всегда выбирается маршрут с самой длинной маской подсети, независимо от AD и метрики других префиксов.",
+    relatesTo: "Выбор записи в RIB/FIB при пересекающихся префиксах.",
+    lessonId: "l3-eigrp",
+  },
+  "ECMP": {
+    description: "Equal-Cost Multi-Path — балансировка трафика между несколькими равноценными маршрутами к одной сети назначения с одинаковой длиной префикса и метрикой.",
+    relatesTo: "Асимметричная маршрутизация, stateful firewall и диагностика MTU.",
+    lessonId: "ts-method",
+  },
+  "Proxy ARP": {
+    description: "Механизм, при котором маршрутизатор отвечает собственным MAC-адресом на ARP-запросы к удалённым IP-адресам других подсетей; часто скрывает ошибки маски на хостах.",
+    relatesTo: "Адресация подсетей и миграция без потери связи.",
+    lessonId: "l3-arp",
+  },
+  "MAC flapping": {
+    description: "Быстрое переучивание одного MAC-адреса между несколькими портами коммутатора — классический симптом L2-петли, физического дребезга линка или split-brain шлюза.",
+    relatesTo: "Диагностика петель STP и состояния портов доступа.",
+    lessonId: "l2-ethernet",
+  },
+  "ifIndex": {
+    description: "Числовой идентификатор интерфейса в таблице IF-MIB (SNMP), который может переназначаться после перезагрузки без команды snmp-server ifindex persist.",
+    relatesTo: "Стабильность OID в системах мониторинга и LLD по имени.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "ifInErrors": {
+    description: "Нарастающий SNMP-счётчик входящих ошибочных кадров интерфейса в IF-MIB; в отличие от CLI show interfaces не обнуляется командой clear counters.",
+    relatesTo: "Корректный препроцессинг скорости ошибок в Zabbix и диагностика L1.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "MCS": {
+    description: "Modulation and Coding Scheme — индекс схемы модуляции и кодирования в 802.11, напрямую зависящий от SNR, ширины канала и числа пространственных потоков.",
+    relatesTo: "Оценка реальной скорости Wi-Fi и влияния шума.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "OKC": {
+    description: "Opportunistic Key Caching — кэширование PMK-ключей между точками доступа одного контроллера, позволяющее выполнять быстрый роуминг без полного цикла 802.1X/RADIUS.",
+    relatesTo: "Ускорение роуминга EAP-TLS без 802.11r.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
+  "PoE": {
+    description: "Power over Ethernet — передача электропитания по витой паре Ethernet к точкам доступа, камерам и телефонам с учётом общего бюджета мощности коммутатора.",
+    relatesTo: "Питание точек доступа Wi-Fi 6 и диагностика show power inline.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.3at": {
+    description: "Стандарт IEEE 802.3at (PoE+) с подачей до 30 Вт от источника питания (25,5 Вт на потребителе), необходимый для полноценной работы большинства точек доступа Wi-Fi 6.",
+    relatesTo: "Бюджет PoE и предотвращение режима пониженной мощности MIMO.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "RRM": {
+    description: "Radio Resource Management — автоматическое управление радиоканалами и мощностью передатчиков точек доступа на контроллере Wi-Fi.",
+    relatesTo: "Планирование каналов, DFS и предотвращение CCI.",
+    lessonId: "l12-wifi-standards-roaming",
+  },
+  "CCA": {
+    description: "Clear Channel Assessment — механизм 802.11, определяющий занятость радиоканала по преамбулам Wi-Fi и энергетическому порогу шума перед передачей.",
+    relatesTo: "Блокировка эфира не-Wi-Fi помехами и CSMA/CA.",
+    lessonId: "l2-wifi-security-diagnostics",
+  },
 };
 
 // Alternative names share one definition instead of duplicating its text.
@@ -2014,6 +2074,18 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "RTS/CTS": ["Request to Send / Clear to Send", "Резервирование эфира запросом и подтверждением", true],
   "CCI": ["Co-Channel Interference", "Межсотовая интерференция на одном канале", true],
   "ACI": ["Adjacent-Channel Interference", "Помехи от перекрывающихся соседних каналов", true],
+  "LPM": ["Longest Prefix Match", "Выбор маршрута с самой длинной маской подсети", true],
+  "ECMP": ["Equal-Cost Multi-Path", "Балансировка трафика по равноценным маршрутам", true],
+  "Proxy ARP": ["Proxy ARP", "Ответ маршрутизатора своим MAC за удалённую сеть", false],
+  "MAC flapping": ["MAC Address Flapping", "Частое переключение одного MAC между разными портами", false],
+  "ifIndex": ["Interface Index (IF-MIB)", "Числовой индекс интерфейса в таблице SNMP IF-MIB", false],
+  "ifInErrors": ["ifInErrors (IF-MIB)", "Нарастающий SNMP-счётчик входящих ошибок кадра", false],
+  "MCS": ["Modulation and Coding Scheme", "Индекс модуляции и кодирования в 802.11", true],
+  "OKC": ["Opportunistic Key Caching", "Кэширование PMK для быстрого роуминга 802.1X", true],
+  "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
+  "802.3at": ["IEEE 802.3at (PoE+)", "Стандарт PoE+ мощностью до 30 Вт на порт", false],
+  "RRM": ["Radio Resource Management", "Автоматическое управление каналами и мощностью Wi-Fi", true],
+  "CCA": ["Clear Channel Assessment", "Проверка занятости радиоканала перед передачей", true],
 };
 
 export const GLOSSARY_TOOLTIPS: Record<string, GlossaryTooltip> = {};

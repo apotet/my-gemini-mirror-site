@@ -23,7 +23,7 @@ assert.equal(hash(questionsAtPhotoReview.filter(q => !changed.includes(q.id))), 
 const baseline = read('docs/audits/issue-171-baseline.json');
 const { previousRegistryEntries } = baseline.technicalReviewClosure;
 const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
-  .filter(([id]) => !Object.hasOwn(levels, id) && !baseline.diagnosticPack177.added.includes(id) && !baseline.monitoringPack.added.includes(id) && !baseline.wifiPack.added.includes(id))
+  .filter(([id]) => !Object.hasOwn(levels, id) && !baseline.diagnosticPack177.added.includes(id) && !baseline.monitoringPack.added.includes(id) && !baseline.wifiPack.added.includes(id) && !baseline.expertPack225.added.includes(id))
   .map(([id, entry]) => [id, previousRegistryEntries[id] ?? entry]));
 assert.equal(hash(registryAtPhotoReview),
   fixture.unchangedRegistrySHA256, 'all other metadata, including nine technical REVIEW, remain unchanged');
