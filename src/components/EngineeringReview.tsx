@@ -31,6 +31,21 @@ export function ExplanationPractice({ deep, onOpenPractice, onNavigateToIpv4, on
   </div>;
 }
 
+/** A real lesson ID and its originating question travel together in every review surface. */
+export function ExplanationLesson({ questionId, onOpenLesson }: {
+  questionId: string;
+  onOpenLesson?: ExplanationNavigation['onOpenLesson'];
+}) {
+  const lesson = getLessonForQuestion(questionId);
+  return lesson ? <button type="button" disabled={!onOpenLesson}
+      className="inline-flex min-h-9 flex-wrap items-center gap-x-2 rounded-lg border border-cyan-500/40 px-3 py-2 text-sm font-bold text-cyan-700 dark:text-cyan-300"
+      aria-label={`Перейти к уроку: ${lesson.title}`}
+      onClick={() => onOpenLesson?.(lesson.id, questionId)}>
+      <BookOpen size={16} aria-hidden="true" />
+      <span>Перейти к уроку</span><span className="text-xs font-medium">{lesson.title}</span>
+    </button> : <p className="text-xs text-slate-500 dark:text-slate-400">Урок по этой теме пока не подготовлен</p>;
+}
+
 /** Read-only rendering of the submitted question or saved review snapshot. */
 export function EngineeringReview({ question, ...navigation }: ExplanationNavigation & { question: Question }) {
   const deep = getQuestionDeepDive(question);
@@ -38,29 +53,22 @@ export function EngineeringReview({ question, ...navigation }: ExplanationNaviga
   const hasProfessional = Boolean(deep.professional?.deep.trim());
   const professional = hasProfessional && mode === 'professional' ? deep.professional : undefined;
   const body = professional?.deep ?? deep.deepAnalysis;
-  const lesson = getLessonForQuestion(question.id);
   const canExpand = Boolean(hasProfessional || (deep.hasIndividualDeep || deep.engineeringDeep) && deep.deepAnalysis.trim() !== deep.briefAnswer.trim());
   const missingProfessional = <p className="text-xs text-slate-500 dark:text-slate-400">Профессиональный разбор пока не подготовлен</p>;
 
-  return <div className="min-w-0 max-w-full space-y-3 text-sm">
-    <div className="space-y-2">
+  return <div data-explanation-question-id={question.id} className="min-w-0 max-w-full space-y-3 text-sm">
+    <div data-explanation-brief className="space-y-2">
       <h4 className="font-bold">Почему так</h4>
       <FormattedExplanation text={deep.briefAnswer} />
     </div>
-    {canExpand && <details className="space-y-2">
+    {canExpand && <details data-explanation-detail className="space-y-2">
       <summary className="cursor-pointer font-bold text-cyan-700 dark:text-cyan-300">Подробный разбор</summary>
       {hasProfessional && deep.deepAnalysis.trim() ? <StudyTextToggle value={mode} onChange={setMode} /> : !hasProfessional && missingProfessional}
       {professional?.notice && <FormattedExplanation text={professional.notice} />}
       <FormattedExplanation text={body} />
     </details>}
     {!canExpand && !hasProfessional && missingProfessional}
-    {lesson ? <button type="button" disabled={!navigation.onOpenLesson}
-      className="inline-flex min-h-9 flex-wrap items-center gap-x-2 rounded-lg border border-cyan-500/40 px-3 py-2 text-sm font-bold text-cyan-700 dark:text-cyan-300"
-      aria-label={`Перейти к уроку: ${lesson.title}`}
-      onClick={() => navigation.onOpenLesson?.(lesson.id, question.id)}>
-      <BookOpen size={16} aria-hidden="true" />
-      <span>Перейти к уроку</span><span className="text-xs font-medium">{lesson.title}</span>
-    </button> : <p className="text-xs text-slate-500 dark:text-slate-400">Урок по этой теме пока не подготовлен</p>}
+    <ExplanationLesson questionId={question.id} onOpenLesson={navigation.onOpenLesson} />
     <ExplanationPractice deep={deep} {...navigation} />
   </div>;
 }

@@ -146,6 +146,7 @@ jobs:
             sleep 1
           done
           node scripts/explanations.browser.mjs
+          node scripts/review-materials.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
@@ -157,5 +158,6 @@ jobs:
             scripts/.cache/coverage-summary.txt
             scripts/.cache/review-material-coverage.json
             scripts/.cache/review-browser/*.png
+            scripts/.cache/review-browser/matrix-evidence.json
             scripts/.cache/validate-summary.txt
           if-no-files-found: ignore

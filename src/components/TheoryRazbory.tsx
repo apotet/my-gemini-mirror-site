@@ -1,11 +1,10 @@
-import { ExplanationPractice } from './EngineeringReview';
+import { ExplanationLesson, ExplanationPractice } from './EngineeringReview';
 import { FormattedExplanation } from './FormattedExplanation';
 import type { PracticeLink } from '../data/practiceLinks';
 import { GlossaryText } from './GlossaryText';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_QUESTIONS, TOTAL_QUESTION_COUNT, resolveImageUrl } from '../data/questionsData';
 import { getQuestionDeepDive } from '../data/questionExplanations';
-import { getLessonForQuestion } from '../data/lessons';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { ZoomableImage } from './ZoomableImage';
@@ -47,7 +46,7 @@ export const TheoryRazbory: React.FC<Props> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
-  const [deepOpen, setDeepOpen] = useState<Record<string, boolean>>({});
+  const [deepOpen, setDeepOpen] = useState<Record<string, boolean>>(initialQuestionId ? { [initialQuestionId]: true } : {});
   const targetCardRef = useRef<HTMLDivElement | null>(null);
 
   const focusedQuestion = useMemo(() => {
@@ -99,17 +98,16 @@ export const TheoryRazbory: React.FC<Props> = ({
     const q = ALL_QUESTIONS.find((item) => item.id === qId);
     if (!q) return null;
     const deep = getQuestionDeepDive(q);
-    const professional = textMode === 'professional' ? deep.professional : undefined;
-    const brief = professional?.brief ?? deep.briefAnswer;
-    const engineering = professional?.deep ?? deep.engineeringDeep ?? deep.deepAnalysis;
+    const hasProfessional = Boolean(deep.professional?.deep.trim());
+    const professional = hasProfessional && textMode === 'professional' ? deep.professional : undefined;
+    const engineering = professional?.deep ?? deep.deepAnalysis;
     const trap = professional ? professional.trap : deep.commonTrap;
     const nextStudy = professional ? professional.next : deep.nextStudy;
     const correctSet = new Set(q.correct);
     const showEngineering = !!deepOpen[qId];
-    const isAdvanced = q.difficulty === 'advanced' || deep.hasIndividualDeep;
 
     return (
-      <div className="space-y-4 max-w-full overflow-x-hidden">
+      <div data-explanation-question-id={qId} className="space-y-4 max-w-full overflow-x-hidden">
         {q.image && (
           <div className="max-w-lg mx-auto">
             <ZoomableImage src={resolveImageUrl(q.image)} alt={q.imageAlt || 'Фото'} caption={q.imageAlt} imgClassName="max-h-72" />
@@ -140,10 +138,10 @@ export const TheoryRazbory: React.FC<Props> = ({
           })}
         </div>
 
-        <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-50/80 dark:bg-cyan-950/30 space-y-1.5">
+        <div data-explanation-brief className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-50/80 dark:bg-cyan-950/30 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 font-sans">
-              Краткий ответ
+              Почему так
             </div>
             {q.difficulty && (
               <span className="text-[10px] font-sans font-bold px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300">
@@ -151,20 +149,21 @@ export const TheoryRazbory: React.FC<Props> = ({
               </span>
             )}
           </div>
-          <FormattedExplanation text={brief} />
+          <FormattedExplanation text={deep.briefAnswer} />
         </div>
 
 
-        {(isAdvanced || deep.engineeringDeep || deep.deepAnalysis) && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {(hasProfessional || deep.deepAnalysis) && (
+          <div data-explanation-detail className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <button
               type="button"
+              aria-expanded={showEngineering}
               onClick={() => setDeepOpen((prev) => ({ ...prev, [qId]: !prev[qId] }))}
               className="w-full px-4 py-3 flex items-center justify-between gap-2 text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40"
             >
               <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-100">
                 <BookOpen className="w-4 h-4 text-cyan-500 shrink-0" />
-                {isAdvanced ? 'Инженерный разбор' : 'Подробный разбор'}
+                Подробный разбор
               </span>
               {showEngineering ? (
                 <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
@@ -174,25 +173,19 @@ export const TheoryRazbory: React.FC<Props> = ({
             </button>
             {showEngineering && (
               <div className="px-4 pb-4 space-y-3 border-t border-slate-200 dark:border-slate-800">
-                {deep.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+                {hasProfessional && deep.deepAnalysis.trim() && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+                {!hasProfessional && <p className="text-xs text-slate-500 dark:text-slate-400">Профессиональный разбор пока не подготовлен</p>}
                 {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
                 <FormattedExplanation text={engineering} />
                 {nextStudy && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {nextStudy}</p>
                 )}
-                {onOpenLesson && getLessonForQuestion(q.id) && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenLesson(getLessonForQuestion(q.id)!.id, q.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 cursor-pointer"
-                  >
-                    Изучить тему подробно
-                  </button>
-                )}
               </div>
             )}
           </div>
         )}
+
+        <ExplanationLesson questionId={q.id} onOpenLesson={onOpenLesson} />
 
         {trap && (
           <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 space-y-1.5">
