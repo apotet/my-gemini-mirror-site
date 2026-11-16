@@ -52,5 +52,13 @@
     "bankSHA256": "3e818d56188b05be41bde05ea270a3c7de39d902b15b23db527144c69855c413",
     "mixed10SHA256": "b6a89bb7306478fcefa2898dfc4b29846d9c2fa81f34d07d45b9acabd69c7810",
     "otherMixedModesSHA256": "f84c6971fda35edd977c1eb3c5af5fc357851f91f0a1e0d0505fcc50f75e8024"
+  },
+  "monitoringPack": {
+    "bankSHA256": "ba05a4214fb3b5380cc1b218b8339fd5efd24f8a545848f4725298d70521dccd",
+    "beginnerPool": 248,
+    "families": 207,
+    "beginnerSingleSHA256": "dc0f9842d5d2b582f20029cae4e91adb69fd77eb10681fbd5005a8c5f2b3a0ec",
+    "mixed10SHA256": "577ef6856a3491daec70019d4334356887372b3243c7ca0ef207169a439ab727",
+    "otherMixedModesSHA256": "07db9a5cbbf7e2186f8e08b8a97ab24b836d41b684bd08c2319e544137f3be9d"
   }
 }

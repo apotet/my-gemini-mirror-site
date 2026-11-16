@@ -1227,6 +1227,106 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "TCP/23": { description: "Стандартный TCP-порт для Telnet. Telnet не шифрует содержимое сессии и не подходит для обычного безопасного управления.", relatesTo: "Незащищённый удалённый терминал.", lessonId: "cli-console-ssh-telnet" },
   "AAA": { description: "Authentication, Authorization, Accounting — проверка личности, полномочий и учёт действий пользователя при доступе к устройству.", relatesTo: "Безопасность управления устройствами.", lessonId: "cli-console-ssh-telnet" },
   "management SVI": { description: "Логический интерфейс VLAN, которому на коммутаторе может назначаться IP-адрес управления. Его рабочее состояние зависит от возможностей платформы и состояния VLAN/портов.", relatesTo: "Доступ к коммутатору по IP.", lessonId: "cli-console-ssh-telnet" },
+  "SNMP": {
+    description: "Simple Network Management Protocol — протокол чтения параметров и счётчиков устройств (UDP 161) и приёма событийных уведомлений (UDP 162). Сочетание polling и traps не даёт терять изменения при сбоях связи.",
+    relatesTo: "Сбор телеметрии, мониторинг интерфейсов и управление сетью.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "SNMPv3": {
+    description: "Третья версия SNMP с моделью безопасности USM: поддерживает аутентификацию целостности пакетов и шифрование полезной нагрузки (authPriv). Ключи локализуются под уникальный snmpEngineID агента.",
+    relatesTo: "Защищённый мониторинг сетевого оборудования и отказ от открытых community-строк.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "USM": {
+    description: "User-based Security Model — модель безопасности SNMPv3 на основе пользователей, хэш-аутентификации (auth) и шифрования (priv). При клонировании одинакового snmpEngineID аутентификация ломается.",
+    relatesTo: "Безопасность SNMPv3 и диагностика ошибок аутентификации.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "OID": {
+    description: "Object Identifier — уникальный числовой путь в иерархическом дереве MIB (например, 1.3.6.1.2.1.31.1.1.1.6), задающий конкретную переменную или столбец таблицы агента SNMP.",
+    relatesTo: "Адресация метрик и счётчиков в SNMP и шаблонах Zabbix.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "MIB": {
+    description: "Management Information Base — формальное описание структуры, типов данных (Counter32, Counter64, Gauge32) и OID управляемых объектов устройства для систем мониторинга.",
+    relatesTo: "Расшифровка OID в человекочитаемые имена и выбор разрядности счётчиков.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "ifHCInOctets": {
+    description: "64-битный счётчик входящих октетов интерфейса из таблицы ifXTable (IF-MIB). На каналах от 1 Гбит/с и выше заменяет 32-битный ifInOctets, который успевает переполниться за стандартный интервал опроса.",
+    relatesTo: "Точный расчёт загрузки скоростных интерфейсов без ложных провалов и скачков.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "SNMP Trap": {
+    description: "Неподтверждаемое асинхронное уведомление (UDP 162), которое агент отправляет системе мониторинга при наступлении события. При временном разрыве связи такой пакет теряется без повторной передачи.",
+    relatesTo: "Мгновенная фиксация событий и обязательное сочетание с периодическим polling.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "InformRequest": {
+    description: "Подтверждаемое уведомление SNMP (UDP 162), на которое менеджер отвечает Response. При потере ответа агент повторяет отправку в пределах заданного числа попыток и тайм-аута.",
+    relatesTo: "Повышение надёжности доставки событийных уведомлений SNMP.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "Syslog": {
+    description: "Стандартный протокол регистрации и пересылки журнальных сообщений от сетевых устройств и серверов к локальному буферу или центральному коллектору (UDP/TCP 514 или TLS 6514).",
+    relatesTo: "Аудит событий, локальный буфер и межсистемная корреляция инцидентов.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "PRI": {
+    description: "Числовое поле приоритета в заголовке Syslog (в угловых скобках, например <165>), кодирующее сразу категорию источника и важность: PRI = Facility × 8 + Severity.",
+    relatesTo: "Разбор и маршрутизация потоков Syslog на коллекторе.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "Facility": {
+    description: "Категория подсистемы или источника в Syslog (например, kern, authpriv, local0–local7 с кодами 16–23), позволяющая разделять логи коммутаторов, МСЭ и серверов на коллекторе.",
+    relatesTo: "Фильтрация и распределение потоков журналов по правилам хранения.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "Severity": {
+    description: "Уровень важности сообщения Syslog от 0 (Emergency) до 7 (Debug), где меньшее число означает более критичное событие. Порог logging trap N пропускает все уровни от 0 до N.",
+    relatesTo: "Настройка глубины журналирования без перегрузки канала и коллектора.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "TCN": {
+    description: "Topology Change Notification — служебное уведомление STP/RSTP о смене топологии, заставляющее коммутаторы ускоренно сбрасывать MAC-таблицы. Частые TCN указывают на нестабильность порта или отсутствие PortFast.",
+    relatesTo: "Корреляция флаппинга портов и кратковременных потерь связности L2.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "VRF": {
+    description: "Virtual Routing and Forwarding — изолированный экземпляр таблицы маршрутизации на одном маршрутизаторе или коммутаторе. Привязка SNMP или Syslog к неверному VRF приводит к недоступности мониторинга при рабочем транзите.",
+    relatesTo: "Диагностика недоступности агента SNMP и доставки Syslog через management-VRF.",
+    lessonId: "l7-monitoring-snmp-syslog",
+  },
+  "Zabbix": {
+    description: "Платформа распределённого мониторинга, собирающая метрики через пассивных и активных агентов, SNMP, trapper и simple checks, с предобработкой данных, LLD и триггерной логикой.",
+    relatesTo: "Мониторинг инфраструктуры, автоматическое обнаружение и управление тревогами.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "LLD": {
+    description: "Low-Level Discovery — механизм Zabbix для автоматического обнаружения интерфейсов, дисков и сервисов по правилам discovery с созданием прототипов метрик и триггеров, фильтрами и overrides.",
+    relatesTo: "Масштабируемый мониторинг портов коммутаторов без ручного создания сотен элементов.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "Preprocessing": {
+    description: "Конвейер предобработки значений элемента данных в Zabbix до записи в базу: расчёт скорости изменения (Change per second), масштабирование, разбор JSONPath/regex и отбрасывание неизменных значений.",
+    relatesTo: "Перевод счётчиков октетов в бит/с и снижение нагрузки на базу истории.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "Hysteresis": {
+    description: "Разделение порогов срабатывания (Expression) и восстановления (Recovery expression) триггера Zabbix. Удерживает инцидент открытым до устойчивого спада нагрузки и убирает дребезг уведомлений.",
+    relatesTo: "Борьба с повторяющимися ложными тревогами на границе порога.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "ifOutDiscards": {
+    description: "Счётчик IF-MIB (соответствует output drops в CLI), показывающий число корректных исходящих пакетов, отброшенных из-за переполнения буфера/очереди или политики QoS без физических ошибок среды.",
+    relatesTo: "Отделение перегрузки очередей и микровсплесков от физических повреждений кабеля.",
+    lessonId: "ts-zabbix-monitoring",
+  },
+  "Flapping": {
+    description: "Частое попеременное переключение состояния порта (Up/Down) или статуса триггера (Problem/OK). На физическом уровне вызывает шторм STP TCN и перестройку маршрутов, а в мониторинге — поток уведомлений.",
+    relatesTo: "Диагностика нестабильных оптических/медных линков и настройка сглаживания триггеров.",
+    lessonId: "ts-zabbix-monitoring",
+  },
 };
 
 // Alternative names share one definition instead of duplicating its text.
@@ -1750,7 +1850,26 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "UIDL": ["Unique ID Listing", "Список уникальных идентификаторов", true, "Позволяет почтовому клиенту различать ранее полученные сообщения POP3."],
   "TID": ["Transfer Identifier", "Идентификатор передачи", true, "В TFTP обозначает UDP-порт участника конкретной передачи."],
   "L5": ["Layer 5", "Пятый уровень", true, "В модели OSI описывает функции организации и поддержания диалога."],
-  "L6": ["Layer 6", "Шестой уровень", true, "В модели OSI описывает представление и преобразование данных."]
+  "L6": ["Layer 6", "Шестой уровень", true, "В модели OSI описывает представление и преобразование данных."],
+  "SNMPv3": ["Simple Network Management Protocol version 3", "SNMP версии 3 с USM-аутентификацией и шифрованием", true],
+  "USM": ["User-based Security Model", "Модель безопасности пользователей SNMPv3", true],
+  "OID": ["Object Identifier", "Идентификатор объекта в дереве MIB", true],
+  "MIB": ["Management Information Base", "База управляющей информации SNMP", true],
+  "ifHCInOctets": ["ifHCInOctets (IF-MIB Counter64)", "64-битный счётчик входящих октетов", false],
+  "SNMP Trap": ["SNMP Trap", "Асинхронное уведомление агента менеджеру по UDP 162", false],
+  "InformRequest": ["SNMP InformRequest", "Подтверждаемое уведомление SNMP по UDP 162", false],
+  "Syslog": ["System Logging Protocol", "Протокол передачи и сбора журналов событий", false],
+  "PRI": ["Priority Value", "Числовой приоритет Syslog (Facility × 8 + Severity)", true],
+  "Facility": ["Syslog Facility", "Категория подсистемы-источника в Syslog", false],
+  "Severity": ["Syslog Severity Level", "Уровень серьёзности события Syslog (0–7)", false],
+  "TCN": ["Topology Change Notification", "Уведомление STP об изменении топологии", true],
+  "VRF": ["Virtual Routing and Forwarding", "Виртуальная таблица маршрутизации", true],
+  "Zabbix": ["Zabbix", "Система распределённого мониторинга сетей и серверов", false],
+  "LLD": ["Low-Level Discovery", "Низкоуровневое автоматическое обнаружение в Zabbix", true],
+  "Preprocessing": ["Zabbix Item Preprocessing", "Конвейер предобработки метрик в Zabbix", false],
+  "Hysteresis": ["Trigger Hysteresis", "Гистерезис триггера с раздельным порогом восстановления", false],
+  "ifOutDiscards": ["ifOutDiscards (IF-MIB)", "Счётчик отброшенных исходящих пакетов в очередях", false],
+  "Flapping": ["Link / Alert Flapping", "Частое переключение состояния Up/Down или Problem/OK", false],
 };
 
 export const GLOSSARY_TOOLTIPS: Record<string, GlossaryTooltip> = {};
