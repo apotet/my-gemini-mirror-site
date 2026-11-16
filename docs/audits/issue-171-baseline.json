@@ -211,7 +211,7 @@
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
     "src/data/expertCases177.ts": "dea438970efdf30aeaa5efb4226eb99682be8f83ed226f0ceab04565a60766c8",
     "src/data/expertCases225.ts": "d714ba4489a10e5ed3dde244e2f0fc807b8923777fed6510384352b70e7d1d8d",
-    "src/data/glossary.ts": "3bc4fac6ff50f3964d2cd83ac6abfa51882b27a2d533269aac0f5302592e2f20",
+    "src/data/glossary.ts": "e2f6822c37b13dd2315f5097fbbae9ab5fde64a586f40596f15d42bc365ac8fe",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "3892d93bb8c269e49a395e1986c3b0f0c72729371906b06be3db9af00be31001",
@@ -225,7 +225,7 @@
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
     "src/data/lessons/l2-bpdu-guard.ts": "4c3a64acf6a61da12bfc86e9017d8c8bcf66c2be7e4f270ba55cd870b231df30",
     "src/data/lessons/l2-dai.ts": "e43760bd588c9428df6a2b29fdf48c8ae3788560dc4bab947444287b2cc24856",
-    "src/data/lessons/l2-ethernet.ts": "843442e80619c9b18197e33dd282bf3b45ab9c47f1048e3bc8ece5ed9edf6958",
+    "src/data/lessons/l2-ethernet.ts": "d73c2bc4871b64d3112809c5153fdcb1133d680c2b7674dd852f0b077ce75261",
     "src/data/lessons/l2-igmp-snooping.ts": "9459d03c9140d370ca1b698182cd1cd1f03fb4d115e66cbbaca61c65d2e33fdf",
     "src/data/lessons/l2-ipsg.ts": "9ab6fca98bd0bdf6fb0cca98bf2a7a8310e2c94ba4bf1c0db82d2a69e18e24a1",
     "src/data/lessons/l2-mstp-advanced.ts": "9b828c946072ebc17ea17421ffe0674a5f3eca259a5fba1f287865dcd8e8edc8",
@@ -257,7 +257,7 @@
     "src/data/lessons/l7-dns.ts": "f5b6bc49669d36ad22a3cbd0519cc93005750856fad589a0fc1aa4110d592b37",
     "src/data/lessons/l7-monitoring-snmp-syslog.ts": "ba03bb47be8c215773c3b23aed263c73c2b58ff3f171e1487534a8313e4c8d8e",
     "src/data/lessons/l7-services.ts": "7ba5672de9c923ca430a29922f7b2662b9b55b09c0105cd55498bd52baa3bc44",
-    "src/data/lessons/osi-pdu.ts": "9499cd40c27b9bf78d6bbf7a89a37ba233598b1740822cf9da1b6029b28f2e82",
+    "src/data/lessons/osi-pdu.ts": "1783fa2b2e24529ac5468398bdb21fa4e1c55098203f21c76ee3a6e23f7246df",
     "src/data/lessons/qos-basics.ts": "fbbbf5fdff597c1dd72986d48386bd79c53b43656295e9a557dc98b7942591ff",
     "src/data/lessons/tcp-window-retransmit.ts": "f90e3447f0cc2343b096a0f128c432e14f17104b21855c5e3b21a56fdc333fc2",
     "src/data/lessons/tcpip-encapsulation.ts": "252b0c32fcab03df3dd3b27a7523394f27db987e59e168dc421073d6dde7c843",
@@ -275,7 +275,7 @@
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
     "src/data/questionExplanations.ts": "3a771d2ff5aae4dd0e41aeb11afaa1f004b75eeceddcc3bb0fc62df1e7252487",
-    "src/data/questionExplanationsApplied.ts": "e96bf253bee771b8862a96c9962b2eb4217d58e088beae4b952fcc191c92fc2e",
+    "src/data/questionExplanationsApplied.ts": "636ac5c410156c16b558dd35ae83c163c172bbb9629c4ee2833cde83097362b1",
     "src/data/questions.json": "cd10f9a74bf58e68721378bd55b07b47e338e052c20ef147c4e0fe4d15c9fa62",
     "src/data/questionsData.ts": "9c5494e3dbbfdc9c97f04028fca59594d11d80d92b835c343c1976a6c9c8d189",
     "src/data/questionsExtra.ts": "5c769473b18e143f3f9f31dd9662fcc36eb3aca904406465db07c3b2bf9fb197",
@@ -462,6 +462,34 @@
       "path": "src/utils/examReview.ts",
       "previousSHA256": "8ea265f145e9a65e5661f91022eea8602a1a78727c482c54e6b0b3a997a8533e",
       "reason": "Independent registry-based testing with additive session learningLevel; legacy restoration retained."
+    },
+    {
+      "task": "PR 239 fundamentals batch and accepted glossary distinction",
+      "path": "src/data/glossary.ts",
+      "previousSHA256": "3bc4fac6ff50f3964d2cd83ac6abfa51882b27a2d533269aac0f5302592e2f20",
+      "newSHA256": "e2f6822c37b13dd2315f5097fbbae9ab5fde64a586f40596f15d42bc365ac8fe",
+      "reason": "glossary.ts: accepted 1d5ce95 distinction of IPv4 TTL, DNS TTL, ICMP Echo Request/Reply; baseline was not refreshed. lessons and applied explanations: related IDs and professional layers for l2-03, l2-05, l3-01, l4-02, tcp-02. Question keys unchanged."
+    },
+    {
+      "task": "PR 239 fundamentals batch and accepted glossary distinction",
+      "path": "src/data/lessons/l2-ethernet.ts",
+      "previousSHA256": "843442e80619c9b18197e33dd282bf3b45ab9c47f1048e3bc8ece5ed9edf6958",
+      "newSHA256": "d73c2bc4871b64d3112809c5153fdcb1133d680c2b7674dd852f0b077ce75261",
+      "reason": "Intentional content coverage update for the fundamentals batch. Question keys, IDs and saved attempts unchanged."
+    },
+    {
+      "task": "PR 239 fundamentals batch and accepted glossary distinction",
+      "path": "src/data/lessons/osi-pdu.ts",
+      "previousSHA256": "9499cd40c27b9bf78d6bbf7a89a37ba233598b1740822cf9da1b6029b28f2e82",
+      "newSHA256": "1783fa2b2e24529ac5468398bdb21fa4e1c55098203f21c76ee3a6e23f7246df",
+      "reason": "Intentional content coverage update for the fundamentals batch. Question keys, IDs and saved attempts unchanged."
+    },
+    {
+      "task": "PR 239 fundamentals batch and accepted glossary distinction",
+      "path": "src/data/questionExplanationsApplied.ts",
+      "previousSHA256": "e96bf253bee771b8862a96c9962b2eb4217d58e088beae4b952fcc191c92fc2e",
+      "newSHA256": "636ac5c410156c16b558dd35ae83c163c172bbb9629c4ee2833cde83097362b1",
+      "reason": "Intentional content coverage update for the fundamentals batch. Question keys, IDs and saved attempts unchanged."
     }
   ],
   "photoReviewUpdate": {
