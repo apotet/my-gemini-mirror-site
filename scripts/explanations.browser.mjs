@@ -170,9 +170,9 @@ try {
     // Isolate the paragraph-link smoke from previous active/retried attempts.
     // A fresh browser context must read exactly this completed saved attempt.
     const targetCases = [
-      ['photo-otdr-end', 'otdr-end-of-fiber'],
-      ['gen-osi-a-19', 'dns-nxdomain-application'],
-      ['tcp-06', 'tcpip-end-to-end-fields'],
+      ['photo-otdr-end', 'otdr-end-of-fiber', 'Рефлектометр OTDR: импульс, трассы и отражения'],
+      ['gen-osi-a-19', 'dns-nxdomain-application', 'DNS: как имя становится адресом'],
+      ['tcp-06', 'tcpip-end-to-end-fields', 'TCP/IP: четыре уровня и инкапсуляция'],
     ];
     const targetQuestions = targetCases.map(([id]) => get(id));
     const targetedSession = {
@@ -199,12 +199,13 @@ try {
       const originalReview = await focusedPage.evaluate(() => localStorage.getItem('osi_last_exam_review_v1'));
       await button('Посмотреть разбор последней попытки', focusedPage).click();
 
-      for (const [id, anchorId] of targetCases) {
+      for (const [id, anchorId, lessonTitle] of targetCases) {
         const targetReview = focusedPage.locator('.review-question').filter({ hasText: get(id).text });
         if (await targetReview.getAttribute('open') === null) {
           await targetReview.locator(':scope > summary').click();
         }
         await button(/^Перейти к уроку:/, targetReview).click();
+        await focusedPage.getByRole('heading', { name: lessonTitle, exact: true }).waitFor();
         const section = focusedPage.locator(`[data-lesson-section-anchor="${anchorId}"]`);
         await section.waitFor({ state: 'visible' });
         await focusedPage.waitForFunction(id => {

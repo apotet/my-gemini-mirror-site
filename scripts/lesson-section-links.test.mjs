@@ -7,6 +7,11 @@ const { ALL_QUESTIONS, getLesson, getLessonForQuestion, LESSONS,
 
 assert.equal(ALL_QUESTIONS.length, 862, 'existing question bank is unchanged');
 assert.equal(QUESTION_SECTION_LINKS.length, 3, 'three initial spotlights');
+const expectedTexts = {
+  'photo-otdr-end': 'Что обычно означает резкий спад трассы с переходом в шум в конце линии на рефлектограмме?',
+  'gen-osi-a-19': 'Перед подключением к files.example.test программа сформировала сообщение службе имён с этим именем и типом A. В ответ пришёл код NXDOMAIN, после чего попытка подключения по полученному адресу не началась. Какая функция сформировала запрос и определила смысл такого ответа?',
+  'tcp-06': 'Какие поля обычно остаются сквозными от клиента до сервера без NAT и прокси? Выберите все подходящие.',
+};
 const expected = [
   ['photo-otdr-end', 'l1-otdr-trace-interpretation', 'otdr-end-of-fiber', 'шум'],
   ['gen-osi-a-19', 'l7-dns', 'dns-nxdomain-application', 'NXDOMAIN'],
@@ -14,6 +19,8 @@ const expected = [
 ];
 for (const [questionId, lessonId, anchor, concept] of expected) {
   assert.ok(ALL_QUESTIONS.some(q => q.id === questionId), questionId + ': must be in the real bank');
+  assert.equal(ALL_QUESTIONS.find(q => q.id === questionId)?.text, expectedTexts[questionId],
+    questionId + ': original question wording is unchanged');
   const lesson = getLesson(lessonId);
   assert.ok(lesson?.professional?.blocks?.length, lessonId + ': two-mode lesson already exists');
   assert.equal(getLessonForQuestion(questionId)?.id, lessonId, questionId + ': correct resolved lesson');
