@@ -6,6 +6,14 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "LC": {"description":"Lucent Connector: компактный оптический разъём с защёлкой, обычно с феррулой 1,25 мм; бывает одиночным и duplex.","relatesTo":"Оптические коннекторы, кроссы, патч-корды и плотность портов.","lessonId":"l1-fiber-hardware"},
+  "SC": {"description":"Subscriber Connector: оптический разъём с прямолинейной фиксацией push-pull и обычно феррулой 2,5 мм.","relatesTo":"Оптические коннекторы, адаптеры кросса и патч-корды.","lessonId":"l1-fiber-hardware"},
+  "ST": {"description":"Straight Tip: круглый оптический коннектор с поворотной байонетной фиксацией, часто в legacy-сетях.","relatesTo":"Оптическая кабельная инфраструктура и механизм фиксации.","lessonId":"l1-fiber-hardware"},
+  "FC": {"description":"Ferrule Connector: оптический коннектор с резьбовой накидной гайкой, в отличие от байонетного ST.","relatesTo":"Оптические соединения, полировка феррулы и совместимость адаптеров.","lessonId":"l1-fiber-hardware"},
+  "GBIC": {"description":"Gigabit Interface Converter: сменный модуль старого более крупного форм-фактора, не эквивалентный компактному SFP.","relatesTo":"Форм-факторы трансиверов, посадочные места и инвентаризация.","lessonId":"l1-fiber-hardware"},
+  "патч-корд": {"description":"Готовый соединительный кабель с оконцеваниями на концах для разъёмной коммутации; в оптике различают тип волокна, коннекторов и полировку.","relatesTo":"Пассивный оптический кросс, адаптеры и соединение оборудования.","lessonId":"l1-fiber-hardware"},
+  "оптический кросс": {"description":"Пассивная панель/ODF для оконцевания и коммутации волокон через адаптеры, пигтейлы и патч-корды; не активный Ethernet-коммутатор.","relatesTo":"Маркировка портов, кассеты сварок и исполнительная схема.","lessonId":"l1-fiber-hardware"},
+  "пигтейл": {"description":"Короткий отрезок оптического волокна с коннектором на одном конце и свободным концом для сварки с линейным волокном.","relatesTo":"Подготовка к сварке, кассеты, кроссы и адаптеры.","lessonId":"l1-fiber-hardware"},
   "ICMP": {"description":"Internet Control Message Protocol: служебные сообщения IP; ping использует Echo Request/Reply без TCP/UDP-портов.","relatesTo":"Диагностика и ошибки IP.","lessonId":"osi-pdu"},
   "RFC": {"description":"Request for Comments: серия опубликованных технических документов Internet; статус и обязательность конкретного RFC нужно проверять отдельно.","relatesTo":"Документация протоколов и стандарты.","lessonId":"tcpip-model"},
   "RFC 1918": {"description":"RFC, выделивший частные IPv4-диапазоны: 10.0.0.0/8, 172.16.0.0/12 и 192.168.0.0/16.","relatesTo":"Частная адресация IPv4.","lessonId":"l3-private-ipv4"},
