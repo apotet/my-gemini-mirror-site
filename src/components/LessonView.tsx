@@ -2,8 +2,9 @@ import { FormattedExplanation } from './FormattedExplanation';
 import { GlossaryText } from './GlossaryText';
 import { PracticeLinkButton } from './PracticeLinkButton';
 import type { PracticeLink } from '../data/practiceLinks';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Lesson } from '../data/lessons/types';
+import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { LessonTermTags } from './LessonTermTags';
@@ -22,7 +23,29 @@ interface LessonViewProps {
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
+  const blocks = getLessonBlocksWithSections(lesson, textMode === 'professional' && lesson.professional ? 'professional' : 'plain');
+  const targetAnchor = getLessonSectionForQuestion(lesson.id, returnQuestionId);
+  const anchorElements = useRef<Record<string, HTMLElement | null>>({});
+  const [highlightedAnchor, setHighlightedAnchor] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  // Run after the lesson and selected reading mode are rendered. The same stable anchor
+  // is present in both plain and professional blocks, so changing mode keeps context.
+  useEffect(() => {
+    if (!targetAnchor) return;
+    const frame = window.requestAnimationFrame(() => {
+      const section = anchorElements.current[targetAnchor];
+      if (!section) return;
+      section.scrollIntoView({ behavior: 'auto', block: 'center' });
+      section.focus({ preventScroll: true });
+      setHighlightedAnchor(targetAnchor);
+    });
+    const timeout = window.setTimeout(() => setHighlightedAnchor(null), 2800);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [lesson.id, targetAnchor, textMode]);
 
   const copy = async (cmd: string) => {
     try {
@@ -75,8 +98,14 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
       {lesson.diagram === 'sni' && <SniDiagram />}
 
       <div className="space-y-4">
-        {content.blocks.map((b) => (
-          <section key={b.heading} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2">
+        {blocks.map((b) => (
+          <section
+            key={b.anchorId ?? b.heading}
+            ref={element => { if (b.anchorId) anchorElements.current[b.anchorId] = element; }}
+            data-lesson-section-anchor={b.anchorId}
+            tabIndex={b.anchorId === targetAnchor ? -1 : undefined}
+            className={`rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 scroll-mt-24 motion-safe:transition-shadow motion-safe:duration-300 ${b.anchorId && highlightedAnchor === b.anchorId ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''}`}
+          >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <GlossaryText key={textMode}>{b.heading}</GlossaryText>

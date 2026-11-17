@@ -166,6 +166,99 @@ try {
     await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
     await noPageOverflow();
     await page.screenshot({ path: `scripts/.cache/review-browser/lesson-${width}.png`, fullPage: true });
+
+    // Isolate the paragraph-link smoke from previous active/retried attempts.
+    // A fresh browser context must read exactly this completed saved attempt.
+    const targetCases = [
+      ['photo-otdr-end', 'otdr-end-of-fiber', 'Рефлектометр OTDR: импульс, трассы и отражения'],
+      ['gen-osi-a-19', 'dns-nxdomain-application', 'DNS: как имя становится адресом'],
+      ['tcp-06', 'tcpip-end-to-end-fields', 'TCP/IP: четыре уровня и инкапсуляция'],
+    ];
+    const targetQuestions = targetCases.map(([id]) => get(id));
+    const targetedSession = {
+      ...fixture,
+      questions: targetQuestions,
+      currentIndex: targetQuestions.length - 1,
+      attemptId: 'lesson-section-links-browser-fixture',
+      submittedQuestions: Object.fromEntries(targetQuestions.map(q => [q.id, true])),
+      userAnswers: Object.fromEntries(targetQuestions.map(q => [q.id, q.correct])),
+    };
+    const focusedPage = await browser.newPage({
+      viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile,
+      ignoreHTTPSErrors: process.env.NETOPS_IGNORE_HTTPS_ERRORS === '1',
+    });
+    try {
+      focusedPage.setDefaultTimeout(12000);
+      const focusedErrors = [];
+      focusedPage.on('pageerror', error => focusedErrors.push(error.message));
+      await focusedPage.addInitScript(({ review, progress }) => {
+        localStorage.setItem('osi_last_exam_review_v1', review);
+        localStorage.setItem('osi_user_progress_v4', progress);
+      }, { review: JSON.stringify({ version: 1, session: targetedSession }), progress: progressSnapshot });
+      await focusedPage.goto(base);
+      const originalReview = await focusedPage.evaluate(() => localStorage.getItem('osi_last_exam_review_v1'));
+      await button('Посмотреть разбор последней попытки', focusedPage).click();
+
+      for (const [id, anchorId, lessonTitle] of targetCases) {
+        const targetReview = focusedPage.locator('.review-question').filter({ hasText: get(id).text });
+        if (await targetReview.getAttribute('open') === null) {
+          await targetReview.locator(':scope > summary').click();
+        }
+        await button(/^Перейти к уроку:/, targetReview).click();
+        await focusedPage.getByRole('heading', { name: lessonTitle, exact: true }).waitFor();
+        const section = focusedPage.locator(`[data-lesson-section-anchor="${anchorId}"]`);
+        await section.waitFor({ state: 'visible' });
+        await focusedPage.waitForFunction(id => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          if (!node) return false;
+          const rect = node.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0 &&
+            node.className.includes('ring-cyan-400');
+        }, anchorId);
+        const plainButton = button('Простыми словами', focusedPage);
+        if (await plainButton.getAttribute('aria-pressed') !== 'true') await plainButton.click();
+        await focusedPage.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+          .some(node => node.textContent?.trim() === 'Простыми словами' &&
+            node.getAttribute('aria-pressed') === 'true'));
+        const plain = await section.innerText();
+        await button('По делу', focusedPage).click();
+        await focusedPage.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+          .some(node => node.textContent?.trim() === 'По делу' && node.getAttribute('aria-pressed') === 'true'));
+        await focusedPage.waitForFunction(({ anchorId, plain }) => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${anchorId}"]`);
+          return node !== null && node.innerText !== plain;
+        }, { anchorId, plain });
+        await section.waitFor({ state: 'visible' });
+        await focusedPage.waitForFunction(id => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          if (!node) return false;
+          const rect = node.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        }, anchorId);
+        const professional = await section.innerText();
+        assert.notEqual(professional, plain, id + ': professional explanation differs at exact anchor');
+        await button('Простыми словами', focusedPage).click();
+        await focusedPage.waitForFunction(({ anchorId, plain }) => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${anchorId}"]`);
+          return node !== null && node.innerText === plain;
+        }, { anchorId, plain });
+        assert.equal(await section.innerText(), plain, id + ': same paragraph after style toggle');
+        const widths = await focusedPage.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+        assert.ok(widths[0] <= widths[1] + 1, 'anchored view has no horizontal overflow: ' + widths);
+        await button(`Вернуться к вопросу ${id}`, focusedPage).click();
+        await focusedPage.getByRole('heading', { name: get(id).text, exact: true }).first().waitFor();
+        await focusedPage.locator(`[data-explanation-question-id="${id}"]`).first().waitFor({ state: 'visible' });
+        await button(mobile ? 'Тесты' : 'Тестирование', focusedPage).click();
+        await button('Посмотреть разбор последней попытки', focusedPage).click();
+      }
+      assert.equal(await focusedPage.evaluate(() => localStorage.getItem('osi_user_progress_v4')),
+        progressSnapshot, 'paragraph links do not modify saved progress');
+      assert.equal(await focusedPage.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')),
+        originalReview, 'paragraph links do not overwrite the completed attempt');
+      assert.deepEqual(focusedErrors, []);
+    } finally {
+      await focusedPage.close();
+    }
     assert.deepEqual(errors, []);
     console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, direct lesson in instant/final/last/mistake and mock feedback/results, material gaps and immutable historical review`);
     await page.close();

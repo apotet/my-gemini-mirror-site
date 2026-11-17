@@ -60,13 +60,13 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
     setLessonId(id);
     setReturnQuestionId(fromQuestionId || focusQuestionId || initialQuestionId || null);
     setSection('knowledge');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const openQuestionFromLesson = (questionId: string) => {
     setFocusQuestionId(questionId);
     setSection('razbory');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
 
   const effectiveQuestionId = focusQuestionId || initialQuestionId;
