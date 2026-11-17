@@ -216,6 +216,9 @@ try {
         }, anchorId);
         const plainButton = button('Простыми словами', focusedPage);
         if (await plainButton.getAttribute('aria-pressed') !== 'true') await plainButton.click();
+        await focusedPage.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+          .some(node => node.textContent?.trim() === 'Простыми словами' &&
+            node.getAttribute('aria-pressed') === 'true'));
         const plain = await section.innerText();
         await button('По делу', focusedPage).click();
         await focusedPage.waitForFunction(() => Array.from(document.querySelectorAll('button'))
@@ -242,7 +245,8 @@ try {
         const widths = await focusedPage.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
         assert.ok(widths[0] <= widths[1] + 1, 'anchored view has no horizontal overflow: ' + widths);
         await button(`Вернуться к вопросу ${id}`, focusedPage).click();
-        await focusedPage.getByText(get(id).text).first().waitFor();
+        await focusedPage.getByRole('heading', { name: get(id).text, exact: true }).first().waitFor();
+        await focusedPage.locator(`[data-explanation-question-id="${id}"]`).first().waitFor({ state: 'visible' });
         await button(mobile ? 'Тесты' : 'Тестирование', focusedPage).click();
         await button('Посмотреть разбор последней попытки', focusedPage).click();
       }
