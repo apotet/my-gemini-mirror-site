@@ -183,6 +183,7 @@ try {
       submittedQuestions: Object.fromEntries(targetQuestions.map(q => [q.id, true])),
       userAnswers: Object.fromEntries(targetQuestions.map(q => [q.id, q.correct])),
     };
+    const progressBeforeAnchors = await page.evaluate(() => localStorage.getItem('osi_user_progress_v4'));
     await page.evaluate(snapshot => localStorage.setItem('osi_last_exam_review_v1', snapshot),
       JSON.stringify({ version: 1, session: targetedSession }));
     await page.reload();
@@ -199,6 +200,7 @@ try {
       const section = page.locator(`[data-lesson-section-anchor="${anchorId}"]`);
       await section.waitFor({ state: 'visible' });
       await page.waitForFunction(isSectionInViewport, anchorId);
+      await page.waitForFunction(id => document.querySelector(`[data-lesson-section-anchor="${id}"]`)?.className.includes('ring-cyan-400'), anchorId);
       assert.ok((await section.getAttribute('class')).includes('ring-cyan-400'),
         id + ': exact paragraph is briefly highlighted');
       const plainButton = button('Простыми словами');
@@ -217,7 +219,7 @@ try {
       await home();
       await openReview();
     }
-    assert.equal(await page.evaluate(() => localStorage.getItem('osi_user_progress_v4')), progressSnapshot,
+    assert.equal(await page.evaluate(() => localStorage.getItem('osi_user_progress_v4')), progressBeforeAnchors,
       'paragraph links do not modify saved learning progress');
     assert.deepEqual(errors, []);
     console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, direct lesson in instant/final/last/mistake and mock feedback/results, material gaps and immutable historical review`);
