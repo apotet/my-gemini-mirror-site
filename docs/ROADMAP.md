@@ -1,3 +1,11 @@
+## «База» — партия №7: закрытие последних 15 beginner (17.11.2026)
+
+**Статус: PR/CI/review PENDING.** Фактическое до партии покрытие 238/253. Недостающие `gen-port-15..17`, `photo-gbic-size`, `photo-blue-upc`, `review-hsr-14`, `review-poe-29`, шесть `l1v2-a-*` по повреждениям/PoE/Cat6A и `l57-x03/x17` обнаружены по resolver и источникам 198+55. `review-poe-29` имел approved `audited.practicalTip`, но не имел индивидуального deep; подсказку сохраняем приоритетной.
+
+- 15 новых индивидуальных brief + 3 абзаца plain + самостоятельный pro + ловушка + практический совет; четыре реальных урока plain/pro: `l4-directory-remote-industrial-ports` (3), `l2-hsr-redundancy` (1), `l1-copper-fault-poe` (7), `l7-http-status-basics` (2); два фото включены в готовый `l1-fiber-hardware` без дублирования. Девять новых glossary terms, прежние определения не переписаны.
+- Восемь исходных фото визуально сверены с pinned `apotet/osi-tcpip-exam-public@1c52fa8`: исключены догадки о химической коррозии, диапазоне оптики и категоризации всего канала по этикетке Cat6A; PoE 54,6 V без нагрузки не приравнивается 13 W. Исходные 862 билета/варианты/ключи/фото/статистика не менялись.
+- Матрица: [docs/audits/base-foundations-batch7.md](audits/base-foundations-batch7.md). Тест 15 реальных ID: `scripts/base-foundations-batch7.test.mjs`. **Стандарт учебных материалов соблюдён**, источник `docs/LEARNING_CONTENT_STANDARD.md`. Staging publish только после CI, независимого Codex и GATE-01..10. Production `apotet/netops` без явного разрешения владельца не обновлять.
+
 ## «База» — партия №6: оптоволокно, сварка и измерения (17.11.2026)
 
 **Статус: PR, независимая приёмка и CI PENDING.** После партии №5 стало 218/253 beginner individual; этот выпуск закрывает ещё 20 реальных пробелов. Банк 862 и все исходные key/варианты/images/attempts не изменены.
