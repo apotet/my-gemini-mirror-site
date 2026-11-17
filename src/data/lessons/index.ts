@@ -89,6 +89,8 @@ export function getLesson(id: string): Lesson | undefined {
 }
 
 export function getLessonForQuestion(questionId: string): Lesson | undefined {
+  // The encapsulation walkthrough is more specific than the existing model overview.
+  if (questionId === 'tcpip-x15') return getLesson('tcpip-encapsulation');
   const related = LESSONS.find((l) => l.relatedQuestionIds.includes(questionId));
   if (related || ipv4CalculationPrefix(questionId) === undefined) return related;
   return getLesson(questionId.startsWith('gen-mask-') || questionId === 'l3-06' ? 'l3-masks' : 'l3-subnets');
