@@ -1,6 +1,7 @@
 // Real questions spanning CLI, TCP, TLS, subnetting and optics; no synthetic teaching content.
 export const reviewMaterialFixtures = [
-  { id: 'ts-x12', lessonId: null, professional: false },
+  { id: 'gen-transport-11', lessonId: null, professional: false },
+  { id: 'ts-x12', lessonId: 'ts-cli-network-basics', professional: false },
   { id: 'ts-x05', lessonId: 'cli-show-help-tab', professional: false },
   { id: 'l57-d02', lessonId: 'tls-sni', professional: true },
   { id: 'l4-new-04', lessonId: null, professional: true },

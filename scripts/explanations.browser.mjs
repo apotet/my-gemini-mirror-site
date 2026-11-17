@@ -66,7 +66,8 @@ try {
     await page.getByText('5 из 5 верно').waitFor();
     const socket = await openRow('ss -tulpn или netstat -tulpn');
     await openDetail(socket);
-    await socket.getByText('Урок по этой теме пока не подготовлен', {exact:true}).waitFor();
+    await socket.getByRole('button', {name: 'Перейти к уроку: CLI диагностика сети: ipconfig, nslookup, traceroute, ip route и ss'}).waitFor();
+    assert.equal(await socket.getByText('Урок по этой теме пока не подготовлен', {exact:true}).count(), 0);
     await socket.getByText('Профессиональный разбор пока не подготовлен', {exact:true}).waitFor();
     assert.equal(await socket.getByRole('group', {name:'Стиль объяснения'}).count(), 0);
     await socket.locator('pre code').filter({ hasText: /udp\s+UNCONN/ }).waitFor();
