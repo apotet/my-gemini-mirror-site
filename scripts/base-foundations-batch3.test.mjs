@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { bundleEntry } from './load-bank.mjs';
 
-const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, getLesson } =
+const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion } =
   await bundleEntry('scripts/explanations-test-entry.ts', 'base-foundations-batch3.mjs');
 const { BASE_FOUNDATIONS_BATCH3 } =
   await bundleEntry('src/data/baseFoundationsBatch3.ts', 'base-foundations-batch3-entries.mjs');
@@ -80,7 +80,7 @@ for (const [id, expected] of Object.entries(portKeys)) {
 const route = ALL_QUESTIONS.find(q => q.id === 'l3-02');
 assert.deepEqual(route.correct.map(i => route.answers[i]), ['eth1'], 'LPM boundary: .128 picks /24, not /25');
 for (const lessonId of ['l3-route-selection', 'l4-service-ports']) {
-  const lesson = getLesson(lessonId);
+  const lesson = getLessonForQuestion(lessonId === 'l3-route-selection' ? 'l3-02' : 'gen-port-0');
   assert.ok(lesson, lessonId + ' registered in catalog');
   for (const [style, terms] of [['plain', lesson.terms], ['professional', lesson.professional.terms]]) {
     for (const term of terms) {
@@ -90,7 +90,7 @@ for (const lessonId of ['l3-route-selection', 'l4-service-ports']) {
   }
   assert.ok(lesson.professional.blocks.some(b => b.body.length > 200), lessonId + ' engineering lesson not stub');
 }
-const service = getLesson('l4-service-ports');
+const service = getLessonForQuestion('gen-port-0');
 assert.ok(service.blocks.some(b => b.practiceLink === 'tcp'), 'service lesson offers actual TCP ports exercise');
 assert.ok(service.professional.blocks.some(b => b.practiceLink === 'tcp'), 'pro service lesson offers actual TCP exercise');
 assert.equal(PRACTICE_DESTINATIONS.tcp.protocol, 'tcp', 'TCP practice is a real simulator');
