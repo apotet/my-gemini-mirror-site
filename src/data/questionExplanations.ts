@@ -14,6 +14,7 @@ import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalE
 import { BASE_FOUNDATION_UPGRADES } from './baseFoundations';
 import { BASE_FOUNDATIONS_BATCH3 } from './baseFoundationsBatch3';
 import { BASE_FOUNDATIONS_BATCH4 } from './baseFoundationsBatch4';
+import { BASE_FOUNDATIONS_BATCH5 } from './baseFoundationsBatch5';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -652,6 +653,12 @@ const INDIVIDUAL_DEEP: Record<
   }])),
   // Beginner photo foundations batch 4: preserve bank and images; use authored individual plain/pro.
   ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH4).map(([id, patch]) => [id, {
+    ...patch,
+    deep: patch.plain,
+    glossaryInProfessional: true,
+  }])),
+  // Beginner photo foundations batch 5: specifically authored copper/SCS why/plain/pro and trap.
+  ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH5).map(([id, patch]) => [id, {
     ...patch,
     deep: patch.plain,
     glossaryInProfessional: true,
