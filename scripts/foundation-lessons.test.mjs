@@ -47,7 +47,7 @@ const incompleteLessonStyles = foundations
   .map(({id,lesson}) => id + ' -> ' + lesson.id);
 assert.deepEqual(incompleteLessonStyles, [], 'all linked foundational lessons need plain and pro content');
 
-assert.equal(getLessonForQuestion('l57-x11')?.id, 'l7-dns-dhcp', 'MX record lesson');
+assert.equal(getLessonForQuestion('l57-x11')?.id, 'l7-mail-mx', 'MX record lesson');
 assert.equal(getLessonForQuestion('ts-x12')?.id, 'ts-cli-network-basics', 'ss -tulpn lesson');
 assert.equal(getLessonForQuestion('gen-osi-a-1')?.id, 'l1-phy-symbol-rate', 'symbol/baud lesson');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');

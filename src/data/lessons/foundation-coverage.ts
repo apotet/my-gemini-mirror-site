@@ -39,9 +39,6 @@ export const FOUNDATION_EXISTING_LESSON_LINKS: Readonly<Record<string, readonly 
     "l4-x01",
     "l4-x02"
   ],
-  "l7-dns-dhcp": [
-    "l57-x11"
-  ],
   "cli-console-ssh-telnet": [
     "l7-06"
   ],
@@ -774,6 +771,73 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "RFC 791 — Internet Protocol",
       "RFC 9293 — Transmission Control Protocol",
       "Saltzer, Reed, Clark (1984) — End-to-End Arguments in System Design"
+    ]
+  },
+  {
+    "id": "l7-mail-mx",
+    "title": "DNS MX: куда отправлять электронную почту",
+    "category": "L7 · DNS и почта",
+    "osiLayers": [
+      "L7"
+    ],
+    "difficulty": "beginner",
+    "summary": "Зачем записи MX указывают почтовые серверы домена и почему это не адрес сайта, не CNAME и не PTR-запись.",
+    "terms": [
+      "DNS",
+      "MX",
+      "SMTP",
+      "A",
+      "AAAA",
+      "PTR",
+      "preference"
+    ],
+    "blocks": [
+      {
+        "heading": "Письму нужен адрес почтового сервера",
+        "body": "Когда человек отправляет письмо на имя вида user@example.test, почтовой системе нужно узнать, какие серверы принимают почту для домена example.test. В DNS за это отвечает запись MX: она указывает имя принимающего почтового узла и его приоритет.\n\nMX — не IPv6-адрес веб-сайта, не указатель CNAME на CDN и не обратная запись PTR. Для IPv6 используются записи AAAA, а PTR помогает получить имя по адресу."
+      },
+      {
+        "heading": "Как выбрать сервер по MX",
+        "body": "Домен может объявить несколько MX-серверов с разными значениями preference. Обычно сначала пробуют сервер с меньшим числом. Например, MX 10 mail1.example.test имеет приоритет перед MX 20 mail2.example.test.\n\nПосле получения MX почтовая система отдельно разрешает имя выбранного сервера в IP-адрес. Если предпочтительный недоступен, возможна попытка на следующем сервере по установленной политике доставки."
+      },
+      {
+        "heading": "Короткая проверка на практике",
+        "body": "Выполни nslookup -type=MX example.test или dig MX example.test и сравни имена/приоритеты. Затем проверь A/AAAA имени почтового узла; не ожидай, что сама MX-запись содержит IPv4/IPv6-адрес.\n\nДля тестовой зоны используй учебные домены и не воспринимай запись MX как доказательство успешной доставки SMTP."
+      }
+    ],
+    "professional": {
+      "summary": "Поиск MX (RR type 15), preference, резолв имени exchange и ограничения диагностики SMTP-доставки.",
+      "terms": [
+        "MX",
+        "DNS",
+        "SMTP",
+        "preference",
+        "exchange",
+        "A",
+        "AAAA",
+        "NXDOMAIN"
+      ],
+      "blocks": [
+        {
+          "heading": "DNS-формат и поведение отправителя",
+          "body": "MX RR содержит 16-битное поле preference и доменное имя exchange. Отправитель получает RRset MX для домена получателя, упорядочивает возможные цели с учётом предпочтений и правил RFC 5321, затем получает адреса A/AAAA выбранного exchange. Наличие MX не подменяет успешный TCP/SMTP обмен."
+        },
+        {
+          "heading": "Проверить без ложных выводов",
+          "body": "Сверь dig MX example.test и dig A/AAAA mail1.example.test, затем доступность нужного SMTP-порта и ответы сервера с учётом DNS TTL/политик. PTR относится к обратному отображению IP→имя и не заменяет маршрутизацию почты. Сама MX-запись не обязана указывать фактический IP-адрес; это имя узла."
+        }
+      ],
+      "sources": [
+        "RFC 1035 — Domain Names: MX RR",
+        "RFC 5321 — Simple Mail Transfer Protocol"
+      ]
+    },
+    "relatedQuestionIds": [
+      "l57-x11"
+    ],
+    "sources": [
+      "RFC 1035 — Domain Names",
+      "RFC 5321 — Simple Mail Transfer Protocol"
     ]
   }
 ];
