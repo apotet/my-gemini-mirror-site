@@ -129,6 +129,8 @@ for(const id of ids){
  assert.equal(dive.commonTrap,patch.trap,id+' authored misconception');
  assert.equal(dive.hasIndividualDeep,true,id+' author coverage');
  assert.equal(dive.practiceLink,undefined,id+' no fictional lab');
+ assert.ok(dive.practicalTip?.includes('медной линии') && dive.practicalTip?.includes('wiremap'),id+' copper-specific practical guidance');
+ assert.ok(!/волокн|оптик|очистк.*торц|измерение потерь/i.test(dive.practicalTip),id+' no optical fallback on copper question');
  assert.equal(patch.plain.split(/\n\s*\n/).length,3,id+' three readable paragraphs');
  assert.ok(patch.brief.length>50&&patch.plain.length>240&&patch.pro.length>280&&patch.trap.length>35,id+' substantive content');
  assert.notEqual(patch.pro,patch.plain,id+' independent professional layer');
