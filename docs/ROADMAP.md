@@ -1,3 +1,13 @@
+## База — партия №5: медная СКС и инструменты (17.11.2026)
+
+**Статус: PR / независимая приёмка PENDING.** Фактический отчёт после #244: 198/253 beginner individual (78%), 55 без индивидуальных разборов. Закрываются ещё 20 реальных пробелов без переписывания уже готовых Ethernet/MAC/ARP или оптических материалов.
+
+- Новые 20 photo brief + 3 абзаца plain + независимый pro + предметная ловушка: `l1v2-a-8p8c`, `l1v2-a-uutp`, `l1v2-a-stranded`, `l1v2-a-futp`, `l1v2-a-pair-foil`, `l1v2-a-keystone`, `l1v2-a-panel-passive`, `l1v2-a-wall-port`, `l1v2-a-stripper`, `l1v2-a-cutters`, `l1v2-a-punchdown`, `l1v2-a-crimper`, `l1v2-a-label-category`, `l1v2-a-label-lshf`, `l1v2-a-label-four-pairs`, `l1v2-a-tone`, `l1v2-a-mark-cat5e`, `l1v2-a-mark-cat6`, `l1v2-a-pvc-read`, `l1v2-a-solid-view`.
+- Два настоящих двустильных урока: `l1-copper-cable` (11 связей) и `l1-copper-installation` (9 связей); добавлены 24 отсутствовавших словарных термина. Несуществующих практик нет.
+- Изображения и правильные ответы в `questions.json`, банк 862, сложность и сохранённые результаты не менялись. Отдельный тест `scripts/base-foundations-batch5.test.mjs` проверяет exact keys/images/lessons/individual layers/glossary.
+- 17 исходных изображений визуально сверены: 13 чистых PASS, 4 нуждаются в квалифицированном прочтении. Дополнительный просмотр оригиналов подтвердил F/UTP, обёртки отдельных пар, печать `CATEGORY 7A`/`4P`/`LSHF`, а также `CATEGORY 5E`. Вся экспертная интерпретация ограничена тем, что реально подтверждается фото.
+- Авторская матрица и контроль: [base-foundations-batch5.md](audits/base-foundations-batch5.md). **Обязательные перед staging:** независимый Codex, CI, GATE-01…10, проверка источников и браузер после Pages deploy. Production `apotet/netops` не трогать без отдельной команды.
+
 ## База — партия №4: фотооптика и физическая инфраструктура (17.11.2026)
 
 **Состояние: PR / CI / независимая проверка PENDING.** После аудита текущего beginner-банка обнаружено, что большинство билетов Ethernet/MAC/ARP уже имеют индивидуальные материалы, а непокрытая зона сосредоточена в фото-блоке. Поэтому не переписываем качественный существующий текст, а закрываем **20 реальных пропусков**: `photo-lc`, `photo-sc`, `photo-st`, `photo-fc`, `photo-lc-sc-order`, `photo-sfp`, `photo-gbic-sfp`, `photo-sm-mm-colors`, `photo-patchcord`, `photo-apc`, `photo-otdr`, `photo-cable`, `photo-panel`, `photo-lc-latch`, `photo-sc-push`, `photo-sc-color`, `photo-st-bayonet`, `photo-st-usage`, `photo-lcsc-size`, `photo-sfp-contacts`.
