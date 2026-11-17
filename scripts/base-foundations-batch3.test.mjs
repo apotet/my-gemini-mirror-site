@@ -44,7 +44,13 @@ for (const id of ids) {
   const upgrade = BASE_FOUNDATIONS_BATCH3[id];
   const dive = getQuestionDeepDive(question);
   assert.equal(dive.hasIndividualDeep, true, id + ' individual explanation');
-  assert.equal(dive.briefAnswer, upgrade.brief, id + ' specific why');
+  if (id === 'tcpip-x13' || id === 'tcpip-x15') {
+    // Approved audited brief takes precedence; preserve it instead of overwriting it.
+    assert.ok(dive.briefAnswer.length > 110, id + ' approved audited why retained');
+    assert.notEqual(dive.briefAnswer, upgrade.brief, id + ' audited why not overridden by new batch');
+  } else {
+    assert.equal(dive.briefAnswer, upgrade.brief, id + ' authored specific why');
+  }
   assert.equal(dive.plain, upgrade.plain, id + ' active authored plain');
   assert.equal(dive.deepAnalysis, upgrade.plain, id + ' plain is default detailed view');
   assert.equal(dive.pro, upgrade.pro, id + ' active authored pro');
