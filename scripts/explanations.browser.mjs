@@ -167,8 +167,8 @@ try {
     await noPageOverflow();
     await page.screenshot({ path: `scripts/.cache/review-browser/lesson-${width}.png`, fullPage: true });
 
-    // Real saved-review transitions into precise lesson paragraphs. Restore the exact
-    // section on reading-mode switch, retain the return link, and avoid an unrelated anchor.
+    // Isolate the paragraph-link smoke from previous active/retried attempts.
+    // A fresh browser context must read exactly this completed saved attempt.
     const targetCases = [
       ['photo-otdr-end', 'otdr-end-of-fiber'],
       ['gen-osi-a-19', 'dns-nxdomain-application'],
@@ -183,44 +183,64 @@ try {
       submittedQuestions: Object.fromEntries(targetQuestions.map(q => [q.id, true])),
       userAnswers: Object.fromEntries(targetQuestions.map(q => [q.id, q.correct])),
     };
-    const progressBeforeAnchors = await page.evaluate(() => localStorage.getItem('osi_user_progress_v4'));
-    await page.evaluate(snapshot => localStorage.setItem('osi_last_exam_review_v1', snapshot),
-      JSON.stringify({ version: 1, session: targetedSession }));
-    await page.reload();
-    await openReview();
-    const isSectionInViewport = id => {
-      const section = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
-      if (!section) return false;
-      const rect = section.getBoundingClientRect();
-      return rect.top < window.innerHeight && rect.bottom > 0;
-    };
-    for (const [id, anchorId] of targetCases) {
-      const targetReview = await openRow(get(id).text);
-      await button(/^Перейти к уроку:/, targetReview).click();
-      const section = page.locator(`[data-lesson-section-anchor="${anchorId}"]`);
-      await section.waitFor({ state: 'visible' });
-      await page.waitForFunction(isSectionInViewport, anchorId);
-      await page.waitForFunction(id => document.querySelector(`[data-lesson-section-anchor="${id}"]`)?.className.includes('ring-cyan-400'), anchorId);
-      assert.ok((await section.getAttribute('class')).includes('ring-cyan-400'),
-        id + ': exact paragraph is briefly highlighted');
-      const plainButton = button('Простыми словами');
-      if (await plainButton.getAttribute('aria-pressed') !== 'true') await plainButton.click();
-      const plain = await section.innerText();
-      await button('По делу').click();
-      await section.waitFor({ state: 'visible' });
-      await page.waitForFunction(isSectionInViewport, anchorId);
-      const professional = await section.innerText();
-      assert.notEqual(professional, plain, id + ': different professional explanation at same anchor');
-      await button('Простыми словами').click();
-      assert.equal(await section.innerText(), plain, id + ': precise paragraph retained on mode switch');
-      await noPageOverflow();
-      await button(`Вернуться к вопросу ${id}`).click();
-      await page.getByText(get(id).text).first().waitFor();
-      await home();
-      await openReview();
+    const focusedPage = await browser.newPage({
+      viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile,
+      ignoreHTTPSErrors: process.env.NETOPS_IGNORE_HTTPS_ERRORS === '1',
+    });
+    try {
+      focusedPage.setDefaultTimeout(12000);
+      const focusedErrors = [];
+      focusedPage.on('pageerror', error => focusedErrors.push(error.message));
+      await focusedPage.addInitScript(({ review, progress }) => {
+        localStorage.setItem('osi_last_exam_review_v1', review);
+        localStorage.setItem('osi_user_progress_v4', progress);
+      }, { review: JSON.stringify({ version: 1, session: targetedSession }), progress: progressSnapshot });
+      await focusedPage.goto(base);
+      await button('Посмотреть разбор последней попытки', focusedPage).click();
+
+      for (const [id, anchorId] of targetCases) {
+        const targetReview = focusedPage.locator('.review-question').filter({ hasText: get(id).text });
+        if (await targetReview.getAttribute('open') === null) {
+          await targetReview.locator(':scope > summary').click();
+        }
+        await button(/^Перейти к уроку:/, targetReview).click();
+        const section = focusedPage.locator(`[data-lesson-section-anchor="${anchorId}"]`);
+        await section.waitFor({ state: 'visible' });
+        await focusedPage.waitForFunction(id => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          if (!node) return false;
+          const rect = node.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0 &&
+            node.className.includes('ring-cyan-400');
+        }, anchorId);
+        const plainButton = button('Простыми словами', focusedPage);
+        if (await plainButton.getAttribute('aria-pressed') !== 'true') await plainButton.click();
+        const plain = await section.innerText();
+        await button('По делу', focusedPage).click();
+        await section.waitFor({ state: 'visible' });
+        await focusedPage.waitForFunction(id => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          if (!node) return false;
+          const rect = node.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        }, anchorId);
+        const professional = await section.innerText();
+        assert.notEqual(professional, plain, id + ': professional explanation differs at exact anchor');
+        await button('Простыми словами', focusedPage).click();
+        assert.equal(await section.innerText(), plain, id + ': same paragraph after style toggle');
+        const widths = await focusedPage.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+        assert.ok(widths[0] <= widths[1] + 1, 'anchored view has no horizontal overflow: ' + widths);
+        await button(`Вернуться к вопросу ${id}`, focusedPage).click();
+        await focusedPage.getByText(get(id).text).first().waitFor();
+        await button(mobile ? 'Тесты' : 'Тестирование', focusedPage).click();
+        await button('Посмотреть разбор последней попытки', focusedPage).click();
+      }
+      assert.equal(await focusedPage.evaluate(() => localStorage.getItem('osi_user_progress_v4')),
+        progressSnapshot, 'paragraph links do not modify saved progress');
+      assert.deepEqual(focusedErrors, []);
+    } finally {
+      await focusedPage.close();
     }
-    assert.equal(await page.evaluate(() => localStorage.getItem('osi_user_progress_v4')), progressBeforeAnchors,
-      'paragraph links do not modify saved learning progress');
     assert.deepEqual(errors, []);
     console.log(`PASS Chromium ${width}px: last and instant review, plain/pro, glossary, IPv4 and IPv6, direct lesson in instant/final/last/mistake and mock feedback/results, material gaps and immutable historical review`);
     await page.close();
