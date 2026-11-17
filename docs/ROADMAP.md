@@ -1,3 +1,12 @@
+## База — партия №4: фотооптика и физическая инфраструктура (17.11.2026)
+
+**Состояние: PR / CI / независимая проверка PENDING.** После аудита текущего beginner-банка обнаружено, что большинство билетов Ethernet/MAC/ARP уже имеют индивидуальные материалы, а непокрытая зона сосредоточена в фото-блоке. Поэтому не переписываем качественный существующий текст, а закрываем **20 реальных пропусков**: `photo-lc`, `photo-sc`, `photo-st`, `photo-fc`, `photo-lc-sc-order`, `photo-sfp`, `photo-gbic-sfp`, `photo-sm-mm-colors`, `photo-patchcord`, `photo-apc`, `photo-otdr`, `photo-cable`, `photo-panel`, `photo-lc-latch`, `photo-sc-push`, `photo-sc-color`, `photo-st-bayonet`, `photo-st-usage`, `photo-lcsc-size`, `photo-sfp-contacts`.
+
+- Добавлены индивидуальные «Почему так», три абзаца «Простыми словами», отдельный «По делу» и ловушки для каждого фото. Исходные 862 билета, варианты, ключи, изображения и сохранённые попытки не менялись.
+- Новый двустильный урок `l1-fiber-hardware`: LC/SC/ST/FC, SFP/GBIC, цвета SM/MM и UPC/APC, оптический кросс и OTDR. 20 точных question→lesson связей, двусторонняя навигация, словарь дополнен только отсутствующими терминами, выдуманные стенды не добавлялись.
+- Предрелизная матрица: [base-foundations-batch4.md](audits/base-foundations-batch4.md). `scripts/base-foundations-batch4.test.mjs` подтверждает source keys/media refs/plain/pro/lesson/glossary, но не подменяет визуальную и независимую приёмку.
+- **До staging merge:** независимый review + CI + GATE-01…10, особенно проверка изображений и обоих слоёв в браузере. Production `apotet/netops` не трогать без команды владельца.
+
 ## База — партия №3: TCP/IP, PDU, LPM, сервисные порты (17.11.2026)
 
 **Состояние: 20/20 AUTHOR PASS + CI PASS (код SHA b1fc165), независимый Codex code review завершён без замечаний; staging release после финального CI/GATE.** Ветка `feat/base-foundations-batch3` от staging `main` после PR #242. Production не изменён.

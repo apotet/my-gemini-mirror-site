@@ -13,6 +13,7 @@ import { DIAGNOSTIC_EXPLANATIONS } from './diagnosticExplanations';
 import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalExplanation } from './questionExplanationsApplied';
 import { BASE_FOUNDATION_UPGRADES } from './baseFoundations';
 import { BASE_FOUNDATIONS_BATCH3 } from './baseFoundationsBatch3';
+import { BASE_FOUNDATIONS_BATCH4 } from './baseFoundationsBatch4';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -645,6 +646,12 @@ const INDIVIDUAL_DEEP: Record<
   // Beginner foundation batch 3: independent brief/plain/pro, no generated fallback.
   ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH3).map(([id, patch]) => [id, {
     ...APPLIED_INDIVIDUAL_DEEP[id],
+    ...patch,
+    deep: patch.plain,
+    glossaryInProfessional: true,
+  }])),
+  // Beginner photo foundations batch 4: preserve bank and images; use authored individual plain/pro.
+  ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH4).map(([id, patch]) => [id, {
     ...patch,
     deep: patch.plain,
     glossaryInProfessional: true,

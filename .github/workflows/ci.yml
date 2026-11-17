@@ -145,6 +145,9 @@ jobs:
       - name: Beginner foundations batch 3 (20 tickets and lesson glossary)
         run: node scripts/base-foundations-batch3.test.mjs
 
+      - name: Beginner foundations batch 4 (20 photo tickets and two-style optics lesson)
+        run: node scripts/base-foundations-batch4.test.mjs
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
