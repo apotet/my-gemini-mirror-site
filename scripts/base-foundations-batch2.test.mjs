@@ -59,3 +59,36 @@ for (const [id, expectedLesson] of Object.entries(expected)) {
   assert.ok(lesson.professional.blocks.some(b => b.body.length > 150), id + ': professional lesson is not stub');
 }
 console.log('PASS: base foundations batch2: 20 tickets, two meaningful ticket layers and both lesson layers');
+
+
+const { GLOSSARY } = await bundleEntry('src/data/glossary.ts', 'foundation-glossary.mjs');
+const { PRACTICE_DESTINATIONS } = await bundleEntry('src/data/practiceLinks.ts', 'foundation-practice.mjs');
+
+for (const id of ['l5-01', 'tcp-07', 'tcp-09']) {
+  const lesson = getLessonForQuestion(id);
+  for (const [style, terms] of [['plain', lesson.terms], ['professional', lesson.professional.terms]]) {
+    for (const term of terms) {
+      assert.ok(GLOSSARY[term]?.description?.length > 25, lesson.id + ': ' + style + ' term ' + term + ' has a useful definition');
+    }
+  }
+}
+
+const icmp = getLessonForQuestion('tcp-07');
+assert.ok(icmp.blocks.some(b => b.practiceLink === 'packet'), 'ICMP plain links actual packet practice');
+assert.ok(icmp.professional.blocks.some(b => b.practiceLink === 'packet'), 'ICMP professional links actual packet practice');
+assert.equal(PRACTICE_DESTINATIONS.packet.simulator, 'journey', 'ICMP practice exists');
+
+const portsQuestion = ALL_QUESTIONS.find(q => q.id === 'gen-osi-a-11');
+const udpQuestion = ALL_QUESTIONS.find(q => q.id === 'gen-osi-a-12');
+assert.equal(getQuestionDeepDive(portsQuestion).practiceLink, 'tcp', 'ports ticket links TCP port simulator');
+assert.equal(PRACTICE_DESTINATIONS.tcp.protocol, 'tcp', 'transport practice exists');
+assert.equal(getQuestionDeepDive(udpQuestion).practiceLink, undefined, 'no fake UDP practice link');
+
+const encap = getLessonForQuestion('tcp-09');
+const mssBlock = encap.professional.blocks.find(b => b.heading.includes('MSS'));
+assert.ok(mssBlock, 'MTU/MSS professional block exists');
+assert.match(mssBlock.body, /IHL=5 \(5×4=20 B\)/, 'IPv4 IHL contains field value, not byte count');
+assert.match(mssBlock.body, /Data Offset=5 \(5×4=20 B\)/, 'TCP offset contains field value, not byte count');
+assert.doesNotMatch(mssBlock.body, /IHL=20 B|Data Offset=20 B/, 'never present header sizes as field values');
+assert.match(mssBlock.body, /1500−20−20=1460 B/, 'unchanged RFC-compliant calculation');
+console.log('PASS: four Codex P2 regressions: fields, glossary, L4 destinations, ICMP lesson links');
