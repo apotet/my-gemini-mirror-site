@@ -126,7 +126,7 @@ assert.equal(gbic.id,'l1-fiber-hardware');
 assert.equal(upc.id,'l1-fiber-hardware');
 assert.ok(gbic.relatedQuestionIds.includes('photo-gbic-sfp') && gbic.relatedQuestionIds.includes('photo-apc'),'legacy optics links preserved');
 const hsr=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='review-hsr-14'));
-assert.ok(hsr.pro.includes('opposite directions') && hsr.pro.includes('duplicates'),'HSR two-direction duplicate distinction');
+assert.ok(hsr.pro.includes('opposite directions') && hsr.pro.includes('duplicate'),'HSR two-direction duplicate distinction');
 const poe=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-a-poe-unloaded'));
 assert.ok(poe.pro.includes('54.6 V') && poe.pro.includes('13.00 W'),'no-load voltage vs power distinction');
 const http=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l57-x17'));
