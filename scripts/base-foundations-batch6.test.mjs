@@ -148,7 +148,7 @@ for(const l of lessons){
  }
 }
 const fusion=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-b-screen-loss-read'));
-assert.ok(fusion.pro.includes('estimated splice loss') && fusion.pro.includes('dBm'),'screen estimate not confused with measurement');
+assert.ok(fusion.pro.includes('algorithmic splice loss estimate') && fusion.pro.includes('dBm'),'screen estimate not confused with measurement');
 assert.ok(getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-c-trace-units')).pro.includes('200000 ft'),'OTDR ft explicitly accounted for');
 assert.ok(getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-c-poe-marked-ports')).practicalTip.includes('PoE'),'PoE no optical fallback');
 assert.ok(getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-c-converter-path')).practicalTip.includes('100BASE-TX'),'converter no optical fallback');
