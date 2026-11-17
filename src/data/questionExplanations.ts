@@ -12,6 +12,7 @@ import { Question } from '../types/quiz';
 import { DIAGNOSTIC_EXPLANATIONS } from './diagnosticExplanations';
 import { APPLIED_INDIVIDUAL_DEEP, GAP_PACK_PRO_SOURCE_COMMIT, type ProfessionalExplanation } from './questionExplanationsApplied';
 import { BASE_FOUNDATION_UPGRADES } from './baseFoundations';
+import { BASE_FOUNDATIONS_BATCH3 } from './baseFoundationsBatch3';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -641,6 +642,13 @@ const INDIVIDUAL_DEEP: Record<
       glossaryInProfessional: true,
     }];
   })),
+  // Beginner foundation batch 3: independent brief/plain/pro, no generated fallback.
+  ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH3).map(([id, patch]) => [id, {
+    ...APPLIED_INDIVIDUAL_DEEP[id],
+    ...patch,
+    deep: patch.plain,
+    glossaryInProfessional: true,
+  }])),
   ...Object.fromEntries(DIAGNOSTIC_CASES_177.map(item => [item.id, {
     brief: item.brief,
     deep: item.sense.join('\n\n'),

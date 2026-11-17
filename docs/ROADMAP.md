@@ -1,6 +1,17 @@
+## База — партия №3: TCP/IP, PDU, LPM, сервисные порты (17.11.2026)
+
+**Состояние: 20/20 AUTHOR PASS + CI PASS (код SHA b1fc165), независимый Codex code review завершён без замечаний; staging release после финального CI/GATE.** Ветка `feat/base-foundations-batch3` от staging `main` после PR #242. Production не изменён.
+
+- **20 ID:** `tcpip-x13`, `tcpip-x15`, `tcpip-x16`, `tcpip-x17`, `tcpip-x19`, `tcpip-x21`, `tcpip-x29`, `l3-02`, `k-06`, `k-08`, `new-l6-format`, `new-tcpip-payload`, `gen-port-0`, `gen-port-1`, `gen-port-2`, `gen-port-3`, `gen-port-4`, `gen-port-5`, `gen-port-10`, `gen-port-12`.
+- Для каждого отдельные «Почему так», три смысловых абзаца «Простыми словами», самостоятельный «По делу», точный урок, только имеющиеся подходящие тренажёры. Вопросы, ключи, уровень и сохранённые попытки не меняются.
+- Новые двустильные уроки: `l3-route-selection` (граничный LPM /25↔/24, ARP отдельно) и `l4-service-ports` (IANA, HTTP/HTTPS/SSH/Telnet, FTP control/data, SMTP, POP3, IMAP).
+- **Приёмка:** [матрица 20 ID](audits/base-foundations-batch3.md): 20/20 AUTHOR PASS; CI #43998829977 зелёный (включая Chromium 375/1440), независимый Codex review завершён без замечаний на кодовом SHA b1fc165. Следующий merge только после независимого PASS, финального CI и GATE-01…10; затем smoke-test Pages.
+- **Покрытие:** 178/253 beginner имеют индивидуальный подробный разбор (70%); 75 пока без него. Следующая партия следует утверждённому тематическому порядку.
+- **Дальше:** по-прежнему только закрытие пробелов `beginner` и связанные уроки в порядке OSI/TCP/IP → Ethernet/MAC → ARP/IPv4 → VLAN. Отдельно доработать фото-вопросы, не выдавая общий fallback за индивидуальную pro-версию.
+
 ## База — партия №2: OSI и TCP/IP (17.11.2026)
 
-**Состояние: implementation + CI PASS / 20-ID content audit PASS + Codex independent review PASS, staging merge pending.** Staging branch `feat/base-foundations-batch2` от `88ca8a8`; production не изменён. Набор зафиксирован до правок, 20 ID:
+**Состояние: DONE — PR #242 merged (`f6dcd7f`), staging Pages deployment PASS (#43993293257), публичный smoke-test desktop/mobile PASS; production не изменён.** Staging branch `feat/base-foundations-batch2` от `88ca8a8`; production не изменён. Набор зафиксирован до правок, 20 ID:
 
 - `l3-12`, `l4-08`, `l5-01`, `l6-02`, `tcp-04`, `tcp-07`, `tcp-08`, `tcp-09`
 - `gen-osi-a-7`, `gen-osi-a-9`, `gen-osi-a-11`, `gen-osi-a-12`
