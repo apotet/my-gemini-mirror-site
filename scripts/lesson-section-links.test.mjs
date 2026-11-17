@@ -27,7 +27,14 @@ for (const [questionId, lessonId, anchor, concept] of expected) {
     assert.equal(matching.length, 1, questionId + ': one stable anchor in ' + mode);
     assert.ok(matching[0].heading.length >= 14 && matching[0].body.length >= 200, 'substantial section: ' + questionId + '/' + mode);
     assert.ok(matching[0].body.includes(concept), 'mechanism covered: ' + questionId + '/' + mode);
-    assert.ok(blocks.findIndex(b => b.anchorId === anchor) > 0, 'section inserted after relevant existing paragraph');
+    const meta = QUESTION_SECTION_LINKS.find(row => row.anchorId === anchor);
+    const intendedHeading = meta.afterHeading[mode];
+    const originalBlocks = mode === 'professional' ? lesson.professional.blocks : lesson.blocks;
+    assert.ok(originalBlocks.some(block => block.heading === intendedHeading),
+      'expected exact source heading exists: ' + lessonId + '/' + mode);
+    const beforeIndex = blocks.findIndex(block => block.heading === intendedHeading);
+    assert.equal(blocks.findIndex(block => block.anchorId === anchor), beforeIndex + 1,
+      'target paragraph must immediately follow reviewed heading: ' + questionId + '/' + mode);
   }
   assert.equal(JSON.stringify(lesson), before, 'original authored lesson must not be mutated');
 }

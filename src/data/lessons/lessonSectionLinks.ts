@@ -89,7 +89,10 @@ export function getLessonBlocksWithSections(lesson: Lesson, mode: 'plain' | 'pro
   for (const section of SECTION_LINKS.filter(item => item.lessonId === lesson.id)) {
     const heading = mode === 'professional' ? section.afterHeading.professional : section.afterHeading.plain;
     const index = result.findIndex(block => block.heading === heading);
-    result.splice(index >= 0 ? index + 1 : result.length, 0, {
+    // Fail closed: never place an unrelated-looking paragraph at the end of a changed lesson.
+    // The strict contract test catches missing headings before publishing.
+    if (index < 0) continue;
+    result.splice(index + 1, 0, {
       ...(mode === 'professional' ? section.professional : section.plain),
       anchorId: section.anchorId,
     });
@@ -97,4 +100,4 @@ export function getLessonBlocksWithSections(lesson: Lesson, mode: 'plain' | 'pro
   return result;
 }
 
-export const QUESTION_SECTION_LINKS = SECTION_LINKS.map(({lessonId,questionIds,anchorId}) => ({lessonId,questionIds,anchorId}));
+export const QUESTION_SECTION_LINKS = SECTION_LINKS.map(({lessonId,questionIds,anchorId,afterHeading}) => ({lessonId,questionIds,anchorId,afterHeading}));
