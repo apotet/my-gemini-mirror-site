@@ -31,7 +31,7 @@ for (const [lessonId, questionIds] of Object.entries(FOUNDATION_EXISTING_LESSON_
     newLinks.set(id, lessonId);
   }
 }
-assert.equal(newLinks.size, 75, '74 foundation gaps plus the waveform ticket');
+assert.equal(newLinks.size, 78, '75 approved foundation links plus three precise L2 lesson-section links');
 for (const [id, lessonId] of newLinks) {
   const question = ALL_QUESTIONS.find(q => q.id === id);
   assert.ok(question, 'only bank IDs permitted: ' + id);
