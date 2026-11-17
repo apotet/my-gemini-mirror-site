@@ -54,5 +54,6 @@ assert.equal(getLessonForQuestion('tcpip-x24')?.id, 'l7-dhcp', 'DHCP belongs to 
 assert.equal(getLessonForQuestion('tcpip-x22')?.id, 'l4-tcp', 'TCP connection-oriented handshake covered by TCP lesson');
 assert.equal(getLessonForQuestion('l1v2-a-mark-frequency')?.id, 'l1-copper-mark-frequency', 'MHz reading tutorial');
 assert.equal(getLessonForQuestion('photo-patch-caps')?.id, 'l1-optical-panel-photo', 'optical endface caps tutorial');
+assert.equal(getLessonForQuestion('l4-d05')?.id, 'l4-tcp-sack', 'SACK selective acknowledgment gets dedicated dual-style lesson');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');
 console.log('PASS: all 220 foundation questions have a two-style lesson link; 75 explicit new links verified');
