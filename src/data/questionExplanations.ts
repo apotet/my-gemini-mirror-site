@@ -15,6 +15,7 @@ import { BASE_FOUNDATION_UPGRADES } from './baseFoundations';
 import { BASE_FOUNDATIONS_BATCH3 } from './baseFoundationsBatch3';
 import { BASE_FOUNDATIONS_BATCH4 } from './baseFoundationsBatch4';
 import { BASE_FOUNDATIONS_BATCH5 } from './baseFoundationsBatch5';
+import { BASE_FOUNDATIONS_BATCH6 } from './baseFoundationsBatch6';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -663,6 +664,12 @@ const INDIVIDUAL_DEEP: Record<
     deep: patch.plain,
     glossaryInProfessional: true,
   }])),
+  // Beginner foundation batch 6: individually authored optical photo explanations.
+  ...Object.fromEntries(Object.entries(BASE_FOUNDATIONS_BATCH6).map(([id, patch]) => [id, {
+    ...patch,
+    deep: patch.plain,
+    glossaryInProfessional: true,
+  }])),
   ...Object.fromEntries(DIAGNOSTIC_CASES_177.map(item => [item.id, {
     brief: item.brief,
     deep: item.sense.join('\n\n'),
@@ -758,9 +765,9 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     hasIndividualDeep: Boolean(individual || diagnostic || audited?.deep),
     glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
     commonTrap: audited?.trap ?? (individual?.trap || detectCommonTrap(question)),
-    practicalTip: audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH5[question.id]
+    practicalTip: audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH6[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH5[question.id]
       ? 'Для медной линии сверяйте видимую маркировку и конструкцию с документацией; после оконцевания проверяйте wiremap, а категорию канала — измерениями.'
-      : getPracticalTip(category))),
+      : getPracticalTip(category)))),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: ipv4Prefix === undefined ? undefined : {

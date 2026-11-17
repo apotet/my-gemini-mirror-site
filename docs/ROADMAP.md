@@ -1,3 +1,13 @@
+## «База» — партия №6: оптоволокно, сварка и измерения (17.11.2026)
+
+**Статус: PR, независимая приёмка и CI PENDING.** После партии №5 стало 218/253 beginner individual; этот выпуск закрывает ещё 20 реальных пробелов. Банк 862 и все исходные key/варианты/images/attempts не изменены.
+
+- Для каждого `l1v2-b-coating-tool`, `l1v2-b-buffer-tool`, `l1v2-b-cleaver-name`, `l1v2-b-screen-before`, `l1v2-b-screen-loss-read`, `l1v2-b-protect-next`, `l1v2-b-sleeve-purpose`, `l1v2-b-tray-role`, `l1v2-b-kevlar-purpose`, `l1v2-b-om3-real-label`, `l1v2-b-simplex-real`, `l1v2-b-tray-real-retainer`, `l1v2-c-vfl-task`, `l1v2-c-power-read`, `l1v2-c-inspection-tool`, `l1v2-c-trace-units`, `l1v2-c-closure-purpose`, `l1v2-c-converter-path`, `l1v2-c-poe-marked-ports`, `photo-cable-colors` — свой «Почему так», 3-абзацное «Простыми словами», самостоятельное «По делу», ловушка и **тематическая практика** вместо универсальной оптической заглушки.
+- Два новых двустильных урока: `l1-fiber-splicing` (13 связанных вопросов) и `l1-optical-testing-equipment` (7); словарь пополнен на 15 отсутствовавших терминов, без переписывания существующих. Никаких вымышленных стендов.
+- Все 20 исходных фото из pinned public repo `apotet/osi-tcpip-exam-public@1c52fa8` фактически просмотрены; числовые значения Loss/dBm, единицы OTDR ft и маркировки TX/FX/PoE сверены. У `OM3` надпись с бликом, у кассеты материал гильз не доказывается фото; в ответах не утверждаются скрытые параметры.
+- Матрица: [docs/audits/base-foundations-batch6.md](audits/base-foundations-batch6.md), регрессия `scripts/base-foundations-batch6.test.mjs`. **Стандарт учебных материалов соблюдён**, условия `docs/LEARNING_CONTENT_STANDARD.md` без изменения.
+- Публикация только после CI + независимого review + GATE-01…10. После Pages deploy — smoke на реальном staging, в том числе неверных fallback не должно быть. Production `apotet/netops` не трогать.
+
 ### Партия №5 — пострелизный hotfix практического совета (17.11.2026)
 После merge PR #245 обнаружен смысловой дефект: медный фото-билет `l1v2-a-futp` показывал общий оптический совет «Осмотр/чистка торца...». Изолированное исправление для 20 `BASE_FOUNDATIONS_BATCH5` заменяет этот fallback медной инструкцией по маркировке, wiremap и измерениям категории. Добавлена обязательная регрессия на все 20 ID. Не изменяются вопросы/ключи/старые оптические билеты и уроки. **Стандарт учебных материалов соблюдён.** Требуются CI, независимое review, GATE и браузерная приёмка после публикации.
 
