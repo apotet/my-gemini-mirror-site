@@ -41,6 +41,11 @@ for (const [id, lessonId] of newLinks) {
 }
 const uncovered = foundations.filter(q => !getLessonForQuestion(q.id)).map(q => q.id);
 assert.deepEqual(uncovered, [], 'all 220 basic learning-level questions must have linked lessons');
+const incompleteLessonStyles = foundations
+  .map(q => ({ id: q.id, lesson: getLessonForQuestion(q.id) }))
+  .filter(({lesson}) => lesson && (!lesson.blocks?.length || !lesson.professional?.blocks?.length))
+  .map(({id,lesson}) => id + ' -> ' + lesson.id);
+assert.deepEqual(incompleteLessonStyles, [], 'all linked foundational lessons need plain and pro content');
 
 assert.equal(getLessonForQuestion('l57-x11')?.id, 'l7-dns-dhcp', 'MX record lesson');
 assert.equal(getLessonForQuestion('ts-x12')?.id, 'ts-cli-network-basics', 'ss -tulpn lesson');
