@@ -86,7 +86,8 @@ export function App() {
     setTheoryQuestionId(questionId || null);
     setTheoryFromExam(true);
     setActiveTab('theory');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Do not race the paragraph-anchor scroll animation in LessonView.
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const handleOpenPractice = (link: PracticeLink) => {
