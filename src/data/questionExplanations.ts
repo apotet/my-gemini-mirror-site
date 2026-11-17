@@ -758,7 +758,9 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     hasIndividualDeep: Boolean(individual || diagnostic || audited?.deep),
     glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
     commonTrap: audited?.trap ?? (individual?.trap || detectCommonTrap(question)),
-    practicalTip: audited?.practicalTip ?? (question.remember || getPracticalTip(category)),
+    practicalTip: audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH5[question.id]
+      ? 'Для медной линии сверяйте видимую маркировку и конструкцию с документацией; после оконцевания проверяйте wiremap, а категорию канала — измерениями.'
+      : getPracticalTip(category))),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
     ipv4Practice: ipv4Prefix === undefined ? undefined : {
