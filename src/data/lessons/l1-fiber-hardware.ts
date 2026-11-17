@@ -117,7 +117,9 @@ export const LESSON_L1_FIBER_HARDWARE: Lesson = {
     "photo-st-bayonet",
     "photo-st-usage",
     "photo-lcsc-size",
-    "photo-sfp-contacts"
+    "photo-sfp-contacts",
+    "photo-gbic-size",
+    "photo-blue-upc"
   ],
   "sources": [
     "The Fiber Optic Association — Fiber Optic Connector Identifier (https://www.foa.org/tech/connID.htm)",
