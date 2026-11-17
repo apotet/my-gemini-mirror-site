@@ -59,8 +59,10 @@ export const FOUNDATION_EXISTING_LESSON_LINKS: Readonly<Record<string, readonly 
   "tcpip-model": [
     "tcpip-d03",
     "tcpip-x22",
-    "tcpip-x24",
     "tcpip-x25"
+  ],
+  "l7-dhcp": [
+    "tcpip-x24"
   ],
   "l3-icmp-basics": [
     "tcpip-x09"
