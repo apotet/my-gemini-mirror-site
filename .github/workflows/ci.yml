@@ -157,6 +157,9 @@ jobs:
       - name: Final beginner foundations batch 7 (15 tickets and full 253 coverage)
         run: node scripts/base-foundations-batch7.test.mjs
 
+      - name: Base level lessons complete (220 L1 plus screenshot regressions)
+        run: node scripts/foundation-lessons.test.mjs
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
