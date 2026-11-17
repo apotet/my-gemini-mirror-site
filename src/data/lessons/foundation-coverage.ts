@@ -36,9 +36,7 @@ export const FOUNDATION_EXISTING_LESSON_LINKS: Readonly<Record<string, readonly 
     "l4-d05"
   ],
   "l4-tcp": [
-    "l4-x01"
-  ],
-  "tcp-window-retransmit": [
+    "l4-x01",
     "l4-x02"
   ],
   "l7-dns-dhcp": [
