@@ -151,6 +151,9 @@ jobs:
       - name: Beginner foundations batch 5 (20 copper photo questions and two lessons)
         run: node scripts/base-foundations-batch5.test.mjs
 
+      - name: Beginner foundations batch 6 (20 optical photo questions and two lessons)
+        run: node scripts/base-foundations-batch6.test.mjs
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
