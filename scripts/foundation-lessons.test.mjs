@@ -51,5 +51,8 @@ assert.equal(getLessonForQuestion('l57-x11')?.id, 'l7-mail-mx', 'MX record lesso
 assert.equal(getLessonForQuestion('ts-x12')?.id, 'ts-cli-network-basics', 'ss -tulpn lesson');
 assert.equal(getLessonForQuestion('gen-osi-a-1')?.id, 'l1-phy-symbol-rate', 'symbol/baud lesson');
 assert.equal(getLessonForQuestion('tcpip-x24')?.id, 'l7-dhcp', 'DHCP belongs to TCP/IP application layer; mapped lesson explicitly teaches it');
+assert.equal(getLessonForQuestion('tcpip-x22')?.id, 'l4-tcp', 'TCP connection-oriented handshake covered by TCP lesson');
+assert.equal(getLessonForQuestion('l1v2-a-mark-frequency')?.id, 'l1-copper-mark-frequency', 'MHz reading tutorial');
+assert.equal(getLessonForQuestion('photo-patch-caps')?.id, 'l1-optical-panel-photo', 'optical endface caps tutorial');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');
 console.log('PASS: all 220 foundation questions have a two-style lesson link; 75 explicit new links verified');
