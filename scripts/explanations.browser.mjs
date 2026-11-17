@@ -196,6 +196,7 @@ try {
         localStorage.setItem('osi_user_progress_v4', progress);
       }, { review: JSON.stringify({ version: 1, session: targetedSession }), progress: progressSnapshot });
       await focusedPage.goto(base);
+      const originalReview = await focusedPage.evaluate(() => localStorage.getItem('osi_last_exam_review_v1'));
       await button('Посмотреть разбор последней попытки', focusedPage).click();
 
       for (const [id, anchorId] of targetCases) {
@@ -217,6 +218,12 @@ try {
         if (await plainButton.getAttribute('aria-pressed') !== 'true') await plainButton.click();
         const plain = await section.innerText();
         await button('По делу', focusedPage).click();
+        await focusedPage.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+          .some(node => node.textContent?.trim() === 'По делу' && node.getAttribute('aria-pressed') === 'true'));
+        await focusedPage.waitForFunction(({ anchorId, plain }) => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${anchorId}"]`);
+          return node !== null && node.innerText !== plain;
+        }, { anchorId, plain });
         await section.waitFor({ state: 'visible' });
         await focusedPage.waitForFunction(id => {
           const node = document.querySelector(`[data-lesson-section-anchor="${id}"]`);
@@ -227,6 +234,10 @@ try {
         const professional = await section.innerText();
         assert.notEqual(professional, plain, id + ': professional explanation differs at exact anchor');
         await button('Простыми словами', focusedPage).click();
+        await focusedPage.waitForFunction(({ anchorId, plain }) => {
+          const node = document.querySelector(`[data-lesson-section-anchor="${anchorId}"]`);
+          return node !== null && node.innerText === plain;
+        }, { anchorId, plain });
         assert.equal(await section.innerText(), plain, id + ': same paragraph after style toggle');
         const widths = await focusedPage.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
         assert.ok(widths[0] <= widths[1] + 1, 'anchored view has no horizontal overflow: ' + widths);
@@ -237,6 +248,8 @@ try {
       }
       assert.equal(await focusedPage.evaluate(() => localStorage.getItem('osi_user_progress_v4')),
         progressSnapshot, 'paragraph links do not modify saved progress');
+      assert.equal(await focusedPage.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')),
+        originalReview, 'paragraph links do not overwrite the completed attempt');
       assert.deepEqual(focusedErrors, []);
     } finally {
       await focusedPage.close();
