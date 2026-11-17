@@ -51,13 +51,20 @@ export const FOUNDATION_EXISTING_LESSON_LINKS: Readonly<Record<string, readonly 
   ],
   "tcpip-model": [
     "tcpip-d03",
-    "tcpip-x25"
+    "tcpip-x25",
+    "tcp-06"
   ],
   "l7-dhcp": [
     "tcpip-x24"
   ],
   "l3-icmp-basics": [
     "tcpip-x09"
+  ],
+  "l1-otdr-trace-interpretation": [
+    "photo-otdr-end"
+  ],
+  "l7-dns": [
+    "gen-osi-a-19"
   ]
 };
 
