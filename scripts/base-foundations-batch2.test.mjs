@@ -17,15 +17,15 @@ const expected = {
   "tcp-09": "tcpip-encapsulation",
   "gen-osi-a-7": "osi-pdu",
   "gen-osi-a-9": "l3-icmp-basics",
-  "gen-osi-a-11": "osi-pdu",
+  "gen-osi-a-11": "l4-tcp",
   "gen-osi-a-12": "osi-pdu",
   "tcpip-x01": "tcpip-model",
   "tcpip-x02": "tcpip-model",
   "tcpip-x04": "tcpip-encapsulation",
   "tcpip-x05": "tcpip-model",
   "tcpip-x07": "osi-pdu",
-  "tcpip-x08": null,
-  "tcpip-x10": null,
+  "tcpip-x08": "l4-tcp",
+  "tcpip-x10": "l3-arp",
   "tcpip-x12": "tcpip-model"
 };
 assert.deepEqual(Object.keys(BASE_FOUNDATION_UPGRADES).sort(), Object.keys(expected).sort(), 'fixed batch ID list');
