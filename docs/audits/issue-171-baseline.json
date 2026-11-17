@@ -115,7 +115,7 @@
     }
   ],
   "protectedFiles": {
-    "src/App.tsx": "76ec231342f70f325d2877154dee6ec23ff2d8f4883ca64aa5e3382ffb8463a5",
+    "src/App.tsx": "5f8571b0c1c07f1cec57ec53dec56cb73c2e38c38734ad6f0b35bec1a5c7f3bf",
     "src/cli-lab/CliLabShell.tsx": "8edcb2e60b1cb66515d338601de2bcd0b4d33846495111920c083076d5ef4208",
     "src/cli-lab/ExperimentalCliUxV2Shell.tsx": "97c49290a81fba1bb37a2400071f04074604e3a2f11badc544d38e27a963d07d",
     "src/cli-lab/ExperimentalMockCliLabShell.tsx": "47b0efb3ea28fdab383c4f7ae280681f823c0b59ee0c7da8ec97278baff64071",
@@ -182,7 +182,7 @@
     "src/components/KnowledgeBase.tsx": "7321f9839dc72eb3a391a98b4fd57d34f5efbc09c9c25824261e1e2a58edbc75",
     "src/components/KnowledgeRadar.tsx": "97de56f166ec05d6fbe7a94c61e2f5a834fe6f2eabdf1acca1b73d31acdc5206",
     "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
-    "src/components/LessonView.tsx": "2d6cde398c799e87c663daf57aea5b99b972224279e47834bf25484125bc5bae",
+    "src/components/LessonView.tsx": "ff5b8aae3f02f529a04438e5a48d3923ad9593c908039c353c54c696861bdd91",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
     "src/components/MobileTabBar.tsx": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
     "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
@@ -205,7 +205,7 @@
     "src/components/TheoryPorts.tsx": "fed1c566940c57bc0731b4a47eb01d96f5be184febb7fbb3fd0d5948cc61e352",
     "src/components/TheoryRazbory.tsx": "7db94b8e84732c008f62837a826b94a5f303c4536015887bbef05f1080e92d08",
     "src/components/TheoryScenarios.tsx": "3545f0c64adadd5ed3f97ca725cfca8d1040ba04f642fc70c08c523c12136992",
-    "src/components/TheoryView.tsx": "36e7b4abcce32311b660306d2161a13505eb26b9ee0269824e29451113f12176",
+    "src/components/TheoryView.tsx": "bd0bda7e36a6a53a78718b4e68f1d71d5691b29a47eca19bb03f6cc5f7829c05",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
