@@ -1527,6 +1527,55 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   },
 };
 
+// Terms used as clickable tags in the two-style foundation lessons.
+Object.assign(GLOSSARY, {
+  "сеанс": {
+    "description": "Логический диалог приложения с собственным состоянием и временем жизни. Сеанс авторизации может сохраняться после завершения конкретного TCP-соединения; в модели OSI управление диалогом относят к L5.",
+    "relatesTo": "OSI L5 / TCP/IP Application; отличие состояния приложения от TCP-соединения.",
+    "lessonId": "osi-session-presentation"
+  },
+  "кодировка": {
+    "description": "Правило представления символов последовательностями байтов и обратного преобразования. Если декодер применяет неправильную кодировку, текст искажается даже при корректной доставке пакета.",
+    "relatesTo": "OSI L6 / TCP/IP Application; диагностика неверно прочитанного текста.",
+    "lessonId": "osi-session-presentation"
+  },
+  "UTF-8": {
+    "description": "Кодировка Unicode, представляющая кодовые точки последовательностями от 1 до 4 байт. Русские буквы обычно занимают в UTF-8 два байта; кодировку прикладного содержимого не задаёт TCP.",
+    "relatesTo": "OSI L6 и прикладные форматы данных.",
+    "lessonId": "osi-session-presentation"
+  },
+  "порт": {
+    "description": "16-битный номер транспортной конечной точки TCP или UDP (0–65535). TCP и UDP имеют отдельные пространства портов; номер порта не равен физическому порту коммутатора.",
+    "relatesTo": "OSI L4, транспортная демультиплексация; IP-адрес определяет узел, порт — службу.",
+    "lessonId": "l4-tcp"
+  },
+  "сериализация": {
+    "description": "Преобразование структур данных в последовательность байтов по согласованному формату для записи или передачи; получатель выполняет обратное преобразование. Это прикладная/представительная функция, а не функция TCP.",
+    "relatesTo": "OSI L6 / TCP/IP Application: форматы и представление данных.",
+    "lessonId": "osi-session-presentation"
+  },
+  "Wireshark": {
+    "description": "Анализатор сетевого трафика, показывающий вложенные заголовки кадров, IP-пакетов и транспортных/управляющих сообщений. Метки анализатора зависят от полноты захвата и разбора протокола.",
+    "relatesTo": "Практическая диагностика Ethernet, IP, TCP, UDP и ICMP.",
+    "lessonId": "l3-icmp-basics"
+  },
+  "ICMPv4": {
+    "description": "Internet Control Message Protocol для IPv4 (RFC 792): сообщения об ошибках и диагностике, включая Echo Request (Type 8) и Echo Reply (Type 0). В IPv4 передаётся с Protocol=1 без TCP/UDP-портов.",
+    "relatesTo": "Internet Layer / OSI L3; ping и сетевые ошибки.",
+    "lessonId": "l3-icmp-basics"
+  },
+  "Protocol": {
+    "description": "Поле IPv4-заголовка (8 бит), указывающее вложенный протокол: 1 — ICMP, 6 — TCP, 17 — UDP, 47 — GRE. Не путать с одноимённым полем PPP Protocol и с номером порта.",
+    "relatesTo": "IPv4 Internet Layer: интерпретация следующего заголовка.",
+    "lessonId": "tcpip-encapsulation"
+  },
+  "Time Exceeded": {
+    "description": "ICMPv4-сообщение Type 11 (RFC 792), обычно отправляемое при исчерпании TTL в пути (Code 0). Используется, в частности, при трассировке; его отсутствие не доказывает, что маршрутизатор не переслал трафик.",
+    "relatesTo": "ICMP, TTL, traceroute и диагностика пути на L3.",
+    "lessonId": "l3-icmp-basics"
+  }
+} as Record<string, GlossaryEntry>);
+
 // Alternative names share one definition instead of duplicating its text.
 GLOSSARY["Server Name Indication"] = GLOSSARY["SNI"];
 GLOSSARY["SNAT"] = GLOSSARY["Source NAT"];
