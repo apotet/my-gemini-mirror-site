@@ -23,15 +23,15 @@
 | `tcp-09` | IP MTU и TCP MSS, расчёт 1500−20−20 | tcpip-encapsulation | — | REVIEW — независимая приёмка ожидается |
 | `gen-osi-a-7` | Адресация L3 и MAC следующего перехода | osi-pdu | packet | REVIEW — независимая приёмка ожидается |
 | `gen-osi-a-9` | ICMP как L3 / Internet, ICMP Type не порт | l3-icmp-basics | packet | REVIEW — независимая приёмка ожидается |
-| `gen-osi-a-11` | Номера портов и транспортные endpoints L4 | osi-pdu | packet | REVIEW — независимая приёмка ожидается |
+| `gen-osi-a-11` | Номера портов и транспортные endpoints L4 | l4-tcp | packet | REVIEW — независимая приёмка ожидается |
 | `gen-osi-a-12` | UDP datagram L4 и IP packet L3 | osi-pdu | packet | REVIEW — независимая приёмка ожидается |
 | `tcpip-x01` | Четыре уровня классической TCP/IP / RFC 1122 | tcpip-model | — | REVIEW — независимая приёмка ожидается |
 | `tcpip-x02` | Application = OSI L5–L7 по функциям | tcpip-model | — | REVIEW — независимая приёмка ожидается |
 | `tcpip-x04` | IP-packet PDU Internet, Protocol field | tcpip-encapsulation | — | REVIEW — независимая приёмка ожидается |
 | `tcpip-x05` | Link = OSI L1 и L2 | tcpip-model | — | REVIEW — независимая приёмка ожидается |
 | `tcpip-x07` | IP destination, LPM, MAC next-hop | osi-pdu | packet | REVIEW — независимая приёмка ожидается |
-| `tcpip-x08` | L4 порты и демультиплексирование | существующий урок (проверяется тестом) | — | REVIEW — независимая приёмка ожидается |
-| `tcpip-x10` | ARP IPv4→MAC после выбора next-hop | существующий урок (проверяется тестом) | packet | REVIEW — независимая приёмка ожидается |
+| `tcpip-x08` | L4 порты и демультиплексирование | l4-tcp | — | REVIEW — независимая приёмка ожидается |
+| `tcpip-x10` | ARP IPv4→MAC после выбора next-hop | l3-arp | packet | REVIEW — независимая приёмка ожидается |
 | `tcpip-x12` | HTTP/DNS/SSH — Application при разном транспорте | tcpip-model | — | REVIEW — независимая приёмка ожидается |
 
 **REVIEW — не отрицательная оценка качества:** это честный статус до независимого ревизора. Не считать AUTO PASS основанием для merge.
