@@ -133,8 +133,14 @@ jobs:
       - name: Explanations quality
         run: npm run test:explanations
 
+      - name: Beginner foundations batch 2 (20 tickets and lessons)
+        run: node scripts/fundamentals-batch2.test.mjs
+
       - name: Review lesson links and missing materials
         run: npm run test:review-navigation
+
+      - name: Base foundations 20-ticket content and lesson coverage
+        run: node scripts/base-foundations-batch2.test.mjs
 
       - name: Responsive explanation flows
         run: |

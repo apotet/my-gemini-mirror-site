@@ -6,6 +6,15 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "ICMP": {"description":"Internet Control Message Protocol: служебные сообщения IP; ping использует Echo Request/Reply без TCP/UDP-портов.","relatesTo":"Диагностика и ошибки IP.","lessonId":"osi-pdu"},
+  "RFC": {"description":"Request for Comments: серия опубликованных технических документов Internet; статус и обязательность конкретного RFC нужно проверять отдельно.","relatesTo":"Документация протоколов и стандарты.","lessonId":"tcpip-model"},
+  "RFC 1918": {"description":"RFC, выделивший частные IPv4-диапазоны: 10.0.0.0/8, 172.16.0.0/12 и 192.168.0.0/16.","relatesTo":"Частная адресация IPv4.","lessonId":"l3-private-ipv4"},
+  "MTU": {"description":"Maximum Transmission Unit: максимальный размер передаваемого IP-пакета на данном сетевом канале в типичном случае IP over Ethernet; не равен полному размеру Ethernet-кадра.","relatesTo":"Ограничение размера сетевого пакета.","lessonId":"tcpip-encapsulation"},
+  "MSS": {"description":"Maximum Segment Size: объявленный в TCP SYN предел количества TCP-данных за сегмент для принимающей стороны; не включает IP/TCP-заголовки.","relatesTo":"Размер TCP-данных и MTU.","lessonId":"tcpip-encapsulation"},
+  "PPP": {"description":"Point-to-Point Protocol: протокол канального соединения; для IPv4 после согласования IPCP используется PPP Protocol 0x0021.","relatesTo":"Передача IP по точка-точка каналу.","lessonId":"tcpip-encapsulation"},
+  "GRE": {"description":"Generic Routing Encapsulation: туннельное обрамление, переносящее внутренний пакет во внешнем сетевом пакете.","relatesTo":"Туннелирование и внешняя маршрутизация.","lessonId":"tcpip-encapsulation"},
+  "L5": {"description":"Пятый уровень OSI — сеансовый: организация диалога и управление сеансом в учебной функциональной модели.","relatesTo":"Сеанс в OSI и Application в TCP/IP.","lessonId":"osi-pdu"},
+  "L6": {"description":"Шестой уровень OSI — представления: согласование форматов, кодирования и способа представления данных.","relatesTo":"Представление данных в модели OSI.","lessonId":"osi-pdu"},
   "TAP": {"description": "Даёт копию трафика с линии для независимого захвата.", "relatesTo": "Точка доступа к трафику для анализа.", "lessonId": "l4-tcp"},
   "WBM": {"description": "Интерфейс SCALANCE для просмотра конфигурации и диагностики, в том числе параметров MRP.", "relatesTo": "Управление через веб-интерфейс.", "lessonId": "ts-method"},
   "MRP": {"description": "Менеджер контролирует целостность кольца; при разрыве активирует резервный путь.", "relatesTo": "Протокол резервирования кольца.", "lessonId": "ts-method"},
@@ -1517,6 +1526,55 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     lessonId: "l2-wifi-security-diagnostics",
   },
 };
+
+// Terms used as clickable tags in the two-style foundation lessons.
+Object.assign(GLOSSARY, {
+  "сеанс": {
+    "description": "Логический диалог приложения с собственным состоянием и временем жизни. Сеанс авторизации может сохраняться после завершения конкретного TCP-соединения; в модели OSI управление диалогом относят к L5.",
+    "relatesTo": "OSI L5 / TCP/IP Application; отличие состояния приложения от TCP-соединения.",
+    "lessonId": "osi-session-presentation"
+  },
+  "кодировка": {
+    "description": "Правило представления символов последовательностями байтов и обратного преобразования. Если декодер применяет неправильную кодировку, текст искажается даже при корректной доставке пакета.",
+    "relatesTo": "OSI L6 / TCP/IP Application; диагностика неверно прочитанного текста.",
+    "lessonId": "osi-session-presentation"
+  },
+  "UTF-8": {
+    "description": "Кодировка Unicode, представляющая кодовые точки последовательностями от 1 до 4 байт. Русские буквы обычно занимают в UTF-8 два байта; кодировку прикладного содержимого не задаёт TCP.",
+    "relatesTo": "OSI L6 и прикладные форматы данных.",
+    "lessonId": "osi-session-presentation"
+  },
+  "порт": {
+    "description": "16-битный номер транспортной конечной точки TCP или UDP (0–65535). TCP и UDP имеют отдельные пространства портов; номер порта не равен физическому порту коммутатора.",
+    "relatesTo": "OSI L4, транспортная демультиплексация; IP-адрес определяет узел, порт — службу.",
+    "lessonId": "l4-tcp"
+  },
+  "сериализация": {
+    "description": "Преобразование структур данных в последовательность байтов по согласованному формату для записи или передачи; получатель выполняет обратное преобразование. Это прикладная/представительная функция, а не функция TCP.",
+    "relatesTo": "OSI L6 / TCP/IP Application: форматы и представление данных.",
+    "lessonId": "osi-session-presentation"
+  },
+  "Wireshark": {
+    "description": "Анализатор сетевого трафика, показывающий вложенные заголовки кадров, IP-пакетов и транспортных/управляющих сообщений. Метки анализатора зависят от полноты захвата и разбора протокола.",
+    "relatesTo": "Практическая диагностика Ethernet, IP, TCP, UDP и ICMP.",
+    "lessonId": "l3-icmp-basics"
+  },
+  "ICMPv4": {
+    "description": "Internet Control Message Protocol для IPv4 (RFC 792): сообщения об ошибках и диагностике, включая Echo Request (Type 8) и Echo Reply (Type 0). В IPv4 передаётся с Protocol=1 без TCP/UDP-портов.",
+    "relatesTo": "Internet Layer / OSI L3; ping и сетевые ошибки.",
+    "lessonId": "l3-icmp-basics"
+  },
+  "Protocol": {
+    "description": "Поле IPv4-заголовка (8 бит), указывающее вложенный протокол: 1 — ICMP, 6 — TCP, 17 — UDP, 47 — GRE. Не путать с одноимённым полем PPP Protocol и с номером порта.",
+    "relatesTo": "IPv4 Internet Layer: интерпретация следующего заголовка.",
+    "lessonId": "tcpip-encapsulation"
+  },
+  "Time Exceeded": {
+    "description": "ICMPv4-сообщение Type 11 (RFC 792), обычно отправляемое при исчерпании TTL в пути (Code 0). Используется, в частности, при трассировке; его отсутствие не доказывает, что маршрутизатор не переслал трафик.",
+    "relatesTo": "ICMP, TTL, traceroute и диагностика пути на L3.",
+    "lessonId": "l3-icmp-basics"
+  }
+} as Record<string, GlossaryEntry>);
 
 // Alternative names share one definition instead of duplicating its text.
 GLOSSARY["Server Name Indication"] = GLOSSARY["SNI"];
