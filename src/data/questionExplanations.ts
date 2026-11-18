@@ -17,6 +17,7 @@ import { BASE_FOUNDATIONS_BATCH4 } from './baseFoundationsBatch4';
 import { BASE_FOUNDATIONS_BATCH5 } from './baseFoundationsBatch5';
 import { BASE_FOUNDATIONS_BATCH6 } from './baseFoundationsBatch6';
 import { BASE_FOUNDATIONS_BATCH7 } from './baseFoundationsBatch7';
+import { IN_DEPTH_L2_EXPLANATIONS } from './inDepthL2Explanations';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -677,6 +678,14 @@ const INDIVIDUAL_DEEP: Record<
     deep: patch.plain,
     glossaryInProfessional: true,
   }])),
+  // In-depth (learningLevel = 2) curated dual-style explanations and practical tips.
+  ...Object.fromEntries(Object.entries(IN_DEPTH_L2_EXPLANATIONS).map(([id, patch]) => [id, {
+    ...ADVANCED_INDIVIDUAL_DEEP[id],
+    ...APPLIED_INDIVIDUAL_DEEP[id],
+    ...patch,
+    deep: patch.plain,
+    glossaryInProfessional: true,
+  }])),
   ...Object.fromEntries(DIAGNOSTIC_CASES_177.map(item => [item.id, {
     brief: item.brief,
     deep: item.sense.join('\n\n'),
@@ -772,7 +781,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     hasIndividualDeep: Boolean(individual || diagnostic || audited?.deep),
     glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
     commonTrap: audited?.trap ?? (individual?.trap || detectCommonTrap(question)),
-    practicalTip: audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH7[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH6[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH5[question.id]
+    practicalTip: IN_DEPTH_L2_EXPLANATIONS[question.id]?.practicalTip ?? audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH7[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH6[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH5[question.id]
       ? 'Для медной линии сверяйте видимую маркировку и конструкцию с документацией; после оконцевания проверяйте wiremap, а категорию канала — измерениями.'
       : getPracticalTip(category))))),
     memorizationRule: question.remember,
