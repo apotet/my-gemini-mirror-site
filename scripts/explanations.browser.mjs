@@ -105,9 +105,19 @@ try {
       const root = document.documentElement;
       const originalDark = root.classList.contains('dark');
       const item = node.querySelector('[role="menuitemradio"][aria-checked="false"]');
+      // Tailwind v4 computes modern OKLCH colors; draw them to canvas for actual sRGB pixels.
+      const toRgb = color => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d');
+        context.fillStyle = color;
+        context.fillRect(0, 0, 1, 1);
+        return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3);
+      };
       const read = dark => {
         root.classList.toggle('dark', dark);
-        return [getComputedStyle(node).backgroundColor, getComputedStyle(item).color];
+        return [toRgb(getComputedStyle(node).backgroundColor), toRgb(getComputedStyle(item).color)];
       };
       const dark = read(true);
       const light = read(false);
@@ -115,14 +125,13 @@ try {
       return { dark, light };
     });
     assert.notDeepEqual(themeStyles.dark, themeStyles.light, 'menu adapts to both color schemes');
-    const luminance = color => {
-      const components = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(v => v / 255);
-      return components.map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
-        .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
-    };
+    const luminance = channels => channels.map(value => value / 255)
+      .map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+      .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
     for (const [theme, [background, foreground]] of Object.entries(themeStyles)) {
       const a = luminance(background), b = luminance(foreground);
-      assert.ok((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5, theme + ' menu text contrast');
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      assert.ok(ratio >= 4.5, theme + ' menu text contrast: ' + ratio);
     }
     await page.mouse.click(2, 2);
     assert.equal(await countMenu.count(), 0, 'outside pointer closes the menu');
