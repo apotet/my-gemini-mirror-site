@@ -44,24 +44,42 @@ export function getTrialExamQuestions(difficulty: TrialDifficulty, random = Math
   return selectFamilyQuestions(questions, questions.length, random);
 }
 
+const FOUNDATION_LEVEL = 1;
 const UNDERSTANDING_LEVEL = 2;
 
+/** The visible Base/Foundations card uses the approved L1 registry, not legacy beginner. */
 export function getTestingPool(mode: QuizModeId, difficulty: ExamDifficulty): Question[] {
-  return difficulty === 'in-depth'
-    ? getLearningLevelPool(mode, UNDERSTANDING_LEVEL)
-    : getExamPool(mode, difficulty);
+  if (difficulty === 'beginner') return getLearningLevelPool(mode, FOUNDATION_LEVEL);
+  if (difficulty === 'in-depth') return getLearningLevelPool(mode, UNDERSTANDING_LEVEL);
+  return getExamPool(mode, difficulty);
+}
+
+/** Eligibility for closed custom pools, including the "work on mistakes" count and action. */
+export function getTestingEligibleQuestions(questions: readonly Question[], difficulty: ExamDifficulty): Question[] {
+  if (difficulty === 'beginner') return filterLearningLevel(questions, FOUNDATION_LEVEL);
+  if (difficulty === 'in-depth') return filterLearningLevel(questions, UNDERSTANDING_LEVEL);
+  return filterExamDifficulty(questions, difficulty);
 }
 
 export function getTestingQuestions(
   mode: QuizModeId, count: number, random: () => number, difficulty: ExamDifficulty,
   customQuestions?: readonly Question[],
 ): Question[] {
+  if (customQuestions) {
+    const eligible = getTestingEligibleQuestions(customQuestions, difficulty);
+    return difficulty === 'beginner' || difficulty === 'in-depth'
+      ? selectFamilyQuestions(eligible, count, random)
+      : eligible.slice(0, count);
+  }
+  // New Base attempts strictly use L1, including closed custom/mistake pools.
+  // The L1 sampler retains the existing photo and distinct-family guarantees.
+  if (difficulty === 'beginner') {
+    return getLearningLevelQuestions(mode, count, random, FOUNDATION_LEVEL, customQuestions);
+  }
   if (difficulty === 'in-depth') {
     return getLearningLevelQuestions(mode, count, random, UNDERSTANDING_LEVEL, customQuestions);
   }
-  return customQuestions
-    ? filterExamDifficulty(customQuestions, difficulty).slice(0, count)
-    : getRandomQuestions(mode, count, random, difficulty);
+  return getRandomQuestions(mode, count, random, difficulty);
 }
 
 export function getExamLevelLabel(session: Pick<QuizSession, 'learningLevel' | 'difficulty'>): string {

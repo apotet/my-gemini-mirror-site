@@ -13,7 +13,7 @@ import {
   QUIZ_MODES,
   resolveImageUrl,
 } from '../data/questionsData';
-import { getTestingPool, getTestingQuestions, getTrialExamQuestions, TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
+import { getTestingPool, getTestingQuestions, getTestingEligibleQuestions, getTrialExamQuestions, TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
 import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
@@ -404,6 +404,8 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   }));
 
   const lastMistakes = getMistakeQuestions();
+  // The radar count must match exactly which mistakes the selected testing level can launch.
+  const eligibleMistakes = getTestingEligibleQuestions(lastMistakes, selectedDifficulty);
   const progressStatus = getInitialProgress();
 
   const replacementDialog = pendingNewQuiz && (
@@ -499,14 +501,14 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
           </dialog>
         )}
         {startNotice && <p role="status" className="text-sm text-slate-500 dark:text-slate-400">{startNotice}</p>}
-        <KnowledgeRadar mistakesCount={lastMistakes.length} totalQuestionsCount={ALL_QUESTIONS.length} hasActiveSession={Boolean(session && !session.isCompleted)} onStartNewExam={() => startNewQuiz()} onStartExam={(levelFilter) => {
+        <KnowledgeRadar mistakesCount={eligibleMistakes.length} totalQuestionsCount={ALL_QUESTIONS.length} hasActiveSession={Boolean(session && !session.isCompleted)} onStartNewExam={() => startNewQuiz()} onStartExam={(levelFilter) => {
           if (!levelFilter && sessionRef.current && !sessionRef.current.isCompleted) { setShowParameters(false); return; }
           if (levelFilter) {
             const mode = QUIZ_MODES.find(item => item.id === levelFilter)?.id;
             if (mode) startNewQuiz(ALL_QUESTIONS.filter(q => q.group === levelFilter), 10, mode);
           } else { startNewQuiz(); }
         }} onReviewMistakes={() => {
-          const pool = getMistakeQuestions();
+          const pool = getTestingEligibleQuestions(getMistakeQuestions(), selectedDifficulty);
           if (!pool.length) { setEmptyMistakes(true); return; }
           startNewQuiz(pool, 5);
         }} onOpenVisualL1={() => {

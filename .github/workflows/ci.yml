@@ -180,6 +180,7 @@ jobs:
           done
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
+          node scripts/base-level.browser.mjs
 
       - name: Upload coverage artifact
         if: always()

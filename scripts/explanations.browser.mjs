@@ -228,6 +228,10 @@ try {
     await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
     assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')), lastSnapshot, 'saved completed attempt remains byte-identical');
     await home();
+    // This cross-level fixture intentionally replays a diagnostic L2/L3 mistake.
+    // The new Base must exclude it, so choose the mixed level for the all-level replay.
+    if (mobile) await page.getByRole('combobox', { name: /Выбери свой уровень/ }).selectOption('mixed');
+    else await button(/^Смешанный/).click();
     await button(/Работа над ошибками/).click();
     if (await button('Заменить попытку').isVisible()) await button('Заменить попытку').click();
     await button(new RegExp(get('ts-x05').answers[get('ts-x05').correct[0]])).click();
