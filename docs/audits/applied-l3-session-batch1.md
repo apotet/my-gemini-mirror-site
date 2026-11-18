@@ -33,9 +33,9 @@
 - `src/data/questionExplanations.ts`: точечный runtime overlay, только для перечисленных ID; исходные `brief/deep/trap` сохраняются.
 - Два новых урока `src/data/lessons/l4-applied-tcp-session-flows.ts` и `src/data/lessons/l7-udp-transactions-tftp-ntp-snmp.ts`: plain + professional, раздельные разделы протоколов, обратные связи `relatedQuestionIds`, ссылки на RFC.
 - `src/data/lessons/index.ts`: регистрация уроков в действующем runtime resolver.
-- `src/data/glossary.ts`: 6 дополнительных определений и связей с уроками (SFTP, PASV, STARTTLS, GetBulk, Bind, Search), термины подключены в обоих режимах чтения.
+- `src/data/glossary.ts`: шесть определений (SFTP, PASV, STARTTLS, GetBulk, LDAP Bind, LDAP Search), реальные записи в `TOOLTIP_NAMES` для инлайн-подсказок в обоих стилях и адресные ссылки на уроки. `Bind`/`Search` намеренно ограничены префиксом `LDAP`, чтобы не помечать посторонний английский текст.
 - `scripts/applied-l3-session-batch1.test.mjs`: проверяет точные ID, уровень, исходные ответы, независимость plain/pro, реальные связи в обоих направлениях, существование терминов glossary и неизменность 160 L2.
-- `.github/workflows/ci.yml`: включает регрессионный скрипт в CI.
+- `.github/workflows/ci.yml`: включает регрессионный скрипт и новый `scripts/applied-l3-glossary-dom.test.mjs`, проверяющий фактические `data-glossary-term` кнопки в HTML обоих режимов, в CI.
 - `docs/audits/issue-171-baseline.json`: обновлены SHA256 трёх защищённых исходников (questionExplanations.ts, lessons/index.ts и glossary.ts); `bankSHA256` и `auditProjectionSHA256` сохранены.
 
 ## Приёмка
@@ -45,3 +45,9 @@
 После CI — независимая проверка источников, связей уроков, сохранённых попыток и браузерный smoke. До её прохождения PR остаётся Draft; merge, staging deploy и production запрещены.
 
 **Следующий приоритет:** Codex заканчивает L2 независимо; после его приёмки возвращаемся к отложенному TODO про «Базу» (253 legacy vs 220 L1). Для L3 остаются ещё 364 вопроса вне этой партии.
+
+### Независимая проверка и исправление (18.11.2026)
+
+- Независимая приёмка на SHA `caa058f` обнаружила FIX GATE-05: новые словарные статьи не входили в `TOOLTIP_NAMES`, поэтому карточки терминов работали, а hover/focus в тексте отсутствовал. Проблему исправили добавлением реальных tooltip-метаданных и проверкой HTML через `FormattedExplanation`/`GlossaryText` на plain/pro.
+- Для предотвращения ложных подсказок в посторонних текстах generic `Bind`/`Search` переименованы в точные `LDAP Bind`/`LDAP Search` и упомянуты в обоих стилях урока.
+- **GATE-09 и GATE-10 оставлены открытыми** до новых CI, проверки всех новых кнопок и независимого PASS на обновлённой версии. Ни PR, ни ROADMAP не объявляют мердж/публикацию.
