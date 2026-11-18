@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { bundleEntry } from './load-bank.mjs';
 
 const {
-  ALL_QUESTIONS, QUIZ_MODES, getExamPool, getTestingPool, getTestingQuestions,
+  ALL_QUESTIONS, QUIZ_MODES, getExamPool, getTestingPool, getTestingQuestions, getTestingEligibleQuestions,
   getTrialExamQuestions, getLearningLevelMetadata, isBeginnerPhoto,
   prepareAttemptQuestions, restoreSession,
 } = await bundleEntry('scripts/base-level-reconciliation-entry.ts', 'base-level-reconciliation.mjs');
@@ -57,6 +57,27 @@ assert.equal(picked.length, 2, 'closed custom pools are not replenished');
 assert.deepEqual(new Set(picked.map(q => q.id)), new Set([a.id, b.id]));
 assert.deepEqual(getTestingQuestions('mixed', 20, seeded(3), 'beginner', []), []);
 assert.equal(JSON.stringify(custom), customBefore, 'custom selection does not mutate input');
+ 
+// Independent reviewer blocker: radar must count only mistakes eligible for selected difficulty.
+const allExcludedMistakes = [hard];
+for (const difficulty of ['beginner', 'in-depth', 'applied', 'mixed']) {
+  const eligible = getTestingEligibleQuestions(allExcludedMistakes, difficulty);
+  const started = getTestingQuestions('mixed', 5, seeded(15), difficulty, allExcludedMistakes);
+  assert.equal(started.length, Math.min(5, eligible.length), `radar eligibility equals started mistakes for ${difficulty}`);
+  assert.deepEqual(started.map(q => q.id), eligible.slice(0, 5).map(q => q.id));
+}
+assert.deepEqual(getTestingEligibleQuestions(allExcludedMistakes, 'beginner'), [],
+  'the Base radar must show zero when all mistakes are L2/L3');
+assert.deepEqual(getTestingQuestions('mixed', 5, seeded(15), 'beginner', allExcludedMistakes), [],
+  'do not open an empty Base mistake test with a positive counter');
+const mixedMistakes = [a, hard, b];
+for (const difficulty of ['beginner', 'in-depth', 'applied', 'mixed']) {
+  const eligible = getTestingEligibleQuestions(mixedMistakes, difficulty);
+  const started = getTestingQuestions('mixed', 10, seeded(15), difficulty, mixedMistakes);
+  assert.deepEqual(new Set(started.map(q => q.id)), new Set(eligible.map(q => q.id)),
+    `selected level mistakes are counted and started from the same eligible pool: ${difficulty}`);
+}
+
 
 // Unrelated current modes continue using their existing approved selectors.
 assert.equal(getTestingPool('mixed', 'in-depth').length, 160);
