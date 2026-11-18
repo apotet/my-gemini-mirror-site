@@ -1,11 +1,12 @@
-## «Прикладной» L3 — 12 сервисных обменов, отдельный Draft PR #254 (18.11.2026)
+## «Прикладной» L3 — первая партия 12 сервисных обменов, STAGING RELEASED (18.11.2026)
 
-**Статус: DRAFT / INDEPENDENT REVIEW PENDING.** Ветка `feat/applied-l3-session-transport-batch1-20261118`, [PR #254](https://github.com/apotet/my-gemini-mirror-site/pull/254), без merge, staging и production.
+**Статус: STAGING RELEASED / независимая приёмка PASS.** [PR #254](https://github.com/apotet/my-gemini-mirror-site/pull/254) смерджен squash-коммитом `87ee0cef76f9edb104b116ceb7689ec818041545`. Production `apotet/netops` не менялся.
 
 - 12 вопросов с `learningLevel=3`: дополнен индивидуальный инженерный `pro`, сохранены исходные `brief/plain/trap`, правильные ответы, текст билетов и прежние попытки.
 - Два тематических урока с `plain`/`professional` и двунаправленными ссылками: TCP/SSH/FTP/POP3/IMAP/LDAP (7 ID) и UDP/TFTP/NTP/SNMP (5 ID).
 - Независимая проверка нашла отсутствие inline hover у 6 новых glossary entries; добавлены `TOOLTIP_NAMES`, scoped LDAP Bind/Search и обязательный SSR-тест двух режимов на `data-glossary-term`; реестр, L2 и банк вопросов не менялись.
-- Для релиза: дождаться CI на финальном SHA, нового независимого PASS, GATE-01…10, затем merge в staging только по регламенту; после деплоя проверить публичную страницу. Production — только с разрешения владельца.
+- **Приёмка выполнена:** полный CI [#44296676011](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44296676011) PASS на точном head SHA `0a7724d`; независимый semantic review GATE-01…10 PASS, включая 12 ответов, plain/pro, связи уроков и шесть реальных DOM-tooltip в обоих стилях; checklist gate [#44297775024](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44297775024) PASS.
+- **Опубликовано только в staging:** GitHub Pages [#44297854112](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44297854112) PASS; публичный smoke на [NetOps staging](https://apotet.github.io/my-gemini-mirror-site/) PASS на десктопе и мобильном 390 px (загрузка, теория/тесты, оба урока, переключение plain/pro, подсказки SFTP/PASV/STARTTLS/GetBulk). Production только по отдельной команде.
 - Это параллельная ветка по явному поручению владельца; TODO по «Базе» ниже остаётся DEFERRED/OPEN и не считается закрытым.
 
 ---
