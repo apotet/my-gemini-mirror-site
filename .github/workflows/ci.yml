@@ -133,6 +133,9 @@ jobs:
       - name: Explanations quality
         run: npm run test:explanations
 
+      - name: Applied L3 service sessions batch 1 (12 tickets and two-style lessons)
+        run: node scripts/applied-l3-session-batch1.test.mjs
+
       - name: Beginner foundations batch 2 (20 tickets and lessons)
         run: node scripts/fundamentals-batch2.test.mjs
 
