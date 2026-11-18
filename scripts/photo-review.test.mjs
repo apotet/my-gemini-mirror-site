@@ -24,7 +24,18 @@ const baseline = read('docs/audits/issue-171-baseline.json');
 const { previousRegistryEntries } = baseline.technicalReviewClosure;
 const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
   .filter(([id]) => !Object.hasOwn(levels, id) && !baseline.diagnosticPack177.added.includes(id) && !baseline.monitoringPack.added.includes(id) && !baseline.wifiPack.added.includes(id) && !baseline.expertPack225.added.includes(id) && !baseline.expertPack177.added.includes(id))
-  .map(([id, entry]) => [id, previousRegistryEntries[id] ?? entry]));
+  .map(([id, entry]) => {
+    // Issue #257: only these four previously L1 assignments were independently moved to L2.
+    // Reconstruct the photo-era registry for the original unchanged-scope fingerprint;
+    // every other ID and metadata field remains protected by the original hash.
+    const relabeled = new Set(['l3-d05', 'l4-d03', 'l4-d05', 'tcpip-d05']);
+    if (relabeled.has(id)) {
+      assert.equal(entry.status, 'ASSIGNED', id);
+      assert.equal(entry.learningLevel, 2, id + ': approved L1->L2 migration');
+      return [id, { ...entry, learningLevel: 1 }];
+    }
+    return [id, previousRegistryEntries[id] ?? entry];
+  }));
 assert.equal(hash(registryAtPhotoReview),
   fixture.unchangedRegistrySHA256, 'all other metadata, including nine technical REVIEW, remain unchanged');
 const byId = Object.fromEntries(questions.map(q => [q.id, q]));
