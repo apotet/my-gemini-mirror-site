@@ -22,10 +22,10 @@ const baseIds = new Set(base.map(q => q.id));
 // Exact published bank snapshot. No question, answer, key or registry is reclassified.
 assert.equal(ALL_QUESTIONS.length, 862);
 assert.equal(legacy.length, 253, 'legacy beginner selection is preserved for saved attempts');
-assert.equal(base.length, 220, 'the new Base is exactly the approved L1 Foundations pool');
+assert.equal(base.length, 216, 'the new Base is exactly the approved L1 Foundations pool');
 assert.deepEqual([1, 2, 3].map(l => legacy.filter(q => level(q.id) === l).length), [152, 40, 61]);
 assert.equal(legacy.filter(q => !baseIds.has(q.id)).length, 101, 'remove 101 L2/L3 from new Base');
-assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 68, 'restore 68 L1 absent from legacy beginner');
+assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 64, 'restore 68 L1 absent from legacy beginner');
 assert.ok(base.every(q => level(q.id) === 1), 'new Base never includes L2+');
 
 for (const { id: mode } of QUIZ_MODES) {
@@ -80,7 +80,7 @@ for (const difficulty of ['beginner', 'in-depth', 'applied', 'mixed']) {
 
 
 // Unrelated current modes continue using their existing approved selectors.
-assert.equal(getTestingPool('mixed', 'in-depth').length, 160);
+assert.equal(getTestingPool('mixed', 'in-depth').length, 164);
 assert.deepEqual(getTestingPool('mixed', 'applied'), getExamPool('mixed', 'applied'));
 assert.deepEqual(getTestingPool('mixed', 'mixed'), getExamPool('mixed', 'mixed'));
 assert.ok(getTrialExamQuestions('basic', seeded(7)).every(q => level(q.id) === 1));
@@ -103,4 +103,4 @@ assert.equal(restored.questions[0].id, hard.id, 'do not replace an old question'
 assert.equal(JSON.stringify(oldSession), serialized, 'saved attempt is not modified');
 assert.equal(JSON.stringify(ALL_QUESTIONS), before, 'bank is not mutated');
 
-console.log('PASS: Base uses exactly 220 L1; remove 101 L2/L3, add 68 L1; all topics/sizes/photo/families, custom pools and saved legacy sessions');
+console.log('PASS: Base uses exactly 216 L1; remove 101 L2/L3, add 64 L1; all topics/sizes/photo/families, custom pools and saved legacy sessions');
