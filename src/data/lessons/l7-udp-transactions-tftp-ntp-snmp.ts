@@ -18,7 +18,8 @@ export const LESSON_L7_UDP_TRANSACTIONS: Lesson = {
     "NTP",
     "SNMP",
     "OID",
-    "TID"
+    "TID",
+    "GetBulk"
   ],
   "blocks": [
     {
@@ -50,7 +51,8 @@ export const LESSON_L7_UDP_TRANSACTIONS: Lesson = {
       "NTP",
       "SNMP",
       "OID",
-      "TID"
+      "TID",
+      "GetBulk"
     ],
     "blocks": [
       {
