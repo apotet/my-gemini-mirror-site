@@ -62,6 +62,33 @@ try {
       else await button('Тестирование').click();
     };
 
+    // The question-count picker must be compact and readable in dark mode, on mobile and desktop.
+    const countTrigger = button(/^Вопросов в тесте:/);
+    await countTrigger.click();
+    const countMenu = page.getByRole('menu', { name: 'Количество вопросов в тесте' });
+    await countMenu.waitFor();
+    assert.equal(await countMenu.getByRole('menuitemradio').count(), 5, 'five fixed question counts');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '10 вопросов' }).getAttribute('aria-checked'), 'true');
+    const countAppearance = await countMenu.evaluate(node => ({
+      width: node.getBoundingClientRect().width,
+      background: getComputedStyle(node).backgroundColor,
+    }));
+    assert.ok(countAppearance.width <= 200, 'popup is compact rather than full-width');
+    assert.ok(countAppearance.background !== 'rgba(0, 0, 0, 0)', 'popup is opaque');
+    await countMenu.getByRole('menuitemradio', { name: '5 вопросов' }).click();
+    assert.equal(await countTrigger.getAttribute('aria-label'), 'Вопросов в тесте: 5');
+    assert.equal(await countMenu.count(), 0, 'picker closes after choosing a count');
+    await countTrigger.click();
+    await countMenu.getByRole('menuitemradio', { name: '15 вопросов' }).focus();
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '20 вопросов' })
+      .evaluate(node => document.activeElement === node), true, 'arrow-key menu navigation');
+    await page.keyboard.press('Escape');
+    assert.equal(await countMenu.count(), 0, 'Escape closes picker');
+    assert.equal(await page.evaluate(() => localStorage.getItem('osi_active_session')),
+      activeSnapshot, 'changing count does not mutate an existing attempt');
+    await noPageOverflow();
+
     await openReview();
     await page.getByText('5 из 5 верно').waitFor();
     const socket = await openRow('ss -tulpn или netstat -tulpn');
