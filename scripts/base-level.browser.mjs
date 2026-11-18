@@ -32,7 +32,7 @@ try {
         await page.getByRole('menuitemradio', { name: `${count} вопросов`, exact: true }).click();
       }
       if (count === 10) await page.screenshot({path:`${output}/base-L1-220-${width}.png`});
-      await page.getByRole('button', { name: 'Начать тестирование', exact: true }).click();
+      await page.getByRole('button', { name: 'Начать тестирование', exact: true }).last().click();
       await page.waitForFunction((expected) => {
         const raw = localStorage.getItem('osi_active_session');
         if (!raw) return false;
