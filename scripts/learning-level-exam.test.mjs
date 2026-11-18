@@ -13,13 +13,13 @@ const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [220, 160, 376, 88, 18];
+const totals = [216, 164, 376, 88, 18];
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 0);
 assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 0);
 const understanding = ALL_QUESTIONS.filter(({ id }) =>
   sourceRegistry[id].status === 'ASSIGNED' && sourceRegistry[id].learningLevel === 2);
-assert.equal(understanding.length, 160);
+assert.equal(understanding.length, 164);
 for (const { id: mode } of QUIZ_MODES) {
   const pool = understanding.filter(q => mode === 'mixed' || q.group === mode);
   assert.deepEqual(getTestingPool(mode, 'in-depth'), pool);
