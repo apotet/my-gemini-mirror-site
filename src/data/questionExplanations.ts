@@ -17,6 +17,7 @@ import { BASE_FOUNDATIONS_BATCH4 } from './baseFoundationsBatch4';
 import { BASE_FOUNDATIONS_BATCH5 } from './baseFoundationsBatch5';
 import { BASE_FOUNDATIONS_BATCH6 } from './baseFoundationsBatch6';
 import { BASE_FOUNDATIONS_BATCH7 } from './baseFoundationsBatch7';
+import { APPLIED_L3_SESSION_PRO } from './appliedL3SessionPro';
 
 export interface QuestionDeepDive {
   questionId: string;
@@ -635,6 +636,12 @@ const INDIVIDUAL_DEEP: Record<
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
+  // L3 applied session package: add pro only; preserve existing brief/plain/trap and every answer key.
+  ...Object.fromEntries(Object.entries(APPLIED_L3_SESSION_PRO).map(([id, pro]) => [id, {
+    ...APPLIED_INDIVIDUAL_DEEP[id],
+    pro,
+    glossaryInProfessional: true,
+  }])),
   // Preserve existing, reviewed plain explanations; fill only their missing pro layer.
   ...Object.fromEntries(Object.entries(BASE_FOUNDATION_UPGRADES).map(([id, patch]) => {
     const original = APPLIED_INDIVIDUAL_DEEP[id] ?? ADVANCED_INDIVIDUAL_DEEP[id];
