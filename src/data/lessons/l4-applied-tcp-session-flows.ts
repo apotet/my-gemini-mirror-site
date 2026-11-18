@@ -21,7 +21,12 @@ export const LESSON_L4_APPLIED_TCP_SESSION_FLOWS: Lesson = {
     "POP3",
     "IMAP",
     "LDAP",
-    "TLS"
+    "TLS",
+    "SFTP",
+    "PASV",
+    "STARTTLS",
+    "Bind",
+    "Search"
   ],
   "blocks": [
     {
@@ -55,7 +60,12 @@ export const LESSON_L4_APPLIED_TCP_SESSION_FLOWS: Lesson = {
       "POP3",
       "IMAP",
       "LDAP",
-      "TLS"
+      "TLS",
+      "SFTP",
+      "PASV",
+      "STARTTLS",
+      "Bind",
+      "Search"
     ],
     "blocks": [
       {
