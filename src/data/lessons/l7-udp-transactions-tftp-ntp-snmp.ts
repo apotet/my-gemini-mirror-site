@@ -69,7 +69,7 @@ export const LESSON_L7_UDP_TRANSACTIONS: Lesson = {
       },
       {
         "heading": "GetBulk и лексикографический обход OID",
-        "body": "Операция SNMPv2c GetBulk формируется как GetBulkRequest (RFC 3416) делит входные variable bindings на non-repeaters и repeaters. При единственном OID и non-repeaters=0 он остаётся repeater; max-repetitions=10 просит до десяти последовательных GetNext-подобных значений в одном Response-PDU, с учётом размера ответа, доступности объектов и endOfMibView.\n\nGet читает точный OID, GetNext — следующий лексикографический OID для каждой varbind; выставление non-repeaters=1 при единственной varbind исключает её из повторяемой части. При обходе таблицы надо сравнивать возвращаемые OID с целевым префиксом и останавливаться при выходе за subtree, даже если агент вернул формально успешный ответ."
+        "body": "В SNMPv2c операция GetBulk использует PDU типа GetBulkRequest (RFC 3416). Запрос делит входные variable bindings на non-repeaters и repeaters. При единственном OID и non-repeaters=0 он остаётся repeater; max-repetitions=10 просит до десяти последовательных GetNext-подобных значений в одном Response-PDU, с учётом размера ответа, доступности объектов и endOfMibView.\n\nGet читает точный OID, GetNext — следующий лексикографический OID для каждой varbind; выставление non-repeaters=1 при единственной varbind исключает её из повторяемой части. При обходе таблицы надо сравнивать возвращаемые OID с целевым префиксом и останавливаться при выходе за subtree, даже если агент вернул формально успешный ответ."
       }
     ],
     "sources": [
