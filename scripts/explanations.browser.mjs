@@ -62,6 +62,83 @@ try {
       else await button('Тестирование').click();
     };
 
+    // The question-count picker must be compact and readable in dark mode, on mobile and desktop.
+    const countTrigger = button(/^Вопросов в тесте:/);
+    await countTrigger.click();
+    const countMenu = page.getByRole('menu', { name: 'Количество вопросов в тесте' });
+    await countMenu.waitFor();
+    // The restore effect may normalize the fixture before any picker interaction.
+    const storedAttemptBeforeCountChange = await page.evaluate(() => localStorage.getItem('osi_active_session'));
+    assert.equal(await countMenu.getByRole('menuitemradio').count(), 5, 'five fixed question counts');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '10 вопросов', exact: true }).getAttribute('aria-checked'), 'true');
+    const countAppearance = await countMenu.evaluate(node => ({
+      width: node.getBoundingClientRect().width,
+      background: getComputedStyle(node).backgroundColor,
+    }));
+    assert.ok(countAppearance.width <= 200, 'popup is compact rather than full-width');
+    assert.ok(countAppearance.background !== 'rgba(0, 0, 0, 0)', 'popup is opaque');
+    await countMenu.getByRole('menuitemradio', { name: '5 вопросов', exact: true }).click();
+    assert.equal(await countTrigger.getAttribute('aria-label'), 'Вопросов в тесте: 5');
+    assert.equal(await countMenu.count(), 0, 'picker closes after choosing a count');
+    await countTrigger.click();
+    await countMenu.getByRole('menuitemradio', { name: '15 вопросов', exact: true }).focus();
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '20 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'arrow-key menu navigation');
+    await page.keyboard.press('Escape');
+    assert.equal(await countMenu.count(), 0, 'Escape closes picker');
+    await countTrigger.click();
+    await page.keyboard.press('End');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '30 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'End focuses last choice');
+    await page.keyboard.press('Home');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '5 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'Home focuses first choice');
+    await page.keyboard.press('ArrowUp');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '30 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'ArrowUp wraps to last choice');
+    await page.keyboard.press('Enter');
+    assert.equal(await countTrigger.getAttribute('aria-label'), 'Вопросов в тесте: 30');
+    assert.equal(await countMenu.count(), 0, 'Enter chooses and closes the menu');
+    await countTrigger.click();
+    const themeStyles = await countMenu.evaluate(node => {
+      const root = document.documentElement;
+      const originalDark = root.classList.contains('dark');
+      const item = node.querySelector('[role="menuitemradio"][aria-checked="false"]');
+      // Tailwind v4 computes modern OKLCH colors; draw them to canvas for actual sRGB pixels.
+      const toRgb = color => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d');
+        context.fillStyle = color;
+        context.fillRect(0, 0, 1, 1);
+        return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3);
+      };
+      const read = dark => {
+        root.classList.toggle('dark', dark);
+        return [toRgb(getComputedStyle(node).backgroundColor), toRgb(getComputedStyle(item).color)];
+      };
+      const dark = read(true);
+      const light = read(false);
+      root.classList.toggle('dark', originalDark);
+      return { dark, light };
+    });
+    assert.notDeepEqual(themeStyles.dark, themeStyles.light, 'menu adapts to both color schemes');
+    const luminance = channels => channels.map(value => value / 255)
+      .map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+      .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
+    for (const [theme, [background, foreground]] of Object.entries(themeStyles)) {
+      const a = luminance(background), b = luminance(foreground);
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      assert.ok(ratio >= 4.5, theme + ' menu text contrast: ' + ratio);
+    }
+    await page.mouse.click(2, 2);
+    assert.equal(await countMenu.count(), 0, 'outside pointer closes the menu');
+    assert.equal(await page.evaluate(() => localStorage.getItem('osi_active_session')),
+      storedAttemptBeforeCountChange, 'changing count does not mutate an existing attempt');
+    await noPageOverflow();
+
     await openReview();
     await page.getByText('5 из 5 верно').waitFor();
     const socket = await openRow('ss -tulpn или netstat -tulpn');
