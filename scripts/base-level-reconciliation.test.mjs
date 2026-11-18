@@ -25,7 +25,7 @@ assert.equal(legacy.length, 253, 'legacy beginner selection is preserved for sav
 assert.equal(base.length, 216, 'the new Base is exactly the approved L1 Foundations pool');
 assert.deepEqual([1, 2, 3].map(l => legacy.filter(q => level(q.id) === l).length), [152, 40, 61]);
 assert.equal(legacy.filter(q => !baseIds.has(q.id)).length, 101, 'remove 101 L2/L3 from new Base');
-assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 64, 'restore 68 L1 absent from legacy beginner');
+assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 64, 'restore 64 current L1 absent from legacy beginner');
 assert.ok(base.every(q => level(q.id) === 1), 'new Base never includes L2+');
 
 for (const { id: mode } of QUIZ_MODES) {
