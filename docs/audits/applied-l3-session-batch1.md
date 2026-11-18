@@ -33,9 +33,10 @@
 - `src/data/questionExplanations.ts`: точечный runtime overlay, только для перечисленных ID; исходные `brief/deep/trap` сохраняются.
 - Два новых урока `src/data/lessons/l4-applied-tcp-session-flows.ts` и `src/data/lessons/l7-udp-transactions-tftp-ntp-snmp.ts`: plain + professional, раздельные разделы протоколов, обратные связи `relatedQuestionIds`, ссылки на RFC.
 - `src/data/lessons/index.ts`: регистрация уроков в действующем runtime resolver.
+- `src/data/glossary.ts`: 6 дополнительных определений и связей с уроками (SFTP, PASV, STARTTLS, GetBulk, Bind, Search), термины подключены в обоих режимах чтения.
 - `scripts/applied-l3-session-batch1.test.mjs`: проверяет точные ID, уровень, исходные ответы, независимость plain/pro, реальные связи в обоих направлениях, существование терминов glossary и неизменность 160 L2.
 - `.github/workflows/ci.yml`: включает регрессионный скрипт в CI.
-- `docs/audits/issue-171-baseline.json`: обновлены только SHA256 двух защищённых исходников; `bankSHA256` и `auditProjectionSHA256` сохранены.
+- `docs/audits/issue-171-baseline.json`: обновлены SHA256 трёх защищённых исходников (questionExplanations.ts, lessons/index.ts и glossary.ts); `bankSHA256` и `auditProjectionSHA256` сохранены.
 
 ## Приёмка
 
