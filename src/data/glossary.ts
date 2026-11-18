@@ -140,7 +140,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "KEEPALIVE": {"description": "Сообщение BGP для подтверждения установленного обмена и поддержания сеанса. Не является периодическим запуском передачи всей таблицы маршрутов.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "UPDATE": {"description": "Сообщение BGP для объявления или отзыва маршрутов и передачи атрибутов. Его пригодность проверяется независимо от работоспособности TCP-сеанса.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "Route Reflector": {"description": "Узел iBGP, отражающий выбранные пути по правилам client/non-client. Снижает потребность в full mesh, но не заменяет достижимость NEXT_HOP.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
-  "RR": {"description": "Маршрутизатор iBGP с настроенными клиентами отражения. Для защиты от петель отражения применяются ORIGINATOR_ID и CLUSTER_LIST.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
+  "RR": {"description": "В BGP — отражатель маршрутов iBGP (Route Reflector) с настроенными клиентами отражения, а в DNS — ресурсная запись зоны (Resource Record, например A, AAAA, MX, NS или PTR). Для защиты от петель Route Reflection в BGP применяются ORIGINATOR_ID и CLUSTER_LIST; в DNS каждая RR содержит имя владельца, TTL, класс, тип и данные RDATA.", "relatesTo": "BGP Route Reflection (L3) и ресурсные записи DNS (L7)."},
   "Route Reflection": {"description": "Механизм распространения iBGP-полученных путей через RR. Путь клиента может отражаться другим клиентам и non-client-соседям.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "full mesh": {"description": "Для iBGP — непосредственные логические сеансы между каждой парой участников. Это не требование отдельного физического кабеля между каждой парой.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
   "non-client": {"description": "Обычный iBGP-сосед RR. Полученный от него путь RR отражает клиентам, а не другим non-client-соседям.", "relatesTo": "BGP: соседство, распространение маршрутов и выбор исходящего пути; L3."},
@@ -1133,8 +1133,8 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     "lessonId": "l3-ipv6"
   },
   "NS": {
-    "description": "Neighbor Solicitation — запрос ICMPv6 для поиска канального адреса соседа, проверки его доступности или проверки уникальности адреса. Конкретное назначение определяется полями и контекстом сообщения.",
-    "relatesTo": "Neighbor Discovery IPv6.",
+    "description": "В IPv6 (NDP) — запрос Neighbor Solicitation (ICMPv6) для поиска канального адреса соседа, проверки его доступности или DAD, а в DNS — ресурсная запись Name Server, указывающая авторитетные серверы имён зоны. Конкретное значение сокращения определяется контекстом протокола (ICMPv6 против делегирования зоны DNS).",
+    "relatesTo": "Neighbor Discovery IPv6 (L3) и делегирование зон DNS (L7).",
     "lessonId": "l3-ipv6"
   },
   "NA": {
@@ -1728,7 +1728,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "KEEPALIVE": ["BGP KEEPALIVE Message", "Подтверждение и поддержание BGP", false],
   "UPDATE": ["BGP UPDATE Message", "Обновление маршрутов BGP", false],
   "Route Reflector": ["Route Reflector", "Отражатель маршрутов", false],
-  "RR": ["Route Reflector", "Отражатель маршрутов", true],
+  "RR": ["Route Reflector / Resource Record", "Отражатель маршрутов BGP или ресурсная запись DNS", true],
   "Route Reflection": ["Route Reflection", "Отражение маршрутов", false],
   "full mesh": ["Full Mesh", "Полная связность сеансов", false],
   "non-client": ["Route Reflector Non-Client", "Сосед RR без роли клиента", false],
@@ -2076,7 +2076,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "fe80::/10": ["IPv6 Link-Local Address Prefix", "Префикс локальных адресов канала IPv6", false],
   "link-local": ["Link Local", "Локальная область канала", false],
   "Neighbor Discovery": ["Neighbor Discovery", "Обнаружение соседей", false],
-  "NS": ["Neighbor Solicitation", "Запрос соседа", true],
+  "NS": ["Neighbor Solicitation / Name Server", "Запрос соседа IPv6 или запись сервера имён DNS", true],
   "NA": ["Neighbor Advertisement", "Объявление соседа", true],
   "RA": ["Router Advertisement", "Объявление маршрутизатора", true],
   "SLAAC": ["Stateless Address Autoconfiguration", "Автонастройка адреса без хранения состояния сервером", true],
@@ -2216,6 +2216,16 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "802.3at": ["IEEE 802.3at (PoE+)", "Стандарт PoE+ мощностью до 30 Вт на порт", false],
   "RRM": ["Radio Resource Management", "Автоматическое управление каналами и мощностью Wi-Fi", true],
   "CCA": ["Clear Channel Assessment", "Проверка занятости радиоканала перед передачей", true],
+  "OPT": ["EDNS OPT Pseudo-RR", "Псевдозапись параметров EDNS в разделе Additional", true, "Передаёт размер приёмного буфера UDP, расширенные коды RCODE и флаги EDNS между резолвером и сервером."],
+  "RRSIG": ["Resource Record Digital Signature", "Цифровая подпись набора записей DNSSEC", true, "Содержит криптографическую подпись RRset, интервал действия и ссылку на ключ DNSKEY."],
+  "DNSKEY": ["DNS Public Key Record", "Запись открытого ключа зоны DNSSEC", true, "Хранит открытый ключ зоны (ZSK или KSK), которым валидируются подписи RRSIG."],
+  "MBAP": ["Modbus Application Protocol Header", "Семибайтовый заголовок Modbus TCP перед PDU", true, "Содержит идентификатор транзакции, длину и Unit ID для инкапсуляции Modbus PDU поверх TCP/502."],
+  "APIPA": ["Automatic Private IP Addressing", "Автоматическая локальная IPv4-адресация 169.254.0.0/16", true, "Назначает хосту адрес из 169.254.0.0/16 при отсутствии ответа от DHCP-сервера."],
+  "CLOSE_WAIT": ["TCP CLOSE-WAIT State", "Состояние TCP после получения FIN от удалённой стороны", false, "Означает, что входящее направление закрыто, но локальное приложение ещё может отправить оставшиеся данные перед собственным FIN."],
+  "persist timer": ["TCP Persist Timer", "Таймер проб нулевого окна TCP", false, "Периодически отправляет Zero Window Probe, чтобы узнать об открытии приёмного буфера получателя."],
+  "Boundary Clock": ["PTP Boundary Clock", "Граничные часы PTP с ведомым и ведущими портами", false, "Синхронизируются от вышестоящего Grandmaster на slave-порту и раздают время нижестоящим сегментам через master-порты."],
+  "Leap Indicator": ["NTP Leap Indicator (LI)", "Двухбитный индикатор состояния синхронизации и секунды координации в NTP", false, "Значение LI=3 сообщает, что часы источника не синхронизированы и ответ нельзя использовать для подстройки времени."],
+  "PoE Splitter": ["PoE Splitter", "Разделитель питания и данных PoE", false, "Принимает по витой паре питание PoE и Ethernet, выделяя на выходе отдельное постоянное напряжение DC и порт данных для устройства без встроенного PD."],
 };
 
 export const GLOSSARY_TOOLTIPS: Record<string, GlossaryTooltip> = {};
