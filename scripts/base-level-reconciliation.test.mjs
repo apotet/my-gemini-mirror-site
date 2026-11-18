@@ -1,0 +1,85 @@
+import assert from 'node:assert/strict';
+import { bundleEntry } from './load-bank.mjs';
+
+const {
+  ALL_QUESTIONS, QUIZ_MODES, getExamPool, getTestingPool, getTestingQuestions,
+  getTrialExamQuestions, getLearningLevelMetadata, isBeginnerPhoto,
+  prepareAttemptQuestions, restoreSession,
+} = await bundleEntry('scripts/base-level-reconciliation-entry.ts', 'base-level-reconciliation.mjs');
+
+const seeded = initial => {
+  let seed = initial;
+  return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
+};
+const family = q => q.family || q.id;
+const before = JSON.stringify(ALL_QUESTIONS);
+const level = id => getLearningLevelMetadata(id).learningLevel;
+const legacy = getExamPool('mixed', 'beginner');
+const base = getTestingPool('mixed', 'beginner');
+const legacyIds = new Set(legacy.map(q => q.id));
+const baseIds = new Set(base.map(q => q.id));
+
+// Exact published bank snapshot. No question, answer, key or registry is reclassified.
+assert.equal(ALL_QUESTIONS.length, 862);
+assert.equal(legacy.length, 253, 'legacy beginner selection is preserved for saved attempts');
+assert.equal(base.length, 220, 'the new Base is exactly the approved L1 Foundations pool');
+assert.deepEqual([1, 2, 3].map(l => legacy.filter(q => level(q.id) === l).length), [152, 40, 61]);
+assert.equal(legacy.filter(q => !baseIds.has(q.id)).length, 101, 'remove 101 L2/L3 from new Base');
+assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 68, 'restore 68 L1 absent from legacy beginner');
+assert.ok(base.every(q => level(q.id) === 1), 'new Base never includes L2+');
+
+for (const { id: mode } of QUIZ_MODES) {
+  const pool = getTestingPool(mode, 'beginner');
+  const expected = ALL_QUESTIONS.filter(q => (mode === 'mixed' || q.group === mode) && level(q.id) === 1);
+  assert.deepEqual(pool, expected, `Base mode ${mode} is exactly L1`);
+  for (const count of [1, 5, 10, 15, 20, 30]) for (const seed of [1, 2, 17, 171, 1000]) {
+    const questions = getTestingQuestions(mode, count, seeded(seed), 'beginner');
+    const wanted = Math.min(count, pool.length);
+    assert.equal(questions.length, wanted, `Base count ${mode}/${count}`);
+    assert.equal(new Set(questions.map(q => q.id)).size, wanted, 'no duplicate IDs');
+    assert.ok(questions.every(q => pool.includes(q)), 'no topics or higher levels leak into Base');
+    assert.equal(new Set(questions.map(family)).size,
+      Math.min(wanted, new Set(pool.map(family)).size), 'distinct families first');
+    if (wanted >= 2 && pool.some(isBeginnerPhoto)) {
+      assert.ok(questions.some(isBeginnerPhoto), 'photo guarantee for eligible selected topic');
+    }
+    assert.deepEqual(questions, getTestingQuestions(mode, count, seeded(seed), 'beginner'),
+      'same seed gives the same questions');
+  }
+}
+
+const a = base[0], b = base[1], hard = legacy.find(q => level(q.id) === 3);
+assert.ok(a && b && hard);
+const custom = [hard, a, b];
+const customBefore = JSON.stringify(custom);
+const picked = getTestingQuestions('mixed', 20, seeded(3), 'beginner', custom);
+assert.equal(picked.length, 2, 'closed custom pools are not replenished');
+assert.deepEqual(new Set(picked.map(q => q.id)), new Set([a.id, b.id]));
+assert.deepEqual(getTestingQuestions('mixed', 20, seeded(3), 'beginner', []), []);
+assert.equal(JSON.stringify(custom), customBefore, 'custom selection does not mutate input');
+
+// Unrelated current modes continue using their existing approved selectors.
+assert.equal(getTestingPool('mixed', 'in-depth').length, 160);
+assert.deepEqual(getTestingPool('mixed', 'applied'), getExamPool('mixed', 'applied'));
+assert.deepEqual(getTestingPool('mixed', 'mixed'), getExamPool('mixed', 'mixed'));
+assert.ok(getTrialExamQuestions('basic', seeded(7)).every(q => level(q.id) === 1));
+
+// A saved old Base attempt with a now-excluded L3 question is restored by ID, not resampled.
+const now = 1_800_000_000_000;
+const prepared = prepareAttemptQuestions([hard, a], seeded(23));
+const oldSession = {
+  ...prepared, currentIndex: 0, userAnswers: {}, submittedQuestions: {},
+  startTime: now - 1000, isCompleted: false, mode: 'mixed',
+  feedbackMode: 'exam', difficulty: 'beginner', requestedCount: 2,
+};
+const serialized = JSON.stringify(oldSession);
+const restored = restoreSession(serialized, ALL_QUESTIONS, now);
+assert.ok(restored, 'previously saved Base session still restores');
+for (const key of Object.keys(oldSession)) {
+  assert.deepEqual(restored[key], oldSession[key], `restored legacy field ${key}`);
+}
+assert.equal(restored.questions[0].id, hard.id, 'do not replace an old question');
+assert.equal(JSON.stringify(oldSession), serialized, 'saved attempt is not modified');
+assert.equal(JSON.stringify(ALL_QUESTIONS), before, 'bank is not mutated');
+
+console.log('PASS: Base uses exactly 220 L1; remove 101 L2/L3, add 68 L1; all topics/sizes/photo/families, custom pools and saved legacy sessions');
