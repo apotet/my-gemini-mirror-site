@@ -49,6 +49,84 @@ const examLevels: Record<ExamDifficulty, { title: string; description: string }>
   mixed: { title: 'Смешанный', description: 'Все уровни сложности' },
 };
 
+const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20, 30] as const;
+
+/** A compact, theme-aware menu avoids oversized/unreadable native select popups on Windows. */
+const QuestionCountDropdown: React.FC<{ value: number; onChange: (count: number) => void }> = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitemradio"][aria-checked="true"]')
+      ?.focus({ preventScroll: true });
+
+    const closeOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [open]);
+
+  const handleMenuKeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const items = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]'));
+    const activeIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+    const nextIndex = event.key === 'Home' ? 0
+      : event.key === 'End' ? items.length - 1
+      : (activeIndex + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+    items[nextIndex]?.focus({ preventScroll: true });
+  };
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button type="button" ref={triggerRef}
+        aria-label={`Вопросов в тесте: ${value}`}
+        aria-haspopup="menu" aria-expanded={open} aria-controls="exam-question-count-menu"
+        onClick={() => setOpen(previous => !previous)}
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:border-slate-700">
+        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Вопросов в тесте</span>
+        <span aria-hidden="true" className="flex items-center gap-1 text-sm font-bold tabular-nums text-slate-900 dark:text-white">
+          {value}<ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+      {open && (
+        <div id="exam-question-count-menu" role="menu" aria-label="Количество вопросов в тесте"
+          ref={menuRef} onKeyDown={handleMenuKeys}
+          className="absolute right-0 top-full z-50 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900">
+          {QUESTION_COUNT_OPTIONS.map(count => (
+            <button type="button" key={count} role="menuitemradio" aria-checked={value === count}
+              onClick={() => {
+                onChange(count);
+                setOpen(false);
+                triggerRef.current?.focus({ preventScroll: true });
+              }}
+              className={`flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${value === count
+                ? 'bg-cyan-100 font-semibold text-cyan-900 dark:bg-cyan-950 dark:text-cyan-100'
+                : 'text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800'}`}>
+              {count} вопросов
+              {value === count && <CheckCircle2 className="h-4 w-4 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export interface ExamViewHandle {
   returnToParameters: () => void;
 }
@@ -383,20 +461,7 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
               </button>
             ))}
           </div>
-          <label className="relative flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-cyan-500 dark:border-slate-700">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Вопросов в тесте</span>
-            <span aria-hidden="true" className="flex items-center gap-1 text-sm font-bold tabular-nums text-slate-900 dark:text-white">
-              {questionCount}
-              <ChevronDown className="h-4 w-4 shrink-0" />
-            </span>
-            <select
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              value={questionCount}
-              onChange={event => setQuestionCount(Number(event.currentTarget.value))}
-            >
-              {[5, 10, 15, 20, 30].map(count => <option key={count} value={count}>{count}</option>)}
-            </select>
-          </label>
+          <QuestionCountDropdown value={questionCount} onChange={setQuestionCount} />
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Доступно по выбранной теме: {availableCount}.
             {availableCount < questionCount && ` Будет ${availableCount} из запрошенных ${questionCount}; другой уровень не добавляется.`}
