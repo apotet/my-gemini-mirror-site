@@ -67,6 +67,8 @@ try {
     await countTrigger.click();
     const countMenu = page.getByRole('menu', { name: 'Количество вопросов в тесте' });
     await countMenu.waitFor();
+    // The restore effect may normalize the fixture before any picker interaction.
+    const storedAttemptBeforeCountChange = await page.evaluate(() => localStorage.getItem('osi_active_session'));
     assert.equal(await countMenu.getByRole('menuitemradio').count(), 5, 'five fixed question counts');
     assert.equal(await countMenu.getByRole('menuitemradio', { name: '10 вопросов', exact: true }).getAttribute('aria-checked'), 'true');
     const countAppearance = await countMenu.evaluate(node => ({
@@ -85,8 +87,47 @@ try {
       .evaluate(node => document.activeElement === node), true, 'arrow-key menu navigation');
     await page.keyboard.press('Escape');
     assert.equal(await countMenu.count(), 0, 'Escape closes picker');
+    await countTrigger.click();
+    await page.keyboard.press('End');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '30 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'End focuses last choice');
+    await page.keyboard.press('Home');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '5 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'Home focuses first choice');
+    await page.keyboard.press('ArrowUp');
+    assert.equal(await countMenu.getByRole('menuitemradio', { name: '30 вопросов', exact: true })
+      .evaluate(node => document.activeElement === node), true, 'ArrowUp wraps to last choice');
+    await page.keyboard.press('Enter');
+    assert.equal(await countTrigger.getAttribute('aria-label'), 'Вопросов в тесте: 30');
+    assert.equal(await countMenu.count(), 0, 'Enter chooses and closes the menu');
+    await countTrigger.click();
+    const themeStyles = await countMenu.evaluate(node => {
+      const root = document.documentElement;
+      const originalDark = root.classList.contains('dark');
+      const item = node.querySelector('[role="menuitemradio"][aria-checked="false"]');
+      const read = dark => {
+        root.classList.toggle('dark', dark);
+        return [getComputedStyle(node).backgroundColor, getComputedStyle(item).color];
+      };
+      const dark = read(true);
+      const light = read(false);
+      root.classList.toggle('dark', originalDark);
+      return { dark, light };
+    });
+    assert.notDeepEqual(themeStyles.dark, themeStyles.light, 'menu adapts to both color schemes');
+    const luminance = color => {
+      const components = color.match(/[\\d.]+/g).slice(0, 3).map(Number).map(v => v / 255);
+      return components.map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+        .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
+    };
+    for (const [theme, [background, foreground]] of Object.entries(themeStyles)) {
+      const a = luminance(background), b = luminance(foreground);
+      assert.ok((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5, theme + ' menu text contrast');
+    }
+    await page.mouse.click(2, 2);
+    assert.equal(await countMenu.count(), 0, 'outside pointer closes the menu');
     assert.equal(await page.evaluate(() => localStorage.getItem('osi_active_session')),
-      activeSnapshot, 'changing count does not mutate an existing attempt');
+      storedAttemptBeforeCountChange, 'changing count does not mutate an existing attempt');
     await noPageOverflow();
 
     await openReview();
