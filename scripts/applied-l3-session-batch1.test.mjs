@@ -54,7 +54,7 @@ const expected = {
 };
 const ids = Object.keys(expected);
 const registry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, GLOSSARY } =
+const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText } =
   await bundleEntry('scripts/learning-level-exam-entry.ts', 'applied-l3-session-live.mjs');
 const { APPLIED_L3_SESSION_PRO } =
   await bundleEntry('src/data/appliedL3SessionPro.ts', 'applied-l3-session-pro.mjs');
@@ -104,6 +104,31 @@ for (const id of ids) {
   seen.add(lesson.id);
 }
 assert.deepEqual([...seen].sort(), ['l4-applied-tcp-session-flows','l7-udp-transactions-tftp-ntp-snmp']);
+const newGlossaryTerms = {
+  'SFTP': 'l4-applied-tcp-session-flows',
+  'PASV': 'l4-applied-tcp-session-flows',
+  'STARTTLS': 'l4-applied-tcp-session-flows',
+  'GetBulk': 'l7-udp-transactions-tftp-ntp-snmp',
+  'LDAP Bind': 'l4-applied-tcp-session-flows',
+  'LDAP Search': 'l4-applied-tcp-session-flows',
+};
+for (const [term, lessonId] of Object.entries(newGlossaryTerms)) {
+  assert.equal(GLOSSARY[term]?.lessonId, lessonId, term + ' glossary destination');
+  const tooltip = GLOSSARY_TOOLTIPS[term];
+  assert.ok(tooltip?.english && tooltip?.russian && tooltip?.summary, term + ' inline tooltip metadata');
+  assert.ok(splitGlossaryText('Проверка: ' + term + '.').some(part => part.term === term), term + ' inline token');
+  const lesson = [...seen].includes(lessonId) && [...ALL_QUESTIONS].some(q => expected[q.id]?.lesson === lessonId)
+    ? getLessonForQuestion(Object.keys(expected).find(id => expected[id].lesson === lessonId)) : null;
+  assert.equal(lesson?.id, lessonId, term + ' linked existing lesson');
+  for (const mode of [lesson, lesson.professional]) {
+    assert.ok(mode.terms.includes(term), lessonId + ' style exposes glossary tag ' + term);
+    assert.ok(mode.blocks.some(b => splitGlossaryText(b.heading + ' ' + b.body).some(part => part.term === term)),
+      lessonId + ' style has a working inline glossary token ' + term);
+  }
+}
+assert.ok(!splitGlossaryText('Search and Bind are generic English words')
+  .some(part => ['LDAP Bind', 'LDAP Search'].includes(part.term)), 'LDAP term scope does not leak to generic words');
+
 const l2 = ALL_QUESTIONS.filter(q => registry[q.id]?.status === 'ASSIGNED' && registry[q.id]?.learningLevel === 2);
 assert.equal(l2.length, 160, 'Codex L2 selection unchanged');
 console.log('PASS: 12 L3 source keys unchanged; 12 individual pro + existing plain/trap; 2 two-style lessons and reverse links; 160 L2 untouched');
