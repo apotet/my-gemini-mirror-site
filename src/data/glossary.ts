@@ -10,8 +10,8 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "PASV": {"description":"Команда FTP для перехода в пассивный режим: сервер сообщает адрес и порт приёма канала данных, после чего клиент сам открывает отдельное TCP-соединение для передачи файла.","relatesTo":"FTP control/data, команда RETR, NAT и разрешённый диапазон пассивных портов.","lessonId":"l4-applied-tcp-session-flows"},
   "STARTTLS": {"description":"Команда согласованного включения TLS внутри уже установленного соединения приложения, например IMAP на TCP 143. Отличается от implicit TLS на 993, где TLS начинается сразу после TCP handshake.","relatesTo":"IMAP, безопасная почта, порядок команд и обязательная проверка сертификата.","lessonId":"l4-applied-tcp-session-flows"},
   "GetBulk": {"description":"Операция SNMPv2c для получения нескольких последовательных OID в одном ответе. Поля non-repeaters и max-repetitions управляют тем, какие varbind повторяются и сколько значений запрашивается.","relatesTo":"Обход таблиц MIB, GetNext, endOfMibView и проверка границы OID-ветви.","lessonId":"l7-udp-transactions-tftp-ntp-snmp"},
-  "Bind": {"description":"Операция LDAP, устанавливающая контекст аутентификации для соединения. BindRequest и BindResponse обрабатываются до последующего Search при сценарии с обязательным входом.","relatesTo":"LDAP TCP 389, LDAP messageID, аутентификация и защита паролей TLS.","lessonId":"l4-applied-tcp-session-flows"},
-  "Search": {"description":"Операция LDAP поиска объектов по base DN, scope и фильтру. SearchRequest может следовать после успешного Bind в том же TCP-соединении; результаты возвращаются отдельными LDAP-сообщениями.","relatesTo":"Каталоги LDAP, Bind, поиск по атрибутам и сопоставление messageID.","lessonId":"l4-applied-tcp-session-flows"},
+  "LDAP Bind": {"description":"Операция LDAP, устанавливающая контекст аутентификации для соединения. BindRequest и BindResponse обрабатываются до последующего Search при сценарии с обязательным входом.","relatesTo":"LDAP TCP 389, LDAP messageID, аутентификация и защита паролей TLS.","lessonId":"l4-applied-tcp-session-flows"},
+  "LDAP Search": {"description":"Операция LDAP поиска объектов по base DN, scope и фильтру. SearchRequest может следовать после успешного Bind в том же TCP-соединении; результаты возвращаются отдельными LDAP-сообщениями.","relatesTo":"Каталоги LDAP, Bind, поиск по атрибутам и сопоставление messageID.","lessonId":"l4-applied-tcp-session-flows"},
   "Modbus TCP": {"description":"Промышленный прикладной протокол Modbus поверх TCP; типичный серверный порт 502/TCP, MBAP-заголовок и функции работы с регистрами без встроенного шифрования классического профиля.","relatesTo":"Порты промышленных сервисов, HMI/SCADA, защита OT-сетей.","lessonId":"l4-directory-remote-industrial-ports"},
   "HSR": {"description":"High-availability Seamless Redundancy: резервирование по IEC 62439-3, при котором узлы кольца посылают две копии кадров в противоположные стороны, а дубликат отбрасывается.","relatesTo":"Промышленные кольца L2, резервирование без времени переключения, PRP.","lessonId":"l2-hsr-redundancy"},
   "PRP": {"description":"Parallel Redundancy Protocol по IEC 62439-3: передача дублирующих кадров по двум независимым локальным сетям, в отличие от двух направлений одного HSR-кольца.","relatesTo":"Отказоустойчивость промышленного Ethernet и HSR.","lessonId":"l2-hsr-redundancy"},
@@ -1654,6 +1654,12 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "SFTP": ["SSH File Transfer Protocol","Протокол передачи файлов по SSH",true],
+  "PASV": ["FTP Passive Mode","Команда пассивного режима FTP",false],
+  "STARTTLS": ["STARTTLS command","Включение TLS в существующем соединении",false],
+  "GetBulk": ["SNMP GetBulkRequest","Массовый запрос следующих OID",false],
+  "LDAP Bind": ["LDAP Bind operation","LDAP-аутентификация или установление контекста",false],
+  "LDAP Search": ["LDAP Search operation","Поиск записей каталога LDAP",false],
   "IANA": ["Internet Assigned Numbers Authority", "Администрация адресного пространства Интернета", true],
   "uRPF": ["Unicast Reverse Path Forwarding", "Проверка обратного пути для одноадресного трафика", true],
   "EDNS": ["Extension Mechanisms for DNS", "Механизмы расширения DNS", true],
