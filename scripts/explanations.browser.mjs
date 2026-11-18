@@ -116,7 +116,7 @@ try {
     });
     assert.notDeepEqual(themeStyles.dark, themeStyles.light, 'menu adapts to both color schemes');
     const luminance = color => {
-      const components = color.match(/[\\d.]+/g).slice(0, 3).map(Number).map(v => v / 255);
+      const components = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(v => v / 255);
       return components.map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
         .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
     };
