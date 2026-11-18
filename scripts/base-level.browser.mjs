@@ -6,6 +6,8 @@ import { loadBankWithExplanations } from './load-bank.mjs';
 const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playwright');
 const { ALL_QUESTIONS } = await loadBankWithExplanations();
 const registry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
+const foundationCount = Object.values(registry).filter(entry => entry.status === 'ASSIGNED' && entry.learningLevel === 1).length;
+assert.equal(foundationCount, 216, 'Issue #257 approved L1 count');
 const base = process.env.NETOPS_BASE_URL || 'http://127.0.0.1:5428/my-gemini-mirror-site/';
 const browser = await chromium.launch({
   ...(process.env.NETOPS_CHROMIUM_PATH ? { executablePath: process.env.NETOPS_CHROMIUM_PATH } : {}),
@@ -26,12 +28,12 @@ try {
       page.on('pageerror', err => errors.push(err.message));
       await page.goto(base);
       await page.getByRole('button', { name: mobile ? 'Тесты' : 'Тестирование', exact: true }).click();
-      await page.getByText(/Доступно по выбранной теме: 220/).waitFor();
+      await page.getByText(new RegExp(`Доступно по выбранной теме: ${foundationCount}\\b`)).waitFor();
       if (count !== 10) {
         await page.getByRole('button', { name: /^Вопросов в тесте:/ }).click();
         await page.getByRole('menuitemradio', { name: `${count} вопросов`, exact: true }).click();
       }
-      if (count === 10) await page.screenshot({path:`${output}/base-L1-220-${width}.png`});
+      if (count === 10) await page.screenshot({path:`${output}/base-L1-${foundationCount}-${width}.png`});
       await page.getByRole('button', { name: 'Начать тестирование', exact: true }).last().click();
       await page.waitForFunction((expected) => {
         const raw = localStorage.getItem('osi_active_session');
@@ -76,5 +78,5 @@ if (issues.length) {
   console.error(issues.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('PASS: 375/1440px Base UI=220, new 5/10/30 all-L1 sessions, saved legacy L3 resumes without resampling');
+  console.log(`PASS: 375/1440px Base UI=${foundationCount}, new 5/10/30 all-L1 sessions, saved legacy L3 resumes without resampling`);
 }
