@@ -28,6 +28,11 @@ const firstFourReviewed = new Set(['gap-pack2-27','gap-pack3-15','stp-new-09','l
 const auto = /^auto:([1-9][0-9]?)$/.exec(idsArg);
 let ids;
 if (auto) {
+  const approvedQueueSHA = '5df2a0b46116323201a6ae933a4c650e78b105db';
+  if (sha !== approvedQueueSHA) {
+    throw new Error('Auto batch queue requires frozen PR #264 SHA '+approvedQueueSHA+
+      '; target PR changed, refresh review manifest before continuing');
+  }
   const pool = m.getTestingPool('mixed','in-depth').map(q => q.id);
   if (pool.length !== 164 || new Set(pool).size !== 164 ||
       ![...firstFourReviewed].every(id => pool.includes(id))) {
