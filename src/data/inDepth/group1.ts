@@ -119,6 +119,10 @@ export const GROUP1_PATCHES: Record<string, InDepthExplanationPatch> = {
 };
 
 export const GROUP1_LINKS: Record<string, string> = {
+  "gap-pack2-05": "tcpip-encapsulation",
+  "gap-pack2-10": "tcpip-encapsulation",
+  "gap-pack2-11": "l7-dns",
+  "gap-pack2-16": "l7-services",
   "gap-pack2-27": "l4-tcp",
   "gap-pack3-08": "l3-ipv6",
   "gap-pack3-12": "l7-dns",
@@ -152,6 +156,63 @@ export const GROUP1_LINKS: Record<string, string> = {
 };
 
 export const GROUP1_SECTIONS: SectionLink[] = [
+  {
+    "lessonId": "tcpip-encapsulation",
+    "questionIds": [
+      "gap-pack2-05"
+    ],
+    "anchorId": "in-depth-fcs-ipv4-header-payload-scope",
+    "afterHeading": {
+      "plain": "FCS и checksum: что именно проверено",
+      "professional": "FCS, IPv4 checksum и диагностика повреждений"
+    },
+    "plain": {
+      "heading": "Изменили данные, но FCS и IPv4 checksum прошли — почему",
+      "body": "Ethernet FCS подтверждает, что полученный кадр соответствует контрольной сумме, записанной в этом кадре. Если промежуточное устройство изменило полезную нагрузку и записало новую корректную FCS, старая версия кадра для получателя уже не видна. Он может успешно проверить FCS, несмотря на изменение данных в пути.\n\nКонтрольная сумма IPv4 охватывает только заголовок IP, не его полезную нагрузку. Если заголовок остался прежним, проверка IPv4 checksum может пройти. Эти два успешных результата не доказывают неизменность вложенных данных; в условии транспортную проверку ещё не проводили."
+    },
+    "professional": {
+      "heading": "FCS одного L2-участка, IPv4 header checksum и границы проверки payload",
+      "body": "Ethernet FCS (CRC-32) считается для содержимого конкретного кадра на данном канальном участке. При повторном формировании кадра новая правильная FCS валидирует уже изменённые байты, а не сравнивает их со снимком на предыдущем участке. Контрольная сумма заголовка IPv4 по RFC 791 не охватывает IPv4 payload; она может оставаться корректной, если заголовок не изменён.\n\nПоэтому обе проверки могут завершиться успешно при изменённом байте IP payload. Для диагностики сопоставляют PCAP до и после промежуточного узла и отдельно смотрят применимую TCP/UDP checksum и механизмы проверки данных приложения, если они существуют. Проверка «сошлась» не равнозначна доказательству неизменности сквозного содержимого."
+    }
+  },
+  {
+    "lessonId": "tcpip-encapsulation",
+    "questionIds": [
+      "gap-pack2-10"
+    ],
+    "anchorId": "in-depth-ppp-ipcp-first-ipv4-packet",
+    "afterHeading": {
+      "plain": "PPP после IPCP: согласование уже выполнено",
+      "professional": "Туннель и PPP: какой адрес реально маршрутизируют"
+    },
+    "plain": {
+      "heading": "PPP готов: первый IPv4-пакет без новой настройки соединения",
+      "body": "Если PPP-соединение уже поднято, а IPCP договорился об IPv4, первый пакет можно отправлять сразу в PPP-кадре по существующему каналу. IPCP не повторяют перед каждым пакетом. На канальном point-to-point PPP нет обязательного Ethernet ARP-обнаружения соседа.\n\nPPP Protocol сообщает, что внутри находится IPv4: это 0x0021. Не путай это значение с полем Protocol заголовка самого IPv4, где 17 обозначает UDP."
+    },
+    "professional": {
+      "heading": "IPCP Opened и PPP Protocol 0x0021 при передаче IPv4",
+      "body": "PPP после успешного LCP и IPCP готов инкапсулировать IPv4 datagram с PPP Protocol=0x0021 (RFC 1661 и RFC 1332); поле Protocol не равно IPv4 Next Protocol=17/UDP. При маршруте через уже активный point-to-point интерфейс пакет передаётся без нового IPCP для каждого datagram.\n\nARP как механизм Ethernet обнаружения next-hop здесь не нужен; PPP соединяет два заранее установленных канальных endpoint. Если соглашение IPCP не открыто или линк разорван, это уже другое условие — здесь IPCP согласован и маршрут направлен в поднятый интерфейс."
+    }
+  },
+  {
+    "lessonId": "l7-dns",
+    "questionIds": [
+      "gap-pack2-11"
+    ],
+    "anchorId": "in-depth-dns-aaaa-noerror-nodata",
+    "afterHeading": {
+      "plain": "Какие данные можно попросить",
+      "professional": "A и AAAA: адреса и алиасы"
+    },
+    "plain": {
+      "heading": "Имя есть, а AAAA нет: не путай с NXDOMAIN",
+      "body": "Клиент запросил IPv6-адрес (AAAA), но авторитетный DNS ответил NOERROR без записей в Answer и с SOA в Authority. Это означает, что по заданному типу AAAA данных нет — не то же самое, что «имени вообще не существует» (NXDOMAIN). Известная запись A с IPv4-адресом этому не противоречит.\n\nTC=0 говорит, что DNS-ответ не усечён. Такой ответ не превращается в SERVFAIL из-за пустой Answer; в данном условии нет причины обязательно повторять запрос по TCP."
+    },
+    "professional": {
+      "heading": "NOERROR/NODATA для AAAA, SOA Authority и независимая запись A",
+      "body": "NOERROR с пустой Answer для QTYPE=AAAA при наличии SOA в Authority и без делегирования соответствует отрицательному ответу типа NODATA (RFC 2308); существование владельца имени не опровергается. Вопрос прямо подтверждает действительную A-запись, а значит это не NXDOMAIN. Запись A нельзя считать ответом на отдельный запрос AAAA.\n\nTC=0 исключает признак усечения, поэтому этот результат сам по себе не требует TCP retry. SERVFAIL — другой RCODE, который не следует выводить из нулевого числа RR в Answer. Отрицательное кэширование NODATA использует указанный SOA по правилам отрицательного TTL; проверяй QNAME/QTYPE/RCODE и секции сообщения вместе."
+    }
+  },
   {
     "lessonId": "l7-services",
     "questionIds": [
