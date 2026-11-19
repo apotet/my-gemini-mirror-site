@@ -193,7 +193,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gemini-audit-source-pack
-          path: audit-pack/pack.json
+          path: |
+            audit-pack/pack.json
+            audit-pack/pack2.json
           retention-days: 7
           if-no-files-found: error
 
