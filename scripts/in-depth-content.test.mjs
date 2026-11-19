@@ -82,7 +82,7 @@ for (const [id,key,lessonId,anchorId,badText] of [
   for(const mode of ['plain','professional']) {
     const section=m.getLessonBlocksWithSections(lesson,mode).find(x=>x.anchorId===anchorId);
     assert.ok(section?.body?.trim(),id+'/'+mode+': actual lesson content');
-    assert.doesNotMatch(section.heading+' '+section.body,badText,id+'/'+mode+': no damaged learners' typography');
+    assert.doesNotMatch(section.heading+' '+section.body,badText,id+'/'+mode+': no glued terms in learner-facing lesson');
   }
   const deep=m.getQuestionDeepDive(q);
   assert.ok(deep?.briefAnswer && deep?.deepAnalysis && deep?.professional?.deep,id+': individual explanation in both modes');
