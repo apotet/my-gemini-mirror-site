@@ -13,9 +13,9 @@ on:
         default: '264'
         type: string
       ids:
-        description: '1-10 unique question IDs, comma-separated'
+        description: 'auto:1..40 (four IDs/batch) or 1-10 comma-separated IDs'
         required: true
-        default: 'gap-pack2-27,gap-pack3-15,stp-new-09,l4-new-05'
+        default: 'auto:1'
         type: string
       model:
         description: 'Gemini model (Gemini API quota is separate from Gemini app)'
@@ -90,6 +90,24 @@ jobs:
             }
             assert.equal(p.records[3].lesson.id+'#'+p.records[3].lesson.anchorId,'l4-tcp#udp-checksum-ipv4-ipv6');
           "
+          # Auto batches: exact 160 new review IDs in 40 stable disjoint groups of four.
+          node scripts/gemini-audit-pack.mjs subject 'auto:1' audit-pack/auto-first.json
+          node scripts/gemini-audit-pack.mjs subject 'auto:40' audit-pack/auto-last.json
+          node --input-type=module -e "
+            import assert from 'node:assert/strict';
+            import {readFileSync} from 'node:fs';
+            const first=JSON.parse(readFileSync('audit-pack/auto-first.json','utf8'));
+            const last=JSON.parse(readFileSync('audit-pack/auto-last.json','utf8'));
+            assert.deepEqual(first.ids,['gap-pack2-05','gap-pack2-10','gap-pack2-11','gap-pack2-16']);
+            assert.equal(first.ids.length,4);
+            assert.equal(last.ids.length,4);
+            assert.equal(first.sha,last.sha);
+            assert.ok(!first.ids.some(x=>last.ids.includes(x)));
+          "
+          if node scripts/gemini-audit-pack.mjs subject 'auto:41' audit-pack/invalid.json; then
+            echo 'Rejected out-of-range auto batch unexpectedly passed' >&2
+            exit 1
+          fi
 
   collect:
     name: Read exact PR SHA and pack question material (NO secrets)
