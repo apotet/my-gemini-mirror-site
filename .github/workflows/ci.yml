@@ -178,10 +178,10 @@ jobs:
             if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
             sleep 1
           done
+          node scripts/photo-viewer.browser.mjs
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
           node scripts/base-level.browser.mjs
-          node scripts/photo-viewer.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
