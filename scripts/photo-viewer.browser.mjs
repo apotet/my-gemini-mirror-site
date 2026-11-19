@@ -31,6 +31,12 @@ const within = ({i, c}, context) => {
     i.y + i.height <= c.y + c.height + 2,
     context + ': image is fully visible with no cropped edges');
 };
+const coversOverflow = ({i, c}, context) => {
+  if (i.width > c.width + 2) assert.ok(i.x <= c.x + 2 && i.x + i.width >= c.x + c.width - 2,
+    context + ': dragged image must still cover the horizontal viewer');
+  if (i.height > c.height + 2) assert.ok(i.y <= c.y + 2 && i.y + i.height >= c.y + c.height - 2,
+    context + ': dragged image must still cover the vertical viewer');
+};
 const routeImage = (width, height) =>
   '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
   '<rect width="100%" height="100%" fill="#dddddd"/>' +
@@ -131,10 +137,23 @@ try {
         const after = await image.boundingBox();
         const distance = photo.panAxis === 'y' ? Math.abs(after.y - before.y) : Math.abs(after.x - before.x);
         assert.ok(distance > 20, photo.type + ' ' + width + ': drag actually pans ' + photo.panAxis + ' axis, moved=' + distance);
+        coversOverflow(await safeRect(image,surface), photo.type + ' ' + width + ' after drag');
+        if (!mobile) {
+          // Deliberately huge pointer delta: the photo may move only as far as
+          // the real image edges. Never reveal blank space outside the image.
+          const sx = center.x + center.width / 2, sy = center.y + center.height / 2;
+          await page.mouse.move(sx,sy);
+          await page.mouse.down();
+          await page.evaluate(() => window.dispatchEvent(new MouseEvent('mousemove', {
+            clientX:50000, clientY:50000, bubbles:true,
+          })));
+          await page.mouse.up();
+          coversOverflow(await safeRect(image,surface), photo.type + ' ' + width + ' extreme drag');
+        }
 
         // 100% restores the whole image after panning; 50% persists without snapping.
         await dialog.getByRole('button', {name:'Масштаб 50%',exact:true}).click();
-        await page.waitForTimeout(80);
+        await page.waitForFunction(() => document.querySelector('button[aria-label="Масштаб 50%"]')?.getAttribute('aria-pressed') === 'true');
         within(await safeRect(image,surface), photo.type + ' at persistent 50%');
         await dialog.getByRole('button', {name:'Масштаб 100%',exact:true}).click();
         within(await safeRect(image,surface), photo.type + ' at fitted 100% after drag');
