@@ -30,7 +30,17 @@ try {
   const button=(name,root=page)=>root.getByRole('button',{name,exact:typeof name==='string'});
   await button('Посмотреть разбор последней попытки').click();
   await page.getByText(`${historical.questions.length} из ${historical.questions.length} верно`,{exact:true}).waitFor();
-  for(const q of historical.questions) {const card=page.locator('.review-question').filter({hasText:q.text});await card.locator(':scope > summary').click();for(const text of q.answers)await card.getByText(text,{exact:true}).first().waitFor();if(q.id==='wifi-std-04')await card.getByText(/Сохранены прежняя формулировка/).first().waitFor();}
+  for(const q of historical.questions) {
+    const card=page.locator('.review-question').filter({hasText:q.text});
+    await card.locator(':scope > summary').click();
+    const answerNodes=card.locator('.review-answers .review-answer-text');
+    await answerNodes.first().waitFor({state:'visible'});
+    const actualAnswers=(await answerNodes.allTextContents()).map(text=>normalize(text.replace(/^\s*\d+\.\s*(?:Правильный ответ:\s*)?/,'')));
+    assert.deepEqual(actualAnswers,q.answers.map(normalize),`${q.id}: full historical answer texts and order must survive restore`);
+    const actualCorrect=await card.locator('.review-answers .review-answer').evaluateAll(nodes=>nodes.flatMap((el,i)=>el.classList.contains('review-answer-correct')?[i]:[]));
+    assert.deepEqual(actualCorrect,q.correct,`${q.id}: historical correct indexes must survive restore`);
+    if(q.id==='wifi-std-04')await card.getByText(/Сохранены прежняя формулировка/).first().waitFor();
+  }
   await button(mobile?'Теория':'Теория и разборы').click();
   for(const q of questions) {
     const deep=getQuestionDeepDive(q),lesson=getLessonForQuestion(q.id),anchor=getLessonSectionForQuestion(lesson.id,q.id);
