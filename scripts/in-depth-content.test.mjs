@@ -49,6 +49,26 @@ for(const {id,lessonId,anchor,plainRule,proRule} of [
 assert.notEqual(m.getLessonSectionForQuestion('tcpip-encapsulation','gap-pack2-05'),
                 m.getLessonSectionForQuestion('tcpip-encapsulation','gap-pack2-10'));
 
+// Reporting only: make the real 164-question exact-section debt visible to reviewers.
+// Never convert absence of a section into an asserted independent semantic PASS.
+const exactAnchorInventory=pool.map(q=>{
+  const lesson=m.getLessonForQuestion(q.id);
+  const anchor=lesson?m.getLessonSectionForQuestion(lesson.id,q.id):undefined;
+  const plain=lesson&&anchor?m.getLessonBlocksWithSections(lesson,'plain').filter(b=>b.anchorId===anchor):[];
+  const professional=lesson&&anchor?m.getLessonBlocksWithSections(lesson,'professional').filter(b=>b.anchorId===anchor):[];
+  const issue=!lesson?'MISSING_LESSON':!anchor?'MISSING_EXACT_ANCHOR':plain.length!==1||professional.length!==1?'INVALID_CONTEXTUAL_SECTION':null;
+  return {id:q.id,lessonId:lesson?.id??null,anchor:anchor??null,issue};
+});
+const missingExact=exactAnchorInventory.filter(row=>row.issue);
+mkdirSync('scripts/.cache/in-depth',{recursive:true});
+writeFileSync('scripts/.cache/in-depth/anchor-inventory.json',
+  JSON.stringify({sha:'runtime CI checkout',total:exactAnchorInventory.length,missing:missingExact.length,rows:exactAnchorInventory},null,2)+'\n');
+console.log('IN_DEPTH_ANCHOR_INVENTORY '+JSON.stringify({
+  total:exactAnchorInventory.length,missing:missingExact.length,
+  byIssue:missingExact.reduce((a,r)=>(a[r.issue]=(a[r.issue]??0)+1,a),{}),
+  ids:missingExact.map(r=>r.id)
+}));
+
 const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
 assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
 assert.match(m.GLOSSARY.recvfrom.description,/вернуть 0/,'recvfrom glossary also keeps the zero-length result readable');
