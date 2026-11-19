@@ -8,6 +8,8 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
+assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
 // Batch-04 semantic corrections: a topic-specific practice hint, not the inherited OSI-layer slogan.
 for (const {id,rule} of [
   {id:'gap-pack3-08',rule:/UDP Checksum.*IPv6|UDP\/IPv6.*Checksum/},
