@@ -8,12 +8,8 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const [rootArg, idsArg, outputArg] = process.argv.slice(2);
-if (!rootArg || !idsArg || !outputArg) throw new Error('Usage: node gemini-audit-pack.mjs <checkout> <comma-separated-ids> <output.json>');
+if (!rootArg || !idsArg || !outputArg) throw new Error('Usage: node gemini-audit-pack.mjs <checkout> <comma-separated-ids|auto:1..40> <output.json>');
 const root = resolve(rootArg);
-const ids = idsArg.split(',').map(s => s.trim());
-if (ids.length < 1 || ids.length > 10 || new Set(ids).size !== ids.length || !ids.every(id => /^[A-Za-z0-9_-]{2,80}$/.test(id))) {
-  throw new Error('Provide 1..10 unique question IDs (letters/digits/hyphens/underscores only)');
-}
 const sha = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const esbuild = createRequire(join(root, 'package.json'))('esbuild');
 const outfile = join(root, 'scripts/.cache/gemini-audit-data.mjs');
@@ -24,6 +20,33 @@ await esbuild.build({
   loader: { '.ts': 'ts', '.tsx': 'tsx', '.json': 'json' },
 });
 const m = await import(pathToFileURL(outfile).href);
+
+// Fixed 164-question Understanding snapshot: first four are already audited at
+// this PR HEAD by Gemini API. No AI approval is inferred for the remaining IDs.
+// The deterministic queue is tied to the target checkout and cannot drift silently.
+const firstFourReviewed = new Set(['gap-pack2-27','gap-pack3-15','stp-new-09','l4-new-05']);
+const auto = /^auto:([1-9][0-9]?)$/.exec(idsArg);
+let ids;
+if (auto) {
+  const pool = m.getTestingPool('mixed','in-depth').map(q => q.id);
+  if (pool.length !== 164 || new Set(pool).size !== 164 ||
+      ![...firstFourReviewed].every(id => pool.includes(id))) {
+    throw new Error('Understanding pool changed: 164 IDs and four reviewed seed IDs must match; re-audit the queue plan');
+  }
+  const queue = pool.filter(id => !firstFourReviewed.has(id)).sort();
+  if (queue.length !== 160) throw new Error('Expected precisely 160 unaudited Understanding questions');
+  const index = Number(auto[1]);
+  if (index < 1 || index > 40) throw new Error('Auto batch must be 1..40');
+  ids = queue.slice((index - 1) * 4, index * 4);
+  if (ids.length !== 4) throw new Error('Auto batch failed to select exactly four IDs');
+} else {
+  if (idsArg.startsWith('auto:')) throw new Error('Auto batch must be auto:1 through auto:40');
+  ids = idsArg.split(',').map(s => s.trim());
+  if (ids.length < 1 || ids.length > 10 || new Set(ids).size !== ids.length ||
+      !ids.every(id => /^[A-Za-z0-9_-]{2,80}$/.test(id))) {
+    throw new Error('Provide 1..10 unique question IDs (letters/digits/hyphens/underscores only)');
+  }
+}
 const bank = new Map(m.ALL_QUESTIONS.map(q => [q.id, q]));
 const groupSources = ['group1.ts','group2.ts','group3.ts','group4.ts','group5.ts'].map(name => ({
   path: 'src/data/inDepth/' + name,
