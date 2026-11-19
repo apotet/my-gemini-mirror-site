@@ -59,6 +59,36 @@ for (const {id,prohibited} of [
   }
 }
 
+// ChatGPT source audit, Gemini batch3 unavailable (Google 503/headers timeout):
+// keys, exact lesson anchors, and readable port/protocol/OSI notation for ten questions.
+for (const [id,key,lessonId,anchorId,badText] of [
+  ['gen-transport-1',1,'l4-service-ports','in-depth-http2-http3-port443',/TCP\/ 443|UDP\/ 443|TLS1\.3|обычно443/],
+  ['gen-transport-14',2,'l7-monitoring-snmp-syslog','in-depth-snmp-trap-inform-roles',/на161/],
+  ['gen-transport-16',0,'l4-directory-remote-industrial-ports','in-depth-rdp-udp-fallback',/TCP\/ 3389|UDP\/ 3389|на3389/],
+  ['gen-transport-17',1,'l4-directory-remote-industrial-ports','in-depth-modbus-mbap-vs-rtu',/серверному502|клиентский502|порту502|равен0|TCP\/ 502/],
+  ['gen-transport-5',1,'l7-mail-mx','in-depth-smtp-mx-delivery-port25',/серверA|принимающемуB|на25|Порты587|и465|кsubmission|destination25|обычным587\/465|поMX/],
+  ['gen-transport-7',1,'l7-dhcp','in-depth-dhcp-init-and-apipa',/DHCPDISCOVER0\.0\.0\.0|выбрать169\.254/],
+  ['k-01',1,'tcpip-model','in-depth-application-protocol-semantics',/Согласно условию k-01/],
+  ['k-02',2,'tcpip-encapsulation','in-depth-tcp-ip-encapsulation-boundary',/Согласно условию k-02/],
+  ['k-03',0,'l4-tcp','in-depth-tcp-byte-stream-service',/иWi-Fi/],
+  ['k-04',3,'osi-session-presentation','in-depth-l6-identical-bytes-encoding',/представленияL6|модульL6/]
+]) {
+  const q=pool.find(x=>x.id===id);
+  assert.ok(q,id+': exact registered Understanding question exists');
+  assert.deepEqual(q.correct,[key],id+': unique expected answer key');
+  const lesson=m.getLessonForQuestion(id);
+  assert.equal(lesson?.id,lessonId,id+': exact lesson id');
+  assert.equal(m.getLessonSectionForQuestion(lesson.id,id),anchorId,id+': exact lesson section anchor');
+  for(const mode of ['plain','professional']) {
+    const section=m.getLessonBlocksWithSections(lesson,mode).find(x=>x.anchorId===anchorId);
+    assert.ok(section?.body?.trim(),id+'/'+mode+': actual lesson content');
+    assert.doesNotMatch(section.heading+' '+section.body,badText,id+'/'+mode+': no damaged learners' typography');
+  }
+  const deep=m.getQuestionDeepDive(q);
+  assert.ok(deep?.briefAnswer && deep?.deepAnalysis && deep?.professional?.deep,id+': individual explanation in both modes');
+  assert.doesNotMatch(deep.deepAnalysis+' '+deep.professional.deep,badText,id+': no glued protocol/numeric tokens in deep dive');
+}
+
 // Four audited structural gaps: route to an exact contextual subsection, not lesson top.
 for(const {id,lessonId,anchor,plainRule,proRule} of [
   {id:'gap-pack2-05',lessonId:'tcpip-encapsulation',anchor:'in-depth-fcs-ipv4-header-payload-scope',plainRule:/новую корректную FCS/,proRule:/Контрольная сумма заголовка IPv4|IPv4 payload/},
