@@ -22,15 +22,28 @@ const reconstructed=m.ALL_QUESTIONS.map(q=>m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id]?{
 assert.equal(hash(reconstructed),baseline.bankSHA256,'Only four reviewed distractors and one corrected Wi-Fi option changed; stems, keys, order and all other records preserved');
 assert.equal(new Set(m.IN_DEPTH_IDS).size,164);assert.equal(m.IN_DEPTH_IDS.length,164);assert.deepEqual([...m.IN_DEPTH_IDS].sort(),assignedIds,'Every ID has exactly one repair/review batch');
 for(const batch of m.IN_DEPTH_BATCHES) {assert.ok(batch.questionIds.length>0&&batch.questionIds.length<=20,`Small batch ${batch.id}`);}
+const approvedMainDrift=JSON.parse(readFileSync('docs/audits/in-depth/approved-main-outside-drift.json','utf8'));
+assert.equal(approvedMainDrift.approvedMainCommit,'ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f','Pinned current-main baseline');
+const expectedDriftIds=approvedMainDrift.reasons.flatMap(reason=>reason.ids);
+assert.deepEqual(new Set(expectedDriftIds).size,14,'Exactly twelve approved Applied and two photo fixes');
+const expectedDrift=new Map(approvedMainDrift.changes.map(item=>[item.id,item]));
+assert.deepEqual([...expectedDrift.keys()].sort(),[...expectedDriftIds].sort(),'No undocumented pre-existing main changes');
 const historicalOutsideDrift=[];
 for(const q of m.ALL_QUESTIONS.filter(q=>!assignedIds.includes(q.id))) {
   const dive=m.getQuestionDeepDive(q);
   const actual=hash(dive);
-  if(actual!==baseline.outsideLevelDeep[q.id]) historicalOutsideDrift.push({id:q.id,previous:baseline.outsideLevelDeep[q.id],current:actual});
+  const originalSnapshot=baseline.outsideLevelDeep[q.id];
+  const expected=expectedDrift.get(q.id);
+  assert.strictEqual(m.applyInDepthExplanation(q.id,dive,q),dive,`${q.id}: patch must preserve the identical object outside Understanding`);
+  if(expected) {
+    assert.equal(originalSnapshot,expected.previous,`${q.id}: provenance still matches frozen original Codex snapshot`);
+    assert.equal(actual,expected.current,`${q.id}: post-#254/#258 approved main result changed unexpectedly`);
+    historicalOutsideDrift.push(q.id);
+  } else {
+    assert.equal(actual,originalSnapshot,`${q.id}: unrelated levels must not regress`);
+  }
 }
-mkdirSync('scripts/.cache/in-depth',{recursive:true});
-writeFileSync('scripts/.cache/in-depth/previous-main-drift.json',JSON.stringify({currentMain:'ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f',mismatches:historicalOutsideDrift},null,2)+'\n');
-assert.deepEqual(historicalOutsideDrift,[],'Historical Codex snapshot differs from current main; examine every changed ID before re-baselining');
+assert.deepEqual(historicalOutsideDrift.sort(),[...expectedDrift.keys()].sort(),'No more out-of-level drifts than #254/#258');
 for(const id of Object.keys(m.IN_DEPTH_PATCHES))assert.ok(assignedIds.includes(id),`No content patches outside L2 ${id}`);
 for(const id of Object.keys(m.IN_DEPTH_LESSON_LINKS))assert.ok(assignedIds.includes(id),`No links outside L2 ${id}`);
 const rows=[];

@@ -1,0 +1,106 @@
+{
+  "baselineCommit": "8134b34657b167fc2fe0f78f739d17c90f1693cd",
+  "approvedMainCommit": "ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f",
+  "reasons": [
+    {
+      "pr": 254,
+      "commit": "87ee0cef76f9edb104b116ceb7689ec818041545",
+      "ids": [
+        "gen-transport-0",
+        "gen-transport-2",
+        "gen-transport-3",
+        "gen-transport-4",
+        "gen-port-9",
+        "gen-transport-9",
+        "gen-transport-10",
+        "gen-transport-11",
+        "gen-transport-12",
+        "gen-port-13",
+        "gen-transport-13",
+        "gen-transport-15"
+      ],
+      "note": "Applied (Application) session pro explanations adopted in main after Codex baseline"
+    },
+    {
+      "pr": 258,
+      "commit": "0111caefebc40727dd10d8ead8a9e123b859d69f",
+      "ids": [
+        "l1v2-a-poe-limit",
+        "l1v2-c-otdr-pulse"
+      ],
+      "note": "Independent photo explanation correction in Fundamentals"
+    }
+  ],
+  "changes": [
+    {
+      "id": "gen-transport-0",
+      "previous": "e0d44ccf3b80aeaab826131cf43fdec55c4b856069a19968ccffefd7db836499",
+      "current": "5f5f0b96dca3fb238cf726a8efedc2e62fdc4ce159de1ade59d636197027ba9d"
+    },
+    {
+      "id": "gen-transport-2",
+      "previous": "05ef7b2866290e2b8efcbc990bfee3a260dfa4e1f910998cb7e83dd967e9abba",
+      "current": "86bafb206f81d2c0ae101c21f0903e4920562e365ff40864b4fb1d5b28edcd4f"
+    },
+    {
+      "id": "gen-transport-3",
+      "previous": "b06ddca8c2bd5714be26ab3134c4d5f65fa5e51856caa51f1270a63911ca0d7a",
+      "current": "6dc4482a54f925c0b6a20b7227479fe1af84de47d87795132698d18e513cba25"
+    },
+    {
+      "id": "gen-transport-4",
+      "previous": "56ee5650057e1797c6dad68ae05d99145d9f1755924500ae313d23752ec6e387",
+      "current": "f3c0b8f0b9099120c6396add433b7e5db4fd9fc0d374711c9d6f23fd7235b75b"
+    },
+    {
+      "id": "gen-port-9",
+      "previous": "03fd618251a09c562c65ab7669c489a52604c07c978aff5ccc2b2a97b29d1612",
+      "current": "1c2ea0ba660648000fb7d493adbd23395dd90b201d511f424492772b79add766"
+    },
+    {
+      "id": "gen-transport-9",
+      "previous": "c9208430476ca331012b8522db0e1e1c4eeb46b9d7e3bdd0e1b891de3bcd9f4c",
+      "current": "f9f7488915d45229b76d4f2d990ebb3ee4e44289a4eb68529d2ecc98af66742f"
+    },
+    {
+      "id": "gen-transport-10",
+      "previous": "2e9a15460ccc86c0d02017e037919d59090b1ccbd04bd4a38fb6bd6f2cc3671a",
+      "current": "109e844d9862fbef6961179ccf95b6825c8f13b6427e3decb21c3788fc19a46b"
+    },
+    {
+      "id": "gen-transport-11",
+      "previous": "9c024b492fbc7b94dba40e4a0714bdafec55d944da0222f0d9bdefe84480b9e6",
+      "current": "83facae37aab7719c3fa864abed74ff257f3e8df77a2f0a99473f78e2be7621e"
+    },
+    {
+      "id": "gen-transport-12",
+      "previous": "8b517204a96afc783a49bbb25b8b18087116fad822ff6999c0aefca00b443c7c",
+      "current": "b1c9533e339b1f8953c941c55d93584b59615752583498d93a07117a41186189"
+    },
+    {
+      "id": "gen-port-13",
+      "previous": "7249e294a8d8755391ea4a9a8144dd35ec519c2ee4c0e83a4fb13237361a9e99",
+      "current": "d1b1ec8deb4b5d2db611a97fb695797cdbce222bbf5c5ff01630fc7b18d281c6"
+    },
+    {
+      "id": "gen-transport-13",
+      "previous": "bc66f94f38d46484200a36e6edf9ff2b1e77d4e238379a7aa435505ce4ce07cc",
+      "current": "712b61f07d0ff2fa893970d3592b2ea383f87bd7d6f0127c7d05b49610241ac5"
+    },
+    {
+      "id": "gen-transport-15",
+      "previous": "1c5f94de3b99543282da24e2faf4103366d1a6abc68c9afb10ea4caaf1811d70",
+      "current": "e6fc6b1687d1db2cff8c73dd9a902d023878e7774317802f5c7466332b445f9d"
+    },
+    {
+      "id": "l1v2-a-poe-limit",
+      "previous": "2116081ae21ee57669b4a06bbdc7fe0ff140abf0a6b9f2c4c75a65ba0348991b",
+      "current": "eefecac2df3b68549afcd28ad784ac5ceb2fe80d5c939250a7421a0122b5c10e"
+    },
+    {
+      "id": "l1v2-c-otdr-pulse",
+      "previous": "e1b2f8eb0ae5ed15b223bb439b01baf3da857eb7fada8431a9f0ab726f91e802",
+      "current": "657d58a7f570eb9ed07b7349a5b6e377f5c74259aba73d3b085aade56ef7c47d"
+    }
+  ]
+}
