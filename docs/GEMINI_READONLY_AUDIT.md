@@ -29,6 +29,8 @@ This workflow only becomes manually runnable after it is present on staging **de
 
 ## Limits and costs
 
+**Free-tier quota on iPhone:** Google AI Studio → Rate limits → select the `Default Gemini Project` → expand `See more` and select the **exact Gemini 4 Hydrogen model**. The displayed 60 RPM / 100,000 TPM / 100 RPD screenshot was for **Antigravity (Agents)**, not Hydrogen. Never infer Hydrogen's available daily requests from another model's rate-limit card. Rate limits and availability are project- and model-specific; daily requests reset on Google's applicable daily boundary.
+
 The API key may require project setup, eligibility, free-tier availability or billing. The workflow does **not** use the Gemini mobile app's Premium quota/counter. Use the dry-run default to validate source selection at zero API spend, then begin with four IDs and `gemini-4-hydrogen`. The workflow reports input/output token usage when the API provides it.
 
 ## Prohibited assumptions
