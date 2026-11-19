@@ -59,7 +59,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     "anchorId": "in-depth-existing-new-ts-vlan",
     "afterHeading": {
       "plain": "Куда дойдёт сообщение для всех и кто ответит за шлюз",
-      "professional": "Миграция: сначала L2-домен, затем SVI и ACL"
+      "professional": "Access и trunk"
     }
   },
   {
@@ -173,7 +173,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     }
   },
   {
-    "lessonId": "l4-load-balancing",
+    "lessonId": "l4-lb",
     "questionIds": [
       "l4-lb-01"
     ],
