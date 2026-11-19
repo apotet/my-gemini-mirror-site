@@ -71,6 +71,25 @@ const SECTION_LINKS: readonly SectionLink[] = [
       "body": "При обычной IPv4-пересылке без NAT и прикладных прокси маршрутизатор сохраняет конечные src/dst IP и TCP/UDP destination port, но уменьшает IPv4 TTL (и обновляет контрольную сумму IPv4-заголовка). Исходный Ethernet-кадр при маршрутизации снимается, на исходящий интерфейс формируется новый L2-заголовок с MAC следующего перехода.\n\nОтдельно учитывай границы условия: NAT/PAT способен менять адреса или порты, прокси создаёт новый сеанс, а туннель добавляет внешний пакет. Даже без NAT TCP/UDP checksum может перепроверяться на концах; не смешивай сквозную идентичность полей с гарантией доставки."
     }
   },
+  {
+    "lessonId": "l7-monitoring-snmp-syslog",
+    "questionIds": [
+      "mon-syslog-05"
+    ],
+    "anchorId": "in-depth-syslog-monitor-vty",
+    "afterHeading": {
+      "plain": "Куда пишутся логи на устройстве и как защититься от шторма",
+      "professional": "Архитектура Syslog: PRI, пороги и выбор транспорта"
+    },
+    "plain": {
+      "heading": "Буфер show logging и живые события в SSH — разные каналы",
+      "body": "Команда show logging читает сохранённые записи из локального буфера. Это не доказывает, что события автоматически выводятся в открытую SSH-сессию. Для живого потока нужны разрешённый уровень logging monitor и команда terminal monitor именно в этой терминальной сессии.\n\nlogging console отвечает за физический консольный порт, а logging buffered — за хранение в памяти. Не включай debugging на консоли без нужды: интенсивный вывод может ухудшить работу устройства."
+    },
+    "professional": {
+      "heading": "Cisco IOS: logging buffered, logging monitor, terminal monitor и console",
+      "body": "В Cisco IOS направления журналирования разделены: buffered (циклический RAM-буфер, доступный через show logging), console (физическая консоль), monitor (удалённая VTY-сессия) и host (внешний syslog). Новые записи в show logging подтверждают локальное сохранение, но не включение live-вывода в текущем SSH terminal.\n\nДля VTY нужен соответствующий severity threshold logging monitor и команда terminal monitor в самой сессии. Команда terminal no monitor отключает такой вывод. logging console debugging не направляет сообщения во все SSH-окна и при большом потоке способен нагружать устройство. Сопоставь show logging, running-config logging monitor и состояние своей VTY-сессии, затем проверь на безопасном тестовом событии."
+    }
+  },
   ...IN_DEPTH_SECTIONS,
 ];
 
