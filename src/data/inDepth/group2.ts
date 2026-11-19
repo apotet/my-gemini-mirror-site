@@ -587,7 +587,7 @@ export const GROUP2_SECTIONS: SectionLink[] = [
     },
     "professional": {
       "heading": "UDP checksum: ноль в IPv4 и IPv6 означает не одно и то же",
-      "body": "RFC 768 кодирует отсутствие UDP/IPv4 checksum нулём; вычисленный нулевой результат передаётся как0xFFFF. Обычный UDP/IPv6 по RFC 8200 §8.1 использует обязательную checksum с pseudo-header и отбрасывает zero-checksum packets; исключения RFC 6935/6936 относятся к специально ограниченным tunnel-сценариям.\n\nIPv6 не имеет header checksum, и это не делает UDP integrity optional. Отличайте checksum-offload artifact в host capture от поля на проводе после NIC. Checksum не является криптографической аутентификацией, подтверждением доставки или порядком данных."
+      "body": "RFC 768 кодирует отсутствие UDP/IPv4 checksum нулём; вычисленный нулевой результат передаётся как 0xFFFF. Обычный UDP/IPv6 по RFC 8200 §8.1 использует обязательную checksum с pseudo-header и отбрасывает zero-checksum packets; исключения RFC 6935/6936 относятся к специально ограниченным tunnel-сценариям.\n\nIPv6 не имеет header checksum, и это не делает UDP integrity optional. Отличайте checksum-offload artifact в host capture от поля на проводе после NIC. Checksum не является криптографической аутентификацией, подтверждением доставки или порядком данных."
     }
   },
   {
