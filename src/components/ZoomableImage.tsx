@@ -270,6 +270,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
 
           <div
             ref={containerRef}
+            data-photo-viewer-pan
             className="relative flex-1 overflow-hidden touch-none select-none cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' }}
             onTouchStart={onTouchStart}
@@ -304,6 +305,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
           >
             <img
               ref={imageRef}
+              data-photo-viewer-image
               src={src}
               alt={alt}
               draggable={false}
