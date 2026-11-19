@@ -100,6 +100,8 @@ jobs:
             const last=JSON.parse(readFileSync('audit-pack/auto-last.json','utf8'));
             assert.deepEqual(first.ids,['gap-pack2-05','gap-pack2-10','gap-pack2-11','gap-pack2-16']);
             assert.equal(first.ids.length,4);
+            assert.ok(first.records[0].lesson.coverageIssues.includes('MISSING_EXACT_ANCHOR'),'gap-pack2-05 must expose missing exact lesson anchor, not invent one');
+            assert.equal(first.records[0].lesson.anchorId,null);
             assert.equal(last.ids.length,4);
             assert.equal(first.sha,last.sha);
             assert.ok(!first.ids.some(x=>last.ids.includes(x)));
