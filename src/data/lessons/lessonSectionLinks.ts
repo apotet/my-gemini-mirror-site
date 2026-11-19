@@ -1,4 +1,5 @@
 import { IN_DEPTH_SECTIONS } from '../inDepth';
+import { EXISTING_HEADING_LINKS } from './existingUnderstandingHeadings';
 import type { Lesson, LessonBlock } from './types';
 
 /** Explicit links from a reviewed question to the relevant paragraph inside an existing lesson.
@@ -79,7 +80,8 @@ export interface AnchoredLessonBlock extends LessonBlock {
 
 export function getLessonSectionForQuestion(lessonId: string, questionId: string | null | undefined): string | undefined {
   if (!questionId) return undefined;
-  return SECTION_LINKS.find(item => item.lessonId === lessonId && item.questionIds.includes(questionId))?.anchorId;
+  return SECTION_LINKS.find(item => item.lessonId === lessonId && item.questionIds.includes(questionId))?.anchorId
+    ?? EXISTING_HEADING_LINKS.find(item => item.lessonId === lessonId && item.questionIds.includes(questionId))?.anchorId;
 }
 
 /** Add concise sections to already-authored lessons without cloning entire protected lesson files.
@@ -87,7 +89,13 @@ export function getLessonSectionForQuestion(lessonId: string, questionId: string
  */
 export function getLessonBlocksWithSections(lesson: Lesson, mode: 'plain' | 'professional'): AnchoredLessonBlock[] {
   const base = mode === 'professional' && lesson.professional ? lesson.professional.blocks : lesson.blocks;
-  const result: AnchoredLessonBlock[] = [...base];
+  // Stable target on an existing authored paragraph, without duplicating the lesson.
+  const result: AnchoredLessonBlock[] = base.map(block => {
+    const targets = EXISTING_HEADING_LINKS.filter(item =>
+      item.lessonId === lesson.id && item.afterHeading[mode] === block.heading);
+    if (targets.length > 1) throw new Error('Conflicting direct anchors: '+lesson.id+'/'+block.heading);
+    return targets.length === 1 ? {...block,anchorId:targets[0].anchorId} : {...block};
+  });
   for (const section of SECTION_LINKS.filter(item => item.lessonId === lesson.id)) {
     const heading = mode === 'professional' ? section.afterHeading.professional : section.afterHeading.plain;
     let index = result.findIndex(block => block.heading === heading);
@@ -104,4 +112,7 @@ export function getLessonBlocksWithSections(lesson: Lesson, mode: 'plain' | 'pro
   return result;
 }
 
-export const QUESTION_SECTION_LINKS = SECTION_LINKS.map(({lessonId,questionIds,anchorId,afterHeading}) => ({lessonId,questionIds,anchorId,afterHeading}));
+export const QUESTION_SECTION_LINKS = [
+  ...SECTION_LINKS.map(({lessonId,questionIds,anchorId,afterHeading}) => ({lessonId,questionIds,anchorId,afterHeading})),
+  ...EXISTING_HEADING_LINKS,
+];
