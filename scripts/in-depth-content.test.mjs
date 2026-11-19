@@ -69,6 +69,27 @@ console.log('IN_DEPTH_ANCHOR_INVENTORY '+JSON.stringify({
   ids:missingExact.map(r=>r.id)
 }));
 
+assert.equal(missingExact.length,0,'Every Understanding ticket needs an exact topical lesson paragraph in both reading modes');
+for(const id of ['l2-04','l3-16','l7-05','new-tcpip-router','new-ts-vlan','new-ts-dns',
+ 'review-dot1x-20','review-ospf-27','l1v2-b-transfer','l1v2-c-bidi-wrong-pair',
+ 'l2-sec-05','l2-sec-08','l2-sec-13','l2-sec-18','l3-bgp-06','l4-lb-01',
+ 'l12-x02','l12-d05','l4-d04','l57-d02','l3-vrrp02','l3-vrrp04',
+ 'l12-copp01','l12-storm01','mon-snmp-01','mon-syslog-01','mon-syslog-05','mon-zabbix-01']) {
+  const lesson=m.getLessonForQuestion(id);
+  const anchor=m.getLessonSectionForQuestion(lesson.id,id);
+  assert.ok(anchor,id+': section anchor');
+  for(const mode of ['plain','professional']) {
+    const matches=m.getLessonBlocksWithSections(lesson,mode).filter(b=>b.anchorId===anchor);
+    assert.equal(matches.length,1,id+'/'+mode+': exactly one real paragraph');
+    assert.ok(matches[0].body?.trim().length>80,id+'/'+mode+': meaningful authored lesson text');
+  }
+}
+for(const mode of ['plain','professional']){
+  const lesson=m.getLessonForQuestion('mon-syslog-05');
+  const block=m.getLessonBlocksWithSections(lesson,mode).find(b=>b.anchorId==='in-depth-syslog-monitor-vty');
+  assert.match(block.body,/terminal monitor/,'Syslog VTY must explain exact missing CLI toggle');
+}
+
 const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
 assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
 assert.match(m.GLOSSARY.recvfrom.description,/вернуть 0/,'recvfrom glossary also keeps the zero-length result readable');
