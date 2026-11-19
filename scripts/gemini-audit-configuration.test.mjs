@@ -13,7 +13,7 @@ const pack={
   records:[{id:'l4-new-05',materialHash:'b'.repeat(64),
     question:{text:'UDP checksum 0?',answers:['A','B','C','D'],correct:[1]},
     explanation:{brief:'Because IPv6 requires it',plain:'...',professional:'...'},
-    lesson:{id:'l4-tcp',anchorId:'udp-checksum-ipv4-ipv6',
+    lesson:{id:'l4-tcp',anchorId:'udp-checksum-ipv4-ipv6',coverageIssues:[],
       sections:{plain:{body:'Plain lesson'},professional:{body:'Professional lesson'}}}}]
 };
 writeFileSync(packPath,JSON.stringify(pack),'utf8');
@@ -56,4 +56,14 @@ assert.equal(data.model,'gemini-4-hydrogen');
 assert.equal(data.reviews.length,1);
 assert.equal(data.reviews[0].status,'REVIEW','Wrong anchor cannot be PASS');
 assert.match(readFileSync(reportPath,'utf8'),/read-only, advisory/);
-console.log('Gemini model and sanitized 404 / no-secret / wrong-anchor guard: PASS');
+// Missing exact lesson anchor MUST be classified as FIX even if Gemini claims PASS.
+pack.records[0].lesson.anchorId=null;
+pack.records[0].lesson.coverageIssues=['MISSING_EXACT_ANCHOR'];
+pack.records[0].lesson.sections={plain:null,professional:null};
+writeFileSync(packPath,JSON.stringify(pack),'utf8');
+const absent=run('success');
+assert.equal(absent.status,0,absent.stderr);
+const missingReview=JSON.parse(readFileSync(jsonPath,'utf8')).reviews[0];
+assert.equal(missingReview.status,'FIX','Missing source material overrides any AI PASS');
+assert.match(missingReview.issues.join(' '),/MISSING_EXACT_ANCHOR/);
+console.log('Gemini API mock: key safety, 404, wrong anchor, missing source => FIX: PASS');
