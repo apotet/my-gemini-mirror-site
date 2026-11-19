@@ -1,0 +1,135 @@
+name: One-shot Gemini 10-ID review PR 264 (staging only)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-audit-ten-pr264.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ten-question-audit:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'audit/gemini-pr264-ten-once-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Pin and verify PR 264 current source SHA (before Gemini)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'PR 264 SHA has drifted; abort before consuming API'; exit 1; }
+
+      - name: Checkout trusted audit tools from staging main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout frozen Understanding content from PR 264
+        uses: actions/checkout@v4
+        with:
+          ref: c7ca35f7c747f93f827089bc97464c4d965c6834
+          path: subject
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install bundler without executing package lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Export exactly 10 questions and both lesson styles
+        run: |
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gap-pack2-05,gap-pack2-10,gap-pack2-11,gap-pack2-16,gap-pack2-21,gap-pack3-08,gap-pack3-12,gen-diag-0,gen-diag-10,gen-diag-13' audit-pack/ten.json
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const p=JSON.parse(readFileSync('audit-pack/ten.json','utf8'));
+          const expected=["gap-pack2-05","gap-pack2-10","gap-pack2-11","gap-pack2-16","gap-pack2-21","gap-pack3-08","gap-pack3-12","gen-diag-0","gen-diag-10","gen-diag-13"];
+          assert.equal(p.sha,'c7ca35f7c747f93f827089bc97464c4d965c6834');
+          assert.deepEqual(p.ids,expected);
+          assert.equal(p.records.length,10);
+          assert.ok(p.records.every((r,i) => r.id===expected[i] &&
+            typeof r.materialHash==='string' && r.materialHash.length===64 &&
+            r.explanation?.plain && r.explanation?.professional &&
+            Array.isArray(r.lesson?.coverageIssues)));
+          console.log('Frozen 10 independent records at SHA',p.sha);
+          NODE
+
+      - name: Extend only runner-local trusted reviewer limits for a 10-question response
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync, writeFileSync} from 'node:fs';
+          const path='trusted/scripts/gemini-audit-review.mjs';
+          const original=readFileSync(path,'utf8');
+          if (!original.includes('AbortSignal.timeout(160000)') ||
+              !original.includes('maxOutputTokens:8192')) {
+            throw new Error('Trusted reviewer has changed: require fresh inspection, no API call');
+          }
+          const patched=original
+            .replace('AbortSignal.timeout(160000)','AbortSignal.timeout(420000)')
+            .replace('maxOutputTokens:8192','maxOutputTokens:16384');
+          writeFileSync('trusted/scripts/gemini-audit-review-10.mjs',patched);
+          console.log('Trusted reviewer copied. Only timeout (420s) and response token cap (16384) altered.');
+          NODE
+
+      - name: ONE Gemini API call reviewing all ten questions (NO RETRIES)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-4-hydrogen
+        run: |
+          test -n "$GEMINI_API_KEY" || { echo 'No secret; no API call'; exit 1; }
+          node trusted/scripts/gemini-audit-review-10.mjs audit-pack/ten.json audit-output/ten.md audit-output/ten.json
+
+      - name: Check response cardinality and SHA before reporting
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const p=JSON.parse(readFileSync('audit-output/ten.json','utf8'));
+          const ids=["gap-pack2-05","gap-pack2-10","gap-pack2-11","gap-pack2-16","gap-pack2-21","gap-pack3-08","gap-pack3-12","gen-diag-0","gen-diag-10","gen-diag-13"];
+          assert.equal(p.sha,'c7ca35f7c747f93f827089bc97464c4d965c6834');
+          assert.equal(p.reviews.length,10);
+          assert.deepEqual(p.reviews.map(r=>r.id),ids);
+          assert.ok(p.reviews.every(r=>['PASS','FIX','REVIEW'].includes(r.status)));
+          console.log('Gemini returned exactly 10 per-ID structured review records');
+          NODE
+
+      - name: Refuse to post stale report if PR 264 moved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'PR changed; do not post stale status'; exit 1; }
+
+      - name: Write advisory evidence to PR 264, never approve or merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment 264 --repo "$GITHUB_REPOSITORY" --body-file audit-output/ten.md
+          cat audit-output/ten.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain frozen input and output if any step fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-pr264-10-questions-once
+          path: |
+            audit-pack/
+            audit-output/
+          if-no-files-found: ignore
+          retention-days: 7
