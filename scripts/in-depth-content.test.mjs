@@ -33,6 +33,32 @@ const persistTip=m.getQuestionDeepDive(persistQuestion)?.practicalTip;
 assert.match(persistTip,/TCP Window=0.*zero-window probes/,'TCP persist tip distinguishes zero window and probes');
 assert.doesNotMatch(persistTip,/window0|ss listener|gap-pack2-21/i,'No glued tokens, internal IDs or irrelevant ss listener in learner tip');
 
+// Gemini 10-ID batch 2: no generic OSI-layer fallback in ARP collision or cached gateway advice.
+for (const {id,rule} of [
+  {id:'gen-diag-6',rule:/ARP-ответы.*Source MAC.*DHCP-аренды/},
+  {id:'gen-diag-9',rule:/ARP-записи шлюза.*маршрут/},
+]) {
+  const question=pool.find(item=>item.id===id);
+  assert.ok(question,id+': Understanding pool membership');
+  const tip=m.getQuestionDeepDive(question)?.practicalTip;
+  assert.match(tip,rule,id+': question-specific actionable practical tip');
+  assert.doesNotMatch(tip,/Сначала линк \(L1\/L2\), затем маршруты и DNS\./,id+': no mismatched inherited fallback');
+}
+// Both lesson reading modes must keep machine-relevant numbers visually separated from words.
+for (const {id,prohibited} of [
+  {id:'gen-diag-7',prohibited:/IPv4-источник0\.0\.0\.0|назначение255\.255\.255\.255|выбрать169\.254|DHCPDISCOVER0\.0\.0\.0|диапазон169\.254/},
+  {id:'gen-osi-a-2',prohibited:/диапазон0,7|номинальный1/},
+  {id:'gen-port-14',prohibited:/наUDP162|port162/},
+]) {
+  const lesson=m.getLessonForQuestion(id), anchor=lesson&&m.getLessonSectionForQuestion(lesson.id,id);
+  assert.ok(lesson&&anchor,id+': contextual lesson anchor present');
+  for (const mode of ['plain','professional']) {
+    const section=m.getLessonBlocksWithSections(lesson,mode).find(block=>block.anchorId===anchor);
+    assert.ok(section?.body,id+'/'+mode+': actual contextual section text exists');
+    assert.doesNotMatch(section.heading+' '+section.body,prohibited,id+'/'+mode+': no glued words and numeric/port values');
+  }
+}
+
 // Four audited structural gaps: route to an exact contextual subsection, not lesson top.
 for(const {id,lessonId,anchor,plainRule,proRule} of [
   {id:'gap-pack2-05',lessonId:'tcpip-encapsulation',anchor:'in-depth-fcs-ipv4-header-payload-scope',plainRule:/новую корректную FCS/,proRule:/Контрольная сумма заголовка IPv4|IPv4 payload/},
