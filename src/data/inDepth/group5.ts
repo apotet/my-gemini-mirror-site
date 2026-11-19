@@ -141,5 +141,85 @@ export const GROUP5_TERMS: Record<string, InDepthTermPatch> = {
     relatesTo: "TCP, SACK Permitted, cumulative ACK и восстановление потерь; RFC 2018 / RFC 6675.",
     abbreviation: false,
     lessonId: "l4-tcp-sack"
+  },
+  "SACK-permitted": {
+    english: "SACK-Permitted",
+    russian: "Согласие использовать выборочные подтверждения TCP",
+    description: "Опция TCP SACK-Permitted в SYN объявляет готовность получать SACK-блоки в дальнейших сегментах; наличие опции не подтверждает доставку данных.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "SACK-Permitted": {
+    english: "SACK-Permitted TCP option",
+    russian: "Опция согласования выборочного подтверждения TCP",
+    description: "Во время TCP handshake опция SACK-Permitted сообщает поддерживаемую возможность SACK; далее при потерях получатель может передавать SACK blocks.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "sequence number": {
+    english: "TCP sequence number",
+    russian: "Номер байта в потоке TCP",
+    description: "Поле TCP Sequence Number задаёт номер первого байта данных в сегменте; SYN и FIN расходуют одну позицию в пространстве последовательности.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "ретрансляция": {
+    english: "TCP retransmission",
+    russian: "Повторная передача данных TCP",
+    description: "Отправитель повторно посылает байтовый диапазон, если по подтверждениям или таймеру считает его потерянным. Повтор не означает новое приложение или новую сессию.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "Left Edge": {
+    english: "SACK Left Edge",
+    russian: "Левая граница принятого SACK-блока",
+    description: "В TCP SACK block это включённая начальная граница полученного интервала Sequence Number, находящегося за пробелом cumulative ACK.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "Right Edge": {
+    english: "SACK Right Edge",
+    russian: "Правая граница принятого SACK-блока",
+    description: "Правая граница интервала SACK исключается из диапазона; разность Right Edge и Left Edge определяет количество подтверждённых байтов блока.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "RFC 2018": {
+    english: "RFC 2018: TCP Selective Acknowledgment Options",
+    russian: "Документ, определяющий опции TCP SACK",
+    description: "RFC 2018 описывает согласование SACK-Permitted и представление полученных интервалов SACK blocks в TCP ACK.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "SACK blocks": {
+    english: "TCP SACK blocks",
+    russian: "Блоки выборочного подтверждения TCP",
+    description: "Диапазоны байтов TCP, уже принятых вне непрерывной последовательности, передаются в TCP SACK option, помогая отправителю не повторять доставленное.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "cumulative ACK": {
+    english: "TCP cumulative acknowledgement",
+    russian: "Накопительное подтверждение TCP",
+    description: "Номер ACK означает следующий ожидаемый байт непрерывно полученного потока; принятые интервалы за пробелом могут быть отмечены SACK, не продвигая cumulative ACK.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  },
+  "retransmission": {
+    english: "TCP retransmission",
+    russian: "Ретрансляция TCP",
+    description: "Повторная отправка прежних байтов TCP после оценки потери по RTO, duplicate ACK/SACK или другому алгоритму восстановления.",
+    relatesTo: "TCP SACK, восстановление потерь, RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
   }
 };
