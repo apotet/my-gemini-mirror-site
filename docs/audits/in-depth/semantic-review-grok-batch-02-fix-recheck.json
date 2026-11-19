@@ -1,0 +1,28 @@
+{
+  "batch": "02-fix-recheck",
+  "sha": "4b505c72d75e53317b5d515f23a13f850eaa5c3e",
+  "reviewer": "Grok (independent recheck)",
+  "date": "2026-11-19",
+  "entries": [
+    {
+      "id": "review-slaac-4",
+      "finalStatus": "PASS",
+      "finalReason": "Anchor now points to SLAAC address formation via RA Prefix Information (A=1, /64, IID, lifetimes, DAD). Not a standalone NS definition. Both styles present and technically accurate.",
+      "criteria": {
+        "lesson": "PASS",
+        "pro": "PASS"
+      },
+      "evidence": "group3.ts professional.body for review-slaac-4 describes RA PIO 2001:db8:120::/64, A=1, autonomous configuration, DAD via NS as a check, not as the address source."
+    },
+    {
+      "id": "review-qos-22",
+      "finalStatus": "PASS",
+      "finalReason": "Anchor now points to DSCP classification and egress queue scheduling. Explicitly states ECN/CE is a separate mechanism and not the answer. Both styles present.",
+      "criteria": {
+        "lesson": "PASS",
+        "pro": "PASS"
+      },
+      "evidence": "group3.ts professional.body for review-qos-22: DSCP → classifier → queue → scheduling; ECN not the correct answer."
+    }
+  ]
+}
