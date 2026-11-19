@@ -1,0 +1,29 @@
+name: Read-only Git tree SHA for PR264 merge recovery
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/tree-metadata-264.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d12dbdda12ca3629b490361c224527ba3e365e6a
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+          persist-credentials: false
+      - name: Print tree object identifiers only (no secret material)
+        run: |
+          echo "SOURCE_COMMIT=$(git -C source rev-parse HEAD)"
+          echo "SOURCE_TREE=$(git -C source rev-parse HEAD^{tree})"
+          echo "MAIN_COMMIT=$(git -C main rev-parse HEAD)"
+          echo "MAIN_TREE=$(git -C main rev-parse HEAD^{tree})"
+          echo "Metadata only: no code execution, secrets, edits, PR comments, or merge"
