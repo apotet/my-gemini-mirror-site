@@ -1,0 +1,300 @@
+name: Gemini read-only NetOps reviewer
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gemini-readonly-audit.yml'
+      - 'scripts/gemini-audit-*.mjs'
+      - 'scripts/gemini-batch-control*.mjs'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Staging PR number (same repository, base main)'
+        required: true
+        default: '264'
+        type: string
+      ids:
+        description: 'auto:1..40 (four IDs/batch) or 1-10 comma-separated IDs'
+        required: true
+        default: 'auto:1'
+        type: string
+      max_batches:
+        description: 'Consecutive batches this run (max 2; stop after any FIX/REVIEW/error)'
+        required: true
+        type: choice
+        default: '1'
+        options:
+          - '1'
+          - '2'
+      model:
+        description: 'Gemini model (Gemini API quota is separate from Gemini app)'
+        required: true
+        type: choice
+        default: 'gemini-4-hydrogen'
+        options:
+          - 'gemini-4-hydrogen'
+          - 'gemini-3.8-flash'
+      dry_run:
+        description: 'Only generate and validate source pack; DO NOT call Gemini or spend API tokens'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-manual-audit-${{ github.repository }}-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  audit-script-contract:
+    name: Check trusted reviewer scripts (no API key)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JS syntax checks
+        run: |
+          node --check scripts/gemini-audit-pack.mjs
+          node --check scripts/gemini-audit-review.mjs
+          node scripts/gemini-audit-configuration.test.mjs
+          node --check scripts/gemini-batch-control.mjs
+          node scripts/gemini-batch-control.test.mjs
+      - name: Confirm missing API key fails closed
+        run: |
+          if node scripts/gemini-audit-review.mjs nonexistent.json /tmp/out.md /tmp/out.json > /tmp/gemini-test.log 2>&1; then
+            echo 'Reviewer unexpectedly succeeded without secret' >&2
+            exit 1
+          fi
+          grep -q 'Missing GitHub Actions secret GEMINI_API_KEY' /tmp/gemini-test.log
+
+      - uses: actions/checkout@v4
+        name: Frozen PR 264 fixture (no credentials, no API key)
+        with:
+          ref: 5df2a0b46116323201a6ae933a4c650e78b105db
+          path: subject
+          persist-credentials: false
+      - name: Install fixture bundler without lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Test exact-SHA extraction and both lesson modes
+        run: |
+          node scripts/gemini-audit-pack.mjs subject 'gap-pack2-27,gap-pack3-15,stp-new-09,l4-new-05' audit-pack/pack.json
+          node --input-type=module -e "
+            import assert from 'node:assert/strict';
+            import { readFileSync } from 'node:fs';
+            const p=JSON.parse(readFileSync('audit-pack/pack.json','utf8'));
+            assert.equal(p.sha,'5df2a0b46116323201a6ae933a4c650e78b105db');
+            assert.equal(p.records.length,4);
+            for (const r of p.records) {
+              assert.ok(r.question.text && r.question.answers.length===4);
+              assert.ok(r.explanation.plain && r.explanation.professional);
+              assert.ok(r.lesson.sections.plain.body && r.lesson.sections.professional.body);
+              assert.ok(r.materialHash.length===64);
+            }
+            assert.equal(p.records[3].lesson.id+'#'+p.records[3].lesson.anchorId,'l4-tcp#udp-checksum-ipv4-ipv6');
+          "
+          # Auto batches: exact 160 new review IDs in 40 stable disjoint groups of four.
+          node scripts/gemini-audit-pack.mjs subject 'auto:1' audit-pack/auto-first.json
+          node scripts/gemini-audit-pack.mjs subject 'auto:40' audit-pack/auto-last.json
+          node --input-type=module -e "
+            import assert from 'node:assert/strict';
+            import {readFileSync} from 'node:fs';
+            const first=JSON.parse(readFileSync('audit-pack/auto-first.json','utf8'));
+            const last=JSON.parse(readFileSync('audit-pack/auto-last.json','utf8'));
+            assert.deepEqual(first.ids,['gap-pack2-05','gap-pack2-10','gap-pack2-11','gap-pack2-16']);
+            assert.equal(first.ids.length,4);
+            assert.ok(first.records[0].lesson.coverageIssues.includes('MISSING_EXACT_ANCHOR'),'gap-pack2-05 must expose missing exact lesson anchor, not invent one');
+            assert.equal(first.records[0].lesson.anchorId,null);
+            assert.equal(last.ids.length,4);
+            assert.equal(first.sha,last.sha);
+            assert.ok(!first.ids.some(x=>last.ids.includes(x)));
+          "
+          if node scripts/gemini-audit-pack.mjs subject 'auto:41' audit-pack/invalid.json; then
+            echo 'Rejected out-of-range auto batch unexpectedly passed' >&2
+            exit 1
+          fi
+
+  collect:
+    name: Read exact PR SHA and pack question material (NO secrets)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.resolve-pr.outputs.sha }}
+      pr: ${{ steps.resolve-pr.outputs.pr }}
+    steps:
+      - name: Resolve PR and reject external branches
+        id: resolve-pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_PR: ${{ inputs.pr_number }}
+        run: |
+          if ! [[ "$REQUESTED_PR" =~ ^[1-9][0-9]{0,6}$ ]]; then
+            echo 'Invalid PR number' >&2
+            exit 1
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$REQUESTED_PR" > /tmp/pr.json
+          if [[ "$(jq -r '.head.repo.full_name' /tmp/pr.json)" != "$GITHUB_REPOSITORY" ]]; then
+            echo 'Cross-repo PRs are not allowed' >&2
+            exit 1
+          fi
+          if [[ "$(jq -r '.base.ref' /tmp/pr.json)" != 'main' ]] || [[ "$(jq -r '.state' /tmp/pr.json)" != 'open' ]]; then
+            echo 'Only open PRs targeting staging main are allowed' >&2
+            exit 1
+          fi
+          echo "sha=$(jq -r '.head.sha' /tmp/pr.json)" >> "$GITHUB_OUTPUT"
+          echo "pr=$REQUESTED_PR" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        name: Trusted audit scripts from workflow SHA
+        with:
+          ref: ${{ github.sha }}
+          path: audit-tools
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        name: Target PR snapshot without a write token
+        with:
+          ref: ${{ steps.resolve-pr.outputs.sha }}
+          path: subject
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install target bundler without package lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build strict exact-SHA material snapshot
+        env:
+          TARGET_IDS: ${{ inputs.ids }}
+        run: node audit-tools/scripts/gemini-audit-pack.mjs subject "$TARGET_IDS" audit-pack/pack.json
+
+      - name: Build optional next auto batch (max two)
+        if: inputs.max_batches == '2'
+        env:
+          TARGET_IDS: ${{ inputs.ids }}
+        run: |
+          NEXT_BATCH=$(node audit-tools/scripts/gemini-batch-control.mjs next "$TARGET_IDS")
+          node audit-tools/scripts/gemini-audit-pack.mjs subject "$NEXT_BATCH" audit-pack/pack2.json
+          echo "One additional batch prepared: $NEXT_BATCH" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload read-only source pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-audit-source-pack
+          path: |
+            audit-pack/pack.json
+            audit-pack/pack2.json
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Show dry-run instructions
+        if: inputs.dry_run
+        run: echo "Dry run complete. NO Gemini API requests, NO merge, NO PR comments." >> "$GITHUB_STEP_SUMMARY"
+
+  review:
+    name: Gemini semantic review (read-only, optional)
+    needs: collect
+    if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        name: Trusted audit reviewer from staging main
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: gemini-audit-source-pack
+          path: audit-pack
+
+      - name: One bounded Gemini API call, no retries
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack.json audit-output/report.md audit-output/report.json
+
+      - name: Fail if target PR changed during audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
+          if [[ "$ACTUAL_SHA" != "$TARGET_SHA" ]]; then
+            echo 'PR moved; refuse to post stale audit as current' >&2
+            exit 1
+          fi
+
+      - name: Publish advisory report to PR (never approve or merge)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+        run: |
+          cat audit-output/report.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$TARGET_PR" --repo "$GITHUB_REPOSITORY" --body-file audit-output/report.md
+
+      - name: Determine whether next batch is allowed (one previous PASS per question)
+        id: next
+        if: inputs.max_batches == '2'
+        run: |
+          if node scripts/gemini-batch-control.mjs all-pass audit-output/report.json; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Stopped: first batch has FIX or REVIEW. No second API call." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: One OPTIONAL second Gemini API call (only after 4/4 PASS)
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack2.json audit-output/report2.md audit-output/report2.json
+
+      - name: Verify PR still points at exact audited SHA
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
+          test "$ACTUAL_SHA" = "$TARGET_SHA" || { echo 'PR moved; no stale report' >&2; exit 1; }
+
+      - name: Publish second advisory report to PR (never approve or merge)
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+        run: |
+          cat audit-output/report2.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$TARGET_PR" --repo "$GITHUB_REPOSITORY" --body-file audit-output/report2.md
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gemini-audit-advisory-report
+          path: audit-output/
+          retention-days: 14
+          if-no-files-found: ignore
