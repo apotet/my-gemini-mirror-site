@@ -5,6 +5,7 @@ import type { ProgressSession } from '../utils/examProgress';
 import { filteredReview, reviewTotals, type ReviewFilter } from '../utils/examReview';
 import { TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
 import { resolveImageUrl } from '../data/questionsData';
+import { ZoomableImage } from './ZoomableImage';
 import { getOrAssignMemeTitle } from '../data/memeTitles';
 import './ExamReview.css';
 
@@ -161,7 +162,7 @@ export function ExamReview({ session, onExit, onRetry, onLearning, ...navigation
               )}
               {!row.confirmed && <p className="review-draft"><Info aria-hidden="true" />{row.chosen.length ? 'Выбор не был подтверждён и не засчитан.' : 'Ответ не был выбран.'}</p>}
               <div className={`review-answer-layout${row.question.image ? ' review-with-image' : ''}`}>
-                {row.question.image && <img src={resolveImageUrl(row.question.image)} alt={row.question.imageAlt || 'Иллюстрация к вопросу'} loading="lazy" className="review-photo" />}
+                {row.question.image && <ZoomableImage src={resolveImageUrl(row.question.image)} alt={row.question.imageAlt || 'Иллюстрация к вопросу'} className="min-w-0" imgClassName="review-photo" />}
                 <ul className="review-answers" aria-label={row.question.correct.length > 1 ? 'Варианты: правильных ответов несколько' : 'Варианты ответа'}>
                   {row.question.answers.map((answer, i) => {
                     const chosen = row.chosen.includes(i);
