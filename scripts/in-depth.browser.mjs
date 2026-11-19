@@ -44,6 +44,7 @@ try {
   await button(mobile?'Теория':'Теория и разборы').click();
   for(const q of questions) {
     const deep=getQuestionDeepDive(q),lesson=getLessonForQuestion(q.id),anchor=getLessonSectionForQuestion(lesson.id,q.id);
+    console.log(`CHECK ${width} ${q.id} -> ${lesson.id}#${anchor??'-'}`);
     const search=page.getByPlaceholder('Поиск по тексту, теме, id...');
     // Returning from a lesson intentionally shows the source question, not the theory index.
     // Re-enter the index explicitly before opening the next independent case.
@@ -64,11 +65,29 @@ try {
     if(await term.count()) {await term.scrollIntoViewIfNeeded();if(mobile)await term.tap();else await term.hover();await page.getByRole('tooltip').waitFor();if(!mobile){await page.keyboard.press('Escape');await term.focus();await page.getByRole('tooltip').waitFor();}await page.keyboard.press('Escape');}
     await button(`Перейти к уроку: ${lesson.title}`,review).click();
     await page.getByRole('heading',{name:lesson.title,exact:true}).waitFor();
-    const verifyAnchor=async()=>{if(!anchor)return;await page.waitForFunction(id=>{const e=document.querySelector(`[data-lesson-section-anchor="${id}"]`);if(!e)return false;const r=e.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight;},anchor);};
-    await verifyAnchor();
+    const verifyAnchor=async(stage)=>{
+      if(!anchor)return;
+      try {
+        await page.waitForFunction(id=>{
+          const e=document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          if(!e)return false;
+          const rect=e.getBoundingClientRect();
+          return rect.bottom>0&&rect.top<innerHeight;
+        },anchor);
+      } catch(error) {
+        const state=await page.evaluate(id=>{
+          const element=document.querySelector(`[data-lesson-section-anchor="${id}"]`);
+          const rect=element?.getBoundingClientRect();
+          return {found:!!element,rect:rect?{top:rect.top,bottom:rect.bottom,height:rect.height}:null,
+            scrollY:window.scrollY,viewport:window.innerHeight,scrollHeight:document.documentElement.scrollHeight};
+        },anchor);
+        throw new Error(`${q.id} ${width} anchor ${anchor} not visible at ${stage}: ${JSON.stringify(state)}; ${error.message}`);
+      }
+    };
+    await verifyAnchor('open lesson');
     const content=anchor?page.locator(`[data-lesson-section-anchor="${anchor}"]`):page.locator('article').last();
-    await button('Простыми словами').click();await verifyAnchor();const lessonPlain=await content.innerText();
-    await button('По делу').click();await verifyAnchor();assert.notEqual(await content.innerText(),lessonPlain,q.id+': lesson styles differ');
+    await button('Простыми словами').click();await verifyAnchor('switch to plain');const lessonPlain=await content.innerText();
+    await button('По делу').click();await verifyAnchor('switch to professional');assert.notEqual(await content.innerText(),lessonPlain,q.id+': lesson styles differ');
     const dimensions=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,headings:[...document.querySelectorAll('article h3')].map(e=>({text:e.textContent,width:e.scrollWidth,client:e.clientWidth}))}));
     assert.ok(dimensions.page<=dimensions.viewport+1,q.id+': page overflow');
     for(const h of dimensions.headings)assert.ok(h.width<=h.client+1,`${q.id}: heading clipped ${h.text}`);

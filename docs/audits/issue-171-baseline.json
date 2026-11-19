@@ -182,7 +182,7 @@
     "src/components/KnowledgeBase.tsx": "7321f9839dc72eb3a391a98b4fd57d34f5efbc09c9c25824261e1e2a58edbc75",
     "src/components/KnowledgeRadar.tsx": "97de56f166ec05d6fbe7a94c61e2f5a834fe6f2eabdf1acca1b73d31acdc5206",
     "src/components/LessonTermTags.tsx": "d6c05781fec1c0a47ace7cac96d3f5efc8b2fdb29dcb0ea0e5b936afaf39a015",
-    "src/components/LessonView.tsx": "55f2096a1bc19b7b015d096b9ea888dcad6f9d19c94541d1ddb84e11527ae784",
+    "src/components/LessonView.tsx": "cf382b6c54d4fc0bcf09fc80803d773ff540cbcdc8de7153f4b9fd2d4ed9a1e3",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
     "src/components/MobileTabBar.tsx": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
     "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
@@ -720,7 +720,7 @@
       "branch": "integrate/in-depth-164-codex-gemini-20261119",
       "sourceMain": "ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f",
       "status": "DRAFT / independent semantic review and CI pending",
-      "reason": "Understanding 164 curated double-style explanations, exact lesson anchors, glossary, limited answer wording and distractor clarifications. Pre-edit bank content must match old 905f48... fingerprint by reconstructing exact five historical option sets. Preserve #258/#262 and old attempts; update protected SHA only for enumerated edited files, not broader allowlist. Browser acceptance uncovered a real TheoryView regression: returning lesson→question left local focusQuestionId set and 'К каталогу' could not restore the catalogue; clear both parent and local focus. Browser regression checks the full return chain.",
+      "reason": "Understanding 164 curated double-style explanations, exact lesson anchors, glossary, limited answer wording and distractor clarifications. Pre-edit bank content must match old 905f48... fingerprint by reconstructing exact five historical option sets. Preserve #258/#262 and old attempts; update protected SHA only for enumerated edited files, not broader allowlist. Browser acceptance uncovered a real TheoryView regression: returning lesson→question left local focusQuestionId set and 'К каталогу' could not restore the catalogue; clear both parent and local focus. Browser regression checks the full return chain. Browser shard 1 exposed anchor moving outside viewport on plain-style switch in a late lesson; LessonView now rechecks exact anchor after layout settles without guessing or redirecting to another section.",
       "previousBankSHA256": "905f48a0ed6f3dd49d1e3236547609d4afc819de6c58c3274931703fc56fc896",
       "newBankSHA256": "c7cc71535f4b06adcaf55c4e60f4fa6e5c4d275f9cf895883d759073ce11c00f",
       "files": [
@@ -808,6 +808,11 @@
           "path": "src/components/TheoryView.tsx",
           "previousSHA256": "d1e52afc314db35e98229a1a363ff4f6506079c081fc56d1e40db3651f4de532",
           "newSHA256": "49662515fdefb04562c8fd654bda31353bad1b9226c4d254a515f5036c36d98d"
+        },
+        {
+          "path": "src/components/LessonView.tsx",
+          "previousSHA256": "55f2096a1bc19b7b015d096b9ea888dcad6f9d19c94541d1ddb84e11527ae784",
+          "newSHA256": "cf382b6c54d4fc0bcf09fc80803d773ff540cbcdc8de7153f4b9fd2d4ed9a1e3"
         }
       ]
     }
