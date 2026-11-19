@@ -89,6 +89,20 @@ assert.equal(m.splitGlossaryText('next-hop').find(s=>s.term)?.term,'next-hop','N
 assert.equal(m.splitGlossaryText('incomplete').find(s=>s.term)?.term,'incomplete','Retain established case-insensitive canonical key');
 assert.equal(m.getQuestionDeepDive(pool.find(q=>q.id==='l2-sec-13')).practiceLink,undefined,'No native VLAN capability promised by allowed-list-only trainer');
 assert.equal(m.getLessonForQuestion('unknown-l2-question'),undefined,'No invented fallback lesson');
+assert.equal(m.getLessonSectionForQuestion('l4-tcp','l4-03'),'in-depth-tcp-stream-record-framing','l4-03 links to its actual record-framing section');
+const l403=m.getLesson('l4-tcp');
+for(const mode of ['plain','professional']) {
+  const block=m.getLessonBlocksWithSections(l403,mode).find(item=>item.anchorId==='in-depth-tcp-stream-record-framing');
+  assert.ok(block,'l4-03 exact two-mode section exists');
+  assert.match(block.body,/поток|stream/i,'l4-03 explains stream framing');
+}
+assert.equal(m.getLessonSectionForQuestion('ts-method','tr-03'),'indepth-dns-name-vs-address','tr-03 retains shared DNS/HTTP anchor');
+const dnsPro=m.getLessonBlocksWithSections(m.getLesson('ts-method'),'professional').find(block=>block.anchorId==='indepth-dns-name-vs-address')?.body;
+assert.ok(dnsPro,'tr-03 DNS pro section present');
+assert.match(dnsPro,/HTTP по IP открывается/,'HTTP-by-IP observation is stated accurately');
+assert.match(dnsPro,/ping по IP проходит/,'Separate ping-only observation preserved');
+assert.doesNotMatch(dnsPro,/в данном билете исходный симптом — ping/,'Do not misdescribe HTTP question as a ping-only scenario');
+
 // Real attempt selection must retain only assigned L2 IDs for all seeds.
 for(let seed=1;seed<=100;seed++){let state=seed;const selected=m.getTestingQuestions('mixed',30,()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/2**32;},'in-depth');assert.equal(selected.length,30);assert.ok(selected.every(q=>assignedIds.includes(q.id)));}
 mkdirSync('scripts/.cache/in-depth',{recursive:true});writeFileSync('scripts/.cache/in-depth/structural-verification.json',JSON.stringify({count:rows.length,rows,semanticPASS:false},null,2)+'\n');
