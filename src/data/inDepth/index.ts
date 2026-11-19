@@ -1,4 +1,5 @@
 import { GROUP5_PATCHES, GROUP5_LINKS, GROUP5_BATCHES, GROUP5_SECTIONS, GROUP5_TERMS } from './group5';
+import { SPECIFIC_PRACTICAL_TIPS } from './specificPracticalTips';
 import { IN_DEPTH_REVIEWED_TERMS } from './reviewedTerms';
 import { PREVIOUS_IN_DEPTH_QUESTIONS } from './previousQuestions';
 import type { Question } from '../../types/quiz';
@@ -58,7 +59,7 @@ export function applyInDepthExplanation(id: string, original: QuestionDeepDive, 
   const result: QuestionDeepDive = { ...original, briefAnswer: brief, commonTrap: trap, professional,
     ...(patch.plain !== undefined ? { deepAnalysis: patch.plain, plain: patch.plain, engineeringDeep: patch.plain, hasIndividualDeep: true } : {}),
     ...(patch.pro !== undefined ? { pro: patch.pro } : {}),
-    ...(patch.practicalTip !== undefined ? { practicalTip: patch.practicalTip } : {}),
+    ...(patch.practicalTip !== undefined ? { practicalTip: patch.practicalTip } : SPECIFIC_PRACTICAL_TIPS[id] !== undefined ? { practicalTip: SPECIFIC_PRACTICAL_TIPS[id] } : {}),
     ...(patch.practiceLink !== undefined ? { practiceLink: patch.practiceLink ?? undefined } : {}),
     ...(patch.visualDiagram !== undefined ? { visualDiagram: patch.visualDiagram ?? undefined } : {}),
     ...(patch.nextStudy !== undefined ? { nextStudy: patch.nextStudy ?? undefined,
