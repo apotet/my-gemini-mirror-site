@@ -232,7 +232,7 @@
     "src/data/lessons/l2-rstp-convergence.ts": "1b0a96141a2d5af32232078470e1a9ba9fbffe790c5f5257f0e21861c0a5a578",
     "src/data/lessons/l2-stp-election.ts": "35b3b86ac48bf9c1968efec1a7897ad64c12ceda14be862b73cc0618e380222d",
     "src/data/lessons/l2-stp-guard-design.ts": "da207adbf40c9a32cdcd7782dbaccd2e8fcba1309e0e288ce401d764cc64e2fc",
-    "src/data/lessons/l2-stp-protection.ts": "ce6780e4c9dcf47768724ba0b37a9b6e5bd8ddb5c7d8c4ca4c61255ef530a35b",
+    "src/data/lessons/l2-stp-protection.ts": "b5ef281e4f0ec4d7a87fbc599cfc910b1424ef05ec62287d10ffa48866748f49",
     "src/data/lessons/l2-stp.ts": "c07401f821ce9ad1a4ca5ddf130c422ac536e5a7883e8edb1bcc5699a1fee2e4",
     "src/data/lessons/l2-svi.ts": "9855dc17ff3915b05403d613f8240541b006215ccbfb238b24aade7e120e8c9a",
     "src/data/lessons/l2-vlan-security.ts": "6370cb24158b69d1700079a9e6178b6d263159aba6e09769a10be24dbef9aa9d",
@@ -249,17 +249,17 @@
     "src/data/lessons/l3-subnets.ts": "aab62261bc268190a8bdd76910c02f01108b9c264fb91d1553d77227bcf3547e",
     "src/data/lessons/l3-vrrp.ts": "ddfc79b2102cd84637fae9a747a5bebc15143145212e813083be5fb0668b54f3",
     "src/data/lessons/l4-load-balancing.ts": "f5be1e60d67705018207cb1a95bd714dbf02f7e6a668361b603aa46ef6340f5d",
-    "src/data/lessons/l4-tcp-loss.ts": "a4a883aaf2956ac71e5fbc434f616d67643fc8097fab0fa48e3c1362dffa12b0",
+    "src/data/lessons/l4-tcp-loss.ts": "c9a3655622be69621a48c431af5ab459762acd2b1af5f64045e4ddd7d18429a3",
     "src/data/lessons/l4-tcp.ts": "50d040dc333d599204e6d17e84e018ed21b84979640f256e851a2e32565143cf",
     "src/data/lessons/l7-dhcp.ts": "a4456bb8517808f8162565337c16c6ea151ce62b1ae1e759ce740da3dd1c056c",
-    "src/data/lessons/l7-dns-dhcp.ts": "996d355244c374dc320b139c20bb147ec65d4a25af2cb18509a8f2bc6df61e99",
+    "src/data/lessons/l7-dns-dhcp.ts": "a483fa591ef32cf1ff0b4edfd33baf42c2d55a26896e95861527a16364b9c61c",
     "src/data/lessons/l7-dns-ttl.ts": "876889fc7f6f7b0e075a882706cb8bf1589172659b177970cd201a55d91454c7",
     "src/data/lessons/l7-dns.ts": "f5b6bc49669d36ad22a3cbd0519cc93005750856fad589a0fc1aa4110d592b37",
     "src/data/lessons/l7-monitoring-snmp-syslog.ts": "ba03bb47be8c215773c3b23aed263c73c2b58ff3f171e1487534a8313e4c8d8e",
-    "src/data/lessons/l7-services.ts": "7ba5672de9c923ca430a29922f7b2662b9b55b09c0105cd55498bd52baa3bc44",
+    "src/data/lessons/l7-services.ts": "6f943343156a700fb95584f4c83779155692da9ef7e50dcd1fef2e03a412670f",
     "src/data/lessons/osi-pdu.ts": "f067dfa54e3e6cacdb5def9fbe62242f06abf0c397e70b30cafbffde50909b07",
     "src/data/lessons/qos-basics.ts": "caffbeb029aca75ceafef41773e5cf7e8f8f7803a3b325a941e2670b58aafe3b",
-    "src/data/lessons/tcp-window-retransmit.ts": "f90e3447f0cc2343b096a0f128c432e14f17104b21855c5e3b21a56fdc333fc2",
+    "src/data/lessons/tcp-window-retransmit.ts": "a50b905c5d793053a891963e1f626286eaf52bb3a29116bfdd7d16892f26f12c",
     "src/data/lessons/tcpip-encapsulation.ts": "6979929b206caee418440d868a072037be874327c84d05e22d009fdc755f2f32",
     "src/data/lessons/tcpip-model.ts": "d5140cd8fba4118d716b5a7571006e4fe05de17bbb29bb0357644944d56f7de3",
     "src/data/lessons/tls-sni.ts": "03d2f9559a811481419b3961a1c88422b43886c1cada713fd7b94b8f23add7e4",
@@ -778,6 +778,31 @@
           "path": "src/utils/examProgress.ts",
           "previousSHA256": "4778b5ba1c7e869c751b94e32fe70a1206133245bd1942fcf307650f61200c43",
           "newSHA256": "5afdbfbb11456fbf69f5eff43de2021ed9ec52e2966c2bcf492884f59ff3fec5"
+        },
+        {
+          "path": "src/data/lessons/l2-stp-protection.ts",
+          "previousSHA256": "ce6780e4c9dcf47768724ba0b37a9b6e5bd8ddb5c7d8c4ca4c61255ef530a35b",
+          "newSHA256": "b5ef281e4f0ec4d7a87fbc599cfc910b1424ef05ec62287d10ffa48866748f49"
+        },
+        {
+          "path": "src/data/lessons/l4-tcp-loss.ts",
+          "previousSHA256": "a4a883aaf2956ac71e5fbc434f616d67643fc8097fab0fa48e3c1362dffa12b0",
+          "newSHA256": "c9a3655622be69621a48c431af5ab459762acd2b1af5f64045e4ddd7d18429a3"
+        },
+        {
+          "path": "src/data/lessons/l7-dns-dhcp.ts",
+          "previousSHA256": "996d355244c374dc320b139c20bb147ec65d4a25af2cb18509a8f2bc6df61e99",
+          "newSHA256": "a483fa591ef32cf1ff0b4edfd33baf42c2d55a26896e95861527a16364b9c61c"
+        },
+        {
+          "path": "src/data/lessons/l7-services.ts",
+          "previousSHA256": "7ba5672de9c923ca430a29922f7b2662b9b55b09c0105cd55498bd52baa3bc44",
+          "newSHA256": "6f943343156a700fb95584f4c83779155692da9ef7e50dcd1fef2e03a412670f"
+        },
+        {
+          "path": "src/data/lessons/tcp-window-retransmit.ts",
+          "previousSHA256": "f90e3447f0cc2343b096a0f128c432e14f17104b21855c5e3b21a56fdc333fc2",
+          "newSHA256": "a50b905c5d793053a891963e1f626286eaf52bb3a29116bfdd7d16892f26f12c"
         }
       ]
     }
