@@ -35,12 +35,12 @@
         "why": "PASS",
         "plain": "PASS",
         "pro": "PASS",
-        "lesson": "PASS",
+        "lesson": "FIX",
         "terms": "PASS"
       },
-      "finalStatus": "PASS",
-      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
-      "evidence": "Glossary-only changes."
+      "finalStatus": "FIX",
+      "finalReason": "Lesson l4-tcp exists, but no specific anchor for the question. Requirement: addressable transition to the relevant section. Fix: add an anchor or confirm the section ID.",
+      "evidence": "getLessonForQuestion(\"l4-03\") returns l4-tcp with no section id matching the question."
     },
     {
       "id": "l4-04",
@@ -181,9 +181,9 @@
         "lesson": "PASS",
         "terms": "PASS"
       },
-      "finalStatus": "REVIEW",
-      "finalReason": "Content matches Codex #263 HEAD (no field diffs), but prior independent review hash differs. Historical source of the prior hash not located in the provided reference. Cannot assign PASS on historical comparison without the original reviewed snapshot.",
-      "evidence": "No content delta vs Codex HEAD; prior review hash mismatch requires historical source."
+      "finalStatus": "PASS",
+      "finalReason": "Fresh content review (historical hash unavailable): question correctly asks which field is rewritten on the next Ethernet segment. Key [0] L2 Source/Destination MAC is correct. Distractors (IP without NAT, TCP port, HTTP body) are plausible but wrong. Plain/pro and lesson tcpip-encapsulation present and accurate. No invented commands.",
+      "evidence": "Current text, key [0], explanations, and lesson verified against standard routing behavior (MAC rewrite per hop, IP preserved without NAT)."
     },
     {
       "id": "tr-03",
@@ -217,13 +217,14 @@
         "key": "PASS",
         "why": "PASS",
         "plain": "PASS",
-        "pro": "PASS",
+        "pro": "FIX",
         "lesson": "PASS",
         "terms": "PASS"
       },
-      "finalStatus": "PASS",
-      "finalReason": "Three distractors rewritten to be more specific and less ambiguous. Correct answer unchanged. Glossary updates are additive. Old attempts preserved via PREVIOUS_IN_DEPTH_QUESTIONS.",
-      "evidence": "Distractors updated; key preserved; historical attempts retained."
+      "finalStatus": "FIX",
+      "finalReason": "Professional block ts-method#indepth-dns-name-vs-address claims \"в данном билете исходный симптом — ping\", but the question is HTTP by IP works, HTTP by name fails. Fix: rewrite the sentence to match the HTTP symptom.",
+      "evidence": "src/data/inDepth/group4.ts professional.body line ~351: \"в данном билете исходный симптом — ping, а не результат HTTP\". Distractors updated but key preserved.",
+      "distractorNote": "Updated distractors are more specific; some border on overly detailed but remain plausible for Understanding level."
     },
     {
       "id": "tr-08",
@@ -303,7 +304,8 @@
       },
       "finalStatus": "PASS",
       "finalReason": "Three distractors rewritten to be more specific and less ambiguous. Correct answer unchanged. Glossary updates are additive. Old attempts preserved via PREVIOUS_IN_DEPTH_QUESTIONS.",
-      "evidence": "Distractors updated; key preserved; historical attempts retained."
+      "evidence": "Distractors updated; key preserved; historical attempts retained.",
+      "distractorNote": "Updated distractors emphasize incorrect local-resolution assumptions; plausible for the level."
     },
     {
       "id": "gen-transport-1",
