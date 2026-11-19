@@ -1,3 +1,10 @@
+## Подтверждённый результат режима 10 вопросов — 20.11.2026
+
+- Одноразовый [Draft PR #271](https://github.com/apotet/my-gemini-mirror-site/pull/271) автоматически запустил [GitHub Actions run #44632284371](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44632284371), **SUCCESS**, без интерактивной авторизации GitHub/Gemini. PR #271 закрыт **без merge**.
+- Один `gemini-4-hydrogen` API-запрос на ровно **10 вопросов** (SHA `c7ca35f7c747f93f827089bc97464c4d965c6834`) с ограничением 420 секунд и 16384 output tokens успешно завершился. [Предметный отчёт](https://github.com/apotet/my-gemini-mirror-site/pull/264#issuecomment-7024472642): **8 PASS, 2 FIX**. Указанные Google usage: input 11187, output 3142, total 20189.
+- Два FIX (`gap-pack2-21`, `gap-pack3-08`) независимо подтверждены по исходникам и исправлены в Draft PR #264, файлы `src/data/inDepth/group1.ts`, `group4.ts`, `scripts/in-depth-content.test.mjs`, HEAD после этих исправлений `1a3f684c7dbc6f6e1c8585b1f8c1155d3f84769d`. Тест `test:in-depth` в GitHub Actions на новом HEAD PASS, 164/164 anchors, 0 missing. Сохраняется блокировка fingerprint и итоговой независимой приёмки.
+- **Не превращать старые 8 PASS автоматически в новые PASS** после изменения SHA. Browser 375/1440, финальная delta-review, прочие GATE отдельно. Команда дальнейших партий требует точного нового SHA и своего ограниченного API-вызова.
+
 # NetOps · Gemini API review запуск без интерактивного входа (20.11.2026)
 
 ## Что реально авторизовано
