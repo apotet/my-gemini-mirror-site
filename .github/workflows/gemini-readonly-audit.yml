@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/gemini-readonly-audit.yml'
       - 'scripts/gemini-audit-*.mjs'
+      - 'scripts/gemini-batch-control*.mjs'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -17,6 +18,14 @@ on:
         required: true
         default: 'auto:1'
         type: string
+      max_batches:
+        description: 'Consecutive batches this run (max 2; stop after any FIX/REVIEW/error)'
+        required: true
+        type: choice
+        default: '1'
+        options:
+          - '1'
+          - '2'
       model:
         description: 'Gemini model (Gemini API quota is separate from Gemini app)'
         required: true
@@ -56,6 +65,8 @@ jobs:
           node --check scripts/gemini-audit-pack.mjs
           node --check scripts/gemini-audit-review.mjs
           node scripts/gemini-audit-configuration.test.mjs
+          node --check scripts/gemini-batch-control.mjs
+          node scripts/gemini-batch-control.test.mjs
       - name: Confirm missing API key fails closed
         run: |
           if node scripts/gemini-audit-review.mjs nonexistent.json /tmp/out.md /tmp/out.json > /tmp/gemini-test.log 2>&1; then
@@ -169,6 +180,15 @@ jobs:
           TARGET_IDS: ${{ inputs.ids }}
         run: node audit-tools/scripts/gemini-audit-pack.mjs subject "$TARGET_IDS" audit-pack/pack.json
 
+      - name: Build optional next auto batch (max two)
+        if: inputs.max_batches == '2'
+        env:
+          TARGET_IDS: ${{ inputs.ids }}
+        run: |
+          NEXT_BATCH=$(node audit-tools/scripts/gemini-batch-control.mjs next "$TARGET_IDS")
+          node audit-tools/scripts/gemini-audit-pack.mjs subject "$NEXT_BATCH" audit-pack/pack2.json
+          echo "One additional batch prepared: $NEXT_BATCH" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload read-only source pack
         uses: actions/upload-artifact@v4
         with:
@@ -232,9 +252,47 @@ jobs:
           cat audit-output/report.md >> "$GITHUB_STEP_SUMMARY"
           gh pr comment "$TARGET_PR" --repo "$GITHUB_REPOSITORY" --body-file audit-output/report.md
 
+      - name: Determine whether next batch is allowed (one previous PASS per question)
+        id: next
+        if: inputs.max_batches == '2'
+        run: |
+          if node scripts/gemini-batch-control.mjs all-pass audit-output/report.json; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Stopped: first batch has FIX or REVIEW. No second API call." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: One OPTIONAL second Gemini API call (only after 4/4 PASS)
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack2.json audit-output/report2.md audit-output/report2.json
+
+      - name: Verify PR still points at exact audited SHA
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
+          test "$ACTUAL_SHA" = "$TARGET_SHA" || { echo 'PR moved; no stale report' >&2; exit 1; }
+
+      - name: Publish second advisory report to PR (never approve or merge)
+        if: inputs.max_batches == '2' && steps.next.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+        run: |
+          cat audit-output/report2.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$TARGET_PR" --repo "$GITHUB_REPOSITORY" --body-file audit-output/report2.md
+
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: gemini-audit-advisory-report
           path: audit-output/
           retention-days: 14
-          if-no-files-found: error
+          if-no-files-found: ignore
