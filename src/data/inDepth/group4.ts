@@ -243,7 +243,7 @@ export const GROUP4_SECTIONS: SectionLink[] = [
     },
     "professional": {
       "heading": "RFC 9293: zero receive window, persist probe, lost window update",
-      "body": "Согласно условию gap-pack2-21, ранее переданные байты ACKed, затем advertised receive window (rwnd) = 0, а новые данные появились позже. Sender должен приостановить обычную передачу новых байтов, однако обязан сохранять возможность выяснить, открылось ли окно, даже при потере window-update segment. Для этого предназначен persist timer с zero-window probes.\n\nProbe стимулирует ACK с текущим window advertisement; это не retransmission потерянных ранее подтверждённых данных. Поддерживай отличие flow control (rwnd) от congestion control (cwnd), не путай persist с RTO loss recovery или новым TCP handshake. В tcpdump/Wireshark сверяй Window Size 0, ZeroWindowProbe/ACK и затем Window Update, учитывая эвристический характер некоторых меток анализатора."
+      "body": "По условию задачи ранее отправленные байты подтверждены ACK, затем объявлено нулевое окно приёма (rwnd = 0), а новые данные появились позже. Sender должен приостановить обычную передачу новых байтов, однако обязан сохранять возможность выяснить, открылось ли окно, даже при потере window-update segment. Для этого предназначен persist timer с zero-window probes.\n\nProbe стимулирует ACK с текущим window advertisement; это не retransmission потерянных ранее подтверждённых данных. Поддерживай отличие flow control (rwnd) от congestion control (cwnd), не путай persist с RTO loss recovery или новым TCP handshake. В tcpdump/Wireshark сверяй Window Size 0, ZeroWindowProbe/ACK и затем Window Update, учитывая эвристический характер некоторых меток анализатора."
     }
   },
   {
