@@ -1,3 +1,4 @@
+import { IN_DEPTH_TERMS } from './inDepth';
 export interface GlossaryEntry {
   description: string;
   relatesTo: string;
@@ -2217,6 +2218,13 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "RRM": ["Radio Resource Management", "Автоматическое управление каналами и мощностью Wi-Fi", true],
   "CCA": ["Clear Channel Assessment", "Проверка занятости радиоканала перед передачей", true],
 };
+
+// The single shared dictionary receives reviewed L2 additions/metadata before tokenization.
+for (const [term, patch] of Object.entries(IN_DEPTH_TERMS)) {
+  const { english, russian, abbreviation, ...definition } = patch;
+  GLOSSARY[term] = { ...GLOSSARY[term], ...definition } as GlossaryEntry;
+  TOOLTIP_NAMES[term] = [english, russian, abbreviation ?? false];
+}
 
 export const GLOSSARY_TOOLTIPS: Record<string, GlossaryTooltip> = {};
 for (const [term, [english, russian, , definition]] of Object.entries(TOOLTIP_NAMES)) {

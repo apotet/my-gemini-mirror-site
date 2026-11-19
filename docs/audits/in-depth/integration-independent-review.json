@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "independent_review",
+  "scope": "CODE ONLY — root-authored integration, not group1 content acceptance",
+  "authorshipBoundary": "Reviewer authored group1.ts data. This review expressly excludes independent semantic acceptance of that data; separate fresh reviewers own the 160 content acceptance. Reviewer did not author the integration files reviewed here.",
+  "reviewedWorkingHead": "8165877dec44c5ad2f2265bd910cf80952d24cb0",
+  "finalFrozenSHA": null,
+  "status": "FIX",
+  "fileHashes": {
+    "src/data/inDepth/index.ts": "1e3aecccb93500f00ea99491d06c5d0e6177effa08433a33215a57b146236112",
+    "src/data/inDepth/previousDistractors.ts": "a8a5d921d59888654972931c1936c72122e1a2d24610ab3df607af0402ebc589",
+    "src/utils/examProgress.ts": "61ed287469fe409b5dad90fa861bac552d2a9ca090f12eb4a10238df5d7a327b",
+    "src/data/questionExplanations.ts": "e6e27cf3c1bff8de26512f982c12df0ca3e4858e4817cbc3b2e9d60f21412872",
+    "src/data/lessons/index.ts": "d116ee2cbb2916e1d8f4d2237ab446d3c8ffa4295f0e748481f1fbb6b8a4a6c0",
+    "src/data/lessons/lessonSectionLinks.ts": "b9694dca09c68f455de05f86f070908449a8d495a1bcbcc2c49f0671df7eaace",
+    "src/data/glossary.ts": "502c870770c322b0001ccf9f4b9409ea937ba32743453ffb72fac69ceded7c74",
+    "src/components/LessonView.tsx": "55f2096a1bc19b7b015d096b9ea888dcad6f9d19c94541d1ddb84e11527ae784",
+    "scripts/in-depth-entry.ts": "2c36a01fc1afb7cb27a1b3103a3fb42c207e84379c15b8b017f716510f81fb24",
+    "scripts/in-depth-content.test.mjs": "4e3fd3f0e15c65122d15b0c7bb156a6efd3d5c3ce94b86ddd4741b07cb74b203",
+    "scripts/in-depth-history-entry.ts": "a93961091e947d6b1c9489a2d8948b3e2bc2e7b514f770b26dce409b4a3d806e",
+    "scripts/in-depth-history.test.mjs": "14a643cc3a0d01fba427c2e149e99249b36659d54d116e27b0ee607ea277366a",
+    "scripts/in-depth.browser.mjs": "b6d73fc2a505440b689e646eaab355c1783e48704fe54ceb299b9b9341b825ad",
+    "scripts/in-depth-report.mjs": "138322c8a115c4fbfc6041bc485ad43b67518fc5ae20b720529b805524cb2833",
+    "scripts/lesson-section-links.test.mjs": "069f016a9779944a221e63b4c0d249abef91f600b0f11f6da39adb2b06370e26",
+    ".github/workflows/ci.yml": "662b1c4affa5c8e15eae5f87c110fcb8a58f0a30a988646d185b976a91569556",
+    "package.json": "2240eca2354b2050f7d36adc375283dfe32cb4de43a890aa24b9090da3a9a5b0",
+    "docs/audits/in-depth/invariants-baseline.json": "ab36a258eb9061fc8fb75c6117783a1d43d7b2e43891cebd36de13f99bf0218e"
+  },
+  "findings": [
+    {
+      "id": "INTEGRATION-PROVENANCE-1",
+      "severity": "FIX",
+      "file": "src/data/inDepth/index.ts",
+      "function": "applyInDepthLesson",
+      "description": "Targeted professionalBlocks/professionalSummary/professionalTerms changes preserve the historical professional.sourceCommit via spread, attributing rewritten content to its previous source.",
+      "example": "l2-access-guard professional Binding и что дальше body replaced while retaining original professional sourceCommit.",
+      "requiredFix": "Clear old sourceCommit when the effective professional object is changed by replacement/summary/terms; retain provenance for untouched professional text and plain-only edits. Add a focused regression assertion."
+    }
+  ],
+  "verifiedProperties": {
+    "scope": "applyInDepthExplanation returns the same original object outside scope; actual test compares all 702 outside-level deep-dive hashes to the frozen baseline.",
+    "bank": "Only four reviewed wrong-option labels in two IDs differ; reconstruction hash validates all stems/keys/order and other bank data.",
+    "patchPriority": "Explicit field patches override resolved values; null auxiliary fields remove inherited practice/visual/next hints. New pro clears its old question-level sourceCommit.",
+    "lookup": "Explicit question→lesson links take precedence; previous backlinks are filtered only for remapped IDs, no generic fallback introduced.",
+    "sections": "Stable order for multiple sections after one source heading. Missing source heading continues to fail closed and contract tests require actual headings. Legacy three exact routes and global anchor uniqueness remain tested.",
+    "history": "Only two exact old question option/key sets are recognized. Shuffled permutations require full exact answers/key match; malformed maps and unknown drifts fail. Existing legacy unshuffled behavior is retained, not generalized.",
+    "glossary": "One shared dictionary receives term definition/tooltip metadata before regex tokenization. Central tests require description/context/actual matcher and valid lesson targets.",
+    "UI": "Existing GlossaryText title rendering plus aria-label preserves title accessible name. min-w-0 wrapper keeps heading tokens in one flex item instead of separate fragment items.",
+    "CI": "Adds content/history/browser checks and artifacts without removing existing checks. Structural success is not semantic PASS."
+  },
+  "executedTests": [
+    {
+      "command": "npm run test:in-depth-history",
+      "result": "PASS",
+      "evidence": "Old legacy/shuffled/current two-ID attempts and completed review labels/keys/scores immutable; unknown shuffled drift rejected."
+    },
+    {
+      "command": "npm run test:in-depth",
+      "result": "PASS",
+      "evidence": "Actual 160 L2 IDs, individual plain/pro, real two-mode lessons, explicit anchors, metadata and 702 preserved outside-level deep hashes."
+    },
+    {
+      "command": "Independent inline Node attacks against previousInDepthSnapshot",
+      "result": "PASS",
+      "cases": [
+        "duplicate shuffle indices",
+        "out-of-range indices",
+        "non-integer indices",
+        "short array",
+        "null map",
+        "altered stem",
+        "unknown option label",
+        "unrelated question ID"
+      ]
+    }
+  ],
+  "browserAssessment": {
+    "codeInspected": true,
+    "executedByThisReviewer": false,
+    "coverageInScript": [
+      "Both 375/1440 viewports",
+      "Saved two-ID historical last-review fixture",
+      "Every selected question both styles and actual why/pro text",
+      "Resolved lesson destination, available exact section and return",
+      "Both lesson modes, local heading/document overflow",
+      "First recognized question term hover/focus/tap when present",
+      "No local progress or saved-review writes"
+    ],
+    "limits": [
+      "Script does not click every practice link.",
+      "First-tooltip checks do not establish every term is contextually correct or every occurrence interactive.",
+      "Separate semantic review and actual successful browser execution remain necessary."
+    ]
+  },
+  "limits": [
+    "Code-only review; no mass semantic PASS inferred.",
+    "Final frozen SHA and code hashes must be confirmed after fixes.",
+    "No commit, push, merge, source edits or production action by this reviewer."
+  ]
+}

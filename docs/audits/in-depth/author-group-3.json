@@ -1,0 +1,849 @@
+{
+  "schemaVersion": 1,
+  "author": "l2_review_group3",
+  "baselineSHA": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "initialAuditCommit": "2907bc6",
+  "status": "AUTHORED_PENDING_INDEPENDENT_ACCEPTANCE",
+  "module": "src/data/inDepth/group3.ts",
+  "moduleSHA256": "2cac1e54c77921c8167cf6f16d63dd0f99f7153a920d10440711b30f0626da8f",
+  "summary": {
+    "questions": 40,
+    "questionPatches": 21,
+    "explicitLessonLinks": 32,
+    "topicalSections": 19,
+    "targetedLessonRepairs": 3,
+    "termEntries": 34,
+    "logicalBatches": [
+      {
+        "id": "l2-g3-transport-application",
+        "count": 17
+      },
+      {
+        "id": "l2-g3-management",
+        "count": 13
+      },
+      {
+        "id": "l2-g3-optical-diagnosis",
+        "count": 10
+      }
+    ]
+  },
+  "preservation": [
+    "No original source question, correct index or correct answer text edited by this author.",
+    "Root owns4 independently discussed wrong-answer option changes and historical fixture compatibility.",
+    "Only missing/shallow/wrong question layers patched; approved window firsttwo plain paragraphs preserved exactly.",
+    "photo-otdr-end keeps existing#250 otdr-end-of-fiber mapping; no duplicate anchor added.",
+    "No new lesson, unrelated interface/CLI/radar/path/filter changes.",
+    "Existingreal practice links preserved, no new invented simulator."
+  ],
+  "additionalConfirmedFindings": [
+    "new-tcpip-router and l4-x04 carried a generic TCP-handshake diagram irrelevant to routing hop/window mechanism; removed through null patch.",
+    "l4-x04 practicalTip suggested listening-socket inspection instead of receivewindow diagnosis; replaced."
+  ],
+  "recommendationRefinements": [
+    "After reading full lesson, l57-x19 targets broad l7-services via an IMAP-state section next to existing SMTP material, rather than an MX-only title.",
+    "new-ts-dns targets complete l7-dns error-localization material rather than minimal CLI summary."
+  ],
+  "primaryEvidence": [
+    "https://www.rfc-editor.org/rfc/rfc2863.txt — ifOutDiscards OBJECT-TYPE",
+    "https://www.rfc-editor.org/rfc/rfc3826.txt — §3.1.1.2 Key Size",
+    "https://www.rfc-editor.org/rfc/rfc9525.txt — Appendix A SAN-only identity",
+    "https://www.zabbix.com/documentation/current/en/manual/appendix/config/zabbix_agentd — StartAgents",
+    "https://www.zabbix.com/documentation/current/en/manual/appendix/config/zabbix_agent2 — Server omission disables passive checks"
+  ],
+  "localValidation": "Module bundling, scope/anchor/field structural checks executed separately; final realresolver/browser/typecheck/CI and independent SHA acceptance owned by root, not asserted here.",
+  "rows": [
+    {
+      "id": "l4-x03",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l4-tcp",
+      "sectionAnchors": [
+        "udp-latency-and-delivery"
+      ],
+      "initialDefectsAddressed": [
+        "Plain is only «Нет handshake/retransmit в транспорте»: no causal explanation of latency/order/loss or application responsibility.",
+        "No professional layer.",
+        "Wrong option «Нужен только RST» is a toy distractor; quality REVIEW, root has independently accepted targeted replacement.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "l4-x04",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro",
+        "visualDiagram",
+        "practicalTip"
+      ],
+      "lessonId": "tcp-window-retransmit",
+      "sectionAnchors": [
+        "receive-window-and-rtt"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Distractors VLAN/ARP/LED color do not test realistic TCP misunderstandings; root accepted wrong-option-only repair.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "l5-02",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "osi-session-presentation",
+      "sectionAnchors": [
+        "application-checkpoint-recovery"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "l57-d02",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "tls-sni",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Question pro says SAN/CN without legacy qualification.",
+        "Linked lesson pro repeatedly permits CN-or-SAN for modern hostname verification; RFC9525 requires subjectAltName."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "l57-d04",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-services",
+      "sectionAnchors": [
+        "http2-shared-tcp-order"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l57-x04",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "brief"
+      ],
+      "lessonId": "l7-http-status-basics",
+      "sectionAnchors": [
+        "http-put-idempotence"
+      ],
+      "initialDefectsAddressed": [
+        "Why only says first change occurred/response lost; it does not state the idempotent same-state consequence.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l57-x05",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "tls-sni",
+      "sectionAnchors": [
+        "tls-protection-boundaries"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l57-x06",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "tls-sni",
+      "sectionAnchors": [
+        "tls-protection-boundaries"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l57-x19",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-services",
+      "sectionAnchors": [
+        "imap-shared-mailbox-state"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l6-01",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "osi-session-presentation",
+      "sectionAnchors": [
+        "utf16le-to-utf8"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "UTF-8 glossary entry exists but has no tooltip metadata; UTF-16LE needs intelligible contextual expansion.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: UTF-16LE, UTF-8 tooltip metadata"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "l7-01",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "brief",
+        "pro"
+      ],
+      "lessonId": "l7-http-status-basics",
+      "sectionAnchors": [
+        "http-etag-validation"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Why «У клиента уже есть документ» omits validator/unchanged-representation mechanism.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: ETag, If-None-Match"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "plain"
+      ]
+    },
+    {
+      "id": "l7-02",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-dhcp",
+      "sectionAnchors": [
+        "dhcp-selection-and-nak"
+      ],
+      "initialDefectsAddressed": [
+        "Existing lesson does not explain NAK→INIT, DHCPINFORM distinction or rejection versus silent timeout in either style."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l7-03",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-dhcp",
+      "sectionAnchors": [
+        "dhcp-selection-and-nak"
+      ],
+      "initialDefectsAddressed": [
+        "Existing lesson DORA names messages but neither style explains SELECTING broadcast versus unicast renewal, essential to distinguishing options."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "l7-05",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "l7-http-status-basics",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "l7-new-02",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l7-dns",
+      "sectionAnchors": [
+        "edns-size-is-not-pmtu"
+      ],
+      "initialDefectsAddressed": [
+        "Plain duplicates Why verbatim; no independent beginner causal layer.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: OPT, PMTU"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "l7-new-03",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l7-dns",
+      "sectionAnchors": [
+        "dnssec-signed-rrset"
+      ],
+      "initialDefectsAddressed": [
+        "Plain duplicates Why verbatim.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: DS, DNSKEY, RRSIG, RRset, bogus"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "l7-new-04",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l7-http-status-basics",
+      "sectionAnchors": [
+        "http11-persistent-reuse"
+      ],
+      "initialDefectsAddressed": [
+        "Plain duplicates Why verbatim.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "mon-snmp-01",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Pro and lesson prescribe AES128/256 without explaining that RFC3826 standardizes AES-CFB128 and other lengths require matching implementation support.",
+        "Lesson wrongly presents periodic polling as guaranteed convergence and temporal order alone as proof of incident causation."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "mon-syslog-01",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Shared lesson contains confirmed security/guarantee/causal overclaims listed in sharedLessonFindings; threshold explanation itself is sound."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "mon-syslog-05",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Shared lesson contains confirmed security/guarantee/causal overclaims listed in sharedLessonFindings; the four common IOS destinations are correctly distinguished."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "mon-zabbix-01",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "ts-zabbix-monitoring",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Pro places StartAgents=0 beside agent2 configuration without restriction; it applies to classic agentd, while Agent2 omits Server to disable passive checks.",
+        "Shared lesson incorrectly equates every ifOutDiscards increase with full egress buffers and treats ping success as exclusion of relevant route problems."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "new-tcpip-router",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "visualDiagram"
+      ],
+      "lessonId": "tcpip-encapsulation",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "new-ts-dns",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l7-dns",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "new-ts-duplex",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l2-ethernet",
+      "sectionAnchors": [
+        "legacy-duplex-diagnosis"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "new-ts-photo-panel",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l1-fiber-hardware",
+      "sectionAnchors": [
+        "optical-path-and-polarity"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "new-ts-vlan",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l2-vlan",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "photo-formfactor-compat",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l1-fiber-identification",
+      "sectionAnchors": [
+        "form-factor-and-rated-reach"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "photo-otdr-end",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l1-otdr-trace-interpretation",
+      "sectionAnchors": [
+        "otdr-end-of-fiber"
+      ],
+      "initialDefectsAddressed": [
+        "Plain adds unrelated generic polish/marking advice rather than causal trace interpretation.",
+        "No professional layer.",
+        "Linked OTDR lesson has seven tags absent from glossary and tooltip metadata.",
+        "Essential terminology/interactive definition work: reflectance, pulse width, stacked, overlay, SM, MM, IOR"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "photo-otdr-slope",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l1-otdr-trace-interpretation",
+      "sectionAnchors": [
+        "otdr-slope-versus-event"
+      ],
+      "initialDefectsAddressed": [
+        "Plain is Why plus generic connector advice, not a separate causal account of backscatter/attenuation.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Recommended OTDR lesson also needs missing glossary tags repaired."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "photo-otdr-use",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l1-otdr-trace-interpretation",
+      "sectionAnchors": [
+        "otdr-slope-versus-event"
+      ],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Recommended OTDR lesson also needs missing glossary tags repaired."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "photo-sfpplus-label",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l1-fiber-identification",
+      "sectionAnchors": [
+        "form-factor-and-rated-reach"
+      ],
+      "initialDefectsAddressed": [
+        "Plain repeats Why with generic optical advice; expand causal rated reach/loss-budget distinction.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "photo-txrx-link",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "plain",
+        "pro"
+      ],
+      "lessonId": "l1-fiber-hardware",
+      "sectionAnchors": [
+        "optical-path-and-polarity"
+      ],
+      "initialDefectsAddressed": [
+        "Plain repeats Why with generic optical advice.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why"
+      ]
+    },
+    {
+      "id": "review-dot1x-20",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l2-access-auth",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "review-igmp-9",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "l2-igmp-snooping",
+      "sectionAnchors": [
+        "igmpv2-query-report"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "review-osi-34",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "osi-session-presentation",
+      "sectionAnchors": [
+        "application-checkpoint-recovery"
+      ],
+      "initialDefectsAddressed": [
+        "Existing osi-pdu gives L5 role only, not checkpoint/idempotent recovery mechanism needed to answer distinctions in both styles."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "review-ospf-27",
+      "initialStatus": "PASS",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l3-ospf",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "review-poe-30",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l1-poe-screen-reading",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "review-ptp-17",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [
+        "pro"
+      ],
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "sectionAnchors": [
+        "ptp-boundary-and-transparent-clock"
+      ],
+      "initialDefectsAddressed": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: boundary clock, transparent clock, grandmaster"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain"
+      ]
+    },
+    {
+      "id": "review-qos-22",
+      "initialStatus": "FIX",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "qos-basics",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [
+        "Lesson pro tags CE and PHB have no GLOSSARY definitions, so interactive term cards cannot open.",
+        "Essential terminology/interactive definition work: CE, PHB"
+      ],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    },
+    {
+      "id": "review-slaac-4",
+      "initialStatus": "PASS",
+      "authorState": "READY_FOR_NONAUTHOR_REVIEW",
+      "questionFieldsChanged": [],
+      "lessonId": "l3-ipv6",
+      "sectionAnchors": [],
+      "initialDefectsAddressed": [],
+      "proof": "Actual authored patch/explicit lesson link/dual-style section/targeted shared-lesson or glossary repair; no semantic PASS assigned by author.",
+      "unchangedSoundLayers": [
+        "why",
+        "plain",
+        "pro"
+      ]
+    }
+  ]
+}

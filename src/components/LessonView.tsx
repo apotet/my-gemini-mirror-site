@@ -89,7 +89,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>·</span>
           <span>{lesson.difficulty}</span>
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lesson.title}</h2>
+        <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText>{lesson.title}</GlossaryText></h2>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         <FormattedExplanation text={content.summary} />
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} />
@@ -108,7 +108,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
-              <GlossaryText key={textMode}>{b.heading}</GlossaryText>
+              <span className="min-w-0"><GlossaryText key={textMode}>{b.heading}</GlossaryText></span>
             </h3>
             <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} /></div>
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
