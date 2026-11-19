@@ -228,6 +228,25 @@ export const GROUP4_LINKS: Record<string, string> = {
 
 export const GROUP4_SECTIONS: SectionLink[] = [
   {
+    "lessonId": "tcp-window-retransmit",
+    "questionIds": [
+      "gap-pack2-21"
+    ],
+    "anchorId": "in-depth-tcp-zero-window-persist-recovery",
+    "afterHeading": {
+      "plain": "Нулевое окно и persist: ждать, но не потерять связь",
+      "professional": "Нулевое окно и persist: ждать, но не потерять связь"
+    },
+    "plain": {
+      "heading": "Получатель объявил окно 0: зачем нужны пробы persist",
+      "body": "Получатель TCP сообщил, что свободного буфера больше нет: окно приёма стало 0. Все старые данные уже подтверждены, поэтому нечего повторять из-за потери; новые обычные данные временно отправлять нельзя. Но если сообщение об открытии окна потеряется, стороны могут ждать друг друга бесконечно.\n\nОтправитель использует persist с периодическими zero-window probes. Проба вызывает ответ с актуальным размером окна; как только получатель объявит ненулевое окно, отправка новых данных сможет продолжиться. Новый handshake и изменение MSS эту ситуацию не решают."
+    },
+    "professional": {
+      "heading": "RFC 9293: zero receive window, persist probe, lost window update",
+      "body": "Согласно условию gap-pack2-21, ранее переданные байты ACKed, затем advertised receive window (rwnd) = 0, а новые данные появились позже. Sender должен приостановить обычную передачу новых байтов, однако обязан сохранять возможность выяснить, открылось ли окно, даже при потере window-update segment. Для этого предназначен persist timer с zero-window probes.\n\nProbe стимулирует ACK с текущим window advertisement; это не retransmission потерянных ранее подтверждённых данных. Поддерживай отличие flow control (rwnd) от congestion control (cwnd), не путай persist с RTO loss recovery или новым TCP handshake. В tcpdump/Wireshark сверяй Window Size 0, ZeroWindowProbe/ACK и затем Window Update, учитывая эвристический характер некоторых меток анализатора."
+    }
+  },
+  {
     "lessonId": "tcpip-encapsulation",
     "questionIds": [
       "tcp-05",

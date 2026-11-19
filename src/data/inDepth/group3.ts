@@ -143,6 +143,25 @@ export const GROUP3_LINKS: Record<string, string> = {
 
 export const GROUP3_SECTIONS: SectionLink[] = [
   {
+    "lessonId": "l1-poe-screen-reading",
+    "questionIds": [
+      "review-poe-30"
+    ],
+    "anchorId": "in-depth-poe-class-budget-camera",
+    "afterHeading": {
+      "plain": "Что можно узнать по наклейке и дисплею",
+      "professional": "PoE detection/classification"
+    },
+    "plain": {
+      "heading": "PoE-порт поддерживается, а камера не включается: класс и запас мощности",
+      "body": "Надпись PoE на порту не гарантирует, что он выдаст мощность, требуемую новой камерой. Сверь стандарт и класс питания камеры с возможностями порта и проверь остаток общего бюджета мощности коммутатора: другие устройства могли уже занять доступный резерв.\n\nОтсутствие IP и MAC-записи — следствие того, что камера может быть обесточена, а не первичная проверка PoE. Скорость 100 Мбит/с или 1 Гбит/с сама по себе не определяет наличие PoE."
+    },
+    "professional": {
+      "heading": "PoE troubleshooting: PSE/PD classification и оставшийся power budget",
+      "body": "Если PD (камера) не запитывается на порту с PoE, первым шагом проверь совместимый IEEE 802.3af/at/bt type/class, negotiated/requested power и фактическую доступную мощность PSE: бюджет шасси может быть исчерпан другими портами, а per-port power limit ниже запроса конкретного PD.\n\nИспользуй аппаратные счётчики PoE, состояние detection/classification, budget allocated/remaining и документацию камеры с учётом PTZ/нагревателей. Если питание выделяется, отдельно проверяй кабель, парность, падение напряжения и физические ошибки по доступным измерениям. Наличие адреса IP, MAC-записи или определённой скорости линка не является доказательством выдачи достаточного питания."
+    }
+  },
+  {
     "lessonId": "l3-ipv6",
     "questionIds": [
       "review-slaac-4"

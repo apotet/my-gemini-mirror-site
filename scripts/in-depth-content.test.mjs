@@ -90,6 +90,72 @@ assert.equal(m.splitGlossaryText('incomplete').find(s=>s.term)?.term,'incomplete
 assert.equal(m.getQuestionDeepDive(pool.find(q=>q.id==='l2-sec-13')).practiceLink,undefined,'No native VLAN capability promised by allowed-list-only trainer');
 assert.equal(m.getLessonForQuestion('unknown-l2-question'),undefined,'No invented fallback lesson');
 
+// Batch 03 evidence-gated routing: every concrete question opens its real two-mode section.
+// In particular syslog-25 must NOT be attached to the NTP KoD RATE-only section.
+const batch03Links=[
+  {
+    "id": "review-syslog-25",
+    "lessonId": "l7-services",
+    "anchorId": "in-depth-event-time-sync-timezone",
+    "plainExpected": "Как сопоставить события нескольких устройств по времени",
+    "proExpected": "Корреляция Syslog: NTP status, offset, UTC и event timestamp"
+  },
+  {
+    "id": "l1v2-a-category-limit",
+    "lessonId": "l1-copper-cable",
+    "anchorId": "in-depth-copper-assembly-category-rating",
+    "plainExpected": "Категорию сборки не видно по одному штекеру",
+    "proExpected": "Категория сборки: компонентные характеристики и проверка Channel"
+  },
+  {
+    "id": "l1v2-a-jacket-limit",
+    "lessonId": "l1-copper-cable",
+    "anchorId": "in-depth-copper-pvc-lszh-jacket-evidence",
+    "plainExpected": "PVC или LSZH: искать маркировку оболочки, а не категорию",
+    "proExpected": "Материал jacket отдельно от CAT, AWG и shielding"
+  },
+  {
+    "id": "l1v2-a-label-sftp",
+    "lessonId": "l1-copper-cable",
+    "anchorId": "in-depth-sftp-braid-foil-cable-marking",
+    "plainExpected": "S/FTP на оболочке: общий экран плюс фольга каждой пары",
+    "proExpected": "ISO/IEC x/yTP: S/FTP versus F/UTP and U/FTP"
+  },
+  {
+    "id": "l1v2-a-solid-use",
+    "lessonId": "l1-copper-cable",
+    "anchorId": "in-depth-copper-solid-permanent-link",
+    "plainExpected": "Solid-жилы: для неподвижной линии, а не подвижного шнура",
+    "proExpected": "Solid/stranded: permanent link versus repeatedly flexed patch cord"
+  },
+  {
+    "id": "review-poe-30",
+    "lessonId": "l1-poe-screen-reading",
+    "anchorId": "in-depth-poe-class-budget-camera",
+    "plainExpected": "PoE-порт поддерживается, а камера не включается: класс и запас мощности",
+    "proExpected": "PoE troubleshooting: PSE/PD classification и оставшийся power budget"
+  },
+  {
+    "id": "gap-pack2-21",
+    "lessonId": "tcp-window-retransmit",
+    "anchorId": "in-depth-tcp-zero-window-persist-recovery",
+    "plainExpected": "Получатель объявил окно 0: зачем нужны пробы persist",
+    "proExpected": "RFC 9293: zero receive window, persist probe, lost window update"
+  }
+];
+for (const {id,lessonId,anchorId,plainExpected,proExpected} of batch03Links) {
+ const lesson=m.getLessonForQuestion(id);
+ assert.equal(lesson?.id,lessonId,`${id}: correct actual lesson`);
+ assert.equal(m.getLessonSectionForQuestion(lessonId,id),anchorId,`${id}: precise topical anchor`);
+ for(const [mode,heading] of [['plain',plainExpected],['professional',proExpected]]) {
+   const matches=m.getLessonBlocksWithSections(lesson,mode).filter(b=>b.anchorId===anchorId);
+   assert.equal(matches.length,1,`${id}/${mode}: exactly one anchor`);
+   assert.equal(matches[0].heading,heading,`${id}/${mode}: correct section heading`);
+ }
+}
+assert.notEqual(m.getLessonSectionForQuestion('l7-services','review-syslog-25'),'in-depth-ntp-source-validity-rate','Syslog time-correlation must not link to NTP RATE section');
+
+
 // Grok batch-02 FIX: exact semantic routes, not a misleading nearby NS or ECN topic.
 for (const {id,lessonId,anchorId,plainKeyword,professionalKeyword} of [
   {id:'review-slaac-4',lessonId:'l3-ipv6',anchorId:'in-depth-slaac-ra-address-formation',plainKeyword:/RA|префикс/,professionalKeyword:/2001:db8:120::\/64/},

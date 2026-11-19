@@ -10,6 +10,8 @@
 
 **Ремонт после ревизии batch-02 (19.11):** два FIX от Грока устранены предметно: `review-slaac-4` привязан к `l3-ipv6#in-depth-slaac-ra-address-formation` (адрес через RA/A=1, не поиск NS); `review-qos-22` к `qos-basics#in-depth-dscp-classification-queue-congestion` (DSCP/classifier/egress queue, не ECN). Точные двустилевые секции добавлены в `group3.ts`, тесты в `in-depth-content.test.mjs`. Результаты не объявляются PASS до независимой повторной проверки.
 
+**Ревизия batch-03 (19.11):** Grok поставил 10 PASS в `3f1a9a5`, но в `review-syslog-25` одновременно поставил `lesson=REVIEW` и ошибочно описал якорь как `null` — фактически вопрос был прикреплён к NTP RATE. Исправлена ложная привязка; добавлен адресный раздел корреляции Syslog/NTP/timezone. Ещё шесть вопросов (`review-poe-30`, `l1v2-a-category-limit`, `l1v2-a-jacket-limit`, `l1v2-a-label-sftp`, `l1v2-a-solid-use`, `gap-pack2-21`) получили собственные два стиля и адресные якоря внутри существующих уроков. Все семь изменений требуют свежей независимой приёмки и 164×2 browser CI; нельзя закрывать GATE по отчёту автора правок.
+
 **Гейт:** независимая поимённая семантическая приёмка и CI/browser/staging smoke ещё не завершены. Не объявлять уровень DONE и не сливать Draft до полного PASS по регламенту. Production без изменений.
 
 ---
