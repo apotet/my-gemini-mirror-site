@@ -31,6 +31,9 @@ jobs:
       - name: Previous-answer attempt compatibility
         run: npm run test:in-depth-history
 
+      - name: Generate exact reference/current question explanation lesson glossary delta
+        run: bash scripts/in-depth-material-delta.sh
+
       - name: Compare 160 independent semantic-review fingerprints to current material
         run: node scripts/in-depth-review-fingerprint.mjs
 
