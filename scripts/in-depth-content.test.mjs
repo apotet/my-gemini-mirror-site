@@ -26,6 +26,7 @@ for(const {id,prohibited} of [
 
 const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
 assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
+assert.match(m.GLOSSARY.recvfrom.description,/вернуть 0/,'recvfrom glossary also keeps the zero-length result readable');
 // Batch-04 semantic corrections: a topic-specific practice hint, not the inherited OSI-layer slogan.
 for (const {id,rule} of [
   {id:'gap-pack3-08',rule:/UDP Checksum.*IPv6|UDP\/IPv6.*Checksum/},
