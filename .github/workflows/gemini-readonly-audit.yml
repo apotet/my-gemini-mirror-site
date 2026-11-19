@@ -63,6 +63,33 @@ jobs:
           fi
           grep -q 'Missing GitHub Actions secret GEMINI_API_KEY' /tmp/gemini-test.log
 
+      - uses: actions/checkout@v4
+        name: Frozen PR 264 fixture (no credentials, no API key)
+        with:
+          ref: 5df2a0b46116323201a6ae933a4c650e78b105db
+          path: subject
+          persist-credentials: false
+      - name: Install fixture bundler without lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Test exact-SHA extraction and both lesson modes
+        run: |
+          node scripts/gemini-audit-pack.mjs subject 'gap-pack2-27,gap-pack3-15,stp-new-09,l4-new-05' audit-pack/pack.json
+          node --input-type=module -e "
+            import assert from 'node:assert/strict';
+            import { readFileSync } from 'node:fs';
+            const p=JSON.parse(readFileSync('audit-pack/pack.json','utf8'));
+            assert.equal(p.sha,'5df2a0b46116323201a6ae933a4c650e78b105db');
+            assert.equal(p.records.length,4);
+            for (const r of p.records) {
+              assert.ok(r.question.text && r.question.answers.length===4);
+              assert.ok(r.explanation.plain && r.explanation.professional);
+              assert.ok(r.lesson.sections.plain.body && r.lesson.sections.professional.body);
+              assert.ok(r.materialHash.length===64);
+            }
+            assert.equal(p.records[3].lesson.id+'#'+p.records[3].lesson.anchorId,'l4-tcp#udp-checksum-ipv4-ipv6');
+          "
+
   collect:
     name: Read exact PR SHA and pack question material (NO secrets)
     if: github.event_name == 'workflow_dispatch'
