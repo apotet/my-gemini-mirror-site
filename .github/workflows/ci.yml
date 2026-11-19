@@ -188,7 +188,6 @@ jobs:
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
           node scripts/base-level.browser.mjs
-          node scripts/in-depth.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
@@ -203,4 +202,49 @@ jobs:
             scripts/.cache/review-browser/matrix-evidence.json
             scripts/.cache/validate-summary.txt
             scripts/.cache/in-depth/
+          if-no-files-found: ignore
+
+  in-depth-browser:
+    name: In-depth Understanding Chromium (shard ${{ matrix.shard }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci --no-fund --no-audit
+
+      - name: Build test version
+        run: npm run build
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+
+      - name: Validate all Understanding routes (shard ${{ matrix.shard }})
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          NETOPS_L2_SHARD_INDEX=${{ matrix.shard }} NETOPS_L2_SHARD_COUNT=4 node scripts/in-depth.browser.mjs
+
+      - name: Upload per-question browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: in-depth-browser-${{ matrix.shard }}
+          path: scripts/.cache/in-depth/browser/shard-${{ matrix.shard }}-of-4/
           if-no-files-found: ignore
