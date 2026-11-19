@@ -206,17 +206,6 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     }
   },
   {
-    "lessonId": "l7-dns",
-    "questionIds": [
-      "l4-d04"
-    ],
-    "anchorId": "in-depth-existing-l4-d04",
-    "afterHeading": {
-      "plain": "Усечение ответа и передача зоны",
-      "professional": "Усечение ответа и передача зоны"
-    }
-  },
-  {
     "lessonId": "tls-sni",
     "questionIds": [
       "l57-d02"
