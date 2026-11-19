@@ -14,5 +14,5 @@ Staging base: `46f9ec11b939cd306ba96b859a929994c14780b4`
 L1 pool: 220 → 216  
 L2 pool: 160 → 164
 
-Questions, keys, and explanations unchanged.  
+Question texts, options, answer keys, image references and saved attempt IDs are unchanged. Individualized explanations **were corrected** for `l1v2-a-poe-limit`, `l1v2-c-otdr-pulse` and `l4-d03` after independent review; see [the full six-ID review](l1-suspicious-six-20261119.md).  
 Old attempts continue by saved ID.
