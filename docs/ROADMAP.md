@@ -1,3 +1,11 @@
+## P0 · Gemini source-pack audit 4 ID и реальные типографические FIX — 19.11.2026
+
+**PR #264, авторская правка и проверка CI ещё открыты, публикация запрещена.** Gemini проверил пакет `NetOps_Gemini_4_questions_source_pack.md`, основанный на точном CI-снимке SHA `1bd3af7`, **не raw GitHub и не браузер**. В отличие от Grok, верно указал четыре связки `questionId → lessonId#anchorId`: `gap-pack2-27 → l4-tcp#in-depth-udp-empty-message`, `gap-pack3-15 → l7-services#in-depth-http-head-no-body`, `stp-new-09 → l2-stp-protection#indepth-udld-aggressive-neighbor`, `l4-new-05 → l4-tcp#udp-checksum-ipv4-ipv6`. Предметно подтвердил ключи и дистракторы, но навигацию, оригинальные TS-файлы и все GATE самостоятельно не проверял: **не считать полным независимым DONE**.
+
+Его замечания о склейках оказались настоящими текстовыми ошибками исходных секций в `src/data/inDepth/group1.ts` и `group2.ts`, а не артефактом CI: `равно8`, `результатом0`, `включает8`, `Length8`, `вернуть0`, `HEAD200`, `Content-Length5000`, `читать5000`, `Nбайт`, `как0xFFFF`. Исправлены только пробелы / форма `Length=8`; кроме этого аналогичная склейка `вернуть0` устранена в глоссарной подсказке `recvfrom`. `scripts/in-depth-content.test.mjs` теперь проверяет текст точных секций *в обоих стилях* по их реальным якорям и словарь. Ни ключи, ни варианты, ни механизмы объяснений не менялись. Последний SHA фикса `b1769f5fafba0a6ab1b248928168eea3f58166a5`; CI/browser и независимое принятие нового отпечатка проверить отдельно.
+
+---
+
 ## P0 · «Углублённый (Understanding)»: индивидуальные практические советы, 19.11.2026
 
 **Статус AUTHOR FIX / CI SEMANTIC BLOCK / INDEPENDENT RECHECK PENDING.** PR [#264](https://github.com/apotet/my-gemini-mirror-site/pull/264) остаётся Draft. Учебный код поправлен, но уровень **не DONE**, merge и deploy не разрешены.
