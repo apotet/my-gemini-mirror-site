@@ -169,7 +169,7 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     "anchorId": "receive-window-and-rtt",
     "afterHeading": {
       "plain": "Как отправитель не переполняет получателя",
-      "professional": "Zero Window, persist timer и правило Window Scale (RFC 9293, RFC 7323)"
+      "professional": "Как отправитель не переполняет получателя"
     },
     "plain": {
       "heading": "Почему маленькое окно мешает использовать быстрый канал",
@@ -284,7 +284,7 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     "anchorId": "http2-shared-tcp-order",
     "afterHeading": {
       "plain": "HTTP 206: куда записать полученную часть",
-      "professional": "HTTP 206 Partial Content и арифметика Content-Range"
+      "professional": "HTTP 206: куда записать полученную часть"
     },
     "plain": {
       "heading": "HTTP/2: разные потоки внутри одного TCP",
@@ -303,7 +303,7 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     "anchorId": "imap-shared-mailbox-state",
     "afterHeading": {
       "plain": "SMTP submission: STARTTLS на порту 587",
-      "professional": "Декодирование Syslog PRI и SMTP Submission (587 STARTTLS vs 465)"
+      "professional": "SMTP submission: STARTTLS на порту 587"
     },
     "plain": {
       "heading": "IMAP: общие папки и отметки на двух устройствах",
