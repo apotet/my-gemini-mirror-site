@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Require target PR 264 to remain at audited commit
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
           test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'Target PR head drifted: do not call Gemini'; exit 1; }
@@ -72,20 +72,20 @@ jobs:
 
       - name: FIRST bounded Gemini API call (no retries)
         env:
-          GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-4-hydrogen
         run: node trusted/scripts/gemini-audit-review.mjs audit-pack/first.json audit-output/first.md audit-output/first.json
 
       - name: Verify exact PR SHA before posting first report
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
           test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'PR changed, refuse stale advisory report'; exit 1; }
 
       - name: Post first read-only advisory to target PR
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment 264 --repo "$GITHUB_REPOSITORY" --body-file audit-output/first.md
           cat audit-output/first.md >> "$GITHUB_STEP_SUMMARY"
@@ -109,7 +109,7 @@ jobs:
       - name: Verify no drift before optional second Gemini call
         if: steps.first-gate.outputs.proceed == 'true'
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
           test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'PR changed before second batch'; exit 1; }
@@ -117,14 +117,14 @@ jobs:
       - name: OPTIONAL SECOND bounded Gemini API call (only after 4 PASS)
         if: steps.first-gate.outputs.proceed == 'true'
         env:
-          GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-4-hydrogen
         run: node trusted/scripts/gemini-audit-review.mjs audit-pack/second.json audit-output/second.md audit-output/second.json
 
       - name: Verify exact PR SHA before posting second report
         if: steps.first-gate.outputs.proceed == 'true'
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
           test "$ACTUAL" = 'c7ca35f7c747f93f827089bc97464c4d965c6834' || { echo 'PR changed, refuse stale advisory report'; exit 1; }
@@ -132,7 +132,7 @@ jobs:
       - name: Post second read-only advisory to target PR
         if: steps.first-gate.outputs.proceed == 'true'
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr comment 264 --repo "$GITHUB_REPOSITORY" --body-file audit-output/second.md
           cat audit-output/second.md >> "$GITHUB_STEP_SUMMARY"
