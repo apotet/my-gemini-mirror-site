@@ -8,6 +8,22 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+// Gemini independent material review: typography must remain legible in BOTH lesson modes.
+// Pin the exact question section instead of checking arbitrary lesson text or a CI extract.
+for(const {id,prohibited} of [
+  {id:'gap-pack2-27',prohibited:/(?:равно|результатом|включает|Length|вернуть)\d/},
+  {id:'gap-pack3-15',prohibited:/(?:HEAD|Content-Length|читать)\d|Nбайт/},
+  {id:'l4-new-05',prohibited:/как0x[0-9a-f]+/i},
+]) {
+  const lesson=m.getLessonForQuestion(id), anchor=m.getLessonSectionForQuestion(lesson.id,id);
+  assert.ok(anchor,`${id}: contextual anchor exists`);
+  for(const mode of ['plain','professional']) {
+    const section=m.getLessonBlocksWithSections(lesson,mode).find(b=>b.anchorId===anchor);
+    assert.ok(section?.body,`${id}: ${mode} exact lesson paragraph exists`);
+    assert.doesNotMatch(section.body,prohibited,`${id}: no glued words/numbers in ${mode} lesson section`);
+  }
+}
+
 const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
 assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
 // Batch-04 semantic corrections: a topic-specific practice hint, not the inherited OSI-layer slogan.
