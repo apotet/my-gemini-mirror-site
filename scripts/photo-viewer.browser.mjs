@@ -195,7 +195,7 @@ try {
         await page.getByRole('button',{name:'Посмотреть разбор последней попытки',exact:true}).click();
         const reviewCard = page.locator('.review-question').filter({hasText:q.text});
         await reviewCard.waitFor();
-        if (await reviewCard.getAttribute('open') === null) await reviewCard.locator('summary').click();
+        if (await reviewCard.getAttribute('open') === null) await reviewCard.locator(':scope > summary').click();
         const reviewTrigger = reviewCard.getByRole('button',{name:/^Открыть .* на весь экран$/});
         await reviewTrigger.waitFor();
         await reviewTrigger.click();
