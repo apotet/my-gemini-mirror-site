@@ -288,7 +288,7 @@
     "src/types/quiz.ts": "cd539016e98143bab6af89e0138f97e8fa8064b175c12e0c27ee649422ff09a6",
     "src/utils/examProgress.ts": "4778b5ba1c7e869c751b94e32fe70a1206133245bd1942fcf307650f61200c43",
     "src/utils/examReview.ts": "7af2f70b2e846501a6f106454a174dd7ff41e29b6480040ec5180c323dc093f7",
-    "src/utils/glossaryText.ts": "61fc4ceff621b0986dc546d668aa3eef66c8b37d2e311a67be984434ffda52e8",
+    "src/utils/glossaryText.ts": "ac534593ba4adb89c1c924c474b7ee2b48767076fef25e1e4760253ff6e77dfb",
     "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
     "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
     "src/utils/studyTextMode.ts": "f3f445edb541a99643aa7bc817ede0b919f9692154f880552586a1b013d8a27c",
