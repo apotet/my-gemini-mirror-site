@@ -6,7 +6,7 @@
     "6877139540",
     "6877141640"
   ],
-  "auditProjectionSHA256": "f9a2b686e0a7d7f6751df61d0df7572d6277635308b6f300b1e1419464b994a2",
+  "auditProjectionSHA256": "8360edd644a2c9f39a4ed5124e69c701d2d0c8335a31a4b5233e567b93f28fd7",
   "bankSHA256": "905f48a0ed6f3dd49d1e3236547609d4afc819de6c58c3274931703fc56fc896",
   "auditDrift": [
     {
@@ -274,7 +274,7 @@
     "src/data/monitoringCases.ts": "325649898219baeaeb7cd7569d29174dc7b3938509f0225a2ddebf610beb2b68",
     "src/data/practiceLinks.ts": "b0e3ce45c2b5353007c360134b003661244fb6084c8e561aa4cc5d765cfd11f8",
     "src/data/previousDiagnosticQuestions.ts": "faca1ed9e6d4a5b0a5f59a8428e2ca24833d0210329e1e397367cdf92c4f2dad",
-    "src/data/questionExplanations.ts": "94c8e2885bc4be203b04ede3039ee6f0d5807538686cd580260d5488a9f5ee93",
+    "src/data/questionExplanations.ts": "6e218ed527bc6a363035fe27f14acc5f6e58d6fdf8af59578cf8c2eb8913cad7",
     "src/data/questionExplanationsApplied.ts": "636ac5c410156c16b558dd35ae83c163c172bbb9629c4ee2833cde83097362b1",
     "src/data/questions.json": "cd10f9a74bf58e68721378bd55b07b47e338e052c20ef147c4e0fe4d15c9fa62",
     "src/data/questionsData.ts": "9c5494e3dbbfdc9c97f04028fca59594d11d80d92b835c343c1976a6c9c8d189",

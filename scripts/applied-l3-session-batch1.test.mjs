@@ -130,5 +130,8 @@ assert.ok(!splitGlossaryText('Search and Bind are generic English words')
   .some(part => ['LDAP Bind', 'LDAP Search'].includes(part.term)), 'LDAP term scope does not leak to generic words');
 
 const l2 = ALL_QUESTIONS.filter(q => registry[q.id]?.status === 'ASSIGNED' && registry[q.id]?.learningLevel === 2);
-assert.equal(l2.length, 160, 'Codex L2 selection unchanged');
-console.log('PASS: 12 L3 source keys unchanged; 12 individual pro + existing plain/trap; 2 two-style lessons and reverse links; 160 L2 untouched');
+assert.equal(l2.length, 164, 'L2 grows only through the separate four-ID L1->L2 review');
+for (const id of ['l3-d05', 'l4-d03', 'l4-d05', 'tcpip-d05']) {
+  assert.ok(l2.some(question => question.id === id), id + ' moved to L2');
+}
+console.log('PASS: 12 L3 source keys unchanged; 12 individual pro + existing plain/trap; 2 two-style lessons and reverse links; 164 L2 after the separate semantic review');

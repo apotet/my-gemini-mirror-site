@@ -13,13 +13,55 @@ const originalBank = JSON.stringify(ALL_QUESTIONS);
 const originalRegistry = JSON.stringify(registry);
 // Independent acceptance oracle: read the source JSON, not the selector's derived pools.
 const sourceRegistry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
-const totals = [220, 160, 376, 88, 18];
+const totals = [216, 164, 376, 88, 18];
+ 
+// Issue #257: content + selector + legacy-session regression for six concrete tickets.
+// Previously the photo questions displayed a technically true explanation of a DIFFERENT question.
+const sixL1Review = {
+  'l1v2-a-poe-limit': { level: 1, index: 1, answer: /PSE Type 1\/2.*3,6.*1,2/s, detail: /положительные 3,6.*отрицательные 1,2/s },
+  'l1v2-c-otdr-pulse': { level: 1, index: 1, answer: /100 нс|100 ns/i, detail: /100 ns/i },
+  'l3-d05': { level: 2, index: 0, answer: /адрес|порт/i, detail: /PAT/i },
+  'l4-d03': { level: 2, index: 0, answer: /TIME-WAIT/i, detail: /2MSL/i },
+  'l4-d05': { level: 2, index: 0, answer: /SACK|част/i, detail: /SACK/i },
+  'tcpip-d05': { level: 2, index: 0, answer: /перегруз/i, detail: /ECN/i },
+};
+for (const [id, expected] of Object.entries(sixL1Review)) {
+  const q = ALL_QUESTIONS.find(question => question.id === id);
+  assert.ok(q, 'approved ticket exists: ' + id);
+  assert.equal(sourceRegistry[id].learningLevel, expected.level, id + ': reviewed level');
+  assert.deepEqual(q.correct, [expected.index], id + ': original answer key');
+  const deep = getQuestionDeepDive(q);
+  assert.match(deep.briefAnswer, expected.answer, id + ': answers the actual question');
+  assert.match(deep.deepAnalysis, expected.detail, id + ': plain materially addresses question');
+  assert.ok(deep.professional?.deep?.length > 55, id + ': professional explanation is substantial');
+  const lesson = getLessonForQuestion(id);
+  assert.ok(lesson?.blocks?.length && lesson?.professional?.blocks?.length,
+    id + ': both styles of a real linked lesson');
+}
+const poe = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === 'l1v2-a-poe-limit'));
+assert.doesNotMatch(poe.briefAnswer, /54,6|60 Вт/, 'PoE photo answer must not be replaced with unrelated power budget');
+const otdr = getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === 'l1v2-c-otdr-pulse'));
+assert.doesNotMatch(otdr.briefAnswer, /уменьшить|укоротить/i, 'OTDR reading is not a pulse-selection task');
+const movedFromBase = ['l3-d05', 'l4-d03', 'l4-d05', 'tcpip-d05'];
+const movedOldAttempt = {
+  ...prepareAttemptQuestions(ALL_QUESTIONS.filter(q => movedFromBase.includes(q.id)), seeded(17)),
+  currentIndex: 0, userAnswers: {}, submittedQuestions: {}, startTime: Date.now() - 1000,
+  isCompleted: false, mode: 'mixed', feedbackMode: 'exam', difficulty: 'beginner', requestedCount: 4,
+};
+const recoveredMovedOldAttempt = restoreSession(JSON.stringify(movedOldAttempt), ALL_QUESTIONS, Date.now());
+assert.ok(recoveredMovedOldAttempt, 'existing Base attempts with relocated L2 questions still restore');
+assert.deepEqual(recoveredMovedOldAttempt.questions, movedOldAttempt.questions,
+  'reclassified L2 tickets are not resampled or have their shuffled answers changed');
+assert.ok(getTestingPool('mixed', 'beginner').every(q => !movedFromBase.includes(q.id)));
+assert.ok(movedFromBase.every(id => getTestingPool('mixed', 'in-depth').some(q => q.id === id)));
+console.log('PASS: six ID question/answer/plain/pro/lesson links and legacy Base attempt restoration');
+
 const review = ALL_QUESTIONS.filter(q => registry[q.id].status === 'REVIEW');
 assert.equal(review.length, 0);
 assert.equal(LEARNING_LEVEL_REVIEW_COUNT, 0);
 const understanding = ALL_QUESTIONS.filter(({ id }) =>
   sourceRegistry[id].status === 'ASSIGNED' && sourceRegistry[id].learningLevel === 2);
-assert.equal(understanding.length, 160);
+assert.equal(understanding.length, 164);
 for (const { id: mode } of QUIZ_MODES) {
   const pool = understanding.filter(q => mode === 'mixed' || q.group === mode);
   assert.deepEqual(getTestingPool(mode, 'in-depth'), pool);
