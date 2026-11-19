@@ -160,6 +160,39 @@ try {
         assert.notEqual(await page.evaluate(() => document.body.style.overflow), 'hidden', 'background scroll restored');
         assert.equal(await page.evaluate(() => localStorage.getItem('osi_active_session')),oldSession,
           'zooming photos never changes questions, answers or saved attempt');
+
+        // The completed-attempt review used to show a static, non-zoomable img.
+        // It must now use the same tested viewer and preserve the saved review.
+        const finished = {
+          ...JSON.parse(oldSession), isCompleted: true, endTime: Date.now(),
+          submittedQuestions: {[q.id]:true}, userAnswers: {[q.id]:q.correct},
+        };
+        await page.evaluate(review => {
+          localStorage.setItem('osi_last_exam_review_v1', JSON.stringify({version:1,session:review}));
+          localStorage.removeItem('osi_active_session');
+        }, finished);
+        await page.reload();
+        await page.getByRole('button',{name: mobile ? 'Тесты' : 'Тестирование',exact:true}).click();
+        await page.getByRole('button',{name:'Посмотреть разбор последней попытки',exact:true}).click();
+        const reviewCard = page.locator('.review-question').filter({hasText:q.text});
+        await reviewCard.waitFor();
+        if (await reviewCard.getAttribute('open') === null) await reviewCard.locator('summary').click();
+        const reviewTrigger = reviewCard.getByRole('button',{name:/^Открыть .* на весь экран$/});
+        await reviewTrigger.waitFor();
+        await reviewTrigger.click();
+        const reviewDialog = page.getByRole('dialog');
+        await reviewDialog.waitFor();
+        const reviewImage = reviewDialog.locator('[data-photo-viewer-image]');
+        const reviewSurface = reviewDialog.locator('[data-photo-viewer-pan]');
+        await page.waitForFunction(() => document.querySelector('[data-photo-viewer-image]') instanceof HTMLImageElement &&
+          document.querySelector('[data-photo-viewer-image]').naturalWidth > 0);
+        within(await safeRect(reviewImage,reviewSurface), 'completed review photo fits at 100%');
+        await reviewDialog.getByRole('button',{name:'Масштаб 50%',exact:true}).click();
+        within(await safeRect(reviewImage,reviewSurface), 'completed review photo fits at 50%');
+        await reviewDialog.getByRole('button',{name:'Закрыть'}).click();
+        assert.equal(await reviewDialog.count(),0,'completed review photo dialog closes');
+        assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')),
+          JSON.stringify({version:1,session:finished}), 'photo zoom never changes historical completed review');
         assert.deepEqual(errors,[], 'no browser exceptions at ' + width + '/' + photo.type);
         await page.close();
       } catch(e) {
@@ -173,4 +206,4 @@ try {
 } finally {
   await browser.close();
 }
-console.log('PASS: portrait/landscape; 375/1440px; full fit, 50/75/100%, wheel, double-click, mouse/touch pan, pinch, session safety');
+console.log('PASS: portrait/landscape; 375/1440px; full fit 50/75/100%, wheel, mouse/touch pan, pinch, and completed-review photo zoom with session safety');
