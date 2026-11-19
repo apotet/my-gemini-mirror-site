@@ -1,0 +1,192 @@
+name: Gemini read-only NetOps reviewer
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gemini-readonly-audit.yml'
+      - 'scripts/gemini-audit-*.mjs'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Staging PR number (same repository, base main)'
+        required: true
+        default: '264'
+        type: string
+      ids:
+        description: '1-10 unique question IDs, comma-separated'
+        required: true
+        default: 'gap-pack2-27,gap-pack3-15,stp-new-09,l4-new-05'
+        type: string
+      model:
+        description: 'Gemini model (Gemini API quota is separate from Gemini app)'
+        required: true
+        type: choice
+        default: 'gemini-2.5-flash'
+        options:
+          - 'gemini-2.5-flash'
+          - 'gemini-2.5-pro'
+      dry_run:
+        description: 'Only generate and validate source pack; DO NOT call Gemini or spend API tokens'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-manual-audit-${{ github.repository }}-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  audit-script-contract:
+    name: Check trusted reviewer scripts (no API key)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JS syntax checks
+        run: |
+          node --check scripts/gemini-audit-pack.mjs
+          node --check scripts/gemini-audit-review.mjs
+      - name: Confirm missing API key fails closed
+        run: |
+          if node scripts/gemini-audit-review.mjs nonexistent.json /tmp/out.md /tmp/out.json > /tmp/gemini-test.log 2>&1; then
+            echo 'Reviewer unexpectedly succeeded without secret' >&2
+            exit 1
+          fi
+          grep -q 'Missing GitHub Actions secret GEMINI_API_KEY' /tmp/gemini-test.log
+
+  collect:
+    name: Read exact PR SHA and pack question material (NO secrets)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.resolve-pr.outputs.sha }}
+      pr: ${{ steps.resolve-pr.outputs.pr }}
+    steps:
+      - name: Resolve PR and reject external branches
+        id: resolve-pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_PR: ${{ inputs.pr_number }}
+        run: |
+          if ! [[ "$REQUESTED_PR" =~ ^[1-9][0-9]{0,6}$ ]]; then
+            echo 'Invalid PR number' >&2
+            exit 1
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$REQUESTED_PR" > /tmp/pr.json
+          if [[ "$(jq -r '.head.repo.full_name' /tmp/pr.json)" != "$GITHUB_REPOSITORY" ]]; then
+            echo 'Cross-repo PRs are not allowed' >&2
+            exit 1
+          fi
+          if [[ "$(jq -r '.base.ref' /tmp/pr.json)" != 'main' ]] || [[ "$(jq -r '.state' /tmp/pr.json)" != 'open' ]]; then
+            echo 'Only open PRs targeting staging main are allowed' >&2
+            exit 1
+          fi
+          echo "sha=$(jq -r '.head.sha' /tmp/pr.json)" >> "$GITHUB_OUTPUT"
+          echo "pr=$REQUESTED_PR" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        name: Trusted audit scripts from workflow SHA
+        with:
+          ref: ${{ github.sha }}
+          path: audit-tools
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        name: Target PR snapshot without a write token
+        with:
+          ref: ${{ steps.resolve-pr.outputs.sha }}
+          path: subject
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install target bundler without package lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build strict exact-SHA material snapshot
+        env:
+          TARGET_IDS: ${{ inputs.ids }}
+        run: node audit-tools/scripts/gemini-audit-pack.mjs subject "$TARGET_IDS" audit-pack/pack.json
+
+      - name: Upload read-only source pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-audit-source-pack
+          path: audit-pack/pack.json
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Show dry-run instructions
+        if: inputs.dry_run
+        run: echo "Dry run complete. NO Gemini API requests, NO merge, NO PR comments." >> "$GITHUB_STEP_SUMMARY"
+
+  review:
+    name: Gemini semantic review (read-only, optional)
+    needs: collect
+    if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        name: Trusted audit reviewer from staging main
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: gemini-audit-source-pack
+          path: audit-pack
+
+      - name: One bounded Gemini API call, no retries
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack.json audit-output/report.md audit-output/report.json
+
+      - name: Fail if target PR changed during audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL_SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
+          if [[ "$ACTUAL_SHA" != "$TARGET_SHA" ]]; then
+            echo 'PR moved; refuse to post stale audit as current' >&2
+            exit 1
+          fi
+
+      - name: Publish advisory report to PR (never approve or merge)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ needs.collect.outputs.pr }}
+        run: |
+          cat audit-output/report.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$TARGET_PR" --repo "$GITHUB_REPOSITORY" --body-file audit-output/report.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemini-audit-advisory-report
+          path: audit-output/
+          retention-days: 14
+          if-no-files-found: error
