@@ -1,3 +1,15 @@
+## IN PROGRESS / BLOCK — Understanding 164: точные ссылки на уроки (19.11.2026)
+
+**PR #264, новый код после независимого snapshot `5df2a0b`.** После выявленного отсутствия якоря `gap-pack2-05` привязаны четыре билета к тематическим разделам существующих уроков, не изменяя вопросы и правильные ответы:
+- `gap-pack2-05` → `tcpip-encapsulation#in-depth-fcs-ipv4-header-payload-scope` (FCS на текущем участке, IPv4 header checksum и изменившаяся payload);
+- `gap-pack2-10` → `tcpip-encapsulation#in-depth-ppp-ipcp-first-ipv4-packet` (PPP Protocol=0x0021, IPCP уже согласован);
+- `gap-pack2-11` → `l7-dns#in-depth-dns-aaaa-noerror-nodata` (NOERROR/NODATA, A существует, AAAA отсутствует, TC=0);
+- `gap-pack2-16` → существующий `l7-services#in-depth-ntp-source-validity-rate` (KoD RATE; правки читабельности Stratum).
+
+Добавлены строгие проверки обоих стилей уроков, точных якорей и инвентаризация 164-ID покрытия `scripts/.cache/in-depth/anchor-inventory.json`. **Ни один прежний Gemini PASS не переносится автоматически на новую версию материала.** До зелёного CI, независимого semantic-delta review, GATE-01…10, текущих fingerprint, проверки истории и опубликованного staging статус остаётся **DRAFT/BLOCK**. Production не менялся.
+
+---
+
 ## P0 · Gemini source-pack audit 4 ID и реальные типографические FIX — 19.11.2026
 
 **PR #264, авторская правка и проверка CI ещё открыты, публикация запрещена.** Gemini проверил пакет `NetOps_Gemini_4_questions_source_pack.md`, основанный на точном CI-снимке SHA `1bd3af7`, **не raw GitHub и не браузер**. В отличие от Grok, верно указал четыре связки `questionId → lessonId#anchorId`: `gap-pack2-27 → l4-tcp#in-depth-udp-empty-message`, `gap-pack3-15 → l7-services#in-depth-http-head-no-body`, `stp-new-09 → l2-stp-protection#indepth-udld-aggressive-neighbor`, `l4-new-05 → l4-tcp#udp-checksum-ipv4-ipv6`. Предметно подтвердил ключи и дистракторы, но навигацию, оригинальные TS-файлы и все GATE самостоятельно не проверял: **не считать полным независимым DONE**.
