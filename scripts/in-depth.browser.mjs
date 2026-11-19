@@ -77,6 +77,8 @@ try {
     await button(`Вернуться к вопросу ${q.id}`).click();await review.waitFor({state:'visible'});
     assert.equal(await page.evaluate(()=>localStorage.getItem('osi_last_exam_review_v1')),saved,q.id+': saved review immutable');
     assert.equal(await page.evaluate(()=>localStorage.getItem('osi_user_progress_v4')),progress,q.id+': no statistics writes');
+    await button('К каталогу').click();
+    await search.waitFor({state:'visible'});
     evidence.push({id:q.id,width,lessonId:lesson.id,anchor:anchor??null,questionStyles:true,lessonStyles:true,returnToQuestion:true,historicalSnapshot:true,layout:true});
     console.log(`PASS ${width} ${q.id} -> ${lesson.id}${anchor?'#'+anchor:''} -> exact return`);
   }

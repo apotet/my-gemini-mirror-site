@@ -205,7 +205,7 @@
     "src/components/TheoryPorts.tsx": "fed1c566940c57bc0731b4a47eb01d96f5be184febb7fbb3fd0d5948cc61e352",
     "src/components/TheoryRazbory.tsx": "7db94b8e84732c008f62837a826b94a5f303c4536015887bbef05f1080e92d08",
     "src/components/TheoryScenarios.tsx": "3545f0c64adadd5ed3f97ca725cfca8d1040ba04f642fc70c08c523c12136992",
-    "src/components/TheoryView.tsx": "d1e52afc314db35e98229a1a363ff4f6506079c081fc56d1e40db3651f4de532",
+    "src/components/TheoryView.tsx": "49662515fdefb04562c8fd654bda31353bad1b9226c4d254a515f5036c36d98d",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
     "src/components/ZoomableImage.tsx": "915eb1df7e58e5a124982da66f254aa36e76051bc3e97944aed3e395977ead53",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
@@ -720,7 +720,7 @@
       "branch": "integrate/in-depth-164-codex-gemini-20261119",
       "sourceMain": "ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f",
       "status": "DRAFT / independent semantic review and CI pending",
-      "reason": "Understanding 164 curated double-style explanations, exact lesson anchors, glossary, limited answer wording and distractor clarifications. Pre-edit bank content must match old 905f48... fingerprint by reconstructing exact five historical option sets. Preserve #258/#262 and old attempts; update protected SHA only for enumerated edited files, not broader allowlist.",
+      "reason": "Understanding 164 curated double-style explanations, exact lesson anchors, glossary, limited answer wording and distractor clarifications. Pre-edit bank content must match old 905f48... fingerprint by reconstructing exact five historical option sets. Preserve #258/#262 and old attempts; update protected SHA only for enumerated edited files, not broader allowlist. Browser acceptance uncovered a real TheoryView regression: returning lesson→question left local focusQuestionId set and 'К каталогу' could not restore the catalogue; clear both parent and local focus. Browser regression checks the full return chain.",
       "previousBankSHA256": "905f48a0ed6f3dd49d1e3236547609d4afc819de6c58c3274931703fc56fc896",
       "newBankSHA256": "c7cc71535f4b06adcaf55c4e60f4fa6e5c4d275f9cf895883d759073ce11c00f",
       "files": [
@@ -803,6 +803,11 @@
           "path": "src/data/lessons/tcp-window-retransmit.ts",
           "previousSHA256": "f90e3447f0cc2343b096a0f128c432e14f17104b21855c5e3b21a56fdc333fc2",
           "newSHA256": "a50b905c5d793053a891963e1f626286eaf52bb3a29116bfdd7d16892f26f12c"
+        },
+        {
+          "path": "src/components/TheoryView.tsx",
+          "previousSHA256": "d1e52afc314db35e98229a1a363ff4f6506079c081fc56d1e40db3651f4de532",
+          "newSHA256": "49662515fdefb04562c8fd654bda31353bad1b9226c4d254a515f5036c36d98d"
         }
       ]
     }
