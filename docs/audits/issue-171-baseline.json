@@ -207,7 +207,7 @@
     "src/components/TheoryScenarios.tsx": "3545f0c64adadd5ed3f97ca725cfca8d1040ba04f642fc70c08c523c12136992",
     "src/components/TheoryView.tsx": "d1e52afc314db35e98229a1a363ff4f6506079c081fc56d1e40db3651f4de532",
     "src/components/VlanSimulator.tsx": "4a90e39aa05b8abd408c2b41300097e55ddd053330d89869ee52150ec758d525",
-    "src/components/ZoomableImage.tsx": "e34a1ae31e74ffad2f6c757d86901823b22d1e53e5770f917e34167d35aad8ee",
+    "src/components/ZoomableImage.tsx": "915eb1df7e58e5a124982da66f254aa36e76051bc3e97944aed3e395977ead53",
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
     "src/data/expertCases177.ts": "dea438970efdf30aeaa5efb4226eb99682be8f83ed226f0ceab04565a60766c8",
     "src/data/expertCases225.ts": "d714ba4489a10e5ed3dde244e2f0fc807b8923777fed6510384352b70e7d1d8d",
