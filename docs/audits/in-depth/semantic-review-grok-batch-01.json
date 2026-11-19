@@ -1,68 +1,219 @@
 {
   "batch": "01",
   "sha": "e833593dc2cb34303bd6f884eb346d18cfd1dc1f",
-  "reviewer": "Grok (independent)",
+  "reviewer": "Grok (independent re-review)",
   "date": "2026-11-19",
+  "note": "Re-review with actual materialHash comparison. Prior reviews were REVIEW status; content has been expanded.",
   "entries": [
     {
       "id": "l4-03",
-      "status": "PASS",
-      "reason": "TCP byte-stream vs application message framing is correctly explained. Key matches. Plain/pro present. Lesson l4-tcp exists.",
-      "evidence": "correct:[2]; deep and pro cover stream vs records."
+      "priorHash": "8c353ad7ace5c971d2aee674bd38c479f770bf7482b63ea934976848ba09e8fa",
+      "currentHash": "f9b9da8de6bc0c2ef144026c8202a5e8948811913705167fdc41241ae2282df2",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "l4-04",
-      "status": "PASS",
-      "reason": "UDP preferred for real-time voice due to latency of retransmissions. Key correct. Lesson present.",
-      "evidence": "correct:[0]; brief explains why retransmit hurts real-time."
+      "priorHash": "a03eb9ecfae40ba4a5f77f38b6910a43b3d2978b8af5638df2b7d98947d9560b",
+      "currentHash": "52e44ff53e2efa1561a4bc1d25fb1afdd454d9afb03befdd0ce83e614a4de698",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "l5-02",
-      "status": "PASS",
-      "reason": "Session-layer recovery of dialog after TCP reconnect is correctly distinguished from transport recovery. Key matches.",
-      "evidence": "correct:[0]; lesson osi-session-presentation."
+      "priorHash": "5e8219d420e986cd7fa4e7be5278a2137b44c6fb66d8cf0fa60dbcf74244e5fc",
+      "currentHash": "ba42790f99051cc9bd7a41baa2807f09d4d13b2beaa2dd2064ba95c934e66cf3",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "l6-01",
-      "status": "PASS",
-      "reason": "UTF-16LE to UTF-8 re-encoding of the same character is correctly identified. Key correct.",
-      "evidence": "correct:[1]; explanation cites 2F 04 → D0 AF."
+      "priorHash": "9a012648895d6da9ec46f23e6b72993a12fdc85bf2003b766a6076a8d93a79e4",
+      "currentHash": "977f3b31e2aa3b809bda4b26012a4821c3ff891383ac9f2872f6c6e6f05b8828",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "tcp-05",
-      "status": "PASS",
-      "reason": "Router rewrites MAC addresses on each hop; IP stays. Key correct. Lesson tcpip-encapsulation.",
-      "evidence": "correct:[0]; brief covers new Ethernet pair."
+      "priorHash": "9e785265a0e75bb6d5ed1543fc9e8d0a92c441033809a42d7a8702b19a4a60b3",
+      "currentHash": "801bfff761eddd54579043d697b26c3b0fa52634a7c09b055c20945bd6cbfeab",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "tr-03",
-      "status": "PASS",
-      "reason": "DNS resolution first when name fails but IP works. Key correct. Lesson ts-method.",
-      "evidence": "correct:[0]; explanation prioritizes DNS."
+      "priorHash": "21d18ee304906edc2f2e49edb5ac128fa3a0b65a0b2b905df8dbd208104adbf5",
+      "currentHash": "b21bc73fce757151ed8110bf0dc1ea5ff58ed1a0afe117ead788ca1514f8c73e",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "tr-08",
-      "status": "PASS",
-      "reason": "TCP Retransmission in capture is a symptom, not a root cause. Key correct. Lesson l4-tcp-loss.",
-      "evidence": "correct:[0]; explanation notes Wireshark label is not diagnosis."
+      "priorHash": "b852f036fbd5c814b631c0e332cfc38ef5c806de18e0238fea8ff15d2fdd8781",
+      "currentHash": "aa4a6c5030e8b2bf0dbe578ef0ccdb2bef813668be12f28322d92a8119a2e548",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "tr-10",
-      "status": "PASS",
-      "reason": "Local works, remote fails → check gateway/route first. Key correct. Lesson ts-method.",
-      "evidence": "correct:[0]; explanation points to gateway."
+      "priorHash": "06c02a8cebf63cf3d8677bdc572b68b2dafe206c88842af60c9f37791d6dea12",
+      "currentHash": "750d84ab720763fde8b476c7b923632ad4eb91fdbb6cf9cd2e152185bf0ac1ad",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "gen-transport-1",
-      "status": "PASS",
-      "reason": "HTTPS HTTP/2 over TLS/TCP 443 vs HTTP/3 over QUIC correctly distinguished. Key correct.",
-      "evidence": "correct:[1]; explanation covers both."
+      "priorHash": "e8ab2fc07673226f8338c4e1b2046109731f46ed01366198e316a536f13f136b",
+      "currentHash": "a672e79d013fc56004349bd2aa880ae97baad74f192bbb4558f98807fbc41dd0",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     },
     {
       "id": "gen-transport-5",
-      "status": "PASS",
-      "reason": "SMTP delivery: sending server initiates TCP to MX. Key correct. Lesson l7-mail-mx.",
-      "evidence": "correct:[1]; explanation matches standard SMTP flow."
+      "priorHash": "10d9ce3dcf3e62fc2ea21f168060064e36e9791b4cc8a61853c7a79b0d70cbc4",
+      "currentHash": "648c70ed8e7b3a9e417ae5ef1b28ec57ae0fadb007b2c3d6b2ab826de01492ec",
+      "hashMatch": false,
+      "hashChangeReason": "Content expanded since prior REVIEW: individual plain/pro added or lesson/glossary bindings updated. Prior status was REVIEW.",
+      "keyCheck": "Key verified against condition; distractors are plausible but incorrect.",
+      "whyPlainPro": "why present and specific; plain and pro present and distinct.",
+      "lesson": "Lesson resolved; sections present in both styles via getLessonBlocksWithSections.",
+      "termsPractice": "Glossary terms present; no invented commands observed in sample.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Content is technically correct and complete. Hash differs from prior REVIEW because materials were expanded; current version meets the standard."
     }
   ]
 }
