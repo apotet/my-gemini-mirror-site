@@ -47,6 +47,7 @@ assert.deepEqual(historicalOutsideDrift.sort(),[...expectedDrift.keys()].sort(),
 for(const id of Object.keys(m.IN_DEPTH_PATCHES))assert.ok(assignedIds.includes(id),`No content patches outside L2 ${id}`);
 for(const id of Object.keys(m.IN_DEPTH_LESSON_LINKS))assert.ok(assignedIds.includes(id),`No links outside L2 ${id}`);
 const rows=[];
+const missingLessonTerms=new Set();
 for(const q of pool) {
   const d=m.getQuestionDeepDive(q),lesson=m.getLessonForQuestion(q.id);
   assert.ok(d.hasIndividualDeep,`${q.id}: no generated fallback`);
@@ -64,10 +65,11 @@ for(const q of pool) {
   for(const mode of ['plain','professional']) {
     const blocks=m.getLessonBlocksWithSections(lesson,mode);
     if(anchor)assert.equal(blocks.filter(b=>b.anchorId===anchor).length,1,`${q.id}: ${mode} exact section`);
-    for(const term of (mode==='plain'?lesson.terms:lesson.professional.terms)) assert.ok(m.GLOSSARY[term]?.description?.trim(),`${lesson.id}/${mode}: active tag ${term}`);
+    for(const term of (mode==='plain'?lesson.terms:lesson.professional.terms)) if(!m.GLOSSARY[term]?.description?.trim()) missingLessonTerms.add(`${lesson.id}/${mode}: ${term}`);
   }
   rows.push({id:q.id,lessonId:lesson.id,anchor:anchor??null,individual:true,plain:true,professional:true,semantic:'REQUIRES_INDEPENDENT_REVIEW'});
 }
+assert.deepEqual([...missingLessonTerms].sort(),[], 'Every term in every referenced lesson has a live glossary entry');
 for(const [term] of Object.entries(m.IN_DEPTH_TERMS)) {
   assert.ok(m.GLOSSARY[term]?.description&&m.GLOSSARY[term]?.relatesTo,`Useful definition/context: ${term}`);
   assert.ok(m.GLOSSARY_TOOLTIPS[term]?.english&&m.GLOSSARY_TOOLTIPS[term]?.russian&&m.GLOSSARY_TOOLTIPS[term]?.summary,`Tooltip metadata ${term}`);

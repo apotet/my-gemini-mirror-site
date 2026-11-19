@@ -25,6 +25,12 @@ jobs:
       - name: Validate question bank (esbuild real modules)
         run: npm run validate:questions
 
+      - name: In-depth Understanding 164 structural contracts
+        run: npm run test:in-depth
+
+      - name: Previous-answer attempt compatibility
+        run: npm run test:in-depth-history
+
       - name: Coverage report
         run: npm run coverage:explanations
 
@@ -168,12 +174,6 @@ jobs:
 
       - name: Question-to-paragraph lesson anchors (both reading modes)
         run: node scripts/lesson-section-links.test.mjs
-
-      - name: In-depth Understanding 164 structural contracts
-        run: npm run test:in-depth
-
-      - name: Previous-answer attempt compatibility
-        run: npm run test:in-depth-history
 
       - name: Responsive explanation flows
         run: |

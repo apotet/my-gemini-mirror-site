@@ -1,4 +1,4 @@
-import { GROUP5_PATCHES, GROUP5_LINKS, GROUP5_BATCHES, GROUP5_SECTIONS } from './group5';
+import { GROUP5_PATCHES, GROUP5_LINKS, GROUP5_BATCHES, GROUP5_SECTIONS, GROUP5_TERMS } from './group5';
 import { IN_DEPTH_REVIEWED_TERMS } from './reviewedTerms';
 import { PREVIOUS_IN_DEPTH_QUESTIONS } from './previousQuestions';
 import type { Question } from '../../types/quiz';
@@ -22,7 +22,7 @@ function mergeExact<T>(...maps: Record<string, T>[]): Record<string, T> {
 export const IN_DEPTH_PATCHES = mergeExact<InDepthExplanationPatch>(GROUP1_PATCHES, GROUP2_PATCHES, GROUP3_PATCHES, GROUP4_PATCHES, GROUP5_PATCHES);
 export const IN_DEPTH_LESSON_LINKS = mergeExact<string>(GROUP1_LINKS, GROUP2_LINKS, GROUP3_LINKS, GROUP4_LINKS, GROUP5_LINKS);
 export const IN_DEPTH_SECTIONS = [...GROUP1_SECTIONS, ...GROUP2_SECTIONS, ...GROUP3_SECTIONS, ...GROUP4_SECTIONS, ...GROUP5_SECTIONS];
-export const IN_DEPTH_TERMS = mergeExact<InDepthTermPatch>(GROUP1_TERMS, GROUP2_TERMS, GROUP3_TERMS, GROUP4_TERMS, IN_DEPTH_SHARED_TERMS, IN_DEPTH_REVIEWED_TERMS);
+export const IN_DEPTH_TERMS = mergeExact<InDepthTermPatch>(GROUP1_TERMS, GROUP2_TERMS, GROUP3_TERMS, GROUP4_TERMS, GROUP5_TERMS, IN_DEPTH_SHARED_TERMS, IN_DEPTH_REVIEWED_TERMS);
 export const IN_DEPTH_BATCHES = [...GROUP1_BATCHES, ...GROUP2_BATCHES, ...GROUP3_BATCHES, ...GROUP4_BATCHES, ...GROUP5_BATCHES];
 export const IN_DEPTH_IDS = IN_DEPTH_BATCHES.flatMap(batch => batch.questionIds);
 const scope = new Set(IN_DEPTH_IDS);

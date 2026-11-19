@@ -1,4 +1,4 @@
-import type { InDepthExplanationPatch, InDepthBatch } from './types';
+import type { InDepthExplanationPatch, InDepthBatch, InDepthTermPatch } from './types';
 import type { SectionLink } from '../lessons/lessonSectionLinks';
 
 // The 75 Gemini candidates overlap 74 Codex reviews. Only the unique PoE ID
@@ -131,3 +131,15 @@ export const GROUP5_SECTIONS: SectionLink[] = [
     }
   }
 ];
+
+/** Exact active terminology for the four newly transferred Understanding IDs. */
+export const GROUP5_TERMS: Record<string, InDepthTermPatch> = {
+  "Selective Acknowledgment": {
+    english: "Selective Acknowledgment (TCP SACK)",
+    russian: "Выборочное подтверждение принятых диапазонов байтов TCP",
+    description: "Механизм TCP SACK: опция сообщает отправителю о несмежных принятых диапазонах байтов при наличии пробелов. Накопительный ACK при этом остаётся на первом отсутствующем байте; RFC 2018 описывает формат.",
+    relatesTo: "TCP, SACK Permitted, cumulative ACK и восстановление потерь; RFC 2018 / RFC 6675.",
+    abbreviation: false,
+    lessonId: "l4-tcp-sack"
+  }
+};
