@@ -91,7 +91,11 @@ export const GROUP1_PATCHES: Record<string, InDepthExplanationPatch> = {
     "practicalTip": "Проверь тип сокета, UDP Length и успешный результат recvfrom; ноль UDP не означает TCP EOF."
   },
   "gap-pack3-08": {
-    "visualDiagram": null
+    "visualDiagram": null,
+    "practicalTip": "Проверь IPv6 Next Header=UDP, значение UDP Checksum и место захвата. В обычном UDP/IPv6 ноль означает недопустимый пакет даже при успешной Ethernet FCS; отдельные туннельные исключения здесь не действуют."
+  },
+  "gap-pack3-15": {
+    "practicalTip": "В HTTP/1.1 свяжи ответ с методом HEAD: после заголовков тело отсутствует, даже если Content-Length: 5000. Проверь, что парсер не ждёт 5000 байт и не принимает следующий ответ за тело."
   },
   "gen-transport-7": {
     "brief": "DHCPDISCOVER с 0.0.0.0 на 255.255.255.255 находит сервер, пока у клиента нет адреса и сохранённой аренды.",
