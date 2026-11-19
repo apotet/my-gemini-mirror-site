@@ -1,3 +1,10 @@
+## Подтверждённая вторая партия из 10, 20.11.2026
+
+- [GitHub Actions #44636056544](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44636056544) успешно отработал в staging без интерактивного входа, через GitHub secret `GEMINI_API_KEY`. Одноразовый [Draft PR #272](https://github.com/apotet/my-gemini-mirror-site/pull/272) закрыт **без merge**.
+- [Gemini report](https://github.com/apotet/my-gemini-mirror-site/pull/264#issuecomment-7024933965): 10 отдельных вопросов, **9 PASS / 1 FIX**, SHA `1a3f684c7dbc6f6e1c8585b1f8c1155d3f84769d`. Input 11512, output 4058, total 21550 tokens. Один вызов `gemini-4-hydrogen`, никаких повторов и скрытой публикации.
+- `gen-diag-6`: нерелевантная общая подсказка по уровням вместо диагностики дублирующегося IPv4. В целевом Draft PR #264 исправлена после отдельной проверки исходника. Дополнительные типографические дефекты уроков `gen-diag-7`, `gen-osi-a-2`, `gen-port-14` тоже исправлены, регрессии добавлены. Новая версия PR #264 HEAD `12dcc9223fc9cb0cb24c4ce539d011760330568a`. Первоначальные модельные PASS не становятся автоматически приёмкой нового SHA.
+- **Инструкция для следующих партий:** создавать новую *одноразовую* ветку + `pull_request: opened` Draft PR, не переоткрывать старый, иначе возможен повторный расход квоты; в workflow pin текущего HEAD и строго отдельный список 10 ранее не проверенных ID, timeout 420 секунд/лимит 16384 выходных токенов только в runner, API один вызов/без retries; после отчёта закрыть Draft PR без merge. Публикацию по этапам контролирует ROADMAP. Никакого production.
+
 ## Подтверждённый результат режима 10 вопросов — 20.11.2026
 
 - Одноразовый [Draft PR #271](https://github.com/apotet/my-gemini-mirror-site/pull/271) автоматически запустил [GitHub Actions run #44632284371](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44632284371), **SUCCESS**, без интерактивной авторизации GitHub/Gemini. PR #271 закрыт **без merge**.
