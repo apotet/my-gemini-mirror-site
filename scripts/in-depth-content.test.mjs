@@ -29,7 +29,7 @@ for(const {id,lessonId,anchor,plainRule,proRule} of [
   {id:'gap-pack2-05',lessonId:'tcpip-encapsulation',anchor:'in-depth-fcs-ipv4-header-payload-scope',plainRule:/новую корректную FCS/,proRule:/Контрольная сумма заголовка IPv4|IPv4 payload/},
   {id:'gap-pack2-10',lessonId:'tcpip-encapsulation',anchor:'in-depth-ppp-ipcp-first-ipv4-packet',plainRule:/IPCP не повторяют/,proRule:/0x0021/},
   {id:'gap-pack2-11',lessonId:'l7-dns',anchor:'in-depth-dns-aaaa-noerror-nodata',plainRule:/NOERROR/,proRule:/RFC 2308/},
-  {id:'gap-pack2-16',lessonId:'l7-services',anchor:'in-depth-ntp-source-validity-rate',plainRule:/RATE/,proRule:/KoD RATE|kiss-o'-death|NTP KoD/i},
+  {id:'gap-pack2-16',lessonId:'l7-services',anchor:'in-depth-ntp-source-validity-rate',plainRule:/RATE/,proRule:/KoD[^.]*RATE|Reference ID RATE/i},
 ]) {
   const question=pool.find(q=>q.id===id);
   assert.ok(question, id+': registered Understanding question');
