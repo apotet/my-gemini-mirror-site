@@ -44,8 +44,13 @@ try {
   await button(mobile?'Теория':'Теория и разборы').click();
   for(const q of questions) {
     const deep=getQuestionDeepDive(q),lesson=getLessonForQuestion(q.id),anchor=getLessonSectionForQuestion(lesson.id,q.id);
+    const search=page.getByPlaceholder('Поиск по тексту, теме, id...');
+    // Returning from a lesson intentionally shows the source question, not the theory index.
+    // Re-enter the index explicitly before opening the next independent case.
+    if(!(await search.isVisible())) await button(mobile?'Теория':'Теория и разборы').click();
+    await search.waitFor({state:'visible'});
     const all=button('Все');if(await all.count())await all.click();
-    await page.getByPlaceholder('Поиск по тексту, теме, id...').fill(q.id);
+    await search.fill(q.id);
     const rowButton=button(new RegExp(`^#${q.id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')} ·`));
     await rowButton.click();
     const review=page.locator(`[data-explanation-question-id="${q.id}"]`);await review.waitFor({state:'visible'});
