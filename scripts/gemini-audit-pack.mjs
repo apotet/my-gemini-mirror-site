@@ -62,24 +62,31 @@ const records = ids.map(id => {
   const q = bank.get(id);
   if (!q) throw new Error('Unknown question ID: ' + id);
   const lesson = m.getLessonForQuestion(id);
-  if (!lesson) throw new Error('Missing linked lesson: ' + id);
-  const anchor = m.getLessonSectionForQuestion(lesson.id,id);
-  if (!anchor) throw new Error('Missing exact lesson anchor: ' + id);
-  const linkedSections = {};
-  for (const mode of ['plain','professional']) {
+  const anchor = lesson ? m.getLessonSectionForQuestion(lesson.id,id) : null;
+  const coverageIssues = [];
+  if (!lesson) coverageIssues.push('MISSING_LINKED_LESSON');
+  else if (!anchor) coverageIssues.push('MISSING_EXACT_ANCHOR');
+  const linkedSections = {plain:null,professional:null};
+  if (lesson && anchor) for (const mode of ['plain','professional']) {
     const blocks = m.getLessonBlocksWithSections(lesson,mode).filter(b => b.anchorId === anchor);
-    if (blocks.length !== 1 || !blocks[0].body) throw new Error('Bad exact '+mode+' anchor for '+id);
-    linkedSections[mode] = { heading:blocks[0].heading, body:blocks[0].body };
+    if (blocks.length === 1 && blocks[0].body) {
+      linkedSections[mode] = { heading:blocks[0].heading, body:blocks[0].body };
+    } else {
+      coverageIssues.push('MISSING_'+mode.toUpperCase()+'_SECTION');
+    }
   }
   const d = m.getQuestionDeepDive(q);
-  const sources = groupSources.filter(f => f.text.includes('"anchorId": "'+anchor+'"') && f.text.includes('"'+id+'"')).map(f=>f.path);
+  if (!d?.briefAnswer) coverageIssues.push('MISSING_BRIEF');
+  if (!d?.deepAnalysis) coverageIssues.push('MISSING_PLAIN');
+  if (!d?.professional?.deep) coverageIssues.push('MISSING_PROFESSIONAL');
+  const sources = anchor ? groupSources.filter(f => f.text.includes('"anchorId": "'+anchor+'"') && f.text.includes('"'+id+'"')).map(f=>f.path) : [];
   const material = {
     id, question:{text:q.text,answers:q.answers,correct:q.correct,topic:q.topic,difficulty:q.difficulty},
     explanation:{
       brief:d?.briefAnswer??null,plain:d?.deepAnalysis??null,professional:d?.professional?.deep??null,
       commonTrap:d?.commonTrap??null,practicalTip:d?.practicalTip??null,practiceLink:d?.practiceLink??null,
     },
-    lesson:{id:lesson.id,title:lesson.title,anchorId:anchor,sections:linkedSections},
+    lesson:{id:lesson?.id??null,title:lesson?.title??null,anchorId:anchor??null,sections:linkedSections,coverageIssues},
     sourcePaths:['src/data/questions.json','src/data/inDepth/index.ts','src/data/lessons/lessonSectionLinks.ts',...sources],
   };
   return {...material,materialHash:hash(material)};
