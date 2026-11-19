@@ -49,7 +49,7 @@ if (!response.ok) {
     ? details.status : 'UNSPECIFIED';
   const apiMessage = typeof details.message === 'string'
     ? details.message.replaceAll(key,'[REDACTED]').replace(/AIza[A-Za-z0-9_-]{20,}/g,'[REDACTED]')
-        .replace(/[\\r\\n]+/g,' ').slice(0, 350)
+        .replace(/\s+/g,' ').slice(0, 350)
     : 'No structured error message';
   throw new Error('Gemini API '+model+' HTTP '+response.status+' ('+apiStatus+'): '+apiMessage+'; no retry');
 }
