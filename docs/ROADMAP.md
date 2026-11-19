@@ -1,3 +1,9 @@
+## P0 · Gemini: последовательная приёмка максимум двух партий по четыре вопроса — 19.11.2026
+
+В [Draft PR #268](https://github.com/apotet/my-gemini-mirror-site/pull/268) внедрён **дополнительный выбор** `max_batches=1/2` в ручном GitHub Actions запуске (по умолчанию **1**), без фонового расписания. `dry_run=true` по умолчанию остаётся. Если пользователь вручную задаёт `max_batches=2` и `ids=auto:N` (N=1…39), первый вызов Gemini отправляет отчёт в PR; **второй API-вызов по `auto:N+1` возможен только после 4/4 PASS с корректным SHA, индивидуальными доказательствами, без FIX/REVIEW/замечаний**. Любой спорный результат, ошибка запроса, изменение SHA или неправильные ID останавливают цепочку. При запуске с обычным списком ID или `auto:40` двухпартийный режим блокируется до API. Всего максимум два запроса, без повторов и без auto-merge. Автономный тест: `scripts/gemini-batch-control.test.mjs`; отчёт остаётся advisory; Gemini не меняет код. **Ожидает полную CI/merge-проверку; production без изменений.**
+
+---
+
 ## DONE · Прямая независимая проверка NetOps через Gemini API и GitHub Actions — 19.11.2026
 
 **Достижение: рабочая цепочка без компьютера, ручных загрузок в Google Диск и копирования исходников.** В staging-репозитории `apotet/my-gemini-mirror-site` установлена интеграция GitHub Actions → разрешённый секрет `GEMINI_API_KEY` → Gemini API → read-only отчёт-комментарий в целевой PR. [Инфраструктура PR #265](https://github.com/apotet/my-gemini-mirror-site/pull/265), [исправление API модели PR #266](https://github.com/apotet/my-gemini-mirror-site/pull/266), [очередь PR #267](https://github.com/apotet/my-gemini-mirror-site/pull/267) — **все три смержены в staging main**.
