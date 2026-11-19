@@ -5030,7 +5030,7 @@
     "auditAction": "RELABEL",
     "learningLevel": 2,
     "confidence": "high",
-    "auditRationale": "Распознать (L3 · NAT): Комбинации адресов и портов (и протокола)"
+    "auditRationale": "L2: требуется понимание many-to-one NAT/PAT — различение сессий по адресам, портам и протоколу."
   },
   "l3-d06": {
     "status": "ASSIGNED",
@@ -5072,7 +5072,7 @@
     "auditAction": "RELABEL",
     "learningLevel": 2,
     "confidence": "high",
-    "auditRationale": "Распознать (L4 · TCP): Корректно обработать запоздалые сегменты и обеспечить надежность закрытия"
+    "auditRationale": "L2: TIME-WAIT и обработка запоздалых сегментов — концепция FSM закрытия TCP, выше чистой базы."
   },
   "l4-d04": {
     "status": "ASSIGNED",
@@ -5086,7 +5086,7 @@
     "auditAction": "RELABEL",
     "learningLevel": 2,
     "confidence": "high",
-    "auditRationale": "Распознать (L4 · TCP): Подтверждать несмежные блоки и эффективнее догонять потери"
+    "auditRationale": "L2: SACK — подтверждение несмежных блоков TCP, требует понимания потерь и восстановления."
   },
   "l4-d06": {
     "status": "ASSIGNED",
@@ -5170,7 +5170,7 @@
     "auditAction": "RELABEL",
     "learningLevel": 2,
     "confidence": "high",
-    "auditRationale": "Распознать (TCP/IP · ECN): Сигнализировать перегрузку без обязательного drop (CE mark)"
+    "auditRationale": "L2: ECN — сигнализация перегрузки без обязательного drop; выше начального уровня."
   },
   "ts-d01": {
     "status": "ASSIGNED",
