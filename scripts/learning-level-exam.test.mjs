@@ -18,7 +18,7 @@ const totals = [216, 164, 376, 88, 18];
 // Issue #257: content + selector + legacy-session regression for six concrete tickets.
 // Previously the photo questions displayed a technically true explanation of a DIFFERENT question.
 const sixL1Review = {
-  'l1v2-a-poe-limit': { level: 1, index: 1, answer: /PSE Type 1\/2.*3,6.*1,2/s, detail: /Positive 3,6.*Negative 1,2/s },
+  'l1v2-a-poe-limit': { level: 1, index: 1, answer: /PSE Type 1\/2.*3,6.*1,2/s, detail: /положительные 3,6.*отрицательные 1,2/s },
   'l1v2-c-otdr-pulse': { level: 1, index: 1, answer: /100 нс|100 ns/i, detail: /100 ns/i },
   'l3-d05': { level: 2, index: 0, answer: /адрес|порт/i, detail: /PAT/i },
   'l4-d03': { level: 2, index: 0, answer: /TIME-WAIT/i, detail: /2MSL/i },
