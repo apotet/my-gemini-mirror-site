@@ -24,6 +24,31 @@ for(const {id,prohibited} of [
   }
 }
 
+// Four audited structural gaps: route to an exact contextual subsection, not lesson top.
+for(const {id,lessonId,anchor,plainRule,proRule} of [
+  {id:'gap-pack2-05',lessonId:'tcpip-encapsulation',anchor:'in-depth-fcs-ipv4-header-payload-scope',plainRule:/новую корректную FCS/,proRule:/Header Checksum/},
+  {id:'gap-pack2-10',lessonId:'tcpip-encapsulation',anchor:'in-depth-ppp-ipcp-first-ipv4-packet',plainRule:/IPCP не повторяют/,proRule:/0x0021/},
+  {id:'gap-pack2-11',lessonId:'l7-dns',anchor:'in-depth-dns-aaaa-noerror-nodata',plainRule:/NOERROR/,proRule:/RFC 2308/},
+  {id:'gap-pack2-16',lessonId:'l7-services',anchor:'in-depth-ntp-source-validity-rate',plainRule:/RATE/,proRule:/KoD RATE|kiss-o'-death|NTP KoD/i},
+]) {
+  const question=pool.find(q=>q.id===id);
+  assert.ok(question, id+': registered Understanding question');
+  const lesson=m.getLessonForQuestion(id);
+  assert.equal(lesson?.id,lessonId,id+': reviewed lesson link, not a guessed generic lesson');
+  assert.equal(m.getLessonSectionForQuestion(lessonId,id),anchor,id+': exact section');
+  const simple=m.getLessonBlocksWithSections(lesson,'plain').filter(b=>b.anchorId===anchor);
+  const detailed=m.getLessonBlocksWithSections(lesson,'professional').filter(b=>b.anchorId===anchor);
+  assert.equal(simple.length,1,id+': one plain section');
+  assert.equal(detailed.length,1,id+': one pro section');
+  assert.ok(simple[0].body&&simple[0].heading,id+': readable plain section');
+  assert.ok(detailed[0].body&&detailed[0].heading,id+': readable pro section');
+  assert.match(simple[0].body,plainRule,id+': topical plain meaning');
+  assert.match(detailed[0].body,proRule,id+': topical engineering meaning');
+}
+// Both PPP and FCS sections must be separately addressable in the same lesson.
+assert.notEqual(m.getLessonSectionForQuestion('tcpip-encapsulation','gap-pack2-05'),
+                m.getLessonSectionForQuestion('tcpip-encapsulation','gap-pack2-10'));
+
 const genericTipIds=pool.filter(q=>m.getQuestionDeepDive(q)?.practicalTip==='Не смешивайте симптомы разных слоёв модели.').map(q=>q.id);
 assert.deepEqual(genericTipIds,[],'Understanding must not expose a generic OSI fallback as individual practical advice');
 assert.match(m.GLOSSARY.recvfrom.description,/вернуть 0/,'recvfrom glossary also keeps the zero-length result readable');
