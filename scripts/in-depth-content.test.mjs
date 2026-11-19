@@ -14,6 +14,8 @@ for(const {id,prohibited} of [
   {id:'gap-pack2-27',prohibited:/(?:равно|результатом|включает|Length|вернуть)\d/},
   {id:'gap-pack3-15',prohibited:/(?:HEAD|Content-Length|читать)\d|Nбайт/},
   {id:'l4-new-05',prohibited:/как0x[0-9a-f]+/i},
+  {id:'gap-pack2-21',prohibited:/gap-pack2-21|window0|ss listener/i},
+  {id:'gap-pack3-08',prohibited:/checksum0|поля0/},
 ]) {
   const lesson=m.getLessonForQuestion(id), anchor=m.getLessonSectionForQuestion(lesson.id,id);
   assert.ok(anchor,`${id}: contextual anchor exists`);
@@ -23,6 +25,13 @@ for(const {id,prohibited} of [
     assert.doesNotMatch(section.body,prohibited,`${id}: no glued words/numbers in ${mode} lesson section`);
   }
 }
+
+// Gemini 10-ID review: TCP zero-window advice must be an actionable packet check, not UI jargon.
+const persistQuestion=pool.find(q=>q.id==='gap-pack2-21');
+assert.ok(persistQuestion,'gap-pack2-21 exists in Understanding');
+const persistTip=m.getQuestionDeepDive(persistQuestion)?.practicalTip;
+assert.match(persistTip,/TCP Window=0.*zero-window probes/,'TCP persist tip distinguishes zero window and probes');
+assert.doesNotMatch(persistTip,/window0|ss listener|gap-pack2-21/i,'No glued tokens, internal IDs or irrelevant ss listener in learner tip');
 
 // Four audited structural gaps: route to an exact contextual subsection, not lesson top.
 for(const {id,lessonId,anchor,plainRule,proRule} of [
