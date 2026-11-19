@@ -148,7 +148,7 @@ export const LESSON_L12_WIFI_STANDARDS_ROAMING: Lesson = {
       },
       {
         title: 'Анализ каналов, мощности и DFS на Cisco IOS-XE WLC',
-        cmd: 'show ap dot11 5ghz channel\nshow ap auto-rf 802.11a\nshow wireless profile flex default',
+        cmd: 'show ap dot11 5ghz channel\nshow ap auto-rf 802.11a\nshow wireless profile flex summary',
       },
     ],
     sources: [

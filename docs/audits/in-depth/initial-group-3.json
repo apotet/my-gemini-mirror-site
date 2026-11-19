@@ -1,0 +1,2942 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "l2_review_group3",
+  "role": "independent initial read-only semantic auditor",
+  "baselineSHA": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "selection": "exact snapshot.ids from ASSIGNED learningLevel=2 and getTestingPool(mixed,in-depth), group3",
+  "count": 40,
+  "summary": {
+    "PASS": 2,
+    "FIX": 38,
+    "REVIEW": 0
+  },
+  "scope": [
+    "Every one of40 stem/choices/key, why/plain/pro read individually.",
+    "All9 linked lessons read in plain/pro; raw prose/title/term tag coverage examined.",
+    "7 image-bearing question keys independently checked against4 actual pinned images.",
+    "Existing real practice destinations inspected; no browser execution by this reviewer."
+  ],
+  "limits": [
+    "Initial material PASS is content-level only, not GATE complete, runtime acceptance or publication.",
+    "Unknown abbreviations were contextually assessed; recommended glossary additions are not all confirmed comprehension defects.",
+    "No source content edits performed. Keys unchanged.",
+    "Whole-level final independent acceptance must bind final commit and root runtime/browser evidence."
+  ],
+  "sharedLessonFindings": [
+    {
+      "lessonId": "tls-sni",
+      "finding": "Modern hostname validation must use SAN; unqualified CN/SAN prose is outdated.",
+      "evidence": [
+        "professional.blocks[1] «CN или SAN»",
+        "professional.blocks[4] «проверяет SAN/CN»",
+        "RFC9525 AppendixA: commonName CN-ID no longer valid"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc9525#appendix-A"
+    },
+    {
+      "lessonId": "l7-dhcp",
+      "finding": "Add one shared two-style section for SELECTING broadcast/request options and NAK→INIT; generic DORA is insufficient for l7-02 and l7-03.",
+      "evidence": [
+        "plain «Как клиент договаривается о выдаче» lacks NAK and selection broadcast distinction",
+        "professional «DORA по шагам» lacks NAK and INIT-REBOOT rejection"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc2131#section-4.4"
+    },
+    {
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "finding": "Qualify AES256 as implementation-dependent; AES-CFB128 is RFC3826. Put boots/time in message USM security parameters, not each PDU.",
+      "evidence": [
+        "professional.blocks[0] «AES-128/256»",
+        "professional.blocks[0] «каждый PDU несёт»"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc3826#section-3.1.1.2"
+    },
+    {
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "finding": "Polling and informs are not unconditional delivery/convergence guarantees; first timestamp/physical log is correlation, not proof of root cause.",
+      "evidence": [
+        "plain «гарантированной сверки»",
+        "professional «гарантированная конвергенция состояния»",
+        "plain «Последовательность ясно показывает: первичной причиной стало»"
+      ],
+      "source": "lesson full plain/pro read; causal inference and continued reachability conditions"
+    },
+    {
+      "lessonId": "ts-zabbix-monitoring",
+      "finding": "ifOutDiscards counts non-error outbound discards, not only exhausted buffers; buffers are one possible cause. Existing glossary repeats the overclaim.",
+      "evidence": [
+        "plain «Это означает, что ... не поместились в выходную очередь»",
+        "GLOSSARY.ifOutDiscards description"
+      ],
+      "source": "https://www.rfc-editor.org/rfc/rfc2863#section-3.5"
+    },
+    {
+      "lessonId": "ts-zabbix-monitoring",
+      "finding": "Ping/transit success does not exclude routing/source-VRF problems for the exact SNMP endpoint; qualify diagnostic inference.",
+      "evidence": [
+        "professional «исключает аварию питания или маршрута»"
+      ],
+      "source": "different destination/source-VRF and protocol-policy paths must be distinguished"
+    },
+    {
+      "lessonId": "osi-pdu",
+      "finding": "For review-osi-34, relocate to osi-session-presentation plus shared checkpoint section; current generic L5 role does not teach restoring confirmed application state.",
+      "evidence": [
+        "professional «L5 ... организация диалога»",
+        "no checkpoint/operation identifier restoration section in either style"
+      ],
+      "source": "full linked lesson snapshot"
+    },
+    {
+      "lessonId": "qos-basics",
+      "finding": "Professional term tags CE and PHB do not exist in GLOSSARY.",
+      "evidence": [
+        "professional.terms",
+        "exact GLOSSARY key lookup returned absent"
+      ],
+      "source": "snapshot glossary/tooltips"
+    },
+    {
+      "lessonId": "l1-otdr-trace-interpretation",
+      "finding": "Both-style tags reflectance/pulse width/stacked/overlay/SM/MM/IOR do not exist in glossary or tooltip metadata.",
+      "evidence": [
+        "terms",
+        "professional.terms",
+        "exact GLOSSARY and tooltip key lookup absent"
+      ],
+      "source": "snapshot glossary/tooltips"
+    }
+  ],
+  "plannedRootDistractorRepair": {
+    "l4-x03": {
+      "answers[3]": "Нужна гарантированная выдача датаграмм приложению в исходном порядке",
+      "judgment": "Approved as false yet realistic UDP ordering misconception; root owns implementation."
+    },
+    "l4-x04": {
+      "answers[1]": "Максимальное число маршрутизаторов до получателя",
+      "answers[2]": "Наибольший размер полезных данных в одном TCP-сегменте",
+      "answers[3]": "Количество повторных отправок до разрыва соединения",
+      "judgment": "Approved as false yet realistic TTL/MSS/retry misconceptions; correct index/text0 stays unchanged."
+    }
+  },
+  "primaryReferencesActuallyRead": [
+    "https://www.rfc-editor.org/rfc/rfc2863.txt — ifOutDiscards OBJECT-TYPE",
+    "https://www.rfc-editor.org/rfc/rfc3826.txt — §3.1.1.2 Key Size",
+    "https://www.rfc-editor.org/rfc/rfc9525.txt — Appendix A SAN-only identity",
+    "https://www.zabbix.com/documentation/current/en/manual/appendix/config/zabbix_agentd — StartAgents",
+    "https://www.zabbix.com/documentation/current/en/manual/appendix/config/zabbix_agent2 — Server omission disables passive checks"
+  ],
+  "rows": [
+    {
+      "id": "l4-x03",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "c23149e0f676e9000b9e64b4c631f507ed61476c9afdb0ef6c7115ab60836b92",
+      "evidence": "UDP omits built-in connection establishment/reliable byte-stream delivery; the listed DNS/RTP/game use fits that trade-off.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "UDP omits built-in connection establishment/reliable byte-stream delivery; the listed DNS/RTP/game use fits that trade-off.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "REVIEW",
+          "evidence": "Toy/non-plausible alternatives identified; exact limited root replacement accepted independently, not yet applied."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "UDP — когда важны задержка и простота (DNS/RTP/games)."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. UDP omits built-in connection establishment/reliable byte-stream delivery; the listed DNS/RTP/game use fits that trade-off."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l4-tcp / section udp-tradeoffs"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain is only «Нет handshake/retransmit в транспорте»: no causal explanation of latency/order/loss or application responsibility.",
+        "No professional layer.",
+        "Wrong option «Нужен только RST» is a toy distractor; quality REVIEW, root has independently accepted targeted replacement.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l4-tcp",
+      "recommendedSection": "udp-tradeoffs",
+      "photoEvidence": null
+    },
+    {
+      "id": "l4-x04",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "86e330a5bb7d79ec31dd0acd7add9f6eb1f899bf14250fa0d751c797ee97e3fc",
+      "evidence": "Advertised TCP receive window bounds allowed outstanding sequence space; RTT makes a small bound constrain throughput.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Advertised TCP receive window bounds allowed outstanding sequence space; RTT makes a small bound constrain throughput.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "REVIEW",
+          "evidence": "Toy/non-plausible alternatives identified; exact limited root replacement accepted independently, not yet applied."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Окно задаёт, сколько данных разрешено держать в пути без нового подтверждения получателя."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Advertised TCP receive window bounds allowed outstanding sequence space; RTT makes a small bound constrain throughput."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended tcp-window-retransmit / section rwnd-cwnd-rtt"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "receive window/rwnd",
+            "cwnd"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Distractors VLAN/ARP/LED color do not test realistic TCP misunderstandings; root accepted wrong-option-only repair.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "tcp-window-retransmit",
+      "recommendedSection": "rwnd-cwnd-rtt",
+      "photoEvidence": null
+    },
+    {
+      "id": "l5-02",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "559faba1f9f8909ab9f5f4ddd00723deca4e361b29e33176eb9e0b0b884b862d",
+      "evidence": "A new TCP connection cannot retransmit application state from a dead old stream; an agreed application checkpoint is session restoration in the teaching OSI model.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "A new TCP connection cannot retransmit application state from a dead old stream; an agreed application checkpoint is session restoration in the teaching OSI model.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. A new TCP connection cannot retransmit application state from a dead old stream; an agreed application checkpoint is session restoration in the teaching OSI model."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Продолжение в новом соединении с согласованной точки относится к восстановлению диалога, а не к повтору сегмента старого TCP-потока."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. A new TCP connection cannot retransmit application state from a dead old stream; an agreed application checkpoint is session restoration in the teaching OSI model."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended osi-session-presentation / section checkpoint-restoration"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "osi-session-presentation",
+      "recommendedSection": "checkpoint-restoration",
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-d02",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "3187c19b18bd9ae3ea5df3e2ecd3b4f00d07ea3df2f92ca9f4308cf79b12e495",
+      "evidence": "ClientHello SNI precedes protected HTTP Host; absent SNI may select a default certificate and name mismatch, not mandatory failure.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "ClientHello SNI precedes protected HTTP Host; absent SNI may select a default certificate and name mismatch, not mandatory failure.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. ClientHello SNI precedes protected HTTP Host; absent SNI may select a default certificate and name mismatch, not mandatory failure."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На общем IP живут разные защищённые сайты. Если клиент не сообщает нужное имя заранее, сервер может выдать сертификат по умолчанию."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. ClientHello SNI precedes protected HTTP Host; absent SNI may select a default certificate and name mismatch, not mandatory failure."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Specific technical correction recorded in defects."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual tls-sni; recommended tls-sni"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Question pro says SAN/CN without legacy qualification.",
+        "Linked lesson pro repeatedly permits CN-or-SAN for modern hostname verification; RFC9525 requires subjectAltName."
+      ],
+      "recommendedLessonId": "tls-sni",
+      "recommendedSection": null,
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-d04",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "0e05f9935eb60fa2b83fa4900276424820e46b6914d8854725ff20221ff9b210",
+      "evidence": "HTTP/2 streams share one ordered TCP byte stream; later stream3 bytes wait behind a gap, already delivered stream5 data are not revoked.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "HTTP/2 streams share one ordered TCP byte stream; later stream3 bytes wait behind a gap, already delivered stream5 data are not revoked.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. HTTP/2 streams share one ordered TCP byte stream; later stream3 bytes wait behind a gap, already delivered stream5 data are not revoked."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "В общей последовательности байтов появился пропуск."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. HTTP/2 streams share one ordered TCP byte stream; later stream3 bytes wait behind a gap, already delivered stream5 data are not revoked."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. HTTP/2 streams share one ordered TCP byte stream; later stream3 bytes wait behind a gap, already delivered stream5 data are not revoked."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-services / section http2-tcp-hol"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "HTTP/2",
+            "head-of-line blocking"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l7-services",
+      "recommendedSection": "http2-tcp-hol",
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-x04",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "08c388bcb717f7dfd771707cb03422c6b6ea209a3eb2ca324dcb327af7bc0454",
+      "evidence": "Repeated PUT has the same intended resource effect, not necessarily the same response or logging side effects.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Repeated PUT has the same intended resource effect, not necessarily the same response or logging side effects.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Repeated PUT has the same intended resource effect, not necessarily the same response or logging side effects."
+        },
+        "why": {
+          "status": "FIX",
+          "evidence": "Первое изменение уже выполнено, но ответ потерялся."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Repeated PUT has the same intended resource effect, not necessarily the same response or logging side effects."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Repeated PUT has the same intended resource effect, not necessarily the same response or logging side effects."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-http-status-basics / section http-method-idempotence"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "PUT",
+            "идемпотентность"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Why only says first change occurred/response lost; it does not state the idempotent same-state consequence.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l7-http-status-basics",
+      "recommendedSection": "http-method-idempotence",
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-x05",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "ad13d2f9d48d460d6fa6f56d49f572b9decb4d445ddb09ef1be645c753337285",
+      "evidence": "TLS confidentiality/integrity protect the authenticated connection, not storage or recipient application conduct.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "TLS confidentiality/integrity protect the authenticated connection, not storage or recipient application conduct.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. TLS confidentiality/integrity protect the authenticated connection, not storage or recipient application conduct."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Соединение защищает данные, пока они идут к проверенному серверу."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. TLS confidentiality/integrity protect the authenticated connection, not storage or recipient application conduct."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. TLS confidentiality/integrity protect the authenticated connection, not storage or recipient application conduct."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended tls-sni / section tls-endpoint-boundary"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "tls-sni",
+      "recommendedSection": "tls-endpoint-boundary",
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-x06",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "0b452676e91c2fda1473247c5d63871977dc78b0cbd7a903b855104a8a0d532d",
+      "evidence": "TLS protects HTTP/2 HEADERS/DATA including :authority while external IP/TCP headers and timing/size remain observable.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "TLS protects HTTP/2 HEADERS/DATA including :authority while external IP/TCP headers and timing/size remain observable.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. TLS protects HTTP/2 HEADERS/DATA including :authority while external IP/TCP headers and timing/size remain observable."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Наблюдатель видит, какие компьютеры обмениваются пакетами, когда и сколько передают, но не читает защищённый запрос страницы."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. TLS protects HTTP/2 HEADERS/DATA including :authority while external IP/TCP headers and timing/size remain observable."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. TLS protects HTTP/2 HEADERS/DATA including :authority while external IP/TCP headers and timing/size remain observable."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended tls-sni / section tls-metadata-boundary"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "tls-sni",
+      "recommendedSection": "tls-metadata-boundary",
+      "photoEvidence": null
+    },
+    {
+      "id": "l57-x19",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "bb6c1235a531de338a0805e583562265451a6e0ae584da3a65866ba9192add33",
+      "evidence": "IMAP exposes server folders/flags to both clients; POP3 leave-on-server/UIDL do not add folder or read-state synchronization.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "IMAP exposes server folders/flags to both clients; POP3 leave-on-server/UIDL do not add folder or read-state synchronization.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. IMAP exposes server folders/flags to both clients; POP3 leave-on-server/UIDL do not add folder or read-state synchronization."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На втором устройстве нужно увидеть не только письмо, но и его новое расположение и отметку прочтения."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. IMAP exposes server folders/flags to both clients; POP3 leave-on-server/UIDL do not add folder or read-state synchronization."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. IMAP exposes server folders/flags to both clients; POP3 leave-on-server/UIDL do not add folder or read-state synchronization."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-mail-mx / section imap-pop3-state"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l7-mail-mx",
+      "recommendedSection": "imap-pop3-state",
+      "photoEvidence": null
+    },
+    {
+      "id": "l6-01",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "5a31ebfcf89e72643c83109b047868fe0492058278eac3bd6c68fc11759c603f",
+      "evidence": "U+042F is 2F04 in UTF-16LE and D0AF in UTF-8; the same character is represented in a different agreed encoding.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "U+042F is 2F04 in UTF-16LE and D0AF in UTF-8; the same character is represented in a different agreed encoding.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. U+042F is 2F04 in UTF-16LE and D0AF in UTF-8; the same character is represented in a different agreed encoding."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Один и тот же символ можно записать разными байтами."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. U+042F is 2F04 in UTF-16LE and D0AF in UTF-8; the same character is represented in a different agreed encoding."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended osi-session-presentation / section character-encoding"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "FIX",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "UTF-16LE",
+            "UTF-8 tooltip metadata"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "UTF-8 glossary entry exists but has no tooltip metadata; UTF-16LE needs intelligible contextual expansion.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: UTF-16LE, UTF-8 tooltip metadata"
+      ],
+      "recommendedLessonId": "osi-session-presentation",
+      "recommendedSection": "character-encoding",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-01",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "d93453cdbaeba716651790891a6f21897d6a3d04fcfeb17ecc9c3fa8285b7623",
+      "evidence": "If-None-Match matching the selected representation yields 304 and reuse of the stored body under cache rules.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "If-None-Match matching the selected representation yields 304 and reuse of the stored body under cache rules.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. If-None-Match matching the selected representation yields 304 and reuse of the stored body under cache rules."
+        },
+        "why": {
+          "status": "FIX",
+          "evidence": "У клиента уже есть документ."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. If-None-Match matching the selected representation yields 304 and reuse of the stored body under cache rules."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-http-status-basics / section http-cache-validation"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "ETag",
+            "If-None-Match"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Why «У клиента уже есть документ» omits validator/unchanged-representation mechanism.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: ETag, If-None-Match"
+      ],
+      "recommendedLessonId": "l7-http-status-basics",
+      "recommendedSection": "http-cache-validation",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-02",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "eff3fa6b7a75bc8a1dbf45676092aaa4e6c2b25f32556a07f6c53469eb0fbcaf",
+      "evidence": "A DHCPNAK rejects the remembered IPv4 configuration; client ceases using it and returns to INIT/DISCOVER.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "A DHCPNAK rejects the remembered IPv4 configuration; client ceases using it and returns to INIT/DISCOVER.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. A DHCPNAK rejects the remembered IPv4 configuration; client ceases using it and returns to INIT/DISCOVER."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Компьютер попытался вернуть прежний адрес, но сервер не подтвердил эту настройку."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. A DHCPNAK rejects the remembered IPv4 configuration; client ceases using it and returns to INIT/DISCOVER."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. A DHCPNAK rejects the remembered IPv4 configuration; client ceases using it and returns to INIT/DISCOVER."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual l7-dhcp; recommended l7-dhcp / section dhcp-selection-and-nak"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "DHCPNAK",
+            "DHCPINFORM"
+          ]
+        },
+        "practice": {
+          "status": "RECOMMENDATION",
+          "evidence": "Existing dhcp DORA simulator can support restart after NAK; it is not an NAK fault simulator. Scope any link accurately."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Existing lesson does not explain NAK→INIT, DHCPINFORM distinction or rejection versus silent timeout in either style."
+      ],
+      "recommendedLessonId": "l7-dhcp",
+      "recommendedSection": "dhcp-selection-and-nak",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-03",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "1f96d9687d5e85ee218ab83613096f6d35da77f38779d8c17b38d0be32fb684d",
+      "evidence": "SELECTING client broadcasts DHCPREQUEST with selected Server Identifier/Requested IP; Offer is not lease confirmation and DECLINE is not ordinary refusal of S2.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "SELECTING client broadcasts DHCPREQUEST with selected Server Identifier/Requested IP; Offer is not lease confirmation and DECLINE is not ordinary refusal of S2.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. SELECTING client broadcasts DHCPREQUEST with selected Server Identifier/Requested IP; Offer is not lease confirmation and DECLINE is not ordinary refusal of S2."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Компьютер выбрал одно из двух предложений, но ещё не получил окончательного разрешения."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. SELECTING client broadcasts DHCPREQUEST with selected Server Identifier/Requested IP; Offer is not lease confirmation and DECLINE is not ordinary refusal of S2."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. SELECTING client broadcasts DHCPREQUEST with selected Server Identifier/Requested IP; Offer is not lease confirmation and DECLINE is not ordinary refusal of S2."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual l7-dhcp; recommended l7-dhcp / section dhcp-selection-and-nak"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "Server Identifier",
+            "Requested IP Address"
+          ]
+        },
+        "practice": {
+          "status": "PASS",
+          "evidence": {
+            "practiceLink": "dhcp",
+            "ipv6Practice": null,
+            "ipv4Practice": null
+          }
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Existing lesson DORA names messages but neither style explains SELECTING broadcast versus unicast renewal, essential to distinguishing options."
+      ],
+      "recommendedLessonId": "l7-dhcp",
+      "recommendedSection": "dhcp-selection-and-nak",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-05",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "52523c7a4bff158d379eefa693bd03db3b78337918aa65e68333785f57d851bb",
+      "evidence": "HTTP404 means no current representation found or unwillingness to disclose existence; neither permanent deletion nor method-not-allowed/overload follows.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "HTTP404 means no current representation found or unwillingness to disclose existence; neither permanent deletion nor method-not-allowed/overload follows.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. HTTP404 means no current representation found or unwillingness to disclose existence; neither permanent deletion nor method-not-allowed/overload follows."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Служба ответила на обращение, но не предоставила запрошенный ресурс."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. HTTP404 means no current representation found or unwillingness to disclose existence; neither permanent deletion nor method-not-allowed/overload follows."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-http-status-basics / section http-status-404"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l7-http-status-basics",
+      "recommendedSection": "http-status-404",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-new-02",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "49c19c00165282d3a3bc510e043ffd5fe9f434dd43664d627775d0fa1709fd11",
+      "evidence": "EDNS OPT announces UDP payload size beyond512; a900-byte response fits1232, while TC=0 does not prove path-MTU or no IP fragmentation.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "EDNS OPT announces UDP payload size beyond512; a900-byte response fits1232, while TC=0 does not prove path-MTU or no IP fragmentation.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. EDNS OPT announces UDP payload size beyond512; a900-byte response fits1232, while TC=0 does not prove path-MTU or no IP fragmentation."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "EDNS через OPT объявляет допустимый размер DNS UDP payload сверх классических 512 байт, поэтому ответ 900 байт укладывается в 1232; свойства IP-пути этим не задаются."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-dns / section edns-payload-and-path"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "OPT",
+            "PMTU"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain duplicates Why verbatim; no independent beginner causal layer.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: OPT, PMTU"
+      ],
+      "recommendedLessonId": "l7-dns",
+      "recommendedSection": "edns-payload-and-path",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-new-03",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "2a65aa1b5359a38a1460716b6ea26099ab131d82758a762c39b74df1f902b71e",
+      "evidence": "Trusted DNSKEY does not validate a tampered A RRset under the old RRSIG; failed required validation is bogus, not insecure or secure-until-TTL.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Trusted DNSKEY does not validate a tampered A RRset under the old RRSIG; failed required validation is bogus, not insecure or secure-until-TTL.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Trusted DNSKEY does not validate a tampered A RRset under the old RRSIG; failed required validation is bogus, not insecure or secure-until-TTL."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "DNSSEC проверяет подпись содержимого RRset по доверенной цепочке; изменённая A-запись со старой RRSIG становится bogus, что обычно даёт SERVFAIL, а не доверенный ответ."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-dns / section dnssec-validation"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "DS",
+            "DNSKEY",
+            "RRSIG",
+            "RRset",
+            "bogus"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain duplicates Why verbatim.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: DS, DNSKEY, RRSIG, RRset, bogus"
+      ],
+      "recommendedLessonId": "l7-dns",
+      "recommendedSection": "dnssec-validation",
+      "photoEvidence": null
+    },
+    {
+      "id": "l7-new-04",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "76feb6564f198a9e9301a9afddf6f78805c540c561cb727341671b5d3884ee85",
+      "evidence": "A complete self-delimited HTTP/1.1 response without close permits persistent reuse; neither pipelining nor TCP keepalive authorizes it.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "A complete self-delimited HTTP/1.1 response without close permits persistent reuse; neither pipelining nor TCP keepalive authorizes it.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. A complete self-delimited HTTP/1.1 response without close permits persistent reuse; neither pipelining nor TCP keepalive authorizes it."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "HTTP/1.1 предполагает persistent connection при отсутствии указания закрыть его и корректном определении границы тела; специальный Connection: keep-alive для этого не обязателен."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-http-status-basics / section http-persistent-connections"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain duplicates Why verbatim.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l7-http-status-basics",
+      "recommendedSection": "http-persistent-connections",
+      "photoEvidence": null
+    },
+    {
+      "id": "mon-snmp-01",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "15b37cdd344e6c2da91510fc9d85c3f74bedd137945986ac8b0c40a8428cf06e",
+      "evidence": "Only USM authPriv among the four options combines message authentication/integrity and scopedPDU privacy.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Only USM authPriv among the four options combines message authentication/integrity and scopedPDU privacy.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Only USM authPriv among the four options combines message authentication/integrity and scopedPDU privacy."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Оба требования — целостность и конфиденциальность — обеспечивает только SNMPv3 authPriv."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Only USM authPriv among the four options combines message authentication/integrity and scopedPDU privacy."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Specific technical correction recorded in defects."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l7-monitoring-snmp-syslog; recommended l7-monitoring-snmp-syslog / section snmp-usm-security"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "authPriv",
+            "HMAC",
+            "AES"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Pro and lesson prescribe AES128/256 without explaining that RFC3826 standardizes AES-CFB128 and other lengths require matching implementation support.",
+        "Lesson wrongly presents periodic polling as guaranteed convergence and temporal order alone as proof of incident causation."
+      ],
+      "recommendedLessonId": "l7-monitoring-snmp-syslog",
+      "recommendedSection": "snmp-usm-security",
+      "photoEvidence": null
+    },
+    {
+      "id": "mon-syslog-01",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "b88e89788461cd69a92e5a2b7480fbd198571f940b732ed962f295727bbd923d",
+      "evidence": "Cisco logging trap warnings includes severity0..4, so3 is sent and5 filtered; severity is not parity or a separate destination port.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Cisco logging trap warnings includes severity0..4, so3 is sent and5 filtered; severity is not parity or a separate destination port.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Cisco logging trap warnings includes severity0..4, so3 is sent and5 filtered; severity is not parity or a separate destination port."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "logging trap warnings (4) экспортирует уровни 0–4, поэтому сообщения уровня 5 (notifications) не отправляются."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Cisco logging trap warnings includes severity0..4, so3 is sent and5 filtered; severity is not parity or a separate destination port."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Cisco logging trap warnings includes severity0..4, so3 is sent and5 filtered; severity is not parity or a separate destination port."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l7-monitoring-snmp-syslog; recommended l7-monitoring-snmp-syslog / section syslog-threshold"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Shared lesson contains confirmed security/guarantee/causal overclaims listed in sharedLessonFindings; threshold explanation itself is sound."
+      ],
+      "recommendedLessonId": "l7-monitoring-snmp-syslog",
+      "recommendedSection": "syslog-threshold",
+      "photoEvidence": null
+    },
+    {
+      "id": "mon-syslog-05",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "e26db465c9d3634da7966d3bfbb6cb860c755ca60572d8c538e338e836544973",
+      "evidence": "Buffered log history, console output and monitor-to-VTY are independent; terminal monitor is needed for the SSH session.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Buffered log history, console output and monitor-to-VTY are independent; terminal monitor is needed for the SSH session.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Buffered log history, console output and monitor-to-VTY are independent; terminal monitor is needed for the SSH session."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Записи хранятся в RAM-буфере logging buffered, а для вывода в текущую SSH-сессию нужен terminal monitor; logging console действует только на консольный порт."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Buffered log history, console output and monitor-to-VTY are independent; terminal monitor is needed for the SSH session."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Buffered log history, console output and monitor-to-VTY are independent; terminal monitor is needed for the SSH session."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l7-monitoring-snmp-syslog; recommended l7-monitoring-snmp-syslog / section syslog-destinations"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Shared lesson contains confirmed security/guarantee/causal overclaims listed in sharedLessonFindings; the four common IOS destinations are correctly distinguished."
+      ],
+      "recommendedLessonId": "l7-monitoring-snmp-syslog",
+      "recommendedSection": "syslog-destinations",
+      "photoEvidence": null
+    },
+    {
+      "id": "mon-zabbix-01",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "89f5362b1b2b14153f67faef0b94154af2b4c3be6ebb4b9d152db72105af377b",
+      "evidence": "Active agent initiates TCP10051 outward; passive10050 is blocked by the stated policy, ICMP/SNMP do not collect requested CPU/memory via that agent.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Active agent initiates TCP10051 outward; passive10050 is blocked by the stated policy, ICMP/SNMP do not collect requested CPU/memory via that agent.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Active agent initiates TCP10051 outward; passive10050 is blocked by the stated policy, ICMP/SNMP do not collect requested CPU/memory via that agent."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "В условиях запрета входящих соединений работает «Zabbix agent (active)», так как он сам подключается к серверу на TCP 10051."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Active agent initiates TCP10051 outward; passive10050 is blocked by the stated policy, ICMP/SNMP do not collect requested CPU/memory via that agent."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Specific technical correction recorded in defects."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual ts-zabbix-monitoring; recommended ts-zabbix-monitoring / section active-agent-direction"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Pro places StartAgents=0 beside agent2 configuration without restriction; it applies to classic agentd, while Agent2 omits Server to disable passive checks.",
+        "Shared lesson incorrectly equates every ifOutDiscards increase with full egress buffers and treats ping success as exclusion of relevant route problems."
+      ],
+      "recommendedLessonId": "ts-zabbix-monitoring",
+      "recommendedSection": "active-agent-direction",
+      "photoEvidence": null
+    },
+    {
+      "id": "new-tcpip-router",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "343a502c83c75b0640cebef34a48a0a2bbbd0cfadd494fa7a0c3b71a2a665539",
+      "evidence": "Each routed Ethernet hop terminates incoming L2 and creates a new frame; ordinary routing preserves end IP/ports absent NAT, while TTL changes.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Each routed Ethernet hop terminates incoming L2 and creates a new frame; ordinary routing preserves end IP/ports absent NAT, while TTL changes.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Each routed Ethernet hop terminates incoming L2 and creates a new frame; ordinary routing preserves end IP/ports absent NAT, while TTL changes."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Кадр заканчивается на текущем канале; пакет получает новую оболочку для следующего."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Each routed Ethernet hop terminates incoming L2 and creates a new frame; ordinary routing preserves end IP/ports absent NAT, while TTL changes."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Each routed Ethernet hop terminates incoming L2 and creates a new frame; ordinary routing preserves end IP/ports absent NAT, while TTL changes."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended tcpip-encapsulation / section routed-l2-rewrite"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "PASS",
+          "evidence": {
+            "practiceLink": "packet",
+            "ipv6Practice": null,
+            "ipv4Practice": null
+          }
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "tcpip-encapsulation",
+      "recommendedSection": "routed-l2-rewrite",
+      "photoEvidence": null
+    },
+    {
+      "id": "new-ts-dns",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "548c2d3df8c0dc309b28d8c11536404e30ca64f394ed9e97f22149c804cc4c8f",
+      "evidence": "IP application reachability does not validate DNS lookup; inspect chosen resolver and response code/timeout before changing unrelated IP settings.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "IP application reachability does not validate DNS lookup; inspect chosen resolver and response code/timeout before changing unrelated IP settings.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. IP application reachability does not validate DNS lookup; inspect chosen resolver and response code/timeout before changing unrelated IP settings."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Выясните, какое имя и какому серверу отправляет nslookup, затем разберите его ответ или отсутствие ответа."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. IP application reachability does not validate DNS lookup; inspect chosen resolver and response code/timeout before changing unrelated IP settings."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. IP application reachability does not validate DNS lookup; inspect chosen resolver and response code/timeout before changing unrelated IP settings."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended ts-cli-network-basics / section dns-resolution-diagnosis"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "ts-cli-network-basics",
+      "recommendedSection": "dns-resolution-diagnosis",
+      "photoEvidence": null
+    },
+    {
+      "id": "new-ts-duplex",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "ac1e8730649540caf61b5ff92a7958471aa0e9702525e9da605978b77ce4c0bb",
+      "evidence": "Legacy copper errors under load justify checking both negotiated/configured duplex/speed; errors are evidence, not proof of mismatch.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Legacy copper errors under load justify checking both negotiated/configured duplex/speed; errors are evidence, not proof of mismatch.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Legacy copper errors under load justify checking both negotiated/configured duplex/speed; errors are evidence, not proof of mismatch."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На старой медной линии сравнивают фактический режим обоих концов."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Legacy copper errors under load justify checking both negotiated/configured duplex/speed; errors are evidence, not proof of mismatch."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Legacy copper errors under load justify checking both negotiated/configured duplex/speed; errors are evidence, not proof of mismatch."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l2-ethernet / section duplex-mismatch"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l2-ethernet",
+      "recommendedSection": "duplex-mismatch",
+      "photoEvidence": null
+    },
+    {
+      "id": "new-ts-photo-panel",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "93e65abf4bdc8144af8b2974f09e44d8524ee6fa5791bb11f29c44187a01a5d8",
+      "evidence": "Pinned photo shows an optical cross-connect and patch cords, not measured RX power or verified endface dirt; absent Link requires physical-path checks before IP.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned photo shows an optical cross-connect and patch cords, not measured RX power or verified endface dirt; absent Link requires physical-path checks before IP.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Pinned photo shows an optical cross-connect and patch cords, not measured RX power or verified endface dirt; absent Link requires physical-path checks before IP."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На снимке видны оптическая панель и подключённые шнуры, но не состояние торцов и не уровень света. При отсутствии физического соединения из условия сначала проверяют этот тракт; настройка сетевых адресов такую проверку не заменяет."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Pinned photo shows an optical cross-connect and patch cords, not measured RX power or verified endface dirt; absent Link requires physical-path checks before IP."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Pinned photo shows an optical cross-connect and patch cords, not measured RX power or verified endface dirt; absent Link requires physical-path checks before IP."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-fiber-hardware / section optical-link-first"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l1-fiber-hardware",
+      "recommendedSection": "optical-link-first",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/fiber-patch-panel.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "new-ts-vlan",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "a9f7b27f898df2e2e6cc4146612e4968f00b0707691c915d36acfde5fd1f6662",
+      "evidence": "With same/24, Link and forwarding, ARP broadcast stays within VLAN; access VLAN assignment precedes unrelated router ARP/default gateway.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "With same/24, Link and forwarding, ARP broadcast stays within VLAN; access VLAN assignment precedes unrelated router ARP/default gateway.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. With same/24, Link and forwarding, ARP broadcast stays within VLAN; access VLAN assignment precedes unrelated router ARP/default gateway."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Два компьютера настроены на одну подсеть, но запрос одного не доходит до другого при работающих портах. Первым делом нужно сверить, назначены ли эти порты одной логической сети."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. With same/24, Link and forwarding, ARP broadcast stays within VLAN; access VLAN assignment precedes unrelated router ARP/default gateway."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. With same/24, Link and forwarding, ARP broadcast stays within VLAN; access VLAN assignment precedes unrelated router ARP/default gateway."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l2-vlan / section access-vlan-arp"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "PASS",
+          "evidence": {
+            "practiceLink": "cli-vlan",
+            "ipv6Practice": null,
+            "ipv4Practice": null
+          }
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l2-vlan",
+      "recommendedSection": "access-vlan-arp",
+      "photoEvidence": null
+    },
+    {
+      "id": "photo-formfactor-compat",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "3c9c4d067addef1df409653cea9d919fbd457393a0be102ddf157520cad548b1",
+      "evidence": "Pinned photo top label XFP-10GB-SR, lower SFP+10G and visibly different contacts/cases support noninterchangeability, not merely shared10G speed.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned photo top label XFP-10GB-SR, lower SFP+10G and visibly different contacts/cases support noninterchangeability, not merely shared10G speed.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Pinned photo top label XFP-10GB-SR, lower SFP+10G and visibly different contacts/cases support noninterchangeability, not merely shared10G speed."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На снимке сверху лежит более крупный модуль с надписью XFP, снизу — меньший с надписью SFP+. Оба рассчитаны на передачу 10 гигабит в секунду, но напрямую заменить один другим в том же гнезде нельзя."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Pinned photo top label XFP-10GB-SR, lower SFP+10G and visibly different contacts/cases support noninterchangeability, not merely shared10G speed."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Pinned photo top label XFP-10GB-SR, lower SFP+10G and visibly different contacts/cases support noninterchangeability, not merely shared10G speed."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-fiber-identification / section optical-form-factor-compatibility"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l1-fiber-identification",
+      "recommendedSection": "optical-form-factor-compatibility",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/xfp-sfpplus.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "photo-otdr-end",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "a273d9a90df2792f578adda718b60a6811720a02b691b2721535c77fbd0bd913",
+      "evidence": "Rayleigh backscatter drops to noise beyond a physical end/full break; stem says usually and keyed option does not infer exact repair cause.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Rayleigh backscatter drops to noise beyond a physical end/full break; stem says usually and keyed option does not infer exact repair cause.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Rayleigh backscatter drops to noise beyond a physical end/full break; stem says usually and keyed option does not infer exact repair cause."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "После конца волокна или обрыва обратного рассеяния почти нет, поэтому трасса падает и переходит в шум. Начало линии у прибора выглядит иначе, а скорость передачи OTDR не измеряет."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l1-otdr-trace-interpretation; recommended l1-otdr-trace-interpretation / section otdr-end-of-fiber"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "FIX",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "reflectance",
+            "pulse width",
+            "stacked",
+            "overlay",
+            "SM",
+            "MM",
+            "IOR"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain adds unrelated generic polish/marking advice rather than causal trace interpretation.",
+        "No professional layer.",
+        "Linked OTDR lesson has seven tags absent from glossary and tooltip metadata.",
+        "Essential terminology/interactive definition work: reflectance, pulse width, stacked, overlay, SM, MM, IOR"
+      ],
+      "recommendedLessonId": "l1-otdr-trace-interpretation",
+      "recommendedSection": "otdr-end-of-fiber",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/otdr.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "photo-otdr-slope",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "20a76e54f810d3bcabf90a85ae1779ae44d641468eec6fba5e954082c6c44926",
+      "evidence": "Distributed attenuation between events produces a downward slope; localized steps/peaks and noise are different trace features.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Distributed attenuation between events produces a downward slope; localized steps/peaks and noise are different trace features.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Distributed attenuation between events produces a downward slope; localized steps/peaks and noise are different trace features."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Затухание в волокне проявляется плавным наклоном трассы (дБ на километр). Резкие ступени — это события: стыки, коннекторы, изгибы. Шум появляется там, где сигнала уже мало."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-otdr-trace-interpretation / section otdr-slope-events"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "FIX",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain is Why plus generic connector advice, not a separate causal account of backscatter/attenuation.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Recommended OTDR lesson also needs missing glossary tags repaired."
+      ],
+      "recommendedLessonId": "l1-otdr-trace-interpretation",
+      "recommendedSection": "otdr-slope-events",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/otdr.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "photo-otdr-use",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "4e210ac73fbf5099145954024b29b9d58693fdb7474578022cfe2f01087f1bb3",
+      "evidence": "Pinned main trace has sharp reflection peak followed by fall into noise; options small nonreflective step/continuous slope/gain step disagree with visible shape.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned main trace has sharp reflection peak followed by fall into noise; options small nonreflective step/continuous slope/gain step disagree with visible shape.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Pinned main trace has sharp reflection peak followed by fall into noise; options small nonreflective step/continuous slope/gain step disagree with visible shape."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "На основной крупной кривой экрана виден узкий высокий пик, за которым линия резко падает и переходит в шум. Это профиль сильного отражающего события, но одного снимка недостаточно, чтобы назвать его точную причину."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Pinned main trace has sharp reflection peak followed by fall into noise; options small nonreflective step/continuous slope/gain step disagree with visible shape."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Pinned main trace has sharp reflection peak followed by fall into noise; options small nonreflective step/continuous slope/gain step disagree with visible shape."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-otdr-trace-interpretation / section otdr-slope-events"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "FIX",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Recommended OTDR lesson also needs missing glossary tags repaired."
+      ],
+      "recommendedLessonId": "l1-otdr-trace-interpretation",
+      "recommendedSection": "otdr-slope-events",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/otdr.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "photo-sfpplus-label",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "622222ff23e397f926e2c715b9db0b9243b2889d14e9609eb802c74fdb08d942",
+      "evidence": "Pinned lower label explicitly says SFP+10G850nm300m; a reach rating is conditional on medium/spec, not minimum or mandatory cable length.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned lower label explicitly says SFP+10G850nm300m; a reach rating is conditional on medium/spec, not minimum or mandatory cable length.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Pinned lower label explicitly says SFP+10G850nm300m; a reach rating is conditional on medium/spec, not minimum or mandatory cable length."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Это заявленная дальность при оговорённых условиях и классе волокна. Для 10GBASE-SR на OM3 типична дальность до 300 м; для других классов она отличается. Короткий шнур не обязан иметь длину 300 м, а параметры линии сверяют со спецификацией."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-fiber-identification / section optical-rated-reach"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain repeats Why with generic optical advice; expand causal rated reach/loss-budget distinction.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l1-fiber-identification",
+      "recommendedSection": "optical-rated-reach",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/xfp-sfpplus.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "photo-txrx-link",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "611edce1ff1d9946bba66f32f0e1d8b6958a3bc2625bb7017f6a7066e64ecd83",
+      "evidence": "Pinned ports carry TX/RX arrows; duplex transceivers need reciprocal TX→RX paths, not TX→TX or a single one-way fibre.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned ports carry TX/RX arrows; duplex transceivers need reciprocal TX→RX paths, not TX→TX or a single one-way fibre.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Pinned ports carry TX/RX arrows; duplex transceivers need reciprocal TX→RX paths, not TX→TX or a single one-way fibre."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Передатчик каждого конца должен смотреть в приёмник другого. Поэтому duplex-линия перекрёстная; при перепутанной полярности Link не поднимется. Обратный канал нужен для двусторонней связи."
+        },
+        "plain": {
+          "status": "FIX",
+          "evidence": "Read complete runtime deepAnalysis. Explanation duplicates brief or adds generic optical checklist rather than teaching this mechanism."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "FIX",
+          "evidence": "Individual resolver flag=False; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-fiber-hardware / section duplex-polarity"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "FIX",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Plain repeats Why with generic optical advice.",
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l1-fiber-hardware",
+      "recommendedSection": "duplex-polarity",
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/sfp-rx-tx.webp",
+        "sourceCommit": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "review": "Viewed actual pinned image using view_image; visual content supports keyed answer without inferring hidden defects."
+      }
+    },
+    {
+      "id": "review-dot1x-20",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "077e0e4c3764659f3d98a04ca23d41835447b19f0997a2a2ffdcbeb1a0a0bbc4",
+      "evidence": "Link UP is separate from controlled-port authorization; inspect supplicant/EAPOL and RADIUS result rather than substituting MAC-limit/STP checks.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Link UP is separate from controlled-port authorization; inspect supplicant/EAPOL and RADIUS result rather than substituting MAC-limit/STP checks.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Link UP is separate from controlled-port authorization; inspect supplicant/EAPOL and RADIUS result rather than substituting MAC-limit/STP checks."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Физическое соединение ещё не означает разрешение обычного доступа."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Link UP is separate from controlled-port authorization; inspect supplicant/EAPOL and RADIUS result rather than substituting MAC-limit/STP checks."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Link UP is separate from controlled-port authorization; inspect supplicant/EAPOL and RADIUS result rather than substituting MAC-limit/STP checks."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l2-access-auth / section dot1x-controlled-port"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l2-access-auth",
+      "recommendedSection": "dot1x-controlled-port",
+      "photoEvidence": null
+    },
+    {
+      "id": "review-igmp-9",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "83da87933b2f03911e8a1135875382a1141f3df5ad4495fa1e5b9eac8f8c5591",
+      "evidence": "IGMPv2 receiver still interested after unsuppressed query timer sends group Membership Report; queries come from querier and Leave would contradict continuing membership.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "IGMPv2 receiver still interested after unsuppressed query timer sends group Membership Report; queries come from querier and Leave would contradict continuing membership.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. IGMPv2 receiver still interested after unsuppressed query timer sends group Membership Report; queries come from querier and Leave would contradict continuing membership."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Участник группы после истечения таймера ответа отправляет IGMPv2 Membership Report для 239.1.1.10."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. IGMPv2 receiver still interested after unsuppressed query timer sends group Membership Report; queries come from querier and Leave would contradict continuing membership."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l2-igmp-snooping / section igmpv2-report-timer"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l2-igmp-snooping",
+      "recommendedSection": "igmpv2-report-timer",
+      "photoEvidence": null
+    },
+    {
+      "id": "review-osi-34",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "5499b6cefc251a8a2e1803b759e4913467fb58da45cc663566631c695471d967",
+      "evidence": "New TCP sequence numbers and TLS resumption cannot restore confirmed business steps; application/protocol persists and authenticates operation state.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "New TCP sequence numbers and TLS resumption cannot restore confirmed business steps; application/protocol persists and authenticates operation state.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. New TCP sequence numbers and TLS resumption cannot restore confirmed business steps; application/protocol persists and authenticates operation state."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "После разрыва связи пользователь должен продолжить операцию с уже подтверждённого шага."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. New TCP sequence numbers and TLS resumption cannot restore confirmed business steps; application/protocol persists and authenticates operation state."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. New TCP sequence numbers and TLS resumption cannot restore confirmed business steps; application/protocol persists and authenticates operation state."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual osi-pdu; recommended osi-session-presentation / section checkpoint-restoration"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Existing osi-pdu gives L5 role only, not checkpoint/idempotent recovery mechanism needed to answer distinctions in both styles."
+      ],
+      "recommendedLessonId": "osi-session-presentation",
+      "recommendedSection": "checkpoint-restoration",
+      "photoEvidence": null
+    },
+    {
+      "id": "review-ospf-27",
+      "status": "PASS",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "64f6c5ede9b3e753012b96da4f356199c6c3b177a972b7fa1563a0d919ce3490",
+      "evidence": "Within-area OSPF shortest path is minimum sum of interface cost, not hop count, current-flow throughput or smallest router ID.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Within-area OSPF shortest path is minimum sum of interface cost, not hop count, current-flow throughput or smallest router ID.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Within-area OSPF shortest path is minimum sum of interface cost, not hop count, current-flow throughput or smallest router ID."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Выигрывает путь с меньшей суммой назначенных стоимостей, даже если промежуточных устройств больше."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Within-area OSPF shortest path is minimum sum of interface cost, not hop count, current-flow throughput or smallest router ID."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. Within-area OSPF shortest path is minimum sum of interface cost, not hop count, current-flow throughput or smallest router ID."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l3-ospf; recommended l3-ospf"
+        },
+        "lessonStyles": {
+          "status": "PASS",
+          "evidence": "Both complete actual lesson styles read and teach the mechanism used in the key."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [],
+      "recommendedLessonId": "l3-ospf",
+      "recommendedSection": null,
+      "photoEvidence": null
+    },
+    {
+      "id": "review-poe-30",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "e8b60ce9bdae5e7d97c0ffc6e5b3fcc05a90137f8a9491e5aecd20b381d09b02",
+      "evidence": "PD detection/classification and available PSE port/aggregate budget precede powered IP/MAC exchange; PoE is not restricted to1G.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "PD detection/classification and available PSE port/aggregate budget precede powered IP/MAC exchange; PoE is not restricted to1G.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. PD detection/classification and available PSE port/aggregate budget precede powered IP/MAC exchange; PoE is not restricted to1G."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Поддержка питания на порту не гарантирует достаточную мощность для этой камеры."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. PD detection/classification and available PSE port/aggregate budget precede powered IP/MAC exchange; PoE is not restricted to1G."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. PD detection/classification and available PSE port/aggregate budget precede powered IP/MAC exchange; PoE is not restricted to1G."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l1-poe-screen-reading / section poe-camera-budget"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material."
+      ],
+      "recommendedLessonId": "l1-poe-screen-reading",
+      "recommendedSection": "poe-camera-budget",
+      "photoEvidence": null
+    },
+    {
+      "id": "review-ptp-17",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "b372210fcb3631febfc31400e5b1d208b3d8c3046d2277914c4959bef8b81f91",
+      "evidence": "Boundary clock disciplines own clock from upstream grandmaster then acts as downstream time source; transparent clock only forwards/corrects residence time.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Boundary clock disciplines own clock from upstream grandmaster then acts as downstream time source; transparent clock only forwards/corrects residence time.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. Boundary clock disciplines own clock from upstream grandmaster then acts as downstream time source; transparent clock only forwards/corrects residence time."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Промежуточные часы сначала подстраиваются по главному источнику, а затем сами передают время двум следующим участникам."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. Boundary clock disciplines own clock from upstream grandmaster then acts as downstream time source; transparent clock only forwards/corrects residence time."
+        },
+        "professional": {
+          "status": "FIX",
+          "evidence": "Absent from actual runtime resolver."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "FIX",
+          "evidence": "Actual None; recommended l7-monitoring-snmp-syslog / section ptp-clock-roles"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "No linked lesson"
+        },
+        "terminology": {
+          "status": "PASS_WITH_RECOMMENDATIONS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "boundary clock",
+            "transparent clock",
+            "grandmaster"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "No professional layer.",
+        "Runtime getLessonForQuestion returns no lesson despite existing suitable material.",
+        "Essential terminology/interactive definition work: boundary clock, transparent clock, grandmaster"
+      ],
+      "recommendedLessonId": "l7-monitoring-snmp-syslog",
+      "recommendedSection": "ptp-clock-roles",
+      "photoEvidence": null
+    },
+    {
+      "id": "review-qos-22",
+      "status": "FIX",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "6007c7bd958c7dd929cb8d10c2c674d771be1ab5b275c844b4f944f78b6e6bc9",
+      "evidence": "DSCP is an input to trust/classify/queue/scheduler policy, not automatic resource reservation; MAC-table size/MTU do not implement scheduling.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "DSCP is an input to trust/classify/queue/scheduler policy, not automatic resource reservation; MAC-table size/MTU do not implement scheduling.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. DSCP is an input to trust/classify/queue/scheduler policy, not automatic resource reservation; MAC-table size/MTU do not implement scheduling."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Метка помогает выбрать обработку, но результат задают политика и очереди устройства."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. DSCP is an input to trust/classify/queue/scheduler policy, not automatic resource reservation; MAC-table size/MTU do not implement scheduling."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. DSCP is an input to trust/classify/queue/scheduler policy, not automatic resource reservation; MAC-table size/MTU do not implement scheduling."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual qos-basics; recommended qos-basics"
+        },
+        "lessonStyles": {
+          "status": "FIX",
+          "evidence": "Both actual styles read; specific lesson defects/coverage gaps recorded above."
+        },
+        "terminology": {
+          "status": "FIX",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": [
+            "CE",
+            "PHB"
+          ]
+        },
+        "practice": {
+          "status": "NOT_REQUIRED",
+          "evidence": "No existing exact protocol/physical/monitoring simulation asserted. No invented trainer link requested."
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [
+        "Lesson pro tags CE and PHB have no GLOSSARY definitions, so interactive term cards cannot open.",
+        "Essential terminology/interactive definition work: CE, PHB"
+      ],
+      "recommendedLessonId": "qos-basics",
+      "recommendedSection": null,
+      "photoEvidence": null
+    },
+    {
+      "id": "review-slaac-4",
+      "status": "PASS",
+      "technicalJudgment": "PASS",
+      "materialFingerprint": "097f9aade3a71887b71724c712d537775fc6216e02217831bbf8289b605c443a",
+      "evidence": "PIO/64 A=1 allows OS-selected interface identifier plus prefix; router address is not copied, NA does not issue full addresses, DAD/lifetimes are distinct.",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "PIO/64 A=1 allows OS-selected interface identifier plus prefix; router address is not copied, NA does not issue full addresses, DAD/lifetimes are distinct.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "Read each offered alternative against the stated assumptions; none provides another valid answer. PIO/64 A=1 allows OS-selected interface identifier plus prefix; router address is not copied, NA does not issue full addresses, DAD/lifetimes are distinct."
+        },
+        "why": {
+          "status": "PASS",
+          "evidence": "Маршрутизатор сообщает общую часть адреса, а компьютер выбирает свою часть."
+        },
+        "plain": {
+          "status": "PASS",
+          "evidence": "Read complete runtime deepAnalysis. PIO/64 A=1 allows OS-selected interface identifier plus prefix; router address is not copied, NA does not issue full addresses, DAD/lifetimes are distinct."
+        },
+        "professional": {
+          "status": "PASS",
+          "evidence": "Read complete independent professional text; technical conditions, distractor distinctions and diagnostic advice match this question. PIO/64 A=1 allows OS-selected interface identifier plus prefix; router address is not copied, NA does not issue full addresses, DAD/lifetimes are distinct."
+        },
+        "explanationRelevance": {
+          "status": "PASS",
+          "evidence": "Individual resolver flag=True; read actual text, not presence/length scoring."
+        },
+        "lessonRelevance": {
+          "status": "PASS",
+          "evidence": "Actual l3-ipv6; recommended l3-ipv6"
+        },
+        "lessonStyles": {
+          "status": "PASS",
+          "evidence": "Both complete actual lesson styles read and teach the mechanism used in the key."
+        },
+        "terminology": {
+          "status": "PASS",
+          "evidence": "Essential terms are explained in current prose or existing glossary; candidate additions are contextual recommendations, never raw uppercase automatic defects.",
+          "recommendedDefinitions": []
+        },
+        "practice": {
+          "status": "PASS",
+          "evidence": {
+            "practiceLink": null,
+            "ipv6Practice": {
+              "targetMode": "concept"
+            },
+            "ipv4Practice": null
+          }
+        },
+        "navigation": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Initial read-only content audit only. Actual resolver lesson ID captured; desktop/mobile question→lesson→back must be executed by root."
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": "Read actual why/plain/pro and checked hasIndividualDeep; no other-question explanation identified."
+        }
+      },
+      "defects": [],
+      "recommendedLessonId": "l3-ipv6",
+      "recommendedSection": null,
+      "photoEvidence": null
+    }
+  ]
+}

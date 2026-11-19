@@ -1,0 +1,2855 @@
+{
+  "schemaVersion": 1,
+  "auditor": "/root/l2_review_group2",
+  "authorOfContentChanges": null,
+  "baselineSHA": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "reviewMode": "INITIAL_READ_ONLY_CONTENT_AUDIT",
+  "standardsRead": [
+    "docs/LEARNING_CONTENT_STANDARD.md",
+    "NETOPS_DECISIONS.md",
+    "docs/ROADMAP.md#deferred-base-filter-todo"
+  ],
+  "scope": {
+    "learningLevel": 2,
+    "status": "ASSIGNED",
+    "count": 40,
+    "ids": [
+      "l12-storm01",
+      "l12-x02",
+      "l12-x03",
+      "l1v2-a-category-limit",
+      "l1v2-a-jacket-kink",
+      "l1v2-a-jacket-limit",
+      "l1v2-a-label-sftp",
+      "l1v2-a-pairs",
+      "l1v2-a-solid-use",
+      "l1v2-a-strain-view",
+      "l1v2-b-bend-loss",
+      "l1v2-b-position-cause",
+      "l1v2-b-screen-xy",
+      "l1v2-b-transfer",
+      "l1v2-c-bidi-wrong-pair",
+      "l1v2-c-closure-service",
+      "l1v2-c-converter-polarity",
+      "l1v2-c-industrial-fiber-ports",
+      "l1v2-c-splitter-role",
+      "l2-04",
+      "l2-12",
+      "l2-sec-05",
+      "l2-sec-08",
+      "l2-sec-13",
+      "l2-sec-18",
+      "l3-16",
+      "l3-bgp-06",
+      "l3-d04",
+      "l3-d07",
+      "l3-d08",
+      "l3-ospf-03",
+      "l3-vrrp02",
+      "l3-vrrp04",
+      "l4-03",
+      "l4-04",
+      "l4-d04",
+      "l4-d06",
+      "l4-lb-01",
+      "l4-new-05",
+      "l4-new-07"
+    ]
+  },
+  "summary": {
+    "PASS": 8,
+    "FIX": 32,
+    "REVIEW": 0
+  },
+  "actualWork": [
+    "Read all40 stems/options/keys and runtime why/plain/pro materials.",
+    "Read relevant plain/pro blocks of all12 currently linked lessons and inspected reused lesson catalog for missing links.",
+    "Visually viewed every one of16 unique pinned photo originals via view_image.",
+    "Checked relevant raw abbreviation candidates against shared GLOSSARY/GLOSSARY_TOOLTIPS and actual splitGlossaryText matcher."
+  ],
+  "limits": [
+    "PASS is semantic/content assessment at baseline only, not browser/deploy acceptance.",
+    "No source-content, bank, key, option, filter or production edits made.",
+    "No CI/build/browser or live staging acceptance claimed in this report.",
+    "Initial audit does not license rewriting good existing plain/pro; recommendations specify missing or inaccurate pieces only."
+  ],
+  "technicalReferences": [
+    "IEEE802.1Q: bridge forwarding, RSTP/MSTP VLAN and logical aggregated-port semantics.",
+    "RFC4271 §5.1.2 and route eligibility: AS_PATH loop detection.",
+    "RFC3768 §§6.4.1/6.4.2: address owner and Preempt_Mode exception.",
+    "RFC2328 §12.4.2: Network-LSA originated by DR.",
+    "RFC7766 and RFC5936: DNS TCP and AXFR transport; RFC6891 EDNS UDP sizes.",
+    "RFC768 and RFC8200 §8.1: UDP checksum IPv4 and IPv6.",
+    "RFC9293 §3.6: half-close and independent connection directions."
+  ],
+  "rows": [
+    {
+      "id": "l12-storm01",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Storm Control can drop valid frames without CRC increments; condition asks a diagnostic check, not proof of cause.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why distinguishes integrity errors from policy loss; both detailed styles explain broadcast/ARP/DHCP, counters and platform limits.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why distinguishes integrity errors from policy loss; both detailed styles explain broadcast/ARP/DHCP, counters and platform limits."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "ts-copp-storm",
+          "recommendedLessonId": "ts-copp-storm",
+          "evidence": "Both styles distinguish Storm Control from CoPP and explicitly prohibit raising thresholds before excluding a loop."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "9d3c7d1605f5095f8d2e48e6836d76d1cde64fd4da1985b85293a606fc074ae1",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l12-storm01",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l12-x02",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Alternate in stable RSTP is Discarding: receives BPDU, neither learns user-source MAC nor forwards user frames.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain correctly distinguishes three states; pro is only «Не путать с administratively down.» and does not teach the state/role mechanism.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain correctly distinguishes three states; pro is only «Не путать с administratively down.» and does not teach the state/role mechanism."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-stp",
+          "recommendedLessonId": "l2-stp",
+          "evidence": "Both lesson styles cover Discarding/BPDU and administrative-down distinction."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_INCOMPLETE"
+      ],
+      "recommendedChanges": [
+        "Replace only pro with role/state/BPDU/learning explanation, show spanning-tree diagnosis and stable-topology scope."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "c4093700226620c94c255aff870cc138c2b2fd36f4be2a98a47251c556cccb7b",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l12-x02",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l12-x03",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Passive/passive lacks a LACP initiator; active/passive and active/active can negotiate given compatible ports.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Existing why/plain correct and individual; pro and lesson link absent.",
+          "hasIndividualDeep": true,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Existing why/plain correct and individual; pro and lesson link absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l2-stp-guard-design",
+          "evidence": "Existing EtherChannel blocks explain logical STP port and hash distribution but not active/passive LACP negotiation."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "LACP defined; LACPDU lacks tooltip and is used as diagnostic packet name."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Add two-style LACP negotiation section to existing EtherChannel lesson; no LACP trainer exists, do not point at an unrelated CLI lab."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "8e4529c40ade170734b30ddc5dccb2a6932d2c7d03bfeed35b896372ea1a8612",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l12-x03",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-category-limit",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "8P8C appearance alone cannot certify channel/category; cable and all component specifications are the only adequate offered evidence.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why is correct; plain is a copied why plus unrelated fibre-type/endface-polish fallback; pro and lesson absent.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why is correct; plain is a copied why plus unrelated fibre-type/endface-polish fallback; pro and lesson absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-cable",
+          "evidence": "Existing marking-vs-channel-testing blocks cover component limits and verification."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Author causal copper-specific plain/pro; preserve key and explain datasheets plus acceptance measurements, not plug appearance."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-cat5e.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "8P8C visible; no full channel category certification is visible."
+      },
+      "materialSHA256": "631977b31ce784de526a50932557a7ea8bf9651912cd2fc901ba264fe678916f",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-category-limit",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-jacket-kink",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows kink/local deformation in the upper-right orange bend, not proved conductor break.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Correct restrained why; plain appends irrelevant fibre-polish fallback; pro and lesson absent.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Correct restrained why; plain appends irrelevant fibre-polish fallback; pro and lesson absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-termination-quality",
+          "evidence": "Existing installation quality lesson is adjacent; add small bend-radius/local-deformation verification section if not already explicit."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Keep photo/key; explain bend stress, manufacturer minimum radius, visual limits and wiremap/certification checks."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-jacket-kink.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Upper-right orange bend has sharp local jacket deformation; hidden conductor break not established."
+      },
+      "materialSHA256": "b020a0d0002a7a3b2ae193be1dd18f6e81cb643248793b96fac80e9f33784c8f",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-jacket-kink",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-jacket-limit",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "PVC/LSZH must be established from material marking/datasheet, not Cat/AWG/screening code or colour.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Correct why defines material; plain appends fibre fallback; pro absent.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Correct why defines material; plain appends fibre fallback; pro absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-cable",
+          "evidence": "Plain LSHF/PVC and professional material/fire-safety blocks cover the question."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Expand causal material-vs-transmission distinctions, use current lesson, add LSZH tooltip without changing existing definitions."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-utp-section.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Cross-section colour/material does not identify PVC/LSZH chemical/fire performance."
+      },
+      "materialSHA256": "434c86aec3fec8152ba04c29ed799f38304d1b63709182297486bd01fabe7f5c",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-jacket-limit",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-label-sftp",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned label visibly reads S/FTP: common braid plus foil around pairs, consistent with key2.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Correct why contrasts F/UTP/U/FTP/U/UTP; plain appends foreign fibre text; pro absent.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Correct why contrasts F/UTP/U/FTP/U/UTP; plain appends foreign fibre text; pro absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-cable",
+          "evidence": "Both styles explicitly teach overall versus individual pair shielding."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "MISLEADING_PARTIAL_TOOLTIP"
+      ],
+      "recommendedChanges": [
+        "Add exact S/FTP/U/FTP/etc tooltip metadata: current raw matcher exposes FTP file-transfer definition inside shielding notation."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-jacket-marking.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "S/FTP printed clearly on orange cable; overall braid/pair foil follows notation."
+      },
+      "materialSHA256": "b616b44214ec5b769f7ef572d061427a661ae560144f1660637115ab557b05aa",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-label-sftp",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-pairs",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo visibly shows twisted colour pairs. Close paired conductors and differential reception reject common-mode noise; wrong wiring alternatives undermine this.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why correct; generic fibre fallback substitutes for causal individual detailed text; no pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why correct; generic fibre fallback substitutes for causal individual detailed text; no pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-cable",
+          "evidence": "Existing lesson teaches pair count, screening and solid/stranded; add focused twist/common-mode section, not a new lesson."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain common-mode rejection limits, preserving twists near termination and why split pairs impair balance."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-cat6.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Four visibly twisted colour pairs; this supports twist mechanism, not category by appearance."
+      },
+      "materialSHA256": "0ab2971b36275e214b3cbd6031bc36d983047426b28854f62dad935a347e706a",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-pairs",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-solid-use",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows single solid conductors; stationary permanent run is the appropriate offered use versus repeated flex.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why includes compatibility limitations; generic fibre fallback/pro absence break detailed contract.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why includes compatibility limitations; generic fibre fallback/pro absence break detailed contract."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-cable",
+          "evidence": "Solid/stranded blocks in both styles already cover mechanical suitability and termination compatibility."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Preserve correct why; author plain/pro causal flex-fatigue and connector/IDC compatibility explanation."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-wire-solid.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Single metallic conductors rather than multiwire bundle; frequent flex not supported."
+      },
+      "materialSHA256": "2f73901d876901e5b521d57fe9df2c56bf2eac30d87329cd39f4e98045cd99bd",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-solid-use",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-a-strain-view",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows exposed foil between purple jacket and plug: jacket has not reached retention zone; not a pass-through or unshielded-plug observation.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Correct why; foreign fibre fallback and missing pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Correct why; foreign fibre fallback and missing pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-termination-quality",
+          "evidence": "Reuse termination/strain relief lesson and add focused jacket-capture section if needed."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "GLOSSARY has 8P8C/AWG/solid/stranded/IDC/screening codes but tooltip metadata missing. LSZH absent; S/FTP/U/FTP currently expose FTP file-transfer token. Add exact contextual metadata, not wrong partial expansion."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain force on jacket versus contacts; boot is not substitute for retention; avoid asserting hidden conductor state."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/copper-rj45-strain.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Purple jacket stops below exposed foil/plug, outside visible retention region."
+      },
+      "materialSHA256": "7245cabaed4f24d8299a725001f61771bc1fb6d452c895893f21a56b93b279b8",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-a-strain-view",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-b-bend-loss",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows red VFL light escaping along tight coils; this is bend-loss indication, not quantified link loss in dB.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Correct why with measurement/radius limits; generic fallback and absent pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Correct why with measurement/radius limits; generic fallback and absent pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-optical-testing-equipment",
+          "evidence": "Use existing VFL/measurement equipment lesson; add focused macro-bend mechanism if needed."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "VFL tooltip exists; dB entry has no tooltip. Red visual brightness is not a dB measurement."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Explain confinement leakage, visual qualitative observation and proper OLTS/OTDR follow-up, never infer working-wavelength dB from red brightness."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/fiber-bend-loss.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "VFL red light escapes along tight loops; cannot quantify working-wavelength insertion loss."
+      },
+      "materialSHA256": "0dcbc047f9519da274774e1c231e5d56641589a382bd7bb535c5a8eaf68ffcff",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-b-bend-loss",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-b-position-cause",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Screen explicitly says Fiber position error, Place fiber again, Clean the V-Groove. No unique cause or mandatory electrode/current correction follows.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why sound; plain repeated why plus generic unrelated text and no professional layer.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why sound; plain repeated why plus generic unrelated text and no professional layer."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-fiber-splicing",
+          "evidence": "Existing cleave/alignment material is relevant; add a focused placement/cleanliness error section for both styles if absent."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Retain causal diagnostic uncertainty; inspect preparation length, holder seating and V-groove cleanliness under vendor procedure."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/fiber-position-error.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Screen explicitly requests Place fiber again / Clean the V-Groove under Fiber position error."
+      },
+      "materialSHA256": "c38b9f07d0922a5ad3fc75edab33867cb33cf46e4efb655c8c43fc876dbc66eb",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-b-position-cause",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-b-screen-xy",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Pinned screen visibly has X and Y images of both endfaces; orthogonal views expose displacement hidden in one plane.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why already accurately qualifies core/cladding alignment by model; detailed fallback/pro/lesson deficient.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why already accurately qualifies core/cladding alignment by model; detailed fallback/pro/lesson deficient."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-fiber-splicing",
+          "evidence": "Reuse alignment/preparation blocks with a concise two-view subsection if needed."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Author independent causal plain/pro; do not identify X/Y with TX/RX or claim all splicers use core alignment."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/fiber-before-fusion.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Separate X/Y orthogonal pictures of endfaces; neither is TX/RX direction."
+      },
+      "materialSHA256": "8347c534cf37be5f1c92ddb71678ad7c194c4e699b0b7f0c31ff13e7264cb956",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-b-screen-xy",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-b-transfer",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo marks splicing point and sleeve heater with both hands supporting fibre; bare new splice should not be stretched or twisted.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why correct; copied why plus generic filler cannot replace individual explanation; no pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why correct; copied why plus generic filler cannot replace individual explanation; no pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-fiber-splicing",
+          "evidence": "Both styles already teach sleeve/mechanical protection and cassette placement."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain exposed splice vulnerability, support both sides, manufacturer heater programme and sleeve centring."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/fiber-splice-transfer.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Hands support both sides near marked Splicing point; Sleeve Heater shown above."
+      },
+      "materialSHA256": "27356dc8431840d0f3b033c6a320a58ad438352abf30b32601f96e78fb32577e",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-b-transfer",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-c-bidi-wrong-pair",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Upper module label TX1490/RX1550; lower TX1550/RX1490. Replacing lower with another upper yields identical rather than complementary wavelength roles.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why precise; detailed text has generic fallback, no pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why precise; detailed text has generic fallback, no pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-fiber-identification",
+          "evidence": "Existing BiDi/label interpretation lesson is relevant; verify complementary TX/RX material in both styles."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "TX/RX tooltip exists; BiDi exact entry/tooltip missing."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Use actual label wavelengths; distinguish form factor/speed/reach compatibility from complementary spectral pair; add BiDi tooltip."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/module-bidi-pair.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Upper TX1490/RX1550, lower TX1550/RX1490; complementary pair."
+      },
+      "materialSHA256": "671eaecfaabfaaa1049a5c5e031294de65765cc9b1176a8199c520a3f7ba025e",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-c-bidi-wrong-pair",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-c-closure-service",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "All visible cables enter at left base; right dome/both ends/sidewall alternatives unsupported. Key does not claim sealed state from appearance.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why correctly limits visible evidence; plain appends generic fibre filler rather than service mechanism; no pro/lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why correctly limits visible evidence; plain appends generic fibre filler rather than service mechanism; no pro/lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-fiber-hardware",
+          "evidence": "Existing passive ODF/route organisation is adjacent; add a specific single-ended closure service/sealing section or use splicing cassette lesson with exact subsection."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain access clearance, vendor sealing/strain relief verification, avoiding inference about internal splice health or current hermeticity."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/passive-splice-closure.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Visible cables enter left base only; hermeticity/internal splice state not visible."
+      },
+      "materialSHA256": "1ee87a2d208ea6e5f751cd6d660d52cf83f8cf8c82543f4616ce6a1a8b59dd66",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-c-closure-service",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-c-converter-polarity",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo has optical TX left/RX right; duplex connection requires opposite device RX/TX, not auto-MDI-X of copper side.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro are individual, relevant and technically correct; only lesson link missing.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro are individual, relevant and technically correct; only lesson link missing."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-switch-panel-identification",
+          "evidence": "Existing panel/optical port lesson may be reused, with explicit two-fibre direction/polarity block in both styles."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Preserve good explanations; link to actual TX/RX teaching subsection."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/passive-media-converter.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Optical TX left/RX right; copper MDI switch is separate."
+      },
+      "materialSHA256": "58123e4b862b78b9057bcb7648067facaf8996182fda17ba2d30202000e946f8",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-c-converter-polarity",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-c-industrial-fiber-ports",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows top circular ports labelled TX/RX; lower ports are copper. Key correct; RING DIP alone does not prove configured ring.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why good; generic filler, missing pro and lesson.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why good; generic filler, missing pro and lesson."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-switch-panel-identification",
+          "evidence": "Reuse optical port role and topology limits; add precise polarity section shared with converter question."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain two directions and read device markings without inferring closed ring/protocol state."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/industrial-mixed-ports.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Upper optical circular pairs visibly TX/RX, lower copper ports; RING switch does not prove ring configuration."
+      },
+      "materialSHA256": "4546fb11e61d92f375cf552cb8a82c2869877a904474812957350546c0a2f04a",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-c-industrial-fiber-ports",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l1v2-c-splitter-role",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Photo shows one incoming Ethernet path and separate Ethernet/DC outputs feeding AP, consistent with splitter rather than injector.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why correctly calls splitter PD and requires voltage/polarity/power compatibility; fallback about fibre is foreign.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "FIX",
+          "evidence": "Why correctly calls splitter PD and requires voltage/polarity/power compatibility; fallback about fibre is foreign."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l1-copper-fault-poe",
+          "evidence": "Existing PSE/PD lesson needs a compact splitter-vs-injector section in both styles for full teaching coverage."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "FIX",
+          "evidence": "Foreign generic fibre-polish paragraph present."
+        }
+      },
+      "confirmedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain PoE termination at splitter and separate downstream DC; avoid assuming any standard voltage or passive/active type from exterior."
+      ],
+      "photoEvidence": {
+        "path": "scripts/.cache/in-depth/photos/power-splitter.webp",
+        "pinnedAssetRevision": "1c52fa81222167dc4377fe4788de86f3e36ad444",
+        "inspection": "ACTUALLY_VIEWED",
+        "observed": "Input cable to splitter, separate Ethernet/DC cables to AP; exact voltage/standard not established."
+      },
+      "materialSHA256": "4738ba7b350077a976c773d2126f3ddb93e1bd44a3f0a19db14fa669d6d111bf",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l1v2-c-splitter-role",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-04",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Unknown unicast with no special suppression floods only permitted forwarding ports in same VLAN except ingress.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro explain MAC learning, VLAN scope and why ARP/gateway/cross-VLAN options are wrong.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro explain MAC learning, VLAN scope and why ARP/gateway/cross-VLAN options are wrong."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-ethernet",
+          "recommendedLessonId": "l2-ethernet",
+          "evidence": "Plain «Если получатель неизвестен…» and pro «Unknown unicast» explicitly teach the tested behaviour."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "d73ad9b0c867904399a0df39b55b3c21e516f379f62970b8b62d96462a8aaed5",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-04",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-12",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Probing MRM/MRC ring with blocked data path and link notifications identifies MRP; recovery time180ms alone is not unique proof.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain make protocol-specific distinction correctly; missing pro and link.",
+          "hasIndividualDeep": true,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why/plain make protocol-specific distinction correctly; missing pro and link."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "expert-mrp-vlan-failover",
+          "evidence": "Existing expert case assumes MRP knowledge; add opening fundamentals section contrasting MRP Test/LinkChange and data port block before reusing."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "MRP/RSTP exist; HSR has no tooltip, ERPS/R-APS missing. These distractor comparisons are material, not irrelevant code tokens."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Do not claim all MRP implementations guarantee180ms; compare RSTP BPDU, ERPS R-APS, HSR duplicates; add ERPS/R-APS useful definitions."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "47ae127929eed16cca24d436553302f3193240e7bac386b263425d92a616e9af",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-12",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-sec-05",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Bundled EtherChannel members form a logical STP port; traffic on both members does not require physical-member Alternate.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "All explanation layers distinguish logical STP role, bundle consistency and per-flow hash without promising equal distribution.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "All explanation layers distinguish logical STP role, bundle consistency and per-flow hash without promising equal distribution."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-stp-guard-design",
+          "recommendedLessonId": "l2-stp-guard-design",
+          "evidence": "Plain/pro «STP · EtherChannel» fully covers the exact question."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "337ae6ab6e84f29ed26319d68b9b9ed98b66f841149aeb231c944f1a798399a3",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-sec-05",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-sec-08",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "MST region membership includes name/revision/mapping digest; different VLAN30 MSTI mapping forms boundary, not automatic synchronisation.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Distinct plain/pro explain mapping digest, boundary and external CIST; no unsupported STP shutdown.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Distinct plain/pro explain mapping digest, boundary and external CIST; no unsupported STP shutdown."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-stp-guard-design",
+          "recommendedLessonId": "l2-stp-guard-design",
+          "evidence": "Plain/pro «MSTP · Граница региона» directly teaches all tested fields."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "6581a045e1b86ae5fafabcf8cff9aface51e7c096c4a041f5d382235215b0218",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-sec-08",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-sec-13",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Untagged admitted ingress carries no originating VLAN field; B assigns its native/PVID20. FCS does not encode VLAN agreement.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain/pro explicitly qualify untagged acceptance and platform inconsistency protection.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain/pro explicitly qualify untagged acceptance and platform inconsistency protection."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-vlan-security",
+          "recommendedLessonId": "l2-vlan-security",
+          "evidence": "Both «VLAN · Несовпадение native» blocks cover exact case; cli-trunk is real existing trunk configuration practice."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "Existing practiceLink cli-trunk resolves to Cisco trunk scenario; semantic alignment valid, actual browser route pending root smoke."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "6c878ac94a1371cf1a93d13b8dbc200bbef609c43c6839309b9ccb25c156897b",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-sec-13",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l2-sec-18",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Same source MAC/port/VLAN binding lets spoofed host pass Port Security; sticky/MAB/static destination forwarding do not prove endpoint credential possession.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "All layers correctly distinguish source binding from EAP-TLS certificate authentication without promising MACsec per-frame cryptography.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "All layers correctly distinguish source binding from EAP-TLS certificate authentication without promising MACsec per-frame cryptography."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l2-vlan-security",
+          "recommendedLessonId": "l2-vlan-security",
+          "evidence": "Both Port Security identity blocks cover matching binding, MAB and certificate method."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "4bcc36e1413fd167114432396db2e53fedc1a874b2df2bcd69f80b3f5c36adf4",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l2-sec-18",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-16",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Given only connected route/default, off-link destination uses gateway; ARP cache miss does not change route selection.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Current why/plain/pro accurately teach lookup before neighbour resolution and scope other routes out.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Current why/plain/pro accurately teach lookup before neighbour resolution and scope other routes out."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l3-route-selection",
+          "evidence": "Existing route selection and neighbour-resolution blocks cover actual condition; only resolver link absent."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "Existing cli-gateway scenario models default next hop and is an appropriate optional practice; no link currently exposed."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "LESSON_MISSING"
+      ],
+      "recommendedChanges": [
+        "Preserve approved individual explanation; add exact link, optionally route-selection subsection; cli-gateway practice teaches default next hop."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "d781548dd617452e754159e0bbda8c88c3bb509b9bf815fef7cc48ae410d71ff",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-16",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-bgp-06",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Own AS65010 anywhere in AS_PATH65020 65010 65030 triggers ordinary loop prevention; NEXT_HOP reachability does not override it.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain/pro explicitly distinguish peer first-AS, absent eBGP LocalPref and IP TTL versus AS_PATH length, with scoped allowas-in/override exceptions.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain/pro explicitly distinguish peer first-AS, absent eBGP LocalPref and IP TTL versus AS_PATH length, with scoped allowas-in/override exceptions."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l3-bgp",
+          "recommendedLessonId": "l3-bgp",
+          "evidence": "Both NEXT_HOP/AS_PATH blocks cover exact tested mechanism and constraints."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "6cf38c97bb050eb03262f3d6e8ceeab9b6143af47af195075fd4164b1ebb6b2f",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-bgp-06",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-d04",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "IPv4 transit TTL1 is decremented to zero and dropped, usually with ICMP Time Exceeded; L2 switching does not decrement it.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain correct and contextual; pro and lesson missing.",
+          "hasIndividualDeep": true,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why/plain correct and contextual; pro and lesson missing."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l3-icmp-basics",
+          "evidence": "Current ICMP layer/encapsulation lesson lacks dedicated TTL-expiry causal section; add both styles."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain TTL drop precedes forwarding, ICMP Type11 Code0, exceptions/rate limits and traceroute dependence without promising reply delivery."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "2d112b5c9e5d23f491638f38d4c1f8989f124a9f851df4d36a9d35eb25b13a5a",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-d04",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-d07",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Proxy ARP may hide overly broad masks by replying with router MAC for destination then routing; it does not repair STP/TCP/DNSSEC.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain good; pro only two lines and lacks conditions/diagnostic example and security/route scope.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Why/plain good; pro only two lines and lacks conditions/diagnostic example and security/route scope."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l3-arp",
+          "evidence": "Existing lesson covers normal ARP but not proxy operation; add explicit proxy vs ordinary gateway ARP section."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_INCOMPLETE",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Preserve plain; extend pro with route-dependent proxy response, sender mask/on-link decision, ARP target and gateway MAC evidence."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "7f7dffcf1b90d798c4ccdba5036eb69a48b67b3a2096aa98a454372163da7272",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-d07",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-d08",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Typical ECMP uses flow hashing; per-packet alternatives exist, so key correctly avoids a universal claim.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain single sentence «Hash по адресам/портам…» is terse mechanism only, no causal example/diagnosis; pro absent.",
+          "hasIndividualDeep": true,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain single sentence «Hash по адресам/портам…» is terse mechanism only, no causal example/diagnosis; pro absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l3-route-selection",
+          "evidence": "Existing LPM lesson does not teach equal-cost multiple next hops; add ECMP section both styles."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain fields/hashing platform variation, flow preservation and reordering, possible hash collisions/unequal utilisation; no fictional ECMP trainer."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "a7ba1df6bbb66af227c345f1db1bd0519e06ce472a3b7836971140edd2c8973e",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-d08",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-ospf-03",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "DR A originates OSPFv2 Network LSA Type2; DROTHER C has Full to DR/BDR, not only DR. Key/distractors sound.",
+          "correctIndices": [
+            3
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Question why/plain/pro correctly distinguish NetworkLSA, RouterLSA and externalE2.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Question why/plain/pro correctly distinguish NetworkLSA, RouterLSA and externalE2."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": "l3-ospf",
+          "recommendedLessonId": "l3-ospf",
+          "evidence": "Both lesson styles cover DR/BDR/DROTHER adjacency, but neither explicitly teaches Type2 NetworkLSA originator/representation."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Add dual-style NetworkLSA Type2 section near DR/BDR; preserve good question explanations."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "8de67d57acfb6784e7eb23332186538396cfda6742bd38a1407890baeb2ab3b6",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-ospf-03",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-vrrp02",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Non-owner priorities1–254 with preemption on converge to higher priority; no MAC/uptime/random tie here.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Current question layers correctly state owner255 and separate equal-priority/IP tie-breaking.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Current question layers correctly state owner255 and separate equal-priority/IP tie-breaking."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": "l3-vrrp",
+          "recommendedLessonId": "l3-vrrp",
+          "evidence": "Lesson pro Preemption says disabled means current Master remains until failure, but omits VIP-owner255 exception; priority prose says255 «обычно» rather than owner requirement."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "LESSON_PRO_INACCURATE"
+      ],
+      "recommendedChanges": [
+        "Correct only pro owner/preemption qualification, preserve question and good plain."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "c5b7b2b5dd808be180eec3267fba9f03e9beee5a9b54eaf775cdeb03094ef6b4",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-vrrp02",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l3-vrrp04",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Preemption permits higher-priority ordinary Backup to displace lower-priority Master; VIP owner is mandatory exception to disabling this.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain correctly states owner255 exception; pro says «Если preemption выключить, текущий Master останется, пока сам не откажет — даже если сосед приоритетнее», unqualified and contradictory.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain correctly states owner255 exception; pro says «Если preemption выключить, текущий Master останется, пока сам не откажет — даже если сосед приоритетнее», unqualified and contradictory."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": "l3-vrrp",
+          "recommendedLessonId": "l3-vrrp",
+          "evidence": "Same unqualified claim appears in lesson pro; plain already correctly states owner exception."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_INACCURATE",
+        "LESSON_PRO_INACCURATE"
+      ],
+      "recommendedChanges": [
+        "Qualify ordinary non-owner backup versus address owner255 in question pro and lesson pro; RFC3768 §§6.4.1/6.4.2."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "6f84e5343e942cd9851a8226d88b5f52e6f75cbd8d3a574f51a8c3efb91fe2a1",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l3-vrrp04",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-03",
+      "status": "PASS",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "TCP connection-oriented ordered byte stream with retransmissions, no app-record boundaries or delivery deadline, exactly key2.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Distinct enough individual why/plain/pro explain send/read boundaries, framing responsibility, retransmission versus timeout guarantee and failure.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Distinct enough individual why/plain/pro explain send/read boundaries, framing responsibility, retransmission versus timeout guarantee and failure."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l4-tcp",
+          "recommendedLessonId": "l4-tcp",
+          "evidence": "Plain stream block and pro UDP/TCP differences plus ACK descriptions teach the tested contract."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "TCP simulator primarily teaches handshake; it does not demonstrate this exact framing/audio/UDP-checksum/half-close skill. Do not manufacture a specific exercise link."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [],
+      "recommendedChanges": [],
+      "photoEvidence": null,
+      "materialSHA256": "b22323ec1cf02468acafd12f84691c8009eda454a69d37bf260aa7ffc69d140e",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-03",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-04",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Given latency-sensitive audio, avoiding TCP in-order wait lets application conceal losses over UDP; UDP itself gives no order/reliability.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Current why/plain good and individual; missing professional layer and lesson link.",
+          "hasIndividualDeep": true,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Current why/plain good and individual; missing professional layer and lesson link."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l4-tcp",
+          "evidence": "Existing TCP/UDP comparison can be reused with a small real-time latency/head-of-line/playout section for both styles."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "TCP simulator primarily teaches handshake; it does not demonstrate this exact framing/audio/UDP-checksum/half-close skill. Do not manufacture a specific exercise link."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Add delay-budget/sequence/timestamp/jitter-buffer/late-packet discussion without asserting all voice must always use UDP."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "1159f8dd01596fdebfd24b8fa9460f89e0f089994037366e6f1bcc3ee4f488c7",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-04",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-d04",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Classic DNS TCP after UDP TC1 and AXFR are both valid; EDNS can permit >512B UDP; ordinary TCP can be used initially too.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain/pro technically correct; why «Полный ответ иногда получают через соединение…» is vague and does not identify TC1 or required AXFR cause.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain/pro technically correct; why «Полный ответ иногда получают через соединение…» is vague and does not identify TC1 or required AXFR cause."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l7-dns",
+          "recommendedLessonId": "l7-dns",
+          "evidence": "Existing two-style «Усечение ответа и передача зоны» covers exact distinction and IXFR caveat."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "WHY_UNSPECIFIC"
+      ],
+      "recommendedChanges": [
+        "Replace brief only with TC=1 truncation recovery + AXFR over TCP; preserve plain/pro."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "efe41f0d7d898cc97103880e24278d2b1bca496373b2366a8ef16bc7444243c1",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-d04",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-d06",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Dropping policer can induce TCP loss, retransmission and congestion-window reduction; remark-only action need not drop.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain causal and qualified; pro is only «Лучше shaping с очередями…» and neither explains TCP response nor verifies policer action.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain causal and qualified; pro is only «Лучше shaping с очередями…» and neither explains TCP response nor verifies policer action."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": "qos-basics",
+          "recommendedLessonId": "qos-basics",
+          "evidence": "Lesson plain covers dropping policeman/TCP; pro mentions policing/shaping but does not sufficiently connect TCP cwnd/retransmits and rate-profile bursts."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "cwnd has no entry/tooltip; define congestion window rather than confusing it with receiver window."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PRO_INCOMPLETE",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Add pro loss/congestion-window/counters/burst explanation and two-style focused policing-TCP section; define cwnd."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "b5d4880a9d1c42e3a633cbf277a9ec89bdc56a089993c400463d4d91bc9995da",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-d06",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-lb-01",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "After configured3 consecutive HTTP503 failures and fail-open off, only A/C receive new connections; existing B connections governed separately.",
+          "correctIndices": [
+            2
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain/pro correct and careful about timing, retry and draining; why exactly repeats new-A/C answer with no threshold/health cause.",
+          "hasIndividualDeep": true,
+          "hasPro": true
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Plain/pro correct and careful about timing, retry and draining; why exactly repeats new-A/C answer with no threshold/health cause."
+        },
+        "lessonPlainProCoverage": {
+          "status": "PASS",
+          "currentLessonId": "l4-lb",
+          "recommendedLessonId": "l4-lb",
+          "evidence": "Both first blocks explicitly cover active checks, thresholds and existing-connection policy."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "No exact operating simulator for this skill was identified; omit links rather than invent a stand."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "WHY_TAUTOLOGY"
+      ],
+      "recommendedChanges": [
+        "Replace only why with third failure -> unhealthy -> exclusion from new choice; keep all approved details."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "e6db527daa71150a9884c3b285d819b7ab06ed3edfa1c2fa64762f2a2feb96b8",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-lb-01",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-new-05",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "Zero UDP checksum is omitted checksum in IPv4, forbidden in ordinary IPv6 with tunnel exceptions explicitly excluded; real wire capture excludes offload artifact.",
+          "correctIndices": [
+            1
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Brief correct; plain is exact copy of brief, no mechanism/example/zero-result distinction; pro absent.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Brief correct; plain is exact copy of brief, no mechanism/example/zero-result distinction; pro absent."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l4-tcp",
+          "evidence": "Transport-comparison lesson needs focused UDP/IPv4-vs-IPv6 checksum subsection, or reuse l3-ipv6 with dual-style section; no standalone lesson necessary."
+        },
+        "terminologyGlossary": {
+          "status": "CHECKED",
+          "evidence": [
+            "Relevant core terms checked against shared dictionary/tooltip matcher; ordinary code identifiers are contextual candidates, not automatically defects."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "TCP simulator primarily teaches handshake; it does not demonstrate this exact framing/audio/UDP-checksum/half-close skill. Do not manufacture a specific exercise link."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "recommendedChanges": [
+        "Explain pseudo-header, computed-zero transmitted as0xFFFF, IPv6 zero rejection and scoped exceptions; RFC768/RFC8200 §8.1."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "f377c519f566c0ef61b0fc0e64a153cb6f118aa7ec83da01e73f7e0fac120593",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-new-05",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    },
+    {
+      "id": "l4-new-07",
+      "status": "FIX",
+      "scope": "initial semantic/content audit; browser acceptance separately pending",
+      "criteria": {
+        "conditionAndKey": {
+          "status": "PASS",
+          "evidence": "shutdown(SHUT_WR)+FIN closes A sending direction only; A may read B reply, and CLOSE_WAIT B may still send.",
+          "correctIndices": [
+            0
+          ]
+        },
+        "distractors": {
+          "status": "PASS",
+          "evidence": "All offered alternatives read and rejected using the mechanism in conditionAndKey; no competing technically correct option found under the stated constraints. No option/key rewrite justified."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Brief correct; plain is same single paragraph and pro absent; missing actual lesson link.",
+          "hasIndividualDeep": false,
+          "hasPro": false
+        },
+        "questionSpecificRelevance": {
+          "status": "PASS",
+          "evidence": "Brief correct; plain is same single paragraph and pro absent; missing actual lesson link."
+        },
+        "lessonPlainProCoverage": {
+          "status": "FIX",
+          "currentLessonId": null,
+          "recommendedLessonId": "l4-tcp-connection-closing",
+          "evidence": "Existing closing lesson is natural reuse; add explicit half-close/CLOSE_WAIT/FIN_WAIT_2 section both styles."
+        },
+        "terminologyGlossary": {
+          "status": "FIX",
+          "evidence": [
+            "half-close/CLOSE_WAIT/FIN_WAIT_2 lack tooltip; explain socket-state mechanism in text and glossary."
+          ]
+        },
+        "practice": {
+          "status": "CHECKED",
+          "evidence": "TCP simulator primarily teaches handshake; it does not demonstrate this exact framing/audio/UDP-checksum/half-close skill. Do not manufacture a specific exercise link."
+        },
+        "navigationAndStyles": {
+          "status": "PENDING_RUNTIME",
+          "evidence": "Actual resolver/section identity inspected from immutable snapshot; browser tap/desktop/style/return and saved-attempt persistence delegated to root. Missing link is FIX where listed."
+        },
+        "fallbackAndInventedLinks": {
+          "status": "PASS",
+          "evidence": "Inspected current material; no unrelated generated paragraph or invented practice link found."
+        }
+      },
+      "confirmedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "recommendedChanges": [
+        "Explain sequence/ACK FIN, A EOF only after B FIN, reads before peerclose, states afterACK; no new TCP trainer for half-close if none exists."
+      ],
+      "photoEvidence": null,
+      "materialSHA256": "493517c084ea76d2fdf67ac243a7ad6fb52f51865351c0338b000dd9ce701555",
+      "evidencePaths": [
+        "scripts/.cache/in-depth/audit-group-2.json#l4-new-07",
+        "src/data/questionExplanations.ts",
+        "src/data/lessons/index.ts",
+        "src/data/glossary.ts"
+      ]
+    }
+  ]
+}

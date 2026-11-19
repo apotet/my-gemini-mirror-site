@@ -18,7 +18,10 @@ const questionsAtPhotoReview = questions.map(question => {
   assert.equal(family, 'tcp-rst-meaning');
   return original;
 });
-assert.equal(hash(questionsAtPhotoReview.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
+const { PREVIOUS_IN_DEPTH_QUESTIONS } = await bundleEntry('src/data/inDepth/previousQuestions.ts', 'photo-l2-history.mjs');
+const photoEraQuestions=questionsAtPhotoReview.map(q =>
+  (q.id==='tr-03'||q.id==='tr-10') ? {...q,answers:PREVIOUS_IN_DEPTH_QUESTIONS[q.id].answers} : q);
+assert.equal(hash(photoEraQuestions.filter(q => !changed.includes(q.id))), fixture.unchangedQuestionsSHA256,
   'all other questions, including the three PASS and photo-cable-terminate, remain unchanged');
 const baseline = read('docs/audits/issue-171-baseline.json');
 const { previousRegistryEntries } = baseline.technicalReviewClosure;

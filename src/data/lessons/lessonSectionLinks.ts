@@ -1,9 +1,10 @@
+import { IN_DEPTH_SECTIONS } from '../inDepth';
 import type { Lesson, LessonBlock } from './types';
 
 /** Explicit links from a reviewed question to the relevant paragraph inside an existing lesson.
  * A missing mapping deliberately keeps the ordinary lesson-at-top behavior: no guessed anchors.
  */
-interface SectionLink {
+export interface SectionLink {
   lessonId: string;
   questionIds: string[];
   anchorId: string;
@@ -68,7 +69,8 @@ const SECTION_LINKS: readonly SectionLink[] = [
       "heading": "Сквозные L3/L4 поля и hop-by-hop L2/TTL",
       "body": "При обычной IPv4-пересылке без NAT и прикладных прокси маршрутизатор сохраняет конечные src/dst IP и TCP/UDP destination port, но уменьшает IPv4 TTL (и обновляет контрольную сумму IPv4-заголовка). Исходный Ethernet-кадр при маршрутизации снимается, на исходящий интерфейс формируется новый L2-заголовок с MAC следующего перехода.\n\nОтдельно учитывай границы условия: NAT/PAT способен менять адреса или порты, прокси создаёт новый сеанс, а туннель добавляет внешний пакет. Даже без NAT TCP/UDP checksum может перепроверяться на концах; не смешивай сквозную идентичность полей с гарантией доставки."
     }
-  }
+  },
+  ...IN_DEPTH_SECTIONS,
 ];
 
 export interface AnchoredLessonBlock extends LessonBlock {
@@ -88,10 +90,12 @@ export function getLessonBlocksWithSections(lesson: Lesson, mode: 'plain' | 'pro
   const result: AnchoredLessonBlock[] = [...base];
   for (const section of SECTION_LINKS.filter(item => item.lessonId === lesson.id)) {
     const heading = mode === 'professional' ? section.afterHeading.professional : section.afterHeading.plain;
-    const index = result.findIndex(block => block.heading === heading);
+    let index = result.findIndex(block => block.heading === heading);
     // Fail closed: never place an unrelated-looking paragraph at the end of a changed lesson.
     // The strict contract test catches missing headings before publishing.
     if (index < 0) continue;
+    // Several reviewed topics may follow one original block; preserve authored order.
+    while (result[index + 1]?.anchorId && SECTION_LINKS.some(item => item.anchorId === result[index + 1].anchorId && item.lessonId === lesson.id && (mode === 'professional' ? item.afterHeading.professional : item.afterHeading.plain) === heading)) index++;
     result.splice(index + 1, 0, {
       ...(mode === 'professional' ? section.professional : section.plain),
       anchorId: section.anchorId,

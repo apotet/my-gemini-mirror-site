@@ -6,7 +6,7 @@ const { ALL_QUESTIONS, getLesson, getLessonForQuestion, LESSONS,
   await bundleEntry('scripts/lesson-section-links-entry.ts', 'lesson-section-links.mjs');
 
 assert.equal(ALL_QUESTIONS.length, 862, 'existing question bank is unchanged');
-assert.equal(QUESTION_SECTION_LINKS.length, 3, 'three initial spotlights');
+assert.ok(QUESTION_SECTION_LINKS.length >= 3, 'three approved spotlights remain alongside reviewed L2 sections');
 const expectedTexts = {
   'photo-otdr-end': 'Что обычно означает резкий спад трассы с переходом в шум в конце линии на рефлектограмме?',
   'gen-osi-a-19': 'Перед подключением к files.example.test программа сформировала сообщение службе имён с этим именем и типом A. В ответ пришёл код NXDOMAIN, после чего попытка подключения по полученному адресу не началась. Какая функция сформировала запрос и определила смысл такого ответа?',
@@ -50,7 +50,7 @@ assert.equal(new Set(anchors).size, anchors.length, 'anchors are unique');
 assert.equal(getLessonSectionForQuestion('l7-dns', 'nonexistent-id'), undefined, 'unknown question has no fake target');
 assert.equal(getLessonSectionForQuestion('l7-dns', null), undefined);
 for (const lesson of LESSONS) {
-  if (!expected.some(([, lid]) => lid === lesson.id)) {
+  if (!QUESTION_SECTION_LINKS.some(section => section.lessonId === lesson.id)) {
     assert.deepEqual(getLessonBlocksWithSections(lesson, 'plain'), lesson.blocks, 'unrelated lesson remains unchanged: ' + lesson.id);
   }
 }

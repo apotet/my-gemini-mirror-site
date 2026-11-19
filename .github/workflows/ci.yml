@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -169,6 +169,12 @@ jobs:
       - name: Question-to-paragraph lesson anchors (both reading modes)
         run: node scripts/lesson-section-links.test.mjs
 
+      - name: In-depth Understanding 164 structural contracts
+        run: npm run test:in-depth
+
+      - name: Previous-answer attempt compatibility
+        run: npm run test:in-depth-history
+
       - name: Responsive explanation flows
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
@@ -182,6 +188,7 @@ jobs:
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
           node scripts/base-level.browser.mjs
+          node scripts/in-depth.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
@@ -195,4 +202,5 @@ jobs:
             scripts/.cache/review-browser/*.png
             scripts/.cache/review-browser/matrix-evidence.json
             scripts/.cache/validate-summary.txt
+            scripts/.cache/in-depth/
           if-no-files-found: ignore

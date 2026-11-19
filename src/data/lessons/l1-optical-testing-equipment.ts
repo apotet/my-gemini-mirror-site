@@ -86,7 +86,7 @@ export const LESSON_L1_OPTICAL_TESTING_EQUIPMENT: Lesson = {
       },
       {
         "heading": "Преобразование среды и питание на порту",
-        "body": "Fast Ethernet media converter на предоставленном фото явно помечен 100BASE-TX и 100BASE-FX, то есть copper↔optical 100 Mbit/s, а не 1000BASE-X. Это powered active L1 interface device; проверяйте optical wavelength, polarity, duplex, питание и link-fault behavior по паспорту.\n\nPoE-сегмент коммутатора помечен скобкой над медными портами 1–4. Ни наличие RJ-45 у 5–8, ни соседние SFP не подтверждают PSE на них. Поддерживаемый IEEE 802.3af/at/bt, бюджет ватт и negotiation зависят от модели и конфигурации, не определяются одной скобкой."
+        "body": "Fast Ethernet media converter на предоставленном фото явно помечен 100BASE-TX и 100BASE-FX, то есть copper↔optical 100 Mbit/s, а не 1000BASE-X. Это активный преобразователь среды; реализацию PHY-to-PHY или L2-пересылку уточняют по документации модели; проверяйте optical wavelength, polarity, duplex, питание и link-fault behavior по паспорту.\n\nPoE-сегмент коммутатора помечен скобкой над медными портами 1–4. Ни наличие RJ-45 у 5–8, ни соседние SFP не подтверждают PSE на них. Поддерживаемый IEEE 802.3af/at/bt, бюджет ватт и negotiation зависят от модели и конфигурации, не определяются одной скобкой."
       }
     ],
     "sources": [
