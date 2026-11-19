@@ -10,4 +10,4 @@ export { IN_DEPTH_PATCHES, IN_DEPTH_LESSON_LINKS, IN_DEPTH_SECTIONS, IN_DEPTH_TE
 export { PRACTICE_DESTINATIONS } from '../src/data/practiceLinks';
 export { restoreSession, prepareAttemptQuestions } from '../src/utils/examProgress';
 export { PREVIOUS_IN_DEPTH_QUESTIONS } from '../src/data/inDepth/previousQuestions';
-export { applyInDepthLesson } from '../src/data/inDepth';
+export { applyInDepthLesson, applyInDepthExplanation } from '../src/data/inDepth';

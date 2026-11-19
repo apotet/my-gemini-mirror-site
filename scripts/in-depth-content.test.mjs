@@ -22,7 +22,15 @@ const reconstructed=m.ALL_QUESTIONS.map(q=>m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id]?{
 assert.equal(hash(reconstructed),baseline.bankSHA256,'Only four reviewed distractors and one corrected Wi-Fi option changed; stems, keys, order and all other records preserved');
 assert.equal(new Set(m.IN_DEPTH_IDS).size,164);assert.equal(m.IN_DEPTH_IDS.length,164);assert.deepEqual([...m.IN_DEPTH_IDS].sort(),assignedIds,'Every ID has exactly one repair/review batch');
 for(const batch of m.IN_DEPTH_BATCHES) {assert.ok(batch.questionIds.length>0&&batch.questionIds.length<=20,`Small batch ${batch.id}`);}
-for(const q of m.ALL_QUESTIONS.filter(q=>!assignedIds.includes(q.id))) assert.equal(hash(m.getQuestionDeepDive(q)),baseline.outsideLevelDeep[q.id],`Do not rework other levels: ${q.id}`);
+const historicalOutsideDrift=[];
+for(const q of m.ALL_QUESTIONS.filter(q=>!assignedIds.includes(q.id))) {
+  const dive=m.getQuestionDeepDive(q);
+  const actual=hash(dive);
+  if(actual!==baseline.outsideLevelDeep[q.id]) historicalOutsideDrift.push({id:q.id,previous:baseline.outsideLevelDeep[q.id],current:actual});
+}
+mkdirSync('scripts/.cache/in-depth',{recursive:true});
+writeFileSync('scripts/.cache/in-depth/previous-main-drift.json',JSON.stringify({currentMain:'ddd8682cd7db71e994ae2ac29e08f4b1bc8c6f6f',mismatches:historicalOutsideDrift},null,2)+'\n');
+assert.deepEqual(historicalOutsideDrift,[],'Historical Codex snapshot differs from current main; examine every changed ID before re-baselining');
 for(const id of Object.keys(m.IN_DEPTH_PATCHES))assert.ok(assignedIds.includes(id),`No content patches outside L2 ${id}`);
 for(const id of Object.keys(m.IN_DEPTH_LESSON_LINKS))assert.ok(assignedIds.includes(id),`No links outside L2 ${id}`);
 const rows=[];
