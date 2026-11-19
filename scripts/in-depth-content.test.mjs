@@ -89,6 +89,26 @@ assert.equal(m.splitGlossaryText('next-hop').find(s=>s.term)?.term,'next-hop','N
 assert.equal(m.splitGlossaryText('incomplete').find(s=>s.term)?.term,'incomplete','Retain established case-insensitive canonical key');
 assert.equal(m.getQuestionDeepDive(pool.find(q=>q.id==='l2-sec-13')).practiceLink,undefined,'No native VLAN capability promised by allowed-list-only trainer');
 assert.equal(m.getLessonForQuestion('unknown-l2-question'),undefined,'No invented fallback lesson');
+
+// Grok batch-02 FIX: exact semantic routes, not a misleading nearby NS or ECN topic.
+for (const {id,lessonId,anchorId,plainKeyword,professionalKeyword} of [
+  {id:'review-slaac-4',lessonId:'l3-ipv6',anchorId:'in-depth-slaac-ra-address-formation',plainKeyword:/RA|префикс/,professionalKeyword:/2001:db8:120::\/64/},
+  {id:'review-qos-22',lessonId:'qos-basics',anchorId:'in-depth-dscp-classification-queue-congestion',plainKeyword:/DSCP/,professionalKeyword:/DSCP-to-class\/queue mapping/}
+]) {
+  const lesson=m.getLessonForQuestion(id);
+  assert.equal(lesson?.id,lessonId,`${id} correct existing lesson`);
+  assert.equal(m.getLessonSectionForQuestion(lessonId,id),anchorId,`${id} exact topical paragraph`);
+  for(const [mode,check] of [['plain',plainKeyword],['professional',professionalKeyword]]) {
+    const found=m.getLessonBlocksWithSections(lesson,mode).filter(block=>block.anchorId===anchorId);
+    assert.equal(found.length,1,`${id} ${mode} exactly one anchor`);
+    assert.match(found[0].body,check,`${id} ${mode} addresses actual question mechanism`);
+  }
+}
+const slaacPlain=m.getLessonBlocksWithSections(m.getLesson('l3-ipv6'),'plain').find(x=>x.anchorId==='in-depth-slaac-ra-address-formation')?.body;
+const qosPro=m.getLessonBlocksWithSections(m.getLesson('qos-basics'),'professional').find(x=>x.anchorId==='in-depth-dscp-classification-queue-congestion')?.body;
+assert.match(slaacPlain,/не получает свой адрес из Neighbor Advertisement/,'SLAAC not confused with NS/NA address allocation');
+assert.match(qosPro,/ECN\/CE относится к отдельному механизму/,'DSCP queues not confused with ECN signaling');
+
 assert.equal(m.getLessonSectionForQuestion('l4-tcp','l4-03'),'in-depth-tcp-stream-record-framing','l4-03 links to its actual record-framing section');
 const l403=m.getLesson('l4-tcp');
 for(const mode of ['plain','professional']) {
