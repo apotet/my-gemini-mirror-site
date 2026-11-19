@@ -8,6 +8,20 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+// Batch-04 semantic corrections: a topic-specific practice hint, not the inherited OSI-layer slogan.
+for (const {id,rule} of [
+  {id:'gap-pack3-08',rule:/UDP Checksum.*IPv6|UDP\/IPv6.*Checksum/},
+  {id:'gap-pack3-15',rule:/HEAD.*Content-Length/},
+  {id:'l57-x19',rule:/IMAP.*Projects.*Seen/},
+]) {
+  const q=pool.find(item=>item.id===id);
+  assert.ok(q,`${id}: Understanding question exists`);
+  const dive=m.getQuestionDeepDive(q);
+  assert.match(dive.practicalTip,rule,`${id}: topic-specific practice tip required`);
+  assert.notEqual(dive.practicalTip,'Не смешивайте симптомы разных слоёв модели.',`${id}: no unrelated fallback`);
+}
+const udpChecksumDive=m.getQuestionDeepDive(pool.find(item=>item.id==='l4-new-05'));
+assert.match(udpChecksumDive.commonTrap,/Ошибочно объявлять оба пакета повреждёнными/,'l4-new-05: trap must describe a misconception, not restate a correct fact');
 const transferred=['l3-d05','l4-d03','l4-d05','tcpip-d05'];
 const expectedIds=[...new Set([...baseline.ids,...transferred])].sort();
 assert.equal(pool.length,164);assert.deepEqual(pool.map(q=>q.id).sort(),assignedIds);assert.deepEqual(assignedIds,expectedIds);
