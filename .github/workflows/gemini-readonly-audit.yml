@@ -21,10 +21,10 @@ on:
         description: 'Gemini model (Gemini API quota is separate from Gemini app)'
         required: true
         type: choice
-        default: 'gemini-2.5-flash'
+        default: 'gemini-4-hydrogen'
         options:
-          - 'gemini-2.5-flash'
-          - 'gemini-2.5-pro'
+          - 'gemini-4-hydrogen'
+          - 'gemini-3.8-flash'
       dry_run:
         description: 'Only generate and validate source pack; DO NOT call Gemini or spend API tokens'
         required: true
@@ -55,6 +55,7 @@ jobs:
         run: |
           node --check scripts/gemini-audit-pack.mjs
           node --check scripts/gemini-audit-review.mjs
+          node scripts/gemini-audit-configuration.test.mjs
       - name: Confirm missing API key fails closed
         run: |
           if node scripts/gemini-audit-review.mjs nonexistent.json /tmp/out.md /tmp/out.json > /tmp/gemini-test.log 2>&1; then
