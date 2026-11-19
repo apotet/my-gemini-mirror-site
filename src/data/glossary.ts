@@ -1654,6 +1654,12 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  // Cabling notation: the slash separates overall screen and individual-pair screens.
+  // Never confuse S/FTP or U/FTP with the independent file-transfer protocol FTP.
+  "U/UTP": ["Unscreened / Unscreened Twisted Pair", "Витая пара без экранирования", true, "Нет ни общего металлического экрана, ни индивидуальной фольги на парах."],
+  "F/UTP": ["Foiled / Unscreened Twisted Pair", "Общая фольга, пары без индивидуального экрана", true, "Один общий экран из фольги окружает все пары; каждая пара отдельно не экранирована."],
+  "U/FTP": ["Unscreened / Foiled Twisted Pair", "Пары с индивидуальной фольгой, без общего экрана", true, "Каждая пара экранирована фольгой отдельно, но общего экрана у кабеля нет."],
+  "S/FTP": ["Screened / Foiled Twisted Pair", "Общая оплётка и фольга каждой пары", true, "Общий экран кабеля выполнен металлической оплёткой, каждая пара дополнительно экранирована фольгой."],
   "SFTP": ["SSH File Transfer Protocol","Протокол передачи файлов по SSH",true],
   "PASV": ["FTP Passive Mode","Команда пассивного режима FTP",false],
   "STARTTLS": ["STARTTLS command","Включение TLS в существующем соединении",false],
