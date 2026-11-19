@@ -1,0 +1,177 @@
+name: Gemini audit — one-time authorized auto2 on PR264
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/gemini-once-auto2-20261119.trigger'
+  pull_request:
+    paths:
+      - '.github/workflows/gemini-once-auto2-20261119.yml'
+      - 'docs/audits/gemini-once-auto2-20261119.trigger'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-oneshot-20261119-auto2
+  cancel-in-progress: false
+
+jobs:
+  check-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard existing bounded reviewer scripts and no-key mock
+        run: |
+          node --check scripts/gemini-audit-pack.mjs
+          node --check scripts/gemini-audit-review.mjs
+          node scripts/gemini-audit-configuration.test.mjs
+          node scripts/gemini-batch-control.test.mjs
+          test "$(cat docs/audits/gemini-once-auto2-20261119.trigger)" = 'EXPLICIT_OWNER_AUTHORIZATION: PR264 auto:2 then auto:3, max 2 API calls, no retries'
+
+  collect:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'audit(gemini): fire one-shot auto2')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.freeze.outputs.sha }}
+    steps:
+      - name: Verify exactly frozen open same-repo PR264
+        id: freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/pulls/264" > /tmp/gemini-pr264.json
+          test "$(jq -r '.state' /tmp/gemini-pr264.json)" = 'open'
+          test "$(jq -r '.base.ref' /tmp/gemini-pr264.json)" = 'main'
+          test "$(jq -r '.head.repo.full_name' /tmp/gemini-pr264.json)" = "$GITHUB_REPOSITORY"
+          ACTUAL=$(jq -r '.head.sha' /tmp/gemini-pr264.json)
+          EXPECTED=5df2a0b46116323201a6ae933a4c650e78b105db
+          test "$ACTUAL" = "$EXPECTED" || { echo 'PR264 SHA changed; abort without API' >&2; exit 1; }
+          echo "sha=$ACTUAL" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        name: Trusted source pack generator from staging main
+        with:
+          ref: ${{ github.sha }}
+          path: audit-tools
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        name: Frozen PR264 snapshot, no credentials
+        with:
+          ref: ${{ steps.freeze.outputs.sha }}
+          path: subject
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install readonly source dependencies without lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare first auto2 and optional auto3 snapshots (NO Gemini key)
+        run: |
+          set -euo pipefail
+          node audit-tools/scripts/gemini-audit-pack.mjs subject 'auto:2' audit-pack/pack.json
+          node audit-tools/scripts/gemini-audit-pack.mjs subject 'auto:3' audit-pack/pack2.json
+          node --input-type=module -e "
+            import {readFileSync} from 'node:fs';
+            import assert from 'node:assert/strict';
+            const a=JSON.parse(readFileSync('audit-pack/pack.json'));
+            const b=JSON.parse(readFileSync('audit-pack/pack2.json'));
+            assert.equal(a.sha,'5df2a0b46116323201a6ae933a4c650e78b105db');
+            assert.equal(b.sha,a.sha);
+            assert.equal(a.ids.length,4); assert.equal(b.ids.length,4);
+            assert.equal(new Set([...a.ids,...b.ids]).size,8);
+            assert.ok([...a.records,...b.records].every(r=>Array.isArray(r.lesson.coverageIssues)));
+            console.log('Frozen first/second batches:',a.ids,b.ids);
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemini-oneshot-pr264-auto2-source
+          path: audit-pack/
+          retention-days: 7
+          if-no-files-found: error
+
+  review:
+    needs: collect
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: gemini-oneshot-pr264-auto2-source
+          path: audit-pack
+      - name: One first bounded Gemini API review call, no retries
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-4-hydrogen
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack.json audit-output/report.md audit-output/report.json
+      - name: Recheck frozen target before publishing first result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = "$TARGET_SHA" || { echo 'PR264 head changed; abort publish/second API' >&2; exit 1; }
+      - name: Post first advisory review, never merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat audit-output/report.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment 264 --repo "$GITHUB_REPOSITORY" --body-file audit-output/report.md
+      - name: Stop if any FIX/REVIEW/issue, else allow exactly one second call
+        id: gate
+        run: |
+          if node scripts/gemini-batch-control.mjs all-pass audit-output/report.json; then
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo 'STOP: First four not all PASS; no second API request.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Optional second bounded Gemini API review, no retries
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-4-hydrogen
+        run: node scripts/gemini-audit-review.mjs audit-pack/pack2.json audit-output/report2.md audit-output/report2.json
+      - name: Recheck SHA before publishing second result
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ needs.collect.outputs.sha }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = "$TARGET_SHA" || { echo 'PR264 head changed; abort publish' >&2; exit 1; }
+      - name: Post second advisory review, never merge
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat audit-output/report2.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment 264 --repo "$GITHUB_REPOSITORY" --body-file audit-output/report2.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gemini-oneshot-pr264-auto2-results
+          path: audit-output/
+          retention-days: 14
+          if-no-files-found: ignore
