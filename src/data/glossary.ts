@@ -2249,6 +2249,10 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
 
 // Apply audited Understanding additions to the same live dictionary.
 for (const [term, patch] of Object.entries(IN_DEPTH_TERMS)) {
+  // The staging cable labels were independently accepted in PR #262.
+  // Do not silently overwrite their exact U/UTP, F/UTP, U/FTP, S/FTP definitions.
+  if (['U/UTP', 'F/UTP', 'U/FTP', 'S/FTP'].includes(term) &&
+      GLOSSARY[term]?.lessonId === 'l1-copper-cable' && TOOLTIP_NAMES[term]) continue;
   const { english, russian, abbreviation, ...definition } = patch;
   GLOSSARY[term] = { ...GLOSSARY[term], ...definition } as GlossaryEntry;
   TOOLTIP_NAMES[term] = [english, russian, abbreviation ?? false];
