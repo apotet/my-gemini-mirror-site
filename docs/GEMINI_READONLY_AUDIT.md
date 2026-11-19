@@ -8,10 +8,12 @@
 2. In staging repo GitHub Settings → Secrets and variables → Actions → **New repository secret**, set name **`GEMINI_API_KEY`**, paste its value privately. Do not paste the key into chat or commit it.
 3. In staging repo GitHub Actions, choose **Gemini read-only NetOps reviewer** → **Run workflow**:
    - `pr_number`: e.g. `264`
-   - `ids`: 1–10 unique IDs separated by commas
+   - `ids`: default `auto:1` selects four first **not-yet-reviewed** Understanding IDs. For the next batch use `auto:2`, then `auto:3`, etc. through `auto:40`. You can still enter 1–10 comma-separated IDs manually.
    - `model`: `gemini-4-hydrogen` (new, free-tier eligible) or `gemini-3.8-flash` (older stable alternative); availability/quota depend on account
    - `dry_run`: **true** initially, then **false** to make one actual API call. Current verified API model codes are `gemini-4-hydrogen` (default, free-tier eligible) or `gemini-3.8-flash` (availability varies by key). Legacy `gemini-2.5-flash` can return 404 for newly active projects.
-4. Open the action run. The pack artifact is attached to a successful collection; with `dry_run=false`, Gemini's advisory review is posted as one PR comment and archived as JSON/Markdown. Owner/operator may request another batch manually.
+4. Open the action run. The pack artifact is attached to a successful collection; with `dry_run=false`, Gemini's advisory review is posted as one PR comment and archived as JSON/Markdown. Each `auto:N` makes **one** API call maximum and never advances the cursor by itself. After reading and independently checking the report, choose the next batch.
+
+**Queue invariant:** 164 Understanding questions, four already reviewed on PR #264 SHA `5df2a0b46116323201a6ae933a4c650e78b105db` (`gap-pack2-27`, `gap-pack3-15`, `stp-new-09`, `l4-new-05`); the remaining **160** are sorted into 40 disjoint batches of four. Auto mode **fails closed if the target SHA changes** (to avoid silently reusing stale approvals), and fails on invalid batch indices. If content changes, a new queue needs explicit review; manual IDs remain available. A prior PASS on the old snapshot never automatically passes a changed question.
 
 This workflow only becomes manually runnable after it is present on staging **default main branch**, per GitHub Actions requirements. The feature PR itself performs static safe contract checks, **not** a real API call.
 
