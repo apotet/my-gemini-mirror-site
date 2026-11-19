@@ -22,17 +22,38 @@ assert.equal(hash(questionsAtPhotoReview.filter(q => !changed.includes(q.id))), 
   'all other questions, including the three PASS and photo-cable-terminate, remain unchanged');
 const baseline = read('docs/audits/issue-171-baseline.json');
 const { previousRegistryEntries } = baseline.technicalReviewClosure;
+// Restore only the four independently reviewed 2026-11-19 classifications to the
+// previous photo-era snapshot, while asserting the exact approved current metadata.
+const sixReviewLevelChanges = {
+  'l3-d05': {
+    previous: 'Распознать (L3 · NAT): Комбинации адресов и портов (и протокола)',
+    current: 'L2: требуется понимание many-to-one NAT/PAT — различение сессий по адресам, портам и протоколу.',
+  },
+  'l4-d03': {
+    previous: 'Распознать (L4 · TCP): Корректно обработать запоздалые сегменты и обеспечить надежность закрытия',
+    current: 'L2: TIME-WAIT и обработка запоздалых сегментов — концепция FSM закрытия TCP, выше чистой базы.',
+  },
+  'l4-d05': {
+    previous: 'Распознать (L4 · TCP): Подтверждать несмежные блоки и эффективнее догонять потери',
+    current: 'L2: SACK — подтверждение несмежных блоков TCP, требует понимания потерь и восстановления.',
+  },
+  'tcpip-d05': {
+    previous: 'Распознать (TCP/IP · ECN): Сигнализировать перегрузку без обязательного drop (CE mark)',
+    current: 'L2: ECN — сигнализация перегрузки без обязательного drop; выше начального уровня.',
+  },
+};
 const registryAtPhotoReview = Object.fromEntries(Object.entries(registry)
   .filter(([id]) => !Object.hasOwn(levels, id) && !baseline.diagnosticPack177.added.includes(id) && !baseline.monitoringPack.added.includes(id) && !baseline.wifiPack.added.includes(id) && !baseline.expertPack225.added.includes(id) && !baseline.expertPack177.added.includes(id))
   .map(([id, entry]) => {
     // Issue #257: only these four previously L1 assignments were independently moved to L2.
     // Reconstruct the photo-era registry for the original unchanged-scope fingerprint;
     // every other ID and metadata field remains protected by the original hash.
-    const relabeled = new Set(['l3-d05', 'l4-d03', 'l4-d05', 'tcpip-d05']);
-    if (relabeled.has(id)) {
+    const reviewed = sixReviewLevelChanges[id];
+    if (reviewed) {
       assert.equal(entry.status, 'ASSIGNED', id);
       assert.equal(entry.learningLevel, 2, id + ': approved L1->L2 migration');
-      return [id, { ...entry, learningLevel: 1 }];
+      assert.equal(entry.auditRationale, reviewed.current, id + ': approved explanation for L2');
+      return [id, { ...entry, learningLevel: 1, auditRationale: reviewed.previous }];
     }
     return [id, previousRegistryEntries[id] ?? entry];
   }));
