@@ -8,8 +8,10 @@ const [packArg, reportArg, jsonArg] = process.argv.slice(2);
 if (!packArg || !reportArg || !jsonArg) throw new Error('Usage: node gemini-audit-review.mjs pack.json report.md report.json');
 const key = process.env.GEMINI_API_KEY;
 if (!key) throw new Error('Missing GitHub Actions secret GEMINI_API_KEY. Add it in staging repository Settings → Secrets and variables → Actions.');
-const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-if (!['gemini-2.5-flash','gemini-2.5-pro'].includes(model)) throw new Error('Model is not allow-listed');
+// Use current GA Developer API model IDs; legacy 2.5 is restricted for many API projects.
+// Never silently fall back to a paid or different model.
+const model = process.env.GEMINI_MODEL || 'gemini-4-hydrogen';
+if (!['gemini-4-hydrogen','gemini-3.8-flash'].includes(model)) throw new Error('Model is not allow-listed');
 const pack = JSON.parse(readFileSync(packArg,'utf8'));
 if (!/^[0-9a-f]{40}$/.test(pack.sha) || !Array.isArray(pack.records) || pack.records.length<1 || pack.records.length>10 ||
     pack.records.length!==pack.ids?.length || !pack.records.every((r,i)=>r.id===pack.ids[i] && r.materialHash && r.lesson?.anchorId)) {
@@ -35,7 +37,22 @@ const response = await fetch('https://generativelanguage.googleapis.com/v1beta/m
   method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
   body:JSON.stringify(payload),signal:AbortSignal.timeout(160000),
 });
-if (!response.ok) throw new Error('Gemini API returned HTTP '+response.status+'; no automatic retry or extra spending');
+if (!response.ok) {
+  // Google's 404 may mean MODEL_OR_RESOURCE / model unavailable to this key.
+  // Log only a small sanitized status/message, never the API key or whole HTTP body.
+  let details = {};
+  try {
+    const body = await response.json();
+    details = body && typeof body.error === 'object' && body.error !== null ? body.error : {};
+  } catch { /* An empty/HTML error is possible. Keep diagnostic bounded. */ }
+  const apiStatus = typeof details.status === 'string' && /^[A-Z_]{1,50}$/.test(details.status)
+    ? details.status : 'UNSPECIFIED';
+  const apiMessage = typeof details.message === 'string'
+    ? details.message.replaceAll(key,'[REDACTED]').replace(/AIza[A-Za-z0-9_-]{20,}/g,'[REDACTED]')
+        .replace(/[\\r\\n]+/g,' ').slice(0, 350)
+    : 'No structured error message';
+  throw new Error('Gemini API '+model+' HTTP '+response.status+' ('+apiStatus+'): '+apiMessage+'; no retry');
+}
 const result = await response.json();
 const candidate = result.candidates?.[0];
 if (candidate?.finishReason !== 'STOP') throw new Error('Gemini response unfinished: '+String(candidate?.finishReason));
