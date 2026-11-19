@@ -12,7 +12,7 @@ const pool=m.getTestingPool('mixed','in-depth');
 for (const {id,rule} of [
   {id:'gap-pack3-08',rule:/UDP Checksum.*IPv6|UDP\/IPv6.*Checksum/},
   {id:'gap-pack3-15',rule:/HEAD.*Content-Length/},
-  {id:'l57-x19',rule:/IMAP.*Projects.*Seen/},
+  {id:'l57-x19',rule:/Projects.*IMAP.*Seen/},
 ]) {
   const q=pool.find(item=>item.id===id);
   assert.ok(q,`${id}: Understanding question exists`);
