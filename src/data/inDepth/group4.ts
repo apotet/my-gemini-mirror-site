@@ -534,7 +534,7 @@ export const GROUP4_SECTIONS: SectionLink[] = [
     "anchorId": "indepth-udld-aggressive-neighbor",
     "afterHeading": {
       "plain": "UDLD: что, если оптика только в одну сторону",
-      "professional": "UDLD modes"
+      "professional": "UDLD modes и err-disabled"
     },
     "plain": {
       "heading": "UDLD потерял ранее проверенного соседа",

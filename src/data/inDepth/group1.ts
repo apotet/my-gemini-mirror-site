@@ -213,7 +213,7 @@ export const GROUP1_SECTIONS: SectionLink[] = [
     "anchorId": "in-depth-http-head-no-body",
     "afterHeading": {
       "plain": "HTTP 206: куда записать полученную часть",
-      "professional": "HTTP 206: куда записать полученную часть"
+      "professional": "HTTP 206 Partial Content и арифметика Content-Range"
     },
     "plain": {
       "heading": "HEAD: длина описана, тело не передаётся",
@@ -376,7 +376,7 @@ export const GROUP1_SECTIONS: SectionLink[] = [
     "anchorId": "in-depth-ntp-source-validity-rate",
     "afterHeading": {
       "plain": "NTP KoD RATE: увеличить интервал запросов",
-      "professional": "NTP KoD RATE: увеличить интервал запросов"
+      "professional": "NTP (UDP/123): иерархия Stratum, LI=3 и пакеты KoD RATE"
     },
     "plain": {
       "heading": "NTP: иерархия, пригодность и просьба опрашивать реже",
