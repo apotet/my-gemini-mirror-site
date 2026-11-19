@@ -9,8 +9,8 @@
 3. In staging repo GitHub Actions, choose **Gemini read-only NetOps reviewer** → **Run workflow**:
    - `pr_number`: e.g. `264`
    - `ids`: 1–10 unique IDs separated by commas
-   - `model`: `gemini-4-hydrogen` (cheaper) or `gemini-3.8-flash` (more expensive/deeper); availability/quota depend on account
-   - `dry_run`: **true** initially, then **false** to make one actual API call. Current verified API model codes are \`gemini-4-hydrogen\` (default, free-tier eligible) or \`gemini-3.8-flash\` (availability varies by key). Legacy \`gemini-2.5-flash\` can return 404 for newly active projects.
+   - `model`: `gemini-4-hydrogen` (new, free-tier eligible) or `gemini-3.8-flash` (older stable alternative); availability/quota depend on account
+   - `dry_run`: **true** initially, then **false** to make one actual API call. Current verified API model codes are `gemini-4-hydrogen` (default, free-tier eligible) or `gemini-3.8-flash` (availability varies by key). Legacy `gemini-2.5-flash` can return 404 for newly active projects.
 4. Open the action run. The pack artifact is attached to a successful collection; with `dry_run=false`, Gemini's advisory review is posted as one PR comment and archived as JSON/Markdown. Owner/operator may request another batch manually.
 
 This workflow only becomes manually runnable after it is present on staging **default main branch**, per GitHub Actions requirements. The feature PR itself performs static safe contract checks, **not** a real API call.
