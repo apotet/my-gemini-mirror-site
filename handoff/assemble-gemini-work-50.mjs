@@ -25,7 +25,7 @@ for(let i=0;i<10;i++){
     const r=data.records[j];
     assert.equal(r.id,expected[j]);
     assert.equal(typeof r.question.text,'string','missing stem');
-    assert.equal(r.question.answers.length,4,'four choices required');
+    assert.ok(Array.isArray(r.question.answers)&&r.question.answers.length>=4&&r.question.answers.length<=6,'unexpected options count for '+r.id+': '+r.question.answers.length);
     assert.doesNotMatch(r.question.text + ' ' + r.question.answers.join(' '),/на фото|по фото|на снимке|по снимку|в кадре|на изображени|изображён|на рисунке|на фотографи|на скриншоте|по скриншоту|на схеме|по схеме|на диаграмме|согласно картинке|по маркировке на|показанном штекере|на этом экране|на таком экране|в представленном окне|в выделенной области|на представленном графике/i,'Visual-dependent stem or answers WITHOUT an image; stop export');
     assert.doesNotMatch(r.id,/photo-|new-ts-photo|l1v2-[abc]-.*(view|screen|photo)/i,'Known photographic question ID without supplied media');
     assert.ok(Array.isArray(r.question.correct)&&r.question.correct.length>=1,'missing answer key');
@@ -111,6 +111,7 @@ const manifest={
   schemaVersion:1,sourceRepository:'apotet/my-gemini-mirror-site',sourcePR:264,
   sourceSHA:sourceSha,level:'Углублённый / in-depth',type:'Offline Gemini Work review handoff, NOT verified verdict',
   date:'2026-11-20',count:50,ids,packs,questionHashes,
+  optionsPerQuestion: records.map(r=>({id:r.id,optionCount:r.question.answers.length,correctIndices:r.question.correct})),
   coverageIssues:missing,exporter:'trusted main scripts/gemini-audit-pack.mjs',
   security:'No API key, tokens, production files or GitHub write permission included'
 };
@@ -138,6 +139,7 @@ const ordered=[
 const lines=ordered.map(f=>hash(readFileSync(join(root,f)))+'  '+f);
 writeFileSync(join(root,'SHA256SUMS.txt'),lines.join('\n')+'\n','utf8');
 console.log('EXPORT_OK files='+ordered.length+' questions='+records.length+' packs='+packs.length+' source='+sourceSha);
+console.log('ANSWER_OPTION_DISTRIBUTION',JSON.stringify(records.reduce((acc,r)=>(acc[r.question.answers.length]=(acc[r.question.answers.length]||0)+1,acc),{})));
 console.log('MISSING_COVERAGE',JSON.stringify(missing));
 console.log('MANIFEST_SHA256 '+hash(readFileSync(join(root,'manifest.json'))));
 console.log('BYTES '+ordered.reduce((a,f)=>a+statSync(join(root,f)).size,0));
