@@ -3,7 +3,7 @@ import { GlossaryText } from './GlossaryText';
 import { PracticeLinkButton } from './PracticeLinkButton';
 import type { PracticeLink } from '../data/practiceLinks';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Lesson } from '../data/lessons/types';
+import { Lesson, type LessonIllustration } from '../data/lessons/types';
 import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
@@ -22,6 +22,24 @@ interface LessonViewProps {
   returnQuestionId?: string | null;
 }
 
+/** Shared photo markup; optional pass-through photos can be disclosed on demand. */
+const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
+<figure className="w-full max-w-xs space-y-2 justify-self-start md:justify-self-end">
+                  <div
+                    role="img"
+                    aria-label={image.alt}
+                    data-lesson-photo={`${image.column}-${image.row}`}
+                    className="w-full aspect-square rounded-xl border border-slate-200 dark:border-slate-700 bg-white bg-no-repeat shadow-sm"
+                    style={{
+                      backgroundImage: `url("${import.meta.env.BASE_URL}lesson-images/${image.sprite}")`,
+                      backgroundSize: `${(image.spriteColumns ?? 3) * 100}% ${(image.spriteRows ?? 2) * 100}%`,
+                      backgroundPosition: `${image.column * 100 / Math.max(1, (image.spriteColumns ?? 3) - 1)}% ${image.row * 100 / Math.max(1, (image.spriteRows ?? 2) - 1)}%`,
+                    }}
+                  />
+                  <figcaption className="text-xs leading-snug text-slate-500 dark:text-slate-400">{image.caption}</figcaption>
+                </figure>
+);
+
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
@@ -30,6 +48,17 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
   const anchorElements = useRef<Record<string, HTMLElement | null>>({});
   const [highlightedAnchor, setHighlightedAnchor] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const cheatsheetElements = useRef<Record<string, HTMLDetailsElement | null>>({});
+  const cheatsheetId = (file: string) => `lesson-cheatsheet-${lesson.id}-${file.replace(/[^a-z0-9-]/gi, '-')}`;
+  const revealCheatsheet = (file: string) => {
+    const details = cheatsheetElements.current[file];
+    if (!details) return;
+    details.open = true;
+    window.requestAnimationFrame(() => {
+      details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      details.querySelector('summary')?.focus({ preventScroll: true });
+    });
+  };
 
   // Run after the lesson and selected reading mode are rendered. The same stable anchor
   // is present in both plain and professional blocks, so changing mode keeps context.
@@ -128,27 +157,28 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <span className="min-w-0"><GlossaryText key={textMode}>{b.heading}</GlossaryText></span>
             </h3>
-            <div className={b.image ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
+            <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
               <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} />{b.pinout === 't568' && <EthernetPinout />}</div>
-              {b.image && (
-                <figure className="w-full max-w-xs space-y-2 justify-self-start md:justify-self-end">
-                  <div
-                    role="img"
-                    aria-label={b.image.alt}
-                    data-lesson-photo={`${b.image.column}-${b.image.row}`}
-                    className="w-full aspect-square rounded-xl border border-slate-200 dark:border-slate-700 bg-white bg-no-repeat shadow-sm"
-                    style={{
-                      backgroundImage: `url("${import.meta.env.BASE_URL}lesson-images/${b.image.sprite}")`,
-                      backgroundSize: `${(b.image.spriteColumns ?? 3) * 100}% ${(b.image.spriteRows ?? 2) * 100}%`,
-                      backgroundPosition: `${b.image.column * 100 / Math.max(1, (b.image.spriteColumns ?? 3) - 1)}% ${b.image.row * 100 / Math.max(1, (b.image.spriteRows ?? 2) - 1)}%`,
-                    }}
-                  />
-                  <figcaption className="text-xs leading-snug text-slate-500 dark:text-slate-400">{b.image.caption}</figcaption>
-                </figure>
-              )}
+              {b.image && !b.imageCollapsible && <LessonPhoto image={b.image} />}
             </div>
+            {b.image && b.imageCollapsible && (
+              <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40" data-lesson-secondary-photo>
+                <summary className="cursor-pointer text-xs font-medium text-slate-600 underline decoration-dotted underline-offset-2 dark:text-slate-300">{b.imageDisclosureLabel ?? 'Показать дополнительное фото'}</summary>
+                <div className="mt-3"><LessonPhoto image={b.image} /></div>
+              </details>
+            )}
+            {b.cheatsheetJump && (
+              <button type="button" onClick={() => revealCheatsheet(b.cheatsheetJump!.file)}
+                data-cheatsheet-reveal={b.cheatsheetJump.file}
+                aria-controls={cheatsheetId(b.cheatsheetJump.file)}
+                className="inline-flex cursor-pointer text-sm font-semibold text-cyan-700 underline underline-offset-2 hover:text-cyan-800 focus-visible:outline-2 focus-visible:outline-cyan-500 dark:text-cyan-300 dark:hover:text-cyan-200">
+                {b.cheatsheetJump.label}
+              </button>
+            )}
             {b.cheatsheet && (
-              <details className="group mt-3 overflow-hidden rounded-xl border border-cyan-300/50 bg-cyan-50/50 dark:border-cyan-500/30 dark:bg-cyan-950/20">
+              <details id={cheatsheetId(b.cheatsheet.file)} data-lesson-cheatsheet={b.cheatsheet.file}
+                ref={element => { cheatsheetElements.current[b.cheatsheet!.file] = element; }}
+                className="group mt-3 overflow-hidden rounded-xl border border-cyan-300/50 bg-cyan-50/50 dark:border-cyan-500/30 dark:bg-cyan-950/20">
                 <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-cyan-900 dark:text-cyan-100">
                   <span className="flex min-w-0 items-center gap-2"><BookOpen className="h-4 w-4 shrink-0" aria-hidden="true" />Шпаргалка: {b.cheatsheet.title}</span>
                   <span className="shrink-0 text-xs font-medium text-cyan-700 dark:text-cyan-300 group-open:hidden">Развернуть</span>
