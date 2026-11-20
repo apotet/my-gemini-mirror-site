@@ -1,3 +1,13 @@
+## 20.11.2026 — Углублённый: отдельный аудит четырёх перенесённых вопросов (после PR #289)
+
+- **Исходная точка:** дочерняя ветка от PR #289 HEAD `a474fd22e3f34dc0dd8c9c60936d243410b6e0ee`. Сформирован read-only source pack актуальных вопроса/ответов, двух слоёв разбора, точных plain/pro разделов уроков; [Actions #44668791486](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44668791486) — PASS.
+- **Авторская первичная предметная рецензия (не независимая финальная приёмка):** `l3-d05` PAT — FIX (ошибочный общий `ip route` вместо NAT translations); `l4-d03` TIME-WAIT — FIX (общие заглушки `ss -tulpn` и `commonTrap`); `l4-d05` TCP SACK — FIX (`ss -tulpn` вместо проверки SACK option); `tcpip-d05` ECN — PASS по исходному смыслу и совету. **1 PASS / 3 FIX / 0 REVIEW в исходном снимке.**
+- **Точечный авторский ремонт:** только три записи `SPECIFIC_PRACTICAL_TIPS` и один `GROUP5_PATCHES['l4-d03'].trap`. Новые советы основаны на наблюдаемых проверках PAT (Cisco `show ip nat translations`, Linux `conntrack`), TCP FIN/ACK и TIME-WAIT, TCP SACK-Permitted / cumulative ACK / SACK blocks. Исходные условия, дистракторы, ключи, уровни, уроки и ссылки не изменяются.
+- **Контроль:** `scripts/in-depth-new4-fixes.test.mjs` проверяет исходные четыре ответа, ключи, двойные стили и точные якоря, отсутствие заглушек и существующий `nat` practiceLink. Изолированный workflow прогоняет full 164-ID structural, history, lint, build и Chromium 4 вопроса × 375/1440 на локальном preview; публикует pack для повторного независимого Gemini Work review.
+- **Решение:** после авторского исправления **три FIX требуют новой независимой семантической оценки на финальном SHA**. Старый авторский PASS не означает разрешения на merge. Все PR #264/#282/#289 и дочерний PR остаются Draft/BLOCK до последующих независимых fingerprint и GATE-01…10; production запрещено менять.
+
+---
+
 ## 20.11.2026 — Batch03 / PR #289: 10 FIX приняты по содержанию, реальный Chromium PASS; полная интеграция ещё BLOCK
 
 - **Gemini Work повторная независимая рецензия:** 10/10 PASS, 0 FIX, 0 REVIEW на frozen content SHA `835a2e09c6760e065783a33cd72814958822b0c1`: 9 отдельных `practicalTip` + `tcpip-d01` `commonTrap`. Вся цепочка PR #264 → #282 → #289 остаётся **Draft**, без merge/deploy.
