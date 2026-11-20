@@ -1,0 +1,89 @@
+name: Gemini Work batch03 50-question no-photo review archive (NO MODEL API)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-work-batch03-text-50-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-bound-export:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'export/gemini-work-batch03-text-50-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Freeze PR264 source HEAD before touching material
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$SHA" = '1f273787370a64cf39732974b60c1706e538f5bb' || { echo 'Source moved; refusing stale archive'; exit 1; }
+
+      - name: Checkout current trusted source exporter
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout exact frozen Understanding source
+        uses: actions/checkout@v4
+        with:
+          ref: 1f273787370a64cf39732974b60c1706e538f5bb
+          path: subject
+          persist-credentials: false
+
+      - name: Checkout approved archive assembler and task text
+        uses: actions/checkout@v4
+        with:
+          ref: e0c021a13d457943c0b541f4d4c1b614a9d00a4f
+          path: handoff-tools
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install exact pinned bundler dependencies without lifecycle scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Export exactly TEN packs of FIVE questions and actual linked lessons
+        run: |
+          mkdir -p output/packs
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gap-pack2-05,gap-pack2-10,gap-pack2-11,gap-pack2-16,gap-pack2-21' output/packs/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gap-pack3-08,gap-pack3-12,gen-diag-0,gen-diag-10,gen-diag-13' output/packs/pack_02.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gen-diag-2,gen-diag-5,gen-diag-6,gen-diag-7,gen-diag-9' output/packs/pack_03.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gen-osi-a-18,gen-osi-a-19,gen-osi-a-2,gen-port-11,gen-port-14' output/packs/pack_04.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gen-transport-1,gen-transport-14,gen-transport-16,gen-transport-17,gen-transport-5' output/packs/pack_05.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'gen-transport-7,k-01,k-02,k-03,k-04' output/packs/pack_06.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'k-05,k-06,k-07,l1-02,l1-04' output/packs/pack_07.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l12-copp01,l12-d05,l12-ds04,l12-storm01,l12-x02' output/packs/pack_08.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l12-x03,new-ts-dns,new-ts-duplex,new-ts-vlan,tcp-05' output/packs/pack_09.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'tcp-06,tcp-10,tcpip-d01,tcpip-d02,tcpip-d04' output/packs/pack_10.json
+
+      - name: Fail on photo-only stems, missing keys or linked lesson content; assemble the ZIP payload
+        run: node handoff-tools/handoff/assemble-gemini-work-50.mjs
+
+      - name: Check source PR still points at exact immutable commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$SHA" = '1f273787370a64cf39732974b60c1706e538f5bb' || { echo 'Source moved during package build'; exit 1; }
+
+      - name: Upload a single ZIP archive for Gemini Work app, 90-day retention
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetOps-Gemini-Work-Batch03-Text-50-Questions-20261120
+          path: output/
+          if-no-files-found: error
+          retention-days: 90
