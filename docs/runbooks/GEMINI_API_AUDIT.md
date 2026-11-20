@@ -1,3 +1,13 @@
+## Временный выбор модели по команде владельца — Gemini 3.8 Flash (20.11.2026)
+
+**Прямая команда владельца NetOps:** «Давай использовать 3.8». Разрешено временно использовать `gemini-3.8-flash` как независимого API-рецензента вместо дающего 503 `gemini-4-hydrogen`. **НЕ приравнивать** оценки разных моделей и не превращать старые Hydrogen PASS в проход текущего SHA. Каждая проверка явно указывает `model`, PR #264 frozen source SHA, IDs, rate limit и реальные AI verdicts. Конкретное решение заранее записано [в ROADMAP](../ROADMAP.md), commit `1fc90a7cd53f2bce745fdf422e0abed7307e4720`.
+
+**Подтверждённый Google AI Studio лимит 3.8 Flash:** 5 RPM, 250K входных TPM, 20 RPD; за последние 28 дней пиковые `5/5 RPM`, `144.21K/250K TPM`, `19/20 RPD` — не текущий остаток. Риск 429 для 3.8 выше, чем Hydrogen; **один** осознанно запущенный API-вызов на фиксированные **10 ID**, без retry/cron/fallback/параллельной очереди. В случае 429/503/timeout, ошибочного JSON, неправильного SHA, не всех десяти review-строк — **INCONCLUSIVE** и остановиться; никакого фиктивного PASS. Ответ конкретной модели должен содержать точные evidence по каждому ключу, дистракторам, plain/pro и lesson anchor, а итоговую предметную приёмку даёт отдельный технический аудит.
+
+**Первая попытка на этой модели:** staging Draft PR #264 HEAD `1f273787370a64cf39732974b60c1706e538f5bb`; десять ранее не получивших модельного аудита ID `k-05,k-06,k-07,l1-02,l1-04,l12-copp01,l12-d05,l12-ds04,l12-storm01,l12-x02`. One-shot Draft PR [#279](https://github.com/apotet/my-gemini-mirror-site/pull/279), Actions [#44651253640](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44651253640), 420-секундный client timeout, 16384 output cap, `GEMINI_MODEL=gemini-3.8-flash`. **Результат проверять в Actions/PR #264 отдельно**; не заявлять заранее. Закрыть trigger PR без merge. Никаких staging merge/deploy и production изменений.
+
+---
+
 ## Что выяснили о 503 Hydrogen: исключены ключ, неправильный ID и общий сбой генерации (20.11.2026)
 
 **Непосредственно проверено в GitHub Actions с настоящим неизменным `GEMINI_API_KEY`:**
