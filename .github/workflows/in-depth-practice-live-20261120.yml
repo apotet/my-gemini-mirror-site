@@ -1,0 +1,52 @@
+name: NetOps Understanding three practice links — live Chromium (no deploy)
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - audit/fix-gemini30-nine-20261120
+    paths:
+      - 'scripts/in-depth-practice.browser.mjs'
+      - '.github/workflows/in-depth-practice-live-20261120.yml'
+permissions:
+  contents: read
+jobs:
+  practice-three-links:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/gemini-batch03-50-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'audit/fix-gemini30-nine-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and build locally
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Test all three real practice buttons at mobile/desktop sizes
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort > /tmp/netops-practice-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null
+          node scripts/in-depth-practice.browser.mjs
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: in-depth-practice-live-3x2
+          path: scripts/.cache/in-depth/practice-live/
+          if-no-files-found: warn
