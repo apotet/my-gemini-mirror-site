@@ -17,7 +17,7 @@ const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const signatures=[
  ['genericNetworkTroubleshoot',/Сначала линк \(L1\/L2\)|затем маршруты и DNS/i],
  ['genericSocketListening',/ss -tulpn.*слушающ/i],
- ['genericRouting',/ip route.*route print.*шлюз/i],
+ ['genericRouting',/быстрый взгляд на шлюзы/i],
  ['genericTrap',/Смотрите точные формулировки стандартов и исключения/i],
  ['genericLayerOrder',/сначала проверь физику, затем IP|проверь физику.*DNS/i],
 ];
