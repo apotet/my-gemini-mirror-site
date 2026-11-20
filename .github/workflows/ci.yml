@@ -1,4 +1,4 @@
-name: NetOps PR checks
+name: NetOps checks
 
 on:
   pull_request:
@@ -6,7 +6,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  pr-checks:
+    name: Fast PR gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Typecheck
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Glossary and lesson regression
+        run: node scripts/copper-cheatsheet-glossary.test.mjs
+
   build:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -213,6 +232,7 @@ jobs:
           if-no-files-found: ignore
 
   in-depth-browser:
+    if: github.event_name == 'workflow_dispatch'
     name: In-depth Understanding Chromium (shard ${{ matrix.shard }})
     runs-on: ubuntu-24.04
     timeout-minutes: 30
