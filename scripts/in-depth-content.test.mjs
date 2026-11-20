@@ -383,16 +383,16 @@ for(const [id,expectedKey,lessonId,sectionId] of [
 }
 for(const [id,tipMustMatch] of [
  ['l3-d08',/next hops.*счётчики/],
- ['l4-03',/TCP-трассу.*Seq\\/ACK/],
+ ['l4-03',/TCP-трассу.*Seq[/]ACK/],
  ['l4-04',/RTP.*loss.*jitter/],
- ['l4-d04',/TC=1.*TCP\\/53/],
- ['l4-lb-01',/health-check.*503.*A\\/C/],
+ ['l4-d04',/TC=1.*TCP[/]53/],
+ ['l4-lb-01',/health-check.*503.*A[/]C/],
  ['l4-x03',/UDP.*RTP sequence/],
 ]) {
  const question=pool.find(q=>q.id===id);
  const tip=m.getQuestionDeepDive(question)?.practicalTip??'';
  assert.match(tip,tipMustMatch,id+': actionable topic-specific packet or configuration check');
- assert.doesNotMatch(tip,/^\x60ss -tulpn\x60|^Сначала линк \\(L1\\/L2\\)|быстрый взгляд на шлюзы/,id+': no inherited generic filler');
+ assert.doesNotMatch(tip,/^\x60ss -tulpn\x60|^Сначала линк|быстрый взгляд на шлюзы/,id+': no inherited generic filler');
 }
 for(const [id,trapMustMatch] of [
  ['l3-d08',/ECMP.*per-flow/],
@@ -421,7 +421,7 @@ for(const [id,mode,prohibited] of [
  ['l3-ospf-03','professional',/Type1|Type2/],
  ['l3-vrrp02','professional',/использует255/],
  ['l6-01','professional',/какD0 AF/],
- ['l7-01','professional',/RFC9110\\/9111/],
+ ['l7-01','professional',/RFC9110[/]9111/],
 ]) {
  const lesson=m.getLessonForQuestion(id);
  const anchor=m.getLessonSectionForQuestion(lesson.id,id);
