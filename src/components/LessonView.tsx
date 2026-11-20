@@ -152,7 +152,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget'].includes(lesson.id)} />
       </header>
 
-      {lesson.animation && (
+      {lesson.animation && (lesson.id !== 'l1-poe-budget' || textMode === 'meaning') && (
         <figure className="mx-auto w-full max-w-[31rem] overflow-hidden rounded-2xl border border-cyan-400/30 bg-[#06111d] p-3 shadow-sm" data-lesson-animation={lesson.animation.file}>
           <div className="mb-2 text-sm font-semibold text-cyan-100">{lesson.animation.label}</div>
           {lesson.animation.file.endsWith('.svg') ? (
