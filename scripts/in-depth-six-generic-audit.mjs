@@ -49,7 +49,17 @@ for(const row of results){
  assert.doesNotMatch(row.deep.tip||'',/Сначала линк \(L1[/]L2\)|затем маршруты и DNS|быстрый взгляд на шлюзы/,row.id+': no generic hint');
  assert.doesNotMatch(row.deep.trap||'',/Смотрите точные формулировки стандартов и исключения/,row.id+': no generic trap');
  if(exp.trap)assert.match(row.deep.trap||'',exp.trap,row.id+': contextual persistent-connection misconception');
- if(row.id==='l3-16')assert.match(row.lesson.sections.plain[0].body,/только маршрут подключённой локальной подсети и default route/,row.id+': exact two-route premise in linked lesson');
+ if(row.id==='l3-16'){
+  assert.match(row.lesson.sections.plain[0].body,/только маршрут подключённой локальной подсети и default route/,row.id+': exact two-route premise in linked lesson');
+  const routes=m.QUESTION_SECTION_LINKS.filter(link=>link.questionIds.includes(row.id));
+  assert.equal(routes.length,1,row.id+': precisely one active linked section, no conflicting legacy mapping');
+  assert.equal(routes[0].anchorId,'in-depth-connected-vs-default-only',row.id+': link to precise section');
+  const lesson=m.getLesson(row.lesson.id);
+  for(const mode of ['plain','professional']){
+    const old=m.getLessonBlocksWithSections(lesson,mode).filter(block=>block.anchorId==='in-depth-existing-l3-16');
+    assert.equal(old.length,1,row.id+': old bookmarked teaching paragraph remains reachable in '+mode);
+  }
+ }
 }
 console.log('GENERIC6_REGRESSION_PASS 6 source keys, answer alternatives, live hints/trap, question-specific two-mode sections');
 console.log('GENERIC6_SUMMARY '+JSON.stringify({count:results.length,ids,missingLesson:results.filter(x=>!x.lesson.id).map(x=>x.id),missingSection:results.filter(x=>!x.lesson.sections.plain.length||!x.lesson.sections.professional.length).map(x=>x.id)}));
