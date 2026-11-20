@@ -1,6 +1,7 @@
 export const LESSON_L1_POE_BUDGET = {
   id: 'l1-poe-budget',
   title: 'PoE: бюджет порта и бюджет коммутатора',
+  category: 'L1 · Питание Ethernet',
   topic: 'L1',
   difficulty: 'beginner',
   osiLayers: ['L1'],
