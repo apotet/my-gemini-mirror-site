@@ -1,3 +1,12 @@
+## 20.11.2026 — Углублённый / самостоятельная предметная партия 12: 11 PASS + 1 адресный FIX
+
+- В точной read-only выгрузке из активного L2 resolver **12/12** вопросов просмотрены по условию, всем альтернативам/ключам, brief/plain/pro, ловушкам, советам и точным `lessonId#anchorId` обоих стилей: [снимок и логи #44670910525](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44670910525). Первичная предметная самопроверка: **11 PASS / 1 FIX**. Подробный поимённый отчёт — [`docs/audits/in-depth/semantic-batch12-20261120.md`](audits/in-depth/semantic-batch12-20261120.md).
+- FIX `review-qos-22`: вместо несвязанного «Сначала линк (L1/L2), затем маршруты и DNS» активный `practicalTip` теперь проверяет QoS trust/remarking DSCP, DSCP→class→egress queue, scheduling и queue drops/marks на правильном выходном интерфейсе, с оговоркой о платформенных командах/counters. Ключи, опции, соответствующий профессиональный и простой разбор, якорь `qos-basics#in-depth-dscp-classification-queue-congestion` не изменены.
+- Новая регрессия `scripts/in-depth-semantic-batch12.mjs` контролирует все 12 original correct indices, оба стиля точного якоря, 5 вариантов `tcp-06`, предметный QoS-tip и запрет прежней общей заглушки. Actions [#44671153211](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44671153211): 164-ID structural/history, lint, build и локальный реальный Chromium 375/1440 на `review-qos-22`. Дополнительная ретестовая цепочка [#44671153233](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44671153233).
+- **Межевой статус:** содержательный self-review 11, QoS адресно исправлен, но глобальная независимая приёмка 164 ID / semantic-fingerprints / GATE-01…10 всё ещё BLOCK. Draft PR #264 → #282 → #289 → #291 не сливать, опубликованный staging/production не менять.
+
+---
+
 ## 20.11.2026 — Самостоятельная повторная инженерная проверка PR #291 (3 FIX) — PASS с дополнительным исправлением
 
 - **Проверен живой дифф PR #291 и активный исходный текст для `l3-d05`, `l4-d03`, `l4-d05`, `tcpip-d05`.** При повторной ручной проверке ответов, двух режимов, уроков и диагностических советов PAT и TIME-WAIT соответствуют условиям; ECN `tcpip-d05` без изменений и корректен по содержанию.
