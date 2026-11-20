@@ -1,5 +1,6 @@
 import { FormattedExplanation } from './FormattedExplanation';
 import { GlossaryText } from './GlossaryText';
+import { ZoomableImage } from './ZoomableImage';
 import { PracticeLinkButton } from './PracticeLinkButton';
 import type { PracticeLink } from '../data/practiceLinks';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -186,9 +187,12 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                   <span className="hidden shrink-0 text-xs font-medium text-cyan-700 dark:text-cyan-300 group-open:inline">Свернуть</span>
                 </summary>
                 <div className="space-y-3 border-t border-cyan-300/40 p-3">
-                  <a href={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} target="_blank" rel="noopener noreferrer" className="block" aria-label={`Открыть шпаргалку крупно: ${b.cheatsheet.title}`}>
-                    <img src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} alt={b.cheatsheet.alt} loading="lazy" decoding="async" className="h-auto w-full rounded-xl border border-slate-200 bg-white dark:border-slate-700" />
-                  </a>
+                  <ZoomableImage
+                    src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}
+                    alt={b.cheatsheet.alt}
+                    previewFullHeight
+                    className="w-full"
+                  />
                   <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>
                 </div>
               </details>
