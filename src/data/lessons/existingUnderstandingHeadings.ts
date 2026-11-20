@@ -20,9 +20,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   },
   {
     "lessonId": "l3-route-selection",
-    "questionIds": [
-      "l3-16"
-    ],
+    "questionIds": [],
     "anchorId": "in-depth-existing-l3-16",
     "afterHeading": {
       "plain": "Сначала совпадение, затем самая длинная маска",
