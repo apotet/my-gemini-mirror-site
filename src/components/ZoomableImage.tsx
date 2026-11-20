@@ -9,6 +9,8 @@ interface ZoomableImageProps {
   imgClassName?: string;
   /** Open fullscreen viewer on click (default true) */
   fullscreenOnClick?: boolean;
+  /** Keep tall lesson cheat sheets fully visible before opening the viewer. */
+  previewFullHeight?: boolean;
 }
 
 // 100% means that the entire photo fits in the viewport.
@@ -22,6 +24,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
   className = '',
   imgClassName = '',
   fullscreenOnClick = true,
+  previewFullHeight = false,
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -218,7 +221,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
             alt={alt}
             draggable={false}
             loading="lazy"
-            className={`max-h-80 w-full object-contain rounded-xl mx-auto pointer-events-none ${imgClassName}`}
+            className={`${previewFullHeight ? 'max-h-none' : 'max-h-80'} w-full object-contain rounded-xl mx-auto pointer-events-none ${imgClassName}`}
             onError={(e) => {
               (e.target as HTMLElement).style.display = 'none';
             }}
