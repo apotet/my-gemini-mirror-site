@@ -5,6 +5,7 @@ on:
     branches: [audit/gemini-batch03-50-fixes-20261120]
     paths:
       - 'scripts/in-depth-fingerprint-triage.mjs'
+      - 'scripts/in-depth-local-impact-triage.mjs'
       - 'scripts/in-depth-six-generic-audit.mjs'
       - '.github/workflows/in-depth-fingerprint-triage-20261120.yml'
 permissions:
@@ -33,6 +34,8 @@ jobs:
         run: bash scripts/in-depth-material-delta.sh
       - name: Classify differences without changing accepted fingerprints
         run: node scripts/in-depth-fingerprint-triage.mjs
+      - name: Separate direct question and exact section deltas from shared lesson/glossary ripple
+        run: node scripts/in-depth-local-impact-triage.mjs
       - name: Extract six detected generic advice cases with full source context
         run: node scripts/in-depth-six-generic-audit.mjs
       - name: Export audit evidence
@@ -41,6 +44,7 @@ jobs:
         with:
           name: understanding-semantic-fingerprint-triage
           path: |
+            scripts/.cache/in-depth/local-impact-triage.json
             scripts/.cache/in-depth/six-generic-source.json
             scripts/.cache/in-depth/fingerprint-triage.json
             scripts/.cache/in-depth/semantic-material-delta.json
