@@ -77,6 +77,14 @@ assert.equal(lesson.blocks.some(block => block.pinout === 't568'), false,
 assert.equal(lesson.blocks.filter(block => block.cheatsheet?.file === 'copper-pinout-four-wires.webp').length, 1,
   'no duplicated pinout cheat sheets');
 const viewSource = readFileSync(resolve('src/components/LessonView.tsx'), 'utf8');
+const viewerSource = readFileSync(resolve('src/components/ZoomableImage.tsx'), 'utf8');
+assert.match(viewSource, /import \{ ZoomableImage \} from '\.\/ZoomableImage';/, 'cheat sheets reuse established zoom viewer');
+assert.match(viewSource, /<ZoomableImage[\s\S]*?previewFullHeight[\s\S]*?\/>/, 'cheat sheets open fullscreen without cropping inline schematic');
+assert.doesNotMatch(viewSource, /Открыть изображение целиком/, 'redundant raw-image link stays removed');
+assert.match(viewerSource, /addEventListener\('wheel', onWheel, \{ passive: false \}\)/, 'fullscreen viewer uses non-passive wheel zoom');
+assert.match(viewerSource, /onTouchMove=\{onTouchMove\}/, 'fullscreen viewer has pinch/pan touch handlers');
+assert.match(viewerSource, /previewFullHeight \? 'max-h-none' : 'max-h-80'/, 'only lesson cheat sheet preview escapes default thumbnail limit');
+
 assert.match(viewSource, /details\.open = true/, 'reveal handler opens the in-page details element');
 assert.match(viewSource, /open=\{b\.cheatsheetInitiallyOpen\}/,
   'details uses author-selected initial visibility for essential diagrams');
