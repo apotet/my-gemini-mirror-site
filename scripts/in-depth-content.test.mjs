@@ -436,4 +436,50 @@ assert.match(rtpTip,/воспроизведения.*отдельно на пр�
 assert.doesNotMatch(rtpTip,/измерь.*интервалы воспроизведения/,'do not conflate Wireshark Delta with audio playout');
 
 
+// Gemini App Work batch03 (50 questions): independent follow-up of 10 exact source defects.
+// Original review SHA 1f273787370a64cf39732974b60c1706e538f5bb; these are
+// source-content regression checks, NOT UI/browser or independent semantic DONE.
+for(const [id,key,lessonId,sectionId,tipPattern] of [
+ ['gen-diag-0',0,'l2-ethernet','in-depth-source-learning-observation',/VLAN[/]PVID.*Rx.*Source MAC/],
+ ['gen-transport-14',2,'l7-monitoring-snmp-syslog','in-depth-snmp-trap-inform-roles',/SNMPv2-Trap.*UDP destination port 162/],
+ ['gen-transport-16',0,'l4-directory-remote-industrial-ports','in-depth-rdp-udp-fallback',/TCP[/]3389.*UDP[/]3389/],
+ ['gen-transport-17',1,'l4-directory-remote-industrial-ports','in-depth-modbus-mbap-vs-rtu',/Modbus TCP.*TCP[/]502.*MBAP/],
+ ['gen-transport-5',1,'l7-mail-mx','in-depth-smtp-mx-delivery-port25',/MX.*TCP[/]25.*220/],
+ ['gen-transport-7',1,'l7-dhcp','in-depth-dhcp-init-and-apipa',/DHCPDISCOVER.*UDP 68→67/],
+ ['l12-storm01',0,'ts-copp-storm','in-depth-existing-l12-storm01',/storm-control.*счётчики подавления/],
+ ['new-ts-duplex',0,'l2-ethernet','legacy-duplex-diagnosis',/speed[/]duplex.*CRC[/]FCS/],
+ ['new-ts-vlan',0,'l2-vlan','in-depth-existing-new-ts-vlan',/VLAN[/]PVID.*ARP/],
+]) {
+ const q=pool.find(row=>row.id===id);
+ assert.ok(q,id+': still present in exact Understanding level');
+ assert.deepEqual(q.correct,[key],id+': original answer key untouched');
+ const lesson=m.getLessonForQuestion(id);
+ assert.equal(lesson?.id,lessonId,id+': original linked lesson intact');
+ assert.equal(m.getLessonSectionForQuestion(lessonId,id),sectionId,id+': original exact section anchor intact');
+ for(const mode of ['plain','professional']){
+   const block=m.getLessonBlocksWithSections(lesson,mode).filter(b=>b.anchorId===sectionId);
+   assert.equal(block.length,1,id+': exactly one linked '+mode+' lesson section');
+   assert.ok(block[0].body.trim(),id+': '+mode+' section must be nonempty');
+ }
+ const dive=m.getQuestionDeepDive(q);
+ assert.ok(dive?.briefAnswer && dive?.deepAnalysis && dive?.professional?.deep,id+': two individual explanation modes intact');
+ assert.match(dive.practicalTip||'',tipPattern,id+': diagnostic tip must mention question-specific evidence');
+ assert.doesNotMatch(dive.practicalTip||'',/Сначала линк \(L1[/]L2\), затем маршруты и DNS|ss -tulpn — слушающие сокеты/ ,id+': not inherited generic filler');
+}
+const ipv4Hop=pool.find(q=>q.id==='tcpip-d01');
+assert.ok(ipv4Hop,'tcpip-d01: source question still present');
+assert.deepEqual(ipv4Hop.correct,[0],'tcpip-d01: source answer key unchanged');
+const ipv4Lesson=m.getLessonForQuestion('tcpip-d01');
+assert.equal(ipv4Lesson?.id,'tcpip-encapsulation');
+assert.equal(m.getLessonSectionForQuestion('tcpip-encapsulation','tcpip-d01'),'indepth-ipv4-router-rewrite');
+for(const mode of ['plain','professional']) {
+ assert.ok(m.getLessonBlocksWithSections(ipv4Lesson,mode).some(x=>x.anchorId==='indepth-ipv4-router-rewrite' && x.body?.trim()),'tcpip-d01 '+mode+' actual section');
+}
+const ipv4Dive=m.getQuestionDeepDive(ipv4Hop);
+assert.match(ipv4Dive?.commonTrap||'',/TTL.*контрольную сумму.*MAC.*NAT/,'tcpip-d01: exact real IPv4 versus L2 and NAT trap');
+assert.doesNotMatch(ipv4Dive?.commonTrap||'',/Смотрите точные формулировки стандартов и исключения/,'tcpip-d01: reject placeholder trap');
+// Batch03 original tcp-06 has five answer choices; never truncate distractor evidence.
+const fiveOption=pool.find(q=>q.id==='tcp-06');
+assert.equal(fiveOption?.answers?.length,5,'tcp-06: preserve fifth original answer');
+
 console.log('PASS: actual164-ID Understanding pool; structural two-style lessons, links, active glossary, and 698 other-level deep dives unchanged; independent semantic PASS still pending');
