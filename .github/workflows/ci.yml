@@ -1,10 +1,7 @@
-name: CI
+name: NetOps manual diagnostics (no automatic CI)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main, feat/cli-stp-cst-engine, feat/cli-stp-forwarding, feat/cli-stp-diagnostics, integration/cli-2-stp-theory , feat/cli-topology-layers]
+  workflow_dispatch:
 
 jobs:
   build:

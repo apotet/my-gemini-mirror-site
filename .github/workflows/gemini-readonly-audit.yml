@@ -1,11 +1,6 @@
 name: Gemini read-only NetOps reviewer
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/gemini-readonly-audit.yml'
-      - 'scripts/gemini-audit-*.mjs'
-      - 'scripts/gemini-batch-control*.mjs'
   workflow_dispatch:
     inputs:
       pr_number:
