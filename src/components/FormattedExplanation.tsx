@@ -4,24 +4,24 @@ import { GlossaryText } from './GlossaryText';
 
 const codeClass = 'max-w-full overflow-x-auto whitespace-pre rounded-lg bg-slate-100 p-3 font-mono text-xs leading-relaxed dark:bg-slate-900';
 
-function InlineExplanation({ text }: { text: string }) {
+function InlineExplanation({ text, plainGlossaryTerms }: { text: string; plainGlossaryTerms?: string[] }) {
   return formatInlineExplanation(text).map((part, index) => part.code
     ? <code key={index} className="rounded bg-slate-100 px-1 font-mono text-[.92em] dark:bg-slate-900">{part.text}</code>
-    : <Fragment key={index}><GlossaryText>{part.text}</GlossaryText></Fragment>);
+    : <Fragment key={index}><GlossaryText plainTerms={plainGlossaryTerms}>{part.text}</GlossaryText></Fragment>);
 }
 
-export function FormattedExplanation({ text, command = false }: { text: string; command?: boolean }) {
+export function FormattedExplanation({ text, command = false, plainGlossaryTerms }: { text: string; command?: boolean; plainGlossaryTerms?: string[] }) {
   if (command) return <pre className={codeClass}><code>{text}</code></pre>;
   return <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
     {formatExplanation(text).map((block, index) => {
       if (block.kind === 'code') return <pre key={index} className={codeClass}><code>{block.text}</code></pre>;
       if (block.kind === 'list') {
-        const items = block.items.map((item, itemIndex) => <li key={itemIndex} className="whitespace-pre-line"><InlineExplanation text={item} /></li>);
+        const items = block.items.map((item, itemIndex) => <li key={itemIndex} className="whitespace-pre-line"><InlineExplanation text={item} plainGlossaryTerms={plainGlossaryTerms} /></li>);
         return block.ordered
           ? <ol key={index} start={block.start} className="list-decimal space-y-1 pl-6">{items}</ol>
           : <ul key={index} className="list-disc space-y-1 pl-6">{items}</ul>;
       }
-      return <p key={index} className="whitespace-pre-line"><InlineExplanation text={block.text} /></p>;
+      return <p key={index} className="whitespace-pre-line"><InlineExplanation text={block.text} plainGlossaryTerms={plainGlossaryTerms} /></p>;
     })}
   </div>;
 }

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import type { LessonKnowledgeCheck } from '../data/lessons/types';
+import type { LessonKnowledgeCheck as LessonKnowledgeCheckData } from '../data/lessons/types';
 
 /**
  * Four-question reinforcement inside a lesson.
  * This is deliberately not an exam: no saved attempts or global statistics.
  */
-export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheck }> = ({ check }) => {
+export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData }> = ({ check }) => {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
