@@ -55,7 +55,7 @@ export const LESSON_L7_HTTP_STATUS_BASICS: Lesson = {
       },
       {
         "heading": "404 vs 410",
-        "body": "404 Not Found conveys that the origin server did not find a current representation or is unwilling to disclose its existence. It does not assert permanence; 410 Gone is a stronger signal that unavailability is probably permanent. In real services 404 may also mask authorization state by design, so diagnosis must inspect exact URI, method, routing, resource mapping, and access policy.\n\nDo not infer a server-wide failure from an isolated 404 or confuse it with DNS resolution problems."
+        "body": "404 Not Found означает, что исходный сервер не нашёл текущее представление ресурса либо не желает раскрывать факт его существования. Этот ответ сам по себе не подтверждает постоянное отсутствие ресурса; 410 Gone сильнее указывает на вероятное окончательное удаление. В реальном сервисе 404 может намеренно скрывать наличие защищённого ресурса, поэтому проверяй точный URI, HTTP-метод, маршрутизацию приложения, сопоставление ресурсов и политику доступа.\n\nЕдиничный 404 не доказывает отказ сервера целиком и не равен ошибке разрешения DNS-имени."
       },
       {
         "heading": "Диагностика HTTP-кодов",
