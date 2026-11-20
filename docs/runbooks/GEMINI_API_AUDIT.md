@@ -1,3 +1,15 @@
+## Регламент лимитов и неудачной четвёртой десятки (20.11.2026) — читать ПЕРЕД каждым запуском
+
+**Подтверждено скриншотами авторизованного Google AI Studio → Rate limits by model:** `gemini-4-hydrogen`: лимиты 5 RPM, 250000 **входных** TPM, 20 RPD; отображённые значения пиков за последние **28 дней**: RPM 1/5, TPM 17.99K/250K, RPD 6/20, зелёный статус. Другие модели: `Gemini 3.8 Flash` 5/5 RPM, 144.21K/250K TPM, 19/20 RPD, красный статус; `Gemini 3.5 Flash Lite` 1/15 RPM, 3.57K/250K TPM, 2/500 RPD, зелёный. **НЕ интерпретировать 28-дневные пики как текущий остаток.** Общий `You have reached a rate limit` не означает блокировку Hydrogen.
+
+**User decision:** одна строго ограниченная партия **10 ID / 1 API call / NO RETRY**, frozen exact PR #264 SHA, проверить репозиторий staging и идентичный SHA до/после, timeout 420s, cap 16384 выходных токенов, не выводить ключи, error 503/429/timeout = **INCONCLUSIVE** и остановка. Никаких cron/re-run/автоматического переоткрытия PR или запасных моделей.
+
+**Реальный новый запуск:** [run #44649063943](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44649063943), отдельный одноразовый [Draft PR #275](https://github.com/apotet/my-gemini-mirror-site/pull/275) **закрыт без merge**. Точный проверенный PR #264 HEAD `1f273787370a64cf39732974b60c1706e538f5bb`, ID `k-05,k-06,k-07,l1-02,l1-04,l12-copp01,l12-d05,l12-ds04,l12-storm01,l12-x02`. Пакеты десяти valid, runner preparation SUCCESS, **единственный API вызов Gemini 4 Hydrogen HTTP 503 UNAVAILABLE / high demand** (не 429), **0 отчётов Gemini**, no retry. Ошибка и источник зафиксированы [PR #264 comment](https://github.com/apotet/my-gemini-mirror-site/pull/264#issuecomment-7026860429), roadmap `docs/ROADMAP.md` (верхние CURRENT). Не объявлять четвёртую десятку пройденной, не повторять самовольно. В третьей десятке также 0 Gemini results; её ChatGPT-review не равен Gemini.
+
+**Область:** `apotet/my-gemini-mirror-site` PR #264 DRAFT/BLOCK; никакого merge/deploy, `apotet/netops` не менять. Авторизация модели уже есть через GitHub Actions secret; Browser Use, TinyFish, Codespaces, Work, Codex не нужны.
+
+---
+
 ## Проверенный запуск третьей десятки: успешная авторизация, но Google 503 и тайм-аут (20.11.2026)
 
 - Техническая схема запуска **НЕ изменилась**: подключённый GitHub plugin создаёт одноразовую ветку с `on: pull_request: types: [opened]`; открывает Draft PR из своей ветки в staging `main`; GitHub Actions читает `GEMINI_API_KEY` из Secrets, доверенные скрипты из `main` и зафиксированный точный SHA PR #264. Автоматическая авторизация GitHub/Gemini в ChatGPT **не требуется**. Репозиторий production не затрагивается. После работы одноразовый Draft PR **обязательно закрыть без merge**. Не возобновлять закрытый PR, не настраивать cron/автоповторы.
