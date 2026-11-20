@@ -7,6 +7,12 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "baud": { description: "Бод — один переданный сигнальный символ в секунду; символьная скорость не всегда совпадает с числом бит/с.", relatesTo: "Измерения физического уровня, скорость символов и биты на символ.", lessonId: 'l1-phy-symbol-rate' },
+  "символ": { description: "Один элемент сигнала физического кодирования. При нескольких различимых состояниях символ может переносить более одного бита.", relatesTo: "Физическое кодирование, PAM4, символьная скорость.", lessonId: 'l1-phy-symbol-rate' },
+  "PAM4": { description: "Четырёхуровневая амплитудно-импульсная модуляция: один идеальный символ передаёт два бита до учёта кодовой избыточности.", relatesTo: "Физический уровень Ethernet, четыре амплитудных уровня, FEC.", lessonId: 'l1-phy-symbol-rate' },
+  "бит/с": { description: "Бит в секунду — единица битовой скорости; не равна частоте символов, когда в одном символе кодируют несколько бит.", relatesTo: "Различие между битовой и символьной скоростью.", lessonId: 'l1-phy-symbol-rate' },
+  "символьная скорость": { description: "Число передаваемых сигнальных символов в секунду, измеряемое в бодах.", relatesTo: "Модуляция, PAM4, битовая скорость.", lessonId: 'l1-phy-symbol-rate' },
+  "битовая скорость": { description: "Число переданных бит за секунду; без учёта служебных расходов зависит от символьной скорости и количества бит на символ.", relatesTo: "Физическое кодирование, символьная скорость и полезный поток.", lessonId: 'l1-phy-symbol-rate' },
   "SFTP": {"description":"SSH File Transfer Protocol — протокол передачи файлов через SSH. Обычно запускается как отдельная subsystem в session-канале существующего SSH-транспорта; это не FTP поверх TLS и не отдельный TCP-сеанс.","relatesTo":"Мультиплексирование SSH, независимые каналы оболочки и файлового обмена.","lessonId":"l4-applied-tcp-session-flows"},
   "PASV": {"description":"Команда FTP для перехода в пассивный режим: сервер сообщает адрес и порт приёма канала данных, после чего клиент сам открывает отдельное TCP-соединение для передачи файла.","relatesTo":"FTP control/data, команда RETR, NAT и разрешённый диапазон пассивных портов.","lessonId":"l4-applied-tcp-session-flows"},
   "STARTTLS": {"description":"Команда согласованного включения TLS внутри уже установленного соединения приложения, например IMAP на TCP 143. Отличается от implicit TLS на 993, где TLS начинается сразу после TCP handshake.","relatesTo":"IMAP, безопасная почта, порядок команд и обязательная проверка сертификата.","lessonId":"l4-applied-tcp-session-flows"},
@@ -1655,6 +1661,13 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "PRP": ["Parallel Redundancy Protocol", "Протокол параллельного резервирования", true, "Резервирование по IEC 62439-3 через две независимые сети LAN A и LAN B, в отличие от двух направлений HSR-кольца."],
+  "baud": ["Baud (symbols per second)", "Бод (символов в секунду)", false, "Единица символьной скорости: один переданный символ в секунду."],
+  "символ": ["Physical-layer symbol", "Символ физического сигнала", false, "Сигнальное состояние или элемент кодирования, способный представлять один или несколько бит."],
+  "PAM4": ["Four-level Pulse-Amplitude Modulation", "Четырёхуровневая амплитудная модуляция", true, "Четыре различимых уровня сигнала дают два бита на символ до учёта накладных расходов кодирования."],
+  "бит/с": ["Bits per second", "Биты в секунду", false, "Единица битовой скорости передачи."],
+  "символьная скорость": ["Symbol rate", "Скорость передачи символов", false, "Число сигнальных символов в секунду; измеряется в бодах."],
+  "битовая скорость": ["Bit rate", "Скорость передачи битов", false, "Количество передаваемых бит в секунду, отличное от скорости символов для многоуровневого кодирования."],
   // Cabling notation: the slash separates overall screen and individual-pair screens.
   // Never confuse S/FTP or U/FTP with the independent file-transfer protocol FTP.
   "U/UTP": ["Unscreened / Unscreened Twisted Pair", "Витая пара без экранирования", true, "Нет ни общего металлического экрана, ни индивидуальной фольги на парах."],
