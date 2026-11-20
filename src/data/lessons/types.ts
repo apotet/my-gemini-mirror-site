@@ -34,6 +34,7 @@ export interface LessonBlock {
   heading: string;
   body: string;
   practiceLink?: PracticeLink;
+  relatedLesson?: { id: string; label: string };
 }
 
 export interface LessonCommand {
@@ -69,4 +70,5 @@ export interface Lesson {
   trainers?: LessonTrainerLink[];
   sources: string[];
   diagram?: 'sni';
+  animation?: { file: string; label: string; description: string };
 }
