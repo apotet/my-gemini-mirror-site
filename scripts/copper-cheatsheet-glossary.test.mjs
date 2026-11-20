@@ -35,20 +35,19 @@ assert.ok(lesson, 'existing lesson ID must remain valid');
 assert.equal(lesson.relatedQuestionIds.length, 16, 'preserve 16 related question links');
 assert.equal(new Set(lesson.relatedQuestionIds).size, 16, 'do not duplicate question links');
 
-const pinoutBlock = lesson.blocks.find(block => block.heading.startsWith('Раскладка жил:'));
 const schemeBlock = lesson.blocks.find(block => block.heading.startsWith('T568A, T568B и Auto MDI-X'));
+assert.equal(lesson.blocks.length, 11, 'redundant pinout bridge removed without losing actual content');
+assert.ok(!lesson.blocks.some(block => block.heading.startsWith('Раскладка жил:')), 'no separate text-only pinout bridge');
 const crimpBlock = lesson.blocks.find(block => block.heading.startsWith('Обычный обжим 8P8C'));
 const practiceBlock = lesson.blocks.find(block => block.heading.startsWith('Практический случай'));
 const testBlock = lesson.blocks.find(block => block.heading.startsWith('Проверка после обжима'));
-assert.ok(pinoutBlock && schemeBlock && crimpBlock && practiceBlock && testBlock, 'all core blocks preserved');
-assert.equal(pinoutBlock.cheatsheetJump?.file, 'copper-pinout-four-wires.webp',
-  'pinout explanatory paragraph links directly to real pinout sheet');
-assert.equal(schemeBlock.cheatsheetJump?.file, 'copper-pinout-four-wires.webp',
-  'scheme paragraph has a directly usable pinout reveal');
+assert.ok(schemeBlock && crimpBlock && practiceBlock && testBlock, 'all core blocks preserved');
 assert.equal(schemeBlock.cheatsheet?.file, 'copper-pinout-four-wires.webp',
-  'the already-published pinout sheet is adjacent to the T568 explanation');
-assert.ok(pinoutBlock.body.includes('Нажми «См. шпаргалку по распиновке»'),
-  'clear action-oriented pinout cross-reference');
+  'visible pinout image is directly beneath the shortened T568 explanation');
+assert.equal(schemeBlock.cheatsheetJump, undefined, 'do not show redundant jump to already open diagram');
+assert.ok(schemeBlock.body.includes('Схема раскладки — на изображении ниже.'),
+  'short one-line image reference replaces whole explanatory bridge');
+assert.ok(schemeBlock.body.length < 1050, 'T568 explanation remains concise');
 assert.equal(crimpBlock.cheatsheet?.file, 'copper-termination-checklist.webp',
   'the closed-plug crimp cheatsheet is right next to the main crimp sequence');
 assert.equal(crimpBlock.cheatsheetJump?.file, 'copper-termination-checklist.webp',
@@ -58,7 +57,7 @@ assert.equal(lesson.blocks.at(-1), testBlock, 'wiremap and link testing conclude
 assert.equal(lesson.blocks.indexOf(practiceBlock), lesson.blocks.indexOf(crimpBlock) + 1,
   'practical bad-crimp case immediately follows the correct crimp walkthrough');
 const optionalPhotos = lesson.blocks.filter(block => block.imageCollapsible);
-assert.equal(optionalPhotos.length, 2, 'two secondary pass-through photos stay collapsed');
+assert.equal(optionalPhotos.length, 1, 'only special pass-through crimper remains collapsed');
 const comparison = lesson.blocks.find(block => block.heading.startsWith('Обычный 8P8C и pass-through'));
 assert.ok(comparison?.image && !comparison.imageCollapsible,
   'connector comparison image is visible immediately without extra clicks');
@@ -107,4 +106,4 @@ for (const term of expected) {
   assert.ok(html.includes('data-glossary-term="' + term + '"'), term + ' has real rendered tooltip trigger');
 }
 assert.ok(!html.includes('data-glossary-term="A"'), 'do not show irrelevant DNS A-record tooltip for wiring A');
-console.log('PASS: essential diagrams visible, secondary visuals collapsible, 16 question links, glossary and lesson order preserved');
+console.log('PASS: redundant block removed; T568 chart shown immediately, glossary, three cheat sheets and 16 question links preserved');
