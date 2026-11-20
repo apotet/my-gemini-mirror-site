@@ -140,7 +140,15 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
-        <FormattedExplanation text={content.summary} plainGlossaryTerms={lesson.id === 'l1-poe-budget' && textMode === 'professional' ? ['802.3af'] : undefined} />
+        {lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
+          <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
+            <p className="whitespace-pre-line">
+              <GlossaryText>{content.summary.split('IEEE 802.3af/at/bt')[0]}</GlossaryText>
+              <span data-poe-summary-standard="plain">IEEE 802.3af/at/bt</span>
+              <GlossaryText>{content.summary.split('IEEE 802.3af/at/bt')[1]}</GlossaryText>
+            </p>
+          </div>
+        ) : <FormattedExplanation text={content.summary} />}
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget'].includes(lesson.id)} />
       </header>
 
