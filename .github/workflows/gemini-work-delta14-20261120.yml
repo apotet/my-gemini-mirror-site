@@ -1,0 +1,122 @@
+name: Gemini Work 14-ID exact before-after bundle (NO LLM API)
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-work-delta14-20261120.yml'
+permissions:
+  contents: read
+jobs:
+  handoff:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'export/gemini-work-delta14-pr282-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - name: Pin old source PR #264 and proposed Draft PR #282
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api 'repos/'"$GITHUB_REPOSITORY"'/pulls/264' --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb'
+          test "$(gh api 'repos/'"$GITHUB_REPOSITORY"'/pulls/282' --jq '.head.sha')" = '8e3f62246b5d9caea3814d8b455931ccb9f5c477'
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: '1f273787370a64cf39732974b60c1706e538f5bb'
+          path: source-old
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: '8e3f62246b5d9caea3814d8b455931ccb9f5c477'
+          path: source-new
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: c8a16062f4468cfa178e996bd51852c3e020624c
+          path: instructions
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frozen source export dependencies without lifecycle scripts
+        run: |
+          (cd source-old && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd source-new && npm ci --ignore-scripts --no-audit --no-fund)
+      - name: Export exact 14 IDs in old and new snapshots (zero API requests)
+        run: |
+          mkdir -p output/old output/new
+          node trusted/scripts/gemini-audit-pack.mjs source-old 'l3-d04,l3-d08,l3-ospf-03,l3-vrrp02,l4-03' output/old/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs source-new 'l3-d04,l3-d08,l3-ospf-03,l3-vrrp02,l4-03' output/new/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs source-old 'l4-04,l4-d04,l4-lb-01,l4-x03,l6-01' output/old/pack_02.json
+          node trusted/scripts/gemini-audit-pack.mjs source-new 'l4-04,l4-d04,l4-lb-01,l4-x03,l6-01' output/new/pack_02.json
+          node trusted/scripts/gemini-audit-pack.mjs source-old 'l7-01,l7-05,l7-new-02,l7-new-03' output/old/pack_03.json
+          node trusted/scripts/gemini-audit-pack.mjs source-new 'l7-01,l7-05,l7-new-02,l7-new-03' output/new/pack_03.json
+      - name: Verify questions and links unchanged, collect only content deltas and SHA256
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const oldSHA='1f273787370a64cf39732974b60c1706e538f5bb',newSHA='8e3f62246b5d9caea3814d8b455931ccb9f5c477';
+          const ids=["l3-d04","l3-d08","l3-ospf-03","l3-vrrp02","l4-03","l4-04","l4-d04","l4-lb-01","l4-x03","l6-01","l7-01","l7-05","l7-new-02","l7-new-03"];
+          const hash=b=>createHash('sha256').update(b).digest('hex');
+          const packs=[];const old=[],now=[];
+          for(let j=1;j<=3;j++){
+           const file='pack_'+String(j).padStart(2,'0')+'.json';
+           const expected=ids.slice((j-1)*5,j*5);
+           for(const label of ['old','new']){
+            const rel=label+'/'+file,bytes=readFileSync('output/'+rel);
+            const data=JSON.parse(bytes.toString());
+            assert.equal(data.sha,label==='old'?oldSHA:newSHA,'SHA '+rel);
+            assert.deepEqual(data.ids,expected,'IDs '+rel);
+            assert.equal(data.records.length,expected.length);
+            packs.push({file:rel,sha256:hash(bytes),ids:expected});
+            (label==='old'?old:now).push(...data.records);
+           }
+          }
+          assert.equal(old.length,14);assert.equal(now.length,14);
+          const report=[];
+          const fields=['explanation.brief','explanation.plain','explanation.professional','explanation.commonTrap','explanation.practicalTip','explanation.practiceLink','lesson.sections.plain.heading','lesson.sections.plain.body','lesson.sections.professional.heading','lesson.sections.professional.body'];
+          const get=(o,path)=>path.split('.').reduce((v,k)=>v?.[k],o);
+          for(let i=0;i<14;i++){
+           const a=old[i],b=now[i],id=ids[i];
+           assert.equal(a.id,id);assert.equal(b.id,id);
+           assert.deepEqual(a.question,b.question,id+': question/options/keys changed');
+           assert.equal(a.lesson.id,b.lesson.id,id+': lesson changed');
+           assert.equal(a.lesson.anchorId,b.lesson.anchorId,id+': anchor changed');
+           assert.deepEqual(a.lesson.coverageIssues,b.lesson.coverageIssues,id+': coverage changed');
+           assert.ok(a.lesson.sections?.plain?.body&&b.lesson.sections?.professional?.body);
+           const changes=fields.filter(f=>JSON.stringify(get(a,f))!==JSON.stringify(get(b,f))).map(f=>({field:f,before:get(a,f),after:get(b,f)}));
+           assert.ok(changes.length>0,id+': no delta');
+           report.push({id,oldMaterialHash:a.materialHash,newMaterialHash:b.materialHash,sourceKey:b.question.correct,lessonId:b.lesson.id,anchorId:b.lesson.anchorId,changes});
+          }
+          const manifest={sourceRepo:'apotet/my-gemini-mirror-site',oldPR:264,remediationDraftPR:282,oldSHA,newSHA,count:14,ids,packs,report,status:'UNREVIEWED_NEW_SHA; all reviews must be independent'};
+          writeFileSync('output/manifest.json',JSON.stringify(manifest,null,2)+'\n');
+          writeFileSync('output/LEARNING_CONTENT_STANDARD.md',readFileSync('trusted/docs/LEARNING_CONTENT_STANDARD.md'));
+          writeFileSync('output/01_GEMINI_DELTA_TASK.md',readFileSync('instructions/handoff/DELTA_TASK_14.md'));
+          const names=['manifest.json','LEARNING_CONTENT_STANDARD.md','01_GEMINI_DELTA_TASK.md',...packs.map(p=>p.file)];
+          writeFileSync('output/SHA256SUMS.txt',names.map(x=>hash(readFileSync('output/'+x))+'  '+x).join('\n')+'\n');
+          console.log('DELTA_EXPORT_OK',JSON.stringify({count:14,packs:packs.length,changes:report.reduce((n,x)=>n+x.changes.length,0),oldSHA,newSHA,ids}));
+          console.log('MANIFEST_SHA256',hash(readFileSync('output/manifest.json')));
+          NODE
+      - name: Verify PR sources were not updated during packaging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api 'repos/'"$GITHUB_REPOSITORY"'/pulls/264' --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb'
+          test "$(gh api 'repos/'"$GITHUB_REPOSITORY"'/pulls/282' --jq '.head.sha')" = '8e3f62246b5d9caea3814d8b455931ccb9f5c477'
+      - name: Upload one ZIP artifact for Gemini Work
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetOps-Gemini-Work-14-Delta-PR282-20261120
+          path: output/
+          if-no-files-found: error
+          retention-days: 90
