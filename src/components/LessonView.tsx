@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Lesson, type LessonIllustration } from '../data/lessons/types';
 import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
+import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { LessonTermTags } from './LessonTermTags';
 import { LessonReviewBadge } from './LessonReviewBadge';
@@ -250,6 +251,10 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
             </div>
           ))}
         </section>
+      )}
+
+      {lesson.knowledgeCheck && (
+        <LessonKnowledgeCheck key={lesson.id} check={lesson.knowledgeCheck} />
       )}
 
       {related.length > 0 && (
