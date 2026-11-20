@@ -147,6 +147,22 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                 </figure>
               )}
             </div>
+            {b.cheatsheet && (
+              <details className="group mt-3 overflow-hidden rounded-xl border border-cyan-300/50 bg-cyan-50/50 dark:border-cyan-500/30 dark:bg-cyan-950/20">
+                <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-cyan-900 dark:text-cyan-100">
+                  <span className="flex min-w-0 items-center gap-2"><BookOpen className="h-4 w-4 shrink-0" aria-hidden="true" />Шпаргалка: {b.cheatsheet.title}</span>
+                  <span className="shrink-0 text-xs font-medium text-cyan-700 dark:text-cyan-300 group-open:hidden">Развернуть</span>
+                  <span className="hidden shrink-0 text-xs font-medium text-cyan-700 dark:text-cyan-300 group-open:inline">Свернуть</span>
+                </summary>
+                <div className="space-y-3 border-t border-cyan-300/40 p-3">
+                  <a href={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} target="_blank" rel="noopener noreferrer" className="block" aria-label={`Открыть шпаргалку крупно: ${b.cheatsheet.title}`}>
+                    <img src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} alt={b.cheatsheet.alt} loading="lazy" decoding="async" className="h-auto w-full rounded-xl border border-slate-200 bg-white dark:border-slate-700" />
+                  </a>
+                  <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>
+                  <a href={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} target="_blank" rel="noopener noreferrer" className="inline-flex text-xs font-semibold text-cyan-700 underline underline-offset-2 dark:text-cyan-300">Открыть изображение целиком</a>
+                </div>
+              </details>
+            )}
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
           </section>
         ))}

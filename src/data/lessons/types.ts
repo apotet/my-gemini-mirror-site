@@ -13,7 +13,15 @@ export interface LessonIllustration {
   spriteRows?: 1 | 2;
 }
 
+export interface LessonCheatsheet {
+  file: string;
+  title: string;
+  alt: string;
+  note: string;
+}
+
 export interface LessonBlock {
+  cheatsheet?: LessonCheatsheet;
   pinout?: 't568';
   image?: LessonIllustration;
   heading: string;
