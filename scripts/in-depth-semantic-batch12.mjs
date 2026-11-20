@@ -54,7 +54,7 @@ for(const row of rows){
 assert.equal(rows.find(r=>r.id==='tcp-06').question.answers.length,5,'retain historical fifth answer');
 const qos=rows.find(row=>row.id==='review-qos-22');
 assert.match(qos.explanation.tip||'',/DSCP.*egress queue.*drops[/]marks/,'QoS tip must diagnose actual egress queue and drops');
-assert.doesNotMatch(qos.explanation.tip||'',/Сначала линк \(L1[/]L2\), затем маршруты и DNS/,'Do not use generic unrelated network layers/DNS troubleshooting');
+assert.doesNotMatch(qos.explanation.tip||'',/Сначала линк|маршруты и DNS/,'Do not use unrelated generic link/routes/DNS troubleshooting');
 console.log('PASS batch12 structural regression: 12 keys, 12 paired exact lesson anchors, individual modes and fixed QoS practical tip');
 
 const folder='scripts/.cache/in-depth/semantic-batch12';
