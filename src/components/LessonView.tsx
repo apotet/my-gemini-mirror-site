@@ -127,7 +127,25 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <span className="min-w-0"><GlossaryText key={textMode}>{b.heading}</GlossaryText></span>
             </h3>
-            <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} /></div>
+            <div className={b.image ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
+              <div className="min-w-0 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} /></div>
+              {b.image && (
+                <figure className="w-full max-w-xs space-y-2 justify-self-start md:justify-self-end">
+                  <div
+                    role="img"
+                    aria-label={b.image.alt}
+                    data-lesson-photo={`${b.image.column}-${b.image.row}`}
+                    className="w-full aspect-square rounded-xl border border-slate-200 dark:border-slate-700 bg-white bg-no-repeat shadow-sm"
+                    style={{
+                      backgroundImage: `url("${import.meta.env.BASE_URL}lesson-images/${b.image.sprite}")`,
+                      backgroundSize: "300% 200%",
+                      backgroundPosition: `${b.image.column * 50}% ${b.image.row * 100}%`,
+                    }}
+                  />
+                  <figcaption className="text-xs leading-snug text-slate-500 dark:text-slate-400">{b.image.caption}</figcaption>
+                </figure>
+              )}
+            </div>
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
           </section>
         ))}

@@ -1,6 +1,17 @@
 import type { PracticeLink } from '../practiceLinks';
 
+export interface LessonIllustration {
+  /** Image in the site's public/lesson-images directory. */
+  sprite: string;
+  /** 3x2 contact sheet coordinates: 0-based column (0-2), row (0-1). */
+  column: 0 | 1 | 2;
+  row: 0 | 1;
+  alt: string;
+  caption: string;
+}
+
 export interface LessonBlock {
+  image?: LessonIllustration;
   heading: string;
   body: string;
   practiceLink?: PracticeLink;

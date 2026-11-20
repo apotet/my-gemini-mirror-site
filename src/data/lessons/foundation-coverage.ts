@@ -476,7 +476,10 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "l1v2-a-poe-class",
       "l1v2-a-poe-limit",
       "l1v2-a-poe-purpose",
-      "l1v2-c-poe-standard"
+      "l1v2-c-poe-standard",
+      "review-poe-29",
+      "l1v2-a-poe-connection",
+      "l1v2-a-poe-unloaded"
     ],
     "sources": [
       "IEEE 802.3 — Power over Ethernet (Clauses 33 and 145)"
