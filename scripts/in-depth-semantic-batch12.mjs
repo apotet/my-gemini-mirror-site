@@ -34,6 +34,29 @@ for(const id of ids){
  rows.push(row);
  console.log('AUDIT12_JSON '+JSON.stringify(row));
 }
+// Automated invariants support the manual content review; they do not create semantic PASS on their own.
+const reviewedKeys={
+ 'review-syslog-25':[0],'review-slaac-4':[0],'review-qos-22':[0],
+ 'tr-03':[0],'tr-10':[0],'gap-pack2-05':[0],'gap-pack2-10':[1],
+ 'gap-pack2-11':[0],'l4-03':[2],'l4-new-05':[1],'review-poe-30':[0],
+ 'tcp-06':[0,1,2],
+};
+for(const row of rows){
+ assert.deepEqual(row.question.correct,reviewedKeys[row.id],row.id+': original key unchanged');
+ assert.ok(row.question.answers.length>=4,row.id+': distractors must remain present');
+ assert.ok(row.explanation.brief?.trim()&&row.explanation.plain?.trim()&&row.explanation.professional?.trim(),row.id+': both authored explanations');
+ assert.ok(row.lesson.id&&row.lesson.anchor,row.id+': exact lesson and section expected');
+ for(const mode of ['plain','professional']){
+  assert.equal(row.lesson.sections[mode].matchedCount,1,row.id+': exactly one '+mode+' exact anchor');
+  assert.ok(row.lesson.sections[mode].body?.trim(),row.id+': '+mode+' section content required');
+ }
+}
+assert.equal(rows.find(r=>r.id==='tcp-06').question.answers.length,5,'retain historical fifth answer');
+const qos=rows.find(row=>row.id==='review-qos-22');
+assert.match(qos.explanation.tip||'',/DSCP.*egress queue.*drops[/]marks/,'QoS tip must diagnose actual egress queue and drops');
+assert.doesNotMatch(qos.explanation.tip||'',/Сначала линк \(L1[/]L2\), затем маршруты и DNS/,'Do not use generic unrelated network layers/DNS troubleshooting');
+console.log('PASS batch12 structural regression: 12 keys, 12 paired exact lesson anchors, individual modes and fixed QoS practical tip');
+
 const folder='scripts/.cache/in-depth/semantic-batch12';
 mkdirSync(folder,{recursive:true});
 writeFileSync(folder+'/evidence.json',JSON.stringify({totalL2:pool.length,ids,rows},null,2)+'\n');
