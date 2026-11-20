@@ -219,7 +219,7 @@
     "src/data/lessons/cli-show-help-tab.ts": "87d68822e17bf17810671ec3d9dcd413dee612c47141ed4f74f1d306607f4397",
     "src/data/lessons/cli-trunk-vlan-diagnostics.ts": "2b0e4114dda46c90571938d07902bae4367ea54709d3eb16fca998ec9ba6adb0",
     "src/data/lessons/cli-vlan-trunk.ts": "e8f401b9cfdf6ba3ac0ab9fcbb1da13e9c1d00e0ef8da9200e160bb2a590bddf",
-    "src/data/lessons/index.ts": "68ec3596e13259c0dd6baa788c75690316757e335cc38b092938b5b70ef8b21c",
+    "src/data/lessons/index.ts": "268bfd1743ac7a4ffc475833f193ab74fcd75fd071d0f34c0c1b9cce746fcf1d",
     "src/data/lessons/l12-wifi-standards-roaming.ts": "5164ea0f1f79046119fdd8f642ad64220af06c3d3b3927683ca15144cb6d5c2e",
     "src/data/lessons/l2-access-auth.ts": "f3a47a29b2697cf25bb0926a86db1d68b327829ca97e2ee9d6670f5cf3a10eb8",
     "src/data/lessons/l2-access-guard.ts": "44473c35d4f59b94bbb287939aa80831596e622710170c09a0f7565c53ee1163",
@@ -737,7 +737,7 @@
         {
           "path": "src/data/lessons/index.ts",
           "previousSHA256": "d03130e3f8d9025e8c84e0d4b2d53b18e9f4dcda2f6a284f2ac4b08de4a9d8d0",
-          "newSHA256": "68ec3596e13259c0dd6baa788c75690316757e335cc38b092938b5b70ef8b21c"
+          "newSHA256": "268bfd1743ac7a4ffc475833f193ab74fcd75fd071d0f34c0c1b9cce746fcf1d"
         },
         {
           "path": "src/data/lessons/l12-wifi-standards-roaming.ts",
