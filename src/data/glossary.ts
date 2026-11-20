@@ -1581,6 +1581,21 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     relatesTo: "Питание точек доступа Wi-Fi 6 и диагностика show power inline.",
     lessonId: "l12-wifi-standards-roaming",
   },
+  "PoE-тестер": {
+    description: "Измерительный прибор для проверки параметров питания PoE: в зависимости от модели показывает тип или класс питания, напряжение, а под нагрузкой может измерять ток и мощность.",
+    relatesTo: "Диагностика PSE/PD, согласование мощности и проверка питания под реальной нагрузкой.",
+    lessonId: "l1-poe-screen-reading",
+  },
+  "PoE-тестером": {
+    description: "Измерительный прибор для проверки параметров питания PoE: в зависимости от модели показывает тип или класс питания, напряжение, а под нагрузкой может измерять ток и мощность.",
+    relatesTo: "Диагностика PSE/PD, согласование мощности и проверка питания под реальной нагрузкой.",
+    lessonId: "l1-poe-screen-reading",
+  },
+  "порт up": {
+    description: "Состояние порта Ethernet «up» означает, что физическое соединение установлено, но не доказывает достаточность PoE-питания, доступность IP-сети или работу приложения.",
+    relatesTo: "Различай состояние Ethernet Link и выделенную мощность питания PoE.",
+    lessonId: "l1-poe-budget",
+  },
   "PSE": {
     description: "Power Sourcing Equipment — оборудование, подающее питание через Ethernet, например PoE-коммутатор или инжектор.",
     relatesTo: "Роль источника питания в PoE.",
@@ -2270,6 +2285,9 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "MCS": ["Modulation and Coding Scheme", "Индекс модуляции и кодирования в 802.11", true],
   "OKC": ["Opportunistic Key Caching", "Кэширование PMK для быстрого роуминга 802.1X", true],
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
+  "PoE-тестер": ["PoE Tester", "Прибор для проверки PoE-питания", false],
+  "PoE-тестером": ["PoE Tester", "Прибор для проверки PoE-питания", false],
+  "порт up": ["Ethernet Link Up", "Порт Ethernet с установленным соединением", false],
   "PSE": ["Power Sourcing Equipment", "Источник питания PoE", true],
   "PD": ["Powered Device", "Потребитель питания PoE", true],
   "802.3af": ["IEEE 802.3af (PoE, Type 1)", "Базовый PoE: до 15,4 Вт от PSE и до 12,95 Вт у PD", false],
