@@ -58,3 +58,54 @@ jobs:
         run: |
           echo 'Build/lint/history PASS does not imply independent semantic PASS or browser link acceptance.'
           echo 'PR #264, #282 and new staged repair must stay Draft; NEVER merge/deploy automatically.'
+
+  browser-matrix:
+    name: Understanding 164 Chromium / shard ${{ matrix.shard }} of 4
+    needs: batch03-acceptance
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/gemini-batch03-50-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'audit/fix-gemini30-nine-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - name: Check out reviewed PR code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build local test artifact (no deploy)
+        run: npm run build
+      - name: Install isolated Chromium
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Verify 41 question/lesson routes at 375 and 1440 px
+        env:
+          NETOPS_L2_SHARD_INDEX: ${{ matrix.shard }}
+          NETOPS_L2_SHARD_COUNT: '4'
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort > /tmp/netops-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null
+          node scripts/in-depth.browser.mjs
+      - name: Store independent per-shard screenshots and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch03-browser-shard-${{ matrix.shard }}
+          path: scripts/.cache/in-depth/browser/shard-${{ matrix.shard }}-of-4/
+          if-no-files-found: warn
