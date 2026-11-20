@@ -8,8 +8,7 @@ const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])(${terms.map(escape).join('|')})(?![\\p{L}\\p{N}_])`, 'giu');
 // A–A / A–B (T568 wiring) are pair labels, not DNS A records.
 // Also accept ASCII hyphen, em dash and optional spacing; preserve standalone DNS A.
-const wiringPairs = /(?<![\\p{L}\\p{N}_])[AB]\\s*[-–—]\\s*[AB](?![\\p{L}\\p{N}_])/gu;
-
+const wiringPairs = /(?<![\p{L}\p{N}_])[AB]\s*[-–—]\s*[AB](?![\p{L}\p{N}_])/gu;
 
 export function splitGlossaryText(text: string): { text: string; term?: string }[] {
   const parts: { text: string; term?: string }[] = [];
