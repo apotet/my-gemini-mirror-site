@@ -7,6 +7,11 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "T568A": {"description":"Схема оконцевания симметричного кабеля на 8P8C по ANSI/TIA-568.2-E: зелёная пара на контактах 1–2, оранжевая на 3 и 6. Это не отдельный тип Ethernet-порта.","relatesTo":"На обоих концах A–A даёт прямой кабель; распиновку см. в шпаргалке по обжиму.","lessonId":"l1-copper-fault-poe"},
+  "T568B": {"description":"Альтернативная схема оконцевания по ANSI/TIA-568.2-E: оранжевая пара на контактах 1–2, зелёная на 3 и 6. По характеристикам не быстрее T568A.","relatesTo":"B–B — прямой кабель, A–B — перекрёстный для 10/100BASE-T; подробная раскладка цветов — в шпаргалке.","lessonId":"l1-copper-fault-poe"},
+  "Auto MDI-X": {"description":"Automatic Medium Dependent Interface Crossover — автоматическое согласование передающих и принимающих пар интерфейса Ethernet. Современные порты обычно обходятся без отдельного crossover-кабеля.","relatesTo":"Не предполагай поддержку Auto MDI-X у старого оборудования: смотри паспорт порта и настройки автосогласования.","lessonId":"l1-copper-fault-poe"},
+  "10BASE-T": {"description":"Физический стандарт Ethernet IEEE 802.3i: 10 Мбит/с по двум витым парам (контакты 1–2 и 3–6), типичный предел канала — 100 м.","relatesTo":"BASE-T — обозначение варианта Ethernet PHY, а не категории кабеля.","lessonId":"l1-copper-fault-poe"},
+  "1000BASE-T": {"description":"Физический стандарт Gigabit Ethernet IEEE 802.3ab: 1 Гбит/с по четырём витым парам одновременно в обоих направлениях; номинально до 100 м на соответствующей СКС.","relatesTo":"Нужны все четыре исправные пары: 4-жильная линия для 1000BASE-T не подходит.","lessonId":"l1-copper-fault-poe"},
   "baud": { description: "Бод — один переданный сигнальный символ в секунду; символьная скорость не всегда совпадает с числом бит/с.", relatesTo: "Измерения физического уровня, скорость символов и биты на символ.", lessonId: 'l1-phy-symbol-rate' },
   "символ": { description: "Один элемент сигнала физического кодирования. При нескольких различимых состояниях символ может переносить более одного бита.", relatesTo: "Физическое кодирование, PAM4, символьная скорость.", lessonId: 'l1-phy-symbol-rate' },
   "PAM4": { description: "Четырёхуровневая амплитудно-импульсная модуляция: один идеальный символ передаёт два бита до учёта кодовой избыточности.", relatesTo: "Физический уровень Ethernet, четыре амплитудных уровня, FEC.", lessonId: 'l1-phy-symbol-rate' },
@@ -39,7 +44,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "dB": {"description":"Децибел — логарифмическая единица отношения мощностей, применяемая для затухания и относительных уровней; в отличие от dBm не задаёт абсолютную мощность.","relatesTo":"Оптические потери, OTDR, усиление и reference.","lessonId":"l1-optical-testing-equipment"},
   "оптический измеритель мощности": {"description":"Optical Power Meter: прибор для измерения уровня оптического излучения, обычно в dBm; для измерения потерь требуется правильно установленный опорный уровень.","relatesTo":"Приёмка оптики и измерение dBm.","lessonId":"l1-optical-testing-equipment"},
   "инспекция торца": {"description":"Осмотр поверхности феррулы коннектора микроскопом на загрязнения и повреждения перед оптическим соединением с соблюдением лазерной безопасности.","relatesTo":"Чистка соединителей и оптические потери.","lessonId":"l1-optical-testing-equipment"},
-  "100BASE-TX": {"description":"Вариант Fast Ethernet для передачи 100 Мбит/с по медным витым парам с соответствующим PHY.","relatesTo":"Медный интерфейс медиаконвертера 100BASE-TX/FX.","lessonId":"l1-optical-testing-equipment"},
+  "100BASE-TX": {"description":"Физический стандарт Fast Ethernet IEEE 802.3u: 100 Мбит/с по двум витым парам (контакты 1–2 и 3–6); типичная длина канала до 100 м.","relatesTo":"4 жилы при правильном сохранении пар могут обеспечить 100BASE-TX, но не 1000BASE-T; тип PHY не равен категории кабеля.","lessonId":"l1-copper-fault-poe"},
   "100BASE-FX": {"description":"Оптический вариант Fast Ethernet 100 Мбит/с, применяемый для соединения оптических интерфейсов соответствующего стандарта.","relatesTo":"Оптический интерфейс медиаконвертера 100BASE-TX/FX.","lessonId":"l1-optical-testing-equipment"},
   "медиаконвертер": {"description":"Активное устройство преобразования физической среды передачи, например Fast Ethernet 100BASE-TX на медных парах в 100BASE-FX по волокну.","relatesTo":"Преобразование электрического и оптического сигналов.","lessonId":"l1-optical-testing-equipment"},
   "оптическая муфта": {"description":"Защитный корпус с вводами и кассетами для сварных соединений и запаса волокон; не является коммутатором или оптическим усилителем.","relatesTo":"Герметизация, укладка волокон и защита сварок.","lessonId":"l1-fiber-splicing"},
@@ -1666,6 +1671,12 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "T568A": ["ANSI/TIA-568 T568A wiring scheme", "Схема оконцевания T568A", true],
+  "T568B": ["ANSI/TIA-568 T568B wiring scheme", "Схема оконцевания T568B", true],
+  "Auto MDI-X": ["Automatic Medium Dependent Interface Crossover", "Автоматическое согласование пар Ethernet", true],
+  "10BASE-T": ["10 Mbit/s Baseband Ethernet over Twisted Pair", "Ethernet 10 Мбит/с по двум витым парам", true],
+  "100BASE-TX": ["100 Mbit/s Baseband Ethernet over Two Pairs", "Fast Ethernet 100 Мбит/с по двум витым парам", true],
+  "1000BASE-T": ["1000 Mbit/s Baseband Ethernet over Twisted Pair", "Gigabit Ethernet 1 Гбит/с по четырём витым парам", true],
   "PRP": ["Parallel Redundancy Protocol", "Протокол параллельного резервирования", true, "Резервирование по IEC 62439-3 через две независимые сети LAN A и LAN B, в отличие от двух направлений HSR-кольца."],
   "baud": ["Baud (symbols per second)", "Бод (символов в секунду)", false, "Единица символьной скорости: один переданный символ в секунду."],
   "символ": ["Physical-layer symbol", "Символ физического сигнала", false, "Сигнальное состояние или элемент кодирования, способный представлять один или несколько бит."],
