@@ -190,7 +190,6 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                     <img src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} alt={b.cheatsheet.alt} loading="lazy" decoding="async" className="h-auto w-full rounded-xl border border-slate-200 bg-white dark:border-slate-700" />
                   </a>
                   <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>
-                  <a href={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`} target="_blank" rel="noopener noreferrer" className="inline-flex text-xs font-semibold text-cyan-700 underline underline-offset-2 dark:text-cyan-300">Открыть изображение целиком</a>
                 </div>
               </details>
             )}
