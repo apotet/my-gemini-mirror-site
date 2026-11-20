@@ -1,3 +1,17 @@
+## Что выяснили о 503 Hydrogen: исключены ключ, неправильный ID и общий сбой генерации (20.11.2026)
+
+**Непосредственно проверено в GitHub Actions с настоящим неизменным `GEMINI_API_KEY`:**
+- [GET-only run #44650282029](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44650282029): `GET /v1beta/models/gemini-4-hydrogen` **200**, есть `generateContent`, входной лимит 1048576, выходной 65536; `GET /v1beta/models?pageSize=1000` **200**, 66 моделей, Hydrogen присутствует; `GET /v1beta/models/gemini-3.8-flash` **200**. Без генерации.
+- [Flash Lite generation control run #44650479901](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44650479901): *ровно один* `gemini-3.5-flash-lite:generateContent` с `PONG`, **HTTP 200**, за 3508 мс, ответ `PONG`, финиш `STOP`, ровно 8 API-reported токенов (prompt 6, candidates 2). Это контроль **API-ключа, инфраструктуры и endpoint**, **НЕ замена модели технического аудита**.
+- [Hydrogen PONG run #44649909454](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44649909454) на том же ключе, домене и endpoint: **HTTP 503 `UNAVAILABLE`, `high demand`, 1821 мс**; также настоящий 10-ID пакет [#44649063943](https://github.com/apotet/my-gemini-mirror-site/actions/runs/44649063943) **503**. Малый размер запроса проблему не решает.
+- Временные [Draft PR #277](https://github.com/apotet/my-gemini-mirror-site/pull/277) и [#278](https://github.com/apotet/my-gemini-mirror-site/pull/278) **CLOSED unmerged**. [Полный протокол](https://github.com/apotet/my-gemini-mirror-site/pull/264#issuecomment-7027085141).
+
+**Точное заключение:** Hydrogen корректно зарегистрирован и разрешён для `generateContent`, но его inference backend отказал 503 в момент вызовов; остальные модели могут отвечать. По [официальному Google AI Developer Forum](https://discuss.ai.google.dev/t/handling-429-503-errors-from-the-gemini-api/124640), 503 означает перегрузку backend, не quota 429. Сообщения 19 ноября также подтверждают чужие сбои Hydrogen. Это не означает подтверждённый глобальный отказ Google и не гарантирует время восстановления. **Нельзя «починить серверы Google» настройкой GitHub или сменой API-ключа.**
+
+**Операционный режим:** не перезапускать по cron, без спама ретраями; не переписывать source SHA и не объявлять Gemini PASS без модели. Рабочий запасной `gemini-3.5-flash-lite` доказал только PONG, а не качество экспертного аудита; `gemini-3.8-flash` существует, но платная/квотная модель аудитора не меняется без разрешения. Если будет принято решение протестировать иной reviewer — отдельно фиксировать модель, исходный SHA, ID и результат. PR #264 остаётся Draft/BLOCK, production неприкосновенен.
+
+---
+
 ## Регламент лимитов и неудачной четвёртой десятки (20.11.2026) — читать ПЕРЕД каждым запуском
 
 **Подтверждено скриншотами авторизованного Google AI Studio → Rate limits by model:** `gemini-4-hydrogen`: лимиты 5 RPM, 250000 **входных** TPM, 20 RPD; отображённые значения пиков за последние **28 дней**: RPM 1/5, TPM 17.99K/250K, RPD 6/20, зелёный статус. Другие модели: `Gemini 3.8 Flash` 5/5 RPM, 144.21K/250K TPM, 19/20 RPD, красный статус; `Gemini 3.5 Flash Lite` 1/15 RPM, 3.57K/250K TPM, 2/500 RPD, зелёный. **НЕ интерпретировать 28-дневные пики как текущий остаток.** Общий `You have reached a rate limit` не означает блокировку Hydrogen.
