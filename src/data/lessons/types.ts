@@ -22,6 +22,11 @@ export interface LessonCheatsheet {
 
 export interface LessonBlock {
   cheatsheet?: LessonCheatsheet;
+  /** A link-like action that expands a cheatsheet in this same lesson. */
+  cheatsheetJump?: { file: string; label: string };
+  /** Optional photos can be collapsed when they illustrate a secondary method. */
+  imageCollapsible?: boolean;
+  imageDisclosureLabel?: string;
   pinout?: 't568';
   image?: LessonIllustration;
   heading: string;
