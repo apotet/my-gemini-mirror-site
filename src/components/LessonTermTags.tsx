@@ -6,10 +6,11 @@ import { getLesson } from '../data/lessons';
 interface Props {
   terms: string[];
   onOpenLesson?: (lessonId: string) => void;
+  showLessonLink?: boolean;
 }
 
 /** Inline card: opening a definition keeps the reader in the current lesson. */
-export function LessonTermTags({ terms, onOpenLesson }: Props) {
+export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const entry = selected ? GLOSSARY[selected] : undefined;
@@ -55,7 +56,7 @@ export function LessonTermTags({ terms, onOpenLesson }: Props) {
           </div>
           <p className="text-slate-700 dark:text-slate-300">{entry.description}</p>
           <p className="text-slate-600 dark:text-slate-400"><span className="font-semibold">К чему относится: </span>{entry.relatesTo}</p>
-          {related && onOpenLesson && (
+          {showLessonLink && related && onOpenLesson && (
             <a href={`#lesson-${related.id}`} onClick={event => {
               event.preventDefault();
               setSelected(null);
