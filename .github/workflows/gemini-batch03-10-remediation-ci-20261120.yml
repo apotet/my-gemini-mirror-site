@@ -1,0 +1,60 @@
+name: NetOps Gemini batch03 10 FIX gates (read-only CI, no deploy)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - audit/fix-gemini30-nine-20261120
+    paths:
+      - 'src/data/inDepth/**'
+      - 'scripts/in-depth-content.test.mjs'
+      - '.github/workflows/gemini-batch03-10-remediation-ci-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  batch03-acceptance:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/gemini-batch03-50-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'audit/fix-gemini30-nine-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - name: Pin original source review SHA and parent remediation SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb' || { echo 'Source PR264 drift'; exit 1; }
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/282" --jq '.head.sha')" = '4798a61fd6d0dbfa6b15fe0f4ffbe61637a72cad' || { echo 'Parent PR282 drift'; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Original 164-ID source and topic-specific 10 defects
+        run: npm run test:in-depth
+      - name: Historical-session regression
+        run: npm run test:in-depth-history
+      - name: Static TypeScript lint
+        run: npm run lint
+      - name: Bundle compilation without publishing
+        run: npm run build
+      - name: Verify parent source did not drift during CI
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/282" --jq '.head.sha')" = '4798a61fd6d0dbfa6b15fe0f4ffbe61637a72cad'
+      - name: Deliberate independent-review blocker
+        if: always()
+        run: |
+          echo 'Build/lint/history PASS does not imply independent semantic PASS or browser link acceptance.'
+          echo 'PR #264, #282 and new staged repair must stay Draft; NEVER merge/deploy automatically.'
