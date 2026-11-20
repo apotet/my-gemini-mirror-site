@@ -2,7 +2,7 @@ name: Gemini Work batch03 50-question no-photo review archive (NO MODEL API)
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
     paths:
       - '.github/workflows/gemini-work-batch03-text-50-20261120.yml'
 
@@ -44,7 +44,7 @@ jobs:
       - name: Checkout approved archive assembler and task text
         uses: actions/checkout@v4
         with:
-          ref: e0c021a13d457943c0b541f4d4c1b614a9d00a4f
+          ref: d9c5c5395e98770662e9524bd03a31d05a0d1e49
           path: handoff-tools
           persist-credentials: false
 
