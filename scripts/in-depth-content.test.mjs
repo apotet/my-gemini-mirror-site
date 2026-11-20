@@ -395,7 +395,7 @@ for(const [id,tipMustMatch] of [
  assert.doesNotMatch(tip,/^\x60ss -tulpn\x60|^Сначала линк|быстрый взгляд на шлюзы/,id+': no inherited generic filler');
 }
 for(const [id,trapMustMatch] of [
- ['l3-d08',/ECMP.*per-flow/],
+ ['l3-d08',/per-flow.*ECMP/],
  ['l4-x03',/UDP/],
  ['l7-new-02',/EDNS.*PMTU/],
  ['l7-new-03',/bogus.*insecure/],
