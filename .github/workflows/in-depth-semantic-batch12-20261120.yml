@@ -1,0 +1,37 @@
+name: NetOps Understanding high-risk 12 exact source inspection (read only)
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [audit/gemini-batch03-50-fixes-20261120]
+    paths:
+      - 'scripts/in-depth-semantic-batch12.mjs'
+      - '.github/workflows/in-depth-semantic-batch12-20261120.yml'
+permissions:
+  contents: read
+jobs:
+  twelve-source-packs:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/understanding-new4-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'audit/gemini-batch03-50-fixes-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Collect exact current source packs and route validation
+        run: node scripts/in-depth-semantic-batch12.mjs
+      - name: Archive exact inputs for manual semantic review
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-batch12-frozen-source
+          path: scripts/.cache/in-depth/semantic-batch12/
+          if-no-files-found: error
