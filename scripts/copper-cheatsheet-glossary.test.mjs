@@ -58,7 +58,19 @@ assert.equal(lesson.blocks.at(-1), testBlock, 'wiremap and link testing conclude
 assert.equal(lesson.blocks.indexOf(practiceBlock), lesson.blocks.indexOf(crimpBlock) + 1,
   'practical bad-crimp case immediately follows the correct crimp walkthrough');
 const optionalPhotos = lesson.blocks.filter(block => block.imageCollapsible);
-assert.equal(optionalPhotos.length, 3, 'three pass-through photos remain available but collapsed by default');
+assert.equal(optionalPhotos.length, 2, 'two secondary pass-through photos stay collapsed');
+const comparison = lesson.blocks.find(block => block.heading.startsWith('Обычный 8P8C и pass-through'));
+assert.ok(comparison?.image && !comparison.imageCollapsible,
+  'connector comparison image is visible immediately without extra clicks');
+assert.ok(comparison.image.caption.includes('Для сравнения:'), 'pass-through comparison is clearly labelled as alternative');
+assert.equal(schemeBlock.cheatsheetInitiallyOpen, true, 'T568A/B wiring chart shown on first visit');
+assert.equal(crimpBlock.cheatsheetInitiallyOpen, true, 'ordinary closed 8P8C walkthrough shown on first visit');
+const categoriesBlock = lesson.blocks.find(block => block.cheatsheet?.file === 'copper-categories.webp');
+assert.ok(categoriesBlock && !categoriesBlock.cheatsheetInitiallyOpen, 'secondary categories reference stays collapsed');
+for (const key of ['Практический случай', 'Надрезанная', 'Потемнение контактов']) {
+  const photoBlock = lesson.blocks.find(block => block.heading.startsWith(key));
+  assert.ok(photoBlock?.image && !photoBlock.imageCollapsible, key + ' defect photo visible immediately');
+}
 assert.ok(optionalPhotos.every(block => block.image?.sprite === 'copper-ethernet-lesson.webp'
   && block.imageDisclosureLabel?.includes('Показать')), 'all optional photos retain real source images and labelled disclosures');
 assert.equal(lesson.blocks.some(block => block.pinout === 't568'), false,
@@ -67,6 +79,8 @@ assert.equal(lesson.blocks.filter(block => block.cheatsheet?.file === 'copper-pi
   'no duplicated pinout cheat sheets');
 const viewSource = readFileSync(resolve('src/components/LessonView.tsx'), 'utf8');
 assert.match(viewSource, /details\.open = true/, 'reveal handler opens the in-page details element');
+assert.match(viewSource, /open=\{b\.cheatsheetInitiallyOpen\}/,
+  'details uses author-selected initial visibility for essential diagrams');
 assert.match(viewSource, /data-cheatsheet-reveal=\{b\.cheatsheetJump\.file\}/, 'a real button is rendered for cheatsheet jump');
 assert.match(viewSource, /data-lesson-secondary-photo/, 'secondary pass-through photos are shown by user disclosure');
 assert.match(viewSource, /aria-controls=\{cheatsheetId\(b\.cheatsheetJump\.file\)\}/,
@@ -93,4 +107,4 @@ for (const term of expected) {
   assert.ok(html.includes('data-glossary-term="' + term + '"'), term + ' has real rendered tooltip trigger');
 }
 assert.ok(!html.includes('data-glossary-term="A"'), 'do not show irrelevant DNS A-record tooltip for wiring A');
-console.log('PASS: in-page pinout/closed crimp reveals, secondary photos, practical case before final test, 16 questions and six glossary tooltips');
+console.log('PASS: essential diagrams visible, secondary visuals collapsible, 16 question links, glossary and lesson order preserved');

@@ -177,6 +177,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
             )}
             {b.cheatsheet && (
               <details id={cheatsheetId(b.cheatsheet.file)} data-lesson-cheatsheet={b.cheatsheet.file}
+                open={b.cheatsheetInitiallyOpen}
                 ref={element => { cheatsheetElements.current[b.cheatsheet!.file] = element; }}
                 className="group mt-3 overflow-hidden rounded-xl border border-cyan-300/50 bg-cyan-50/50 dark:border-cyan-500/30 dark:bg-cyan-950/20">
                 <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-cyan-900 dark:text-cyan-100">
