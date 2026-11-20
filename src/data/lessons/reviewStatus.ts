@@ -3,7 +3,7 @@
  * to be listed here. Publishing, CI checks and moving between levels do not.
  * No lesson is approved initially.
  */
-const USER_APPROVED_LESSON_IDS: ReadonlySet<string> = new Set<string>([]);
+const USER_APPROVED_LESSON_IDS: ReadonlySet<string> = new Set<string>(['l1-copper-fault-poe']);
 
 export type LessonReviewStatus = 'needs-review' | 'approved';
 
