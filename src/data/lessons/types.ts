@@ -8,9 +8,13 @@ export interface LessonIllustration {
   row: 0 | 1;
   alt: string;
   caption: string;
+  /** Optional dimensions for non-3×2 picture sheets. */
+  spriteColumns?: 2 | 3;
+  spriteRows?: 1 | 2;
 }
 
 export interface LessonBlock {
+  pinout?: 't568';
   image?: LessonIllustration;
   heading: string;
   body: string;

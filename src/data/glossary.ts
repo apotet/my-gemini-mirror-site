@@ -666,6 +666,11 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     "relatesTo": "Сетевой уровень, приблизительно OSI L3.",
     "lessonId": "tcpip-model"
   },
+  "Link Up": {
+    "description": "Состояние Ethernet-порта: два устройства установили физическое соединение и согласовали рабочий режим. Link Up не подтверждает отсутствие ошибок в кабеле, доступность IP-сети или исправность приложения.",
+    "relatesTo": "Индикация физического соединения и диагностика медных кабельных линий.",
+    "lessonId": "l1-copper-fault-poe"
+  },
   "Link": {
     "description": "В модели TCP/IP это обмен по локальному каналу, например Ethernet или Wi-Fi. В диагностике слово также обозначает состояние физического соединения; поднятый Link не доказывает доступность приложения.",
     "relatesTo": "Канальная доставка и состояние соединения.",
@@ -2010,6 +2015,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "Application": ["Application Layer", "Прикладной уровень", false],
   "Transport": ["Transport Layer", "Транспортный уровень", false],
   "Internet": ["Internet Layer", "Межсетевой уровень", false],
+  "Link Up": ["Link Up", "Физическое соединение установлено", false],
   "Link": ["Link Layer", "Уровень локального канала", false],
   "инкапсуляция": ["Encapsulation", "Вложение данных в оболочку протокола", false],
   "декапсуляция": ["Decapsulation", "Разбор оболочек протоколов", false],

@@ -9,6 +9,7 @@ import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { LessonTermTags } from './LessonTermTags';
 import { LessonReviewBadge } from './LessonReviewBadge';
+import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
@@ -128,7 +129,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <span className="min-w-0"><GlossaryText key={textMode}>{b.heading}</GlossaryText></span>
             </h3>
             <div className={b.image ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
-              <div className="min-w-0 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} /></div>
+              <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} />{b.pinout === 't568' && <EthernetPinout />}</div>
               {b.image && (
                 <figure className="w-full max-w-xs space-y-2 justify-self-start md:justify-self-end">
                   <div
@@ -138,8 +139,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                     className="w-full aspect-square rounded-xl border border-slate-200 dark:border-slate-700 bg-white bg-no-repeat shadow-sm"
                     style={{
                       backgroundImage: `url("${import.meta.env.BASE_URL}lesson-images/${b.image.sprite}")`,
-                      backgroundSize: "300% 200%",
-                      backgroundPosition: `${b.image.column * 50}% ${b.image.row * 100}%`,
+                      backgroundSize: `${(b.image.spriteColumns ?? 3) * 100}% ${(b.image.spriteRows ?? 2) * 100}%`,
+                      backgroundPosition: `${b.image.column * 100 / Math.max(1, (b.image.spriteColumns ?? 3) - 1)}% ${b.image.row * 100 / Math.max(1, (b.image.spriteRows ?? 2) - 1)}%`,
                     }}
                   />
                   <figcaption className="text-xs leading-snug text-slate-500 dark:text-slate-400">{b.image.caption}</figcaption>
