@@ -1,0 +1,57 @@
+name: One-shot Gemini Hydrogen metadata diagnostics (no inference)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-hydrogen-metadata-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  metadata-only:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'audit/gemini-hydrogen-metadata-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Inspect Hydrogen model metadata without content generation
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          test -n "$GEMINI_API_KEY" || { echo 'No API key; stop'; exit 1; }
+          node --input-type=module <<'NODE'
+          // GET-only: no generateContent, no secrets or model prompts are logged.
+          const endpoint='https://generativelanguage.googleapis.com/v1beta/';
+          const urls=[
+            ['hydrogen',endpoint+'models/gemini-4-hydrogen'],
+            ['flash38',endpoint+'models/gemini-3.8-flash'],
+            ['models',endpoint+'models?pageSize=1000'],
+          ];
+          for(const [name,url] of urls){
+            const started=Date.now();
+            try{
+              const r=await fetch(url,{method:'GET',headers:{'x-goog-api-key':process.env.GEMINI_API_KEY},signal:AbortSignal.timeout(12000)});
+              const json=await r.json().catch(()=>({}));
+              console.log('GET',name,'HTTP',r.status,'elapsed_ms',Date.now()-started,'retry_after',r.headers.get('retry-after')||'none','request_id_present',Boolean(r.headers.get('x-request-id')));
+              if(r.ok){
+                if(name==='models'){
+                  const ms=Array.isArray(json.models)?json.models:[];
+                  const selected=ms.filter(m=>/gemini-4-hydrogen|gemini-3.8-flash|gemini-3.5-flash-lite/.test(m.name||''));
+                  console.log('MODEL_LIST total',ms.length,'next_page',Boolean(json.nextPageToken));
+                  for(const m of selected)console.log('LISTED_MODEL',m.name,'generateContent',Boolean((m.supportedGenerationMethods||m.supportedActions||[]).includes('generateContent')),'input_limit',m.inputTokenLimit||null,'output_limit',m.outputTokenLimit||null);
+                }else{
+                  console.log('MODEL_METADATA',name,'name',json.name||null,'display',json.displayName||null,'generateContent',Boolean((json.supportedGenerationMethods||json.supportedActions||[]).includes('generateContent')),'input_limit',json.inputTokenLimit||null,'output_limit',json.outputTokenLimit||null);
+                }
+              }else{
+                const err=json.error||{};
+                console.log('MODEL_ERROR',name,'status',err.status||null,'message',String(err.message||'').replace(/AIza[A-Za-z0-9_-]{15,}/g,'[REDACTED]').slice(0,200));
+              }
+            }catch(e){console.log('MODEL_GET_NETWORK_ERROR',name,String(e.name||'Error'),String(e.cause?.code||''));}
+          }
+          NODE
