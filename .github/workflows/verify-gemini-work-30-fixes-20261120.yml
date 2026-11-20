@@ -1,0 +1,52 @@
+name: One-shot QA for Gemini Work 30-ID fixes
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/verify-gemini-work-30-fixes-20261120.yml'
+permissions:
+  contents: read
+jobs:
+  qa:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'ci/verify-gemini-work-30-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - name: Confirm PR283 HEAD unchanged before QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/$GITHUB_REPOSITORY/pulls/283 --jq '.head.sha')" = 'fa3c20cfe4918e40086a24cc0be3b97b57852618'
+      - uses: actions/checkout@v4
+        with:
+          ref: fa3c20cfe4918e40086a24cc0be3b97b57852618
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: 164 in-depth contracts and 11 new regression checks
+        run: npm run test:in-depth
+      - name: Historic attempt compatibility
+        run: npm run test:in-depth-history
+      - name: Question bank validity
+        run: npm run validate:questions
+      - name: Lesson section anchors
+        run: node scripts/lesson-section-links.test.mjs
+      - name: TypeScript typecheck
+        run: npm run lint
+      - name: Full explanation quality
+        run: npm run test:explanations
+      - name: Build without deploy
+        run: npm run build
+      - name: Confirm PR283 HEAD unchanged after QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/$GITHUB_REPOSITORY/pulls/283 --jq '.head.sha')" = 'fa3c20cfe4918e40086a24cc0be3b97b57852618'
