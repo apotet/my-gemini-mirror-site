@@ -25,4 +25,31 @@ const results=ids.map(id=>{
 });
 mkdirSync('scripts/.cache/in-depth',{recursive:true});
 writeFileSync('scripts/.cache/in-depth/six-generic-source.json',JSON.stringify({source:'current runtime resolver, unreviewed semantics',results},null,2)+'\n');
+// Repeatable source assertions; manual engineering semantics reviewed separately.
+const expected={
+ 'l3-16':{correct:[0],lesson:'l3-route-selection',anchor:'in-depth-connected-vs-default-only',tip:/ip route get.*default gateway.*ARP/i},
+ 'new-ts-photo-panel':{correct:[0],lesson:'l1-fiber-hardware',anchor:'optical-path-and-polarity',tip:/TX→RX.*DOM[/]DDM/i},
+ 'review-dot1x-20':{correct:[0],lesson:'l2-access-auth',anchor:'in-depth-existing-review-dot1x-20',tip:/EAPOL.*RADIUS.*Access-Accept/i},
+ 'review-ospf-27':{correct:[0],lesson:'l3-ospf',anchor:'in-depth-existing-review-ospf-27',tip:/OSPF cost.*show ip ospf interface/i},
+ 'l7-new-04':{correct:[3],lesson:'l7-http-status-basics',anchor:'http11-persistent-reuse',tip:/Content-Length: 1200.*Connection: close/i,trap:/Connection: keep-alive.*pipelining.*keepalive-probe/i},
+ 'l3-d07':{correct:[0],lesson:'l3-arp',anchor:'proxy-arp-masks-network-error',tip:/ip route get.*ARP.*proxy ARP/i},
+};
+for(const row of results){
+ const exp=expected[row.id];assert.ok(exp,'Unexpected six-ID audit item: '+row.id);
+ assert.deepEqual(row.question.correct,exp.correct,row.id+': stable correct answer');
+ assert.equal(row.question.answers.length,4,row.id+': all four original alternatives');
+ assert.equal(row.lesson.id,exp.lesson,row.id+': original target lesson');
+ assert.equal(row.lesson.anchor,exp.anchor,row.id+': correct question-specific lesson anchor');
+ for(const mode of ['plain','professional']){
+  assert.equal(row.lesson.sections[mode].length,1,row.id+': one exact '+mode+' anchor');
+  assert.ok(row.lesson.sections[mode][0].body?.trim(),row.id+': nonempty '+mode+' lesson section');
+ }
+ assert.ok(row.deep.brief?.trim()&&row.deep.plain?.trim()&&row.deep.pro?.trim(),row.id+': all explanation layers');
+ assert.match(row.deep.tip||'',exp.tip,row.id+': contextual diagnostic advice');
+ assert.doesNotMatch(row.deep.tip||'',/Сначала линк \(L1[/]L2\)|затем маршруты и DNS|быстрый взгляд на шлюзы/,row.id+': no generic hint');
+ assert.doesNotMatch(row.deep.trap||'',/Смотрите точные формулировки стандартов и исключения/,row.id+': no generic trap');
+ if(exp.trap)assert.match(row.deep.trap||'',exp.trap,row.id+': contextual persistent-connection misconception');
+ if(row.id==='l3-16')assert.match(row.lesson.sections.plain[0].body,/только маршрут подключённой локальной подсети и default route/,row.id+': exact two-route premise in linked lesson');
+}
+console.log('GENERIC6_REGRESSION_PASS 6 source keys, answer alternatives, live hints/trap, question-specific two-mode sections');
 console.log('GENERIC6_SUMMARY '+JSON.stringify({count:results.length,ids,missingLesson:results.filter(x=>!x.lesson.id).map(x=>x.id),missingSection:results.filter(x=>!x.lesson.sections.plain.length||!x.lesson.sections.professional.length).map(x=>x.id)}));
