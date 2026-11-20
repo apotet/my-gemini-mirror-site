@@ -356,4 +356,84 @@ assert.doesNotMatch(dnsPro,/в данном билете исходный сим
 // Real attempt selection must retain only assigned L2 IDs for all seeds.
 for(let seed=1;seed<=100;seed++){let state=seed;const selected=m.getTestingQuestions('mixed',30,()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/2**32;},'in-depth');assert.equal(selected.length,30);assert.ok(selected.every(q=>assignedIds.includes(q.id)));}
 mkdirSync('scripts/.cache/in-depth',{recursive:true});writeFileSync('scripts/.cache/in-depth/structural-verification.json',JSON.stringify({count:rows.length,rows,semanticPASS:false},null,2)+'\n');
+// User-supplied Gemini Work 30-ID report + ChatGPT independent recheck (2026-11-20):
+// Preserve source keys, replace generic filler, assert exact TWO-MODE lesson sections.
+// These checks do NOT assert live browser navigation or approve semantic DONE.
+for(const [id,expectedKey,lessonId,sectionId] of [
+ ['l3-d08',0,'l3-route-selection','ecmp-flow-hash-order'],
+ ['l4-03',2,'l4-tcp','in-depth-tcp-stream-record-framing'],
+ ['l4-04',0,'l4-tcp','real-time-udp-delay-budget'],
+ ['l4-d04',0,'l7-dns','in-depth-dns-tc-tcp-axfr-transport'],
+ ['l4-lb-01',2,'l4-lb','in-depth-existing-l4-lb-01'],
+ ['l4-x03',0,'l4-tcp','udp-latency-and-delivery'],
+ ['l7-05',2,'l7-http-status-basics','in-depth-existing-l7-05'],
+ ['l7-new-02',2,'l7-dns','edns-size-is-not-pmtu'],
+ ['l7-new-03',0,'l7-dns','dnssec-signed-rrset'],
+]) {
+ const question=pool.find(q=>q.id===id);
+ assert.ok(question,id+': Understanding membership retained');
+ assert.deepEqual(question.correct,[expectedKey],id+': original correct key preserved');
+ const lesson=m.getLessonForQuestion(id);
+ assert.equal(lesson.id,lessonId,id+': lesson ID preserved');
+ assert.equal(m.getLessonSectionForQuestion(lesson.id,id),sectionId,id+': exact section anchor preserved');
+ for(const mode of ['plain','professional']){
+   const section=m.getLessonBlocksWithSections(lesson,mode).find(x=>x.anchorId===sectionId);
+   assert.ok(section?.body?.trim(),id+': exact '+mode+' section exists');
+ }
+}
+for(const [id,tipMustMatch] of [
+ ['l3-d08',/next hops.*счётчики/],
+ ['l4-03',/TCP-трассу.*Seq[/]ACK/],
+ ['l4-04',/RTP.*loss.*jitter/],
+ ['l4-d04',/TC=1.*TCP[/]53/],
+ ['l4-lb-01',/health-check.*503.*A[/]C/],
+ ['l4-x03',/UDP.*RTP sequence/],
+]) {
+ const question=pool.find(q=>q.id===id);
+ const tip=m.getQuestionDeepDive(question)?.practicalTip??'';
+ assert.match(tip,tipMustMatch,id+': actionable topic-specific packet or configuration check');
+ assert.doesNotMatch(tip,/^\x60ss -tulpn\x60|^Сначала линк|быстрый взгляд на шлюзы/,id+': no inherited generic filler');
+}
+for(const [id,trapMustMatch] of [
+ ['l3-d08',/per-flow.*ECMP/],
+ ['l4-x03',/UDP/],
+ ['l7-new-02',/EDNS.*PMTU/],
+ ['l7-new-03',/bogus.*insecure/],
+]) {
+ const q=pool.find(x=>x.id===id);
+ const trap=m.getQuestionDeepDive(q)?.commonTrap??'';
+ assert.match(trap,trapMustMatch,id+': question-specific misconception, not placeholder');
+ assert.doesNotMatch(trap,/Смотрите точные формулировки стандартов и исключения/,id+': no generic template');
+}
+const httpLesson=m.getLesson('l7-http-status-basics');
+const httpPro=m.getLessonBlocksWithSections(httpLesson,'professional').find(b=>b.anchorId==='in-depth-existing-l7-05')?.body??'';
+assert.match(httpPro,/Статус HTTP 404 Not Found означает/,'HTTP 404 pro is Russian-language instruction');
+assert.match(httpPro,/410 Gone/,'404 vs 410 meaning retained');
+assert.doesNotMatch(httpPro,/404 Not Found conveys|Do not infer a server-wide failure/,'No untranslated original pro section');
+const ednsPlain=m.getLessonBlocksWithSections(m.getLesson('l7-dns'),'plain').find(b=>b.anchorId==='edns-size-is-not-pmtu')?.body??'';
+assert.match(ednsPlain,/UDP payload size=1232/,'EDNS buffer figure remains readable');
+assert.doesNotMatch(ednsPlain,/size1232/,'No fused EDNS size');
+
+// Six non-blocking typos from Gemini's other 25 PASS rows are also corrected.
+for(const [id,mode,prohibited] of [
+ ['l3-d04','professional',/входное TTL1/],
+ ['l3-ospf-03','plain',/Type1|Type2/],
+ ['l3-ospf-03','professional',/Type1|Type2/],
+ ['l3-vrrp02','professional',/использует255/],
+ ['l6-01','professional',/какD0 AF/],
+ ['l7-01','professional',/RFC9110[/]9111/],
+]) {
+ const lesson=m.getLessonForQuestion(id);
+ const anchor=m.getLessonSectionForQuestion(lesson.id,id);
+ const section=m.getLessonBlocksWithSections(lesson,mode).find(b=>b.anchorId===anchor);
+ assert.ok(section?.body,id+': exact lesson mode exists for typo test');
+ assert.doesNotMatch(section.body,prohibited,id+': fixed Gemini-noted spacing');
+}
+assert.doesNotMatch(m.getQuestionDeepDive(pool.find(q=>q.id==='l4-lb-01'))?.briefAnswer??'',/HTTP503/,'HTTP 503 formatted properly');
+const rtpTip=m.getQuestionDeepDive(pool.find(q=>q.id==='l4-04'))?.practicalTip??'';
+assert.match(rtpTip,/межпакетные интервалы прихода \(Delta\)/,'Wireshark RTP Analysis measures interarrival delta');
+assert.match(rtpTip,/воспроизведения.*отдельно на приёмнике/,'receiver playout not measurable in RTP pcap');
+assert.doesNotMatch(rtpTip,/измерь.*интервалы воспроизведения/,'do not conflate Wireshark Delta with audio playout');
+
+
 console.log('PASS: actual164-ID Understanding pool; structural two-style lessons, links, active glossary, and 698 other-level deep dives unchanged; independent semantic PASS still pending');

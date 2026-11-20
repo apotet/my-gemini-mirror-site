@@ -1,0 +1,70 @@
+name: NetOps Gemini Work 30-ID fixes — isolated regression (NO MERGE)
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - integrate/in-depth-164-codex-gemini-20261119
+    paths:
+      - 'src/data/inDepth/**'
+      - 'src/data/lessons/l7-http-status-basics.ts'
+      - 'scripts/in-depth-content.test.mjs'
+      - '.github/workflows/gemini30-remediation-checks-20261120.yml'
+permissions:
+  contents: read
+jobs:
+  validate-9-content-fixes:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'integrate/in-depth-164-codex-gemini-20261119' &&
+      github.event.pull_request.head.ref == 'audit/fix-gemini30-nine-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - name: Verify source PR264 HEAD was frozen during remediation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXPECTED=1f273787370a64cf39732974b60c1706e538f5bb
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = "$EXPECTED" || { echo 'PR 264 drift; do not accept remediation'; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Independent 164 questions source checks and nine Gemini findings
+        run: npm run test:in-depth
+
+      - name: Original session and legacy key compatibility
+        run: npm run test:in-depth-history
+
+      - name: Type checking
+        run: npm run lint
+
+      - name: Production-mode build check (does not deploy)
+        run: npm run build
+
+      - name: Report fingerprint delta WITHOUT baseline reset
+        if: always()
+        run: |
+          echo 'Remediation intentionally changes authored plain/pro and deep-dive material.'
+          echo 'Do not mark stale semantic PASS on an updated source SHA.'
+          echo 'New source requires independent delta review, real browser GATES, and explicit approval before merge.'
+
+      - name: Prevent source drift before test acceptance
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXPECTED=1f273787370a64cf39732974b60c1706e538f5bb
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = "$EXPECTED" || { echo 'PR264 moved; review invalid'; exit 1; }
