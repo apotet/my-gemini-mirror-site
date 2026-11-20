@@ -1589,10 +1589,20 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     description: "Powered Device — устройство, получающее питание через Ethernet, например IP-камера или точка доступа.",
     relatesTo: "Роль потребителя питания в PoE.",
   },
+  "802.3af": {
+    description: "IEEE 802.3af (PoE, Type 1): до 15,4 Вт от источника PSE и до 12,95 Вт на входе потребителя PD с учётом допустимых потерь в кабеле.",
+    relatesTo: "Базовый PoE: различай максимальную мощность источника, потребителя и общий бюджет коммутатора.",
+    lessonId: "l1-poe-budget",
+  },
   "802.3at": {
     description: "Стандарт IEEE 802.3at (PoE+) с подачей до 30 Вт от источника питания (25,5 Вт на потребителе), необходимый для полноценной работы большинства точек доступа Wi-Fi 6.",
     relatesTo: "Бюджет PoE и предотвращение режима пониженной мощности MIMO.",
     lessonId: "l12-wifi-standards-roaming",
+  },
+  "802.3bt": {
+    description: "IEEE 802.3bt (PoE++, Type 3/4) расширяет PoE до использования четырёх пар для высокой мощности: Type 3 — до 60 Вт от PSE (до 51 Вт у PD), Type 4 — до 90 Вт от PSE (до 71,3 Вт у PD).",
+    relatesTo: "Бюджет PoE++, классификация, мощность на порту и потери кабельной линии.",
+    lessonId: "l1-poe-budget",
   },
   "RRM": {
     description: "Radio Resource Management — автоматическое управление радиоканалами и мощностью передатчиков точек доступа на контроллере Wi-Fi.",
@@ -2262,7 +2272,9 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
   "PSE": ["Power Sourcing Equipment", "Источник питания PoE", true],
   "PD": ["Powered Device", "Потребитель питания PoE", true],
+  "802.3af": ["IEEE 802.3af (PoE, Type 1)", "Базовый PoE: до 15,4 Вт от PSE и до 12,95 Вт у PD", false],
   "802.3at": ["IEEE 802.3at (PoE+)", "Стандарт PoE+ мощностью до 30 Вт на порт", false],
+  "802.3bt": ["IEEE 802.3bt (PoE++, Type 3/4)", "Мощный PoE: до 60/90 Вт от PSE, до 51/71,3 Вт у PD", false],
   "RRM": ["Radio Resource Management", "Автоматическое управление каналами и мощностью Wi-Fi", true],
   "CCA": ["Clear Channel Assessment", "Проверка занятости радиоканала перед передачей", true],
   "OPT": ["EDNS OPT Pseudo-RR", "Псевдозапись параметров EDNS в разделе Additional", true, "Передаёт размер приёмного буфера UDP, расширенные коды RCODE и флаги EDNS между резолвером и сервером."],
