@@ -39,11 +39,9 @@ export const LESSON_L1_COPPER_FAULT_POE: Lesson = {
         "sprite": "copper-ethernet-lesson.webp",
         "column": 0,
         "row": 0,
-        "alt": "Прозрачный проходной штекер 8P8C в разрезе: разноцветные жилы проходят через передний торец",
-        "caption": "Проходной 8P8C: концы проводников выходят через переднюю часть корпуса."
-      },
-      "imageCollapsible": true,
-      "imageDisclosureLabel": "Показать фото проходного 8P8C (дополнительный вариант)"
+        "alt": "Проходной коннектор 8P8C (альтернативный вариант): жилы выходят из переднего торца; сравни с обычным закрытым коннектором в шпаргалке по обжиму",
+        "caption": "Для сравнения: проходной 8P8C (pass-through) — жилы выходят через торец; у основного закрытого коннектора они остаются внутри корпуса."
+      }
     },
     {
       "heading": "Раскладка жил: подробная схема в шпаргалке",
@@ -74,7 +72,8 @@ export const LESSON_L1_COPPER_FAULT_POE: Lesson = {
       "cheatsheetJump": {
         "file": "copper-pinout-four-wires.webp",
         "label": "См. шпаргалку по распиновке"
-      }
+      },
+      "cheatsheetInitiallyOpen": true
     },
     {
       "heading": "Обычный обжим 8P8C и отличие pass-through",
@@ -97,7 +96,8 @@ export const LESSON_L1_COPPER_FAULT_POE: Lesson = {
       "cheatsheetJump": {
         "file": "copper-termination-checklist.webp",
         "label": "Открыть шпаргалку: обжим обычного 8P8C"
-      }
+      },
+      "cheatsheetInitiallyOpen": true
     },
     {
       "heading": "Практический случай: кабель работает, но штекер обжат неправильно",
