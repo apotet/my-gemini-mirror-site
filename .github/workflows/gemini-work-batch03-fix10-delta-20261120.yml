@@ -1,0 +1,77 @@
+name: Gemini Work batch03 ten fixed questions old versus new archive (NO API)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-work-batch03-fix10-delta-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-bound-ten-delta:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'export/gemini-work-batch03-fix10-delta-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - name: Verify the source and repair PR SHA before export
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/289" --jq '.head.sha')" = '835a2e09c6760e065783a33cd72814958822b0c1'
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 1f273787370a64cf39732974b60c1706e538f5bb
+          path: source-old
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 835a2e09c6760e065783a33cd72814958822b0c1
+          path: source-new
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: c570676c8d8f46d7fdedb0750ceaf86aac5cdae1
+          path: handoff-tools
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned esbuild dependencies only, no package scripts
+        run: |
+          (cd source-old && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd source-new && npm ci --ignore-scripts --no-audit --no-fund)
+      - name: Export two groups of five old and new materials, NO GEMINI CALLS
+        run: |
+          mkdir -p output/old output/new
+          node trusted/scripts/gemini-audit-pack.mjs source-old 'gen-diag-0,gen-transport-14,gen-transport-16,gen-transport-17,gen-transport-5' output/old/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs source-new 'gen-diag-0,gen-transport-14,gen-transport-16,gen-transport-17,gen-transport-5' output/new/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs source-old 'gen-transport-7,l12-storm01,new-ts-duplex,new-ts-vlan,tcpip-d01' output/old/pack_02.json
+          node trusted/scripts/gemini-audit-pack.mjs source-new 'gen-transport-7,l12-storm01,new-ts-duplex,new-ts-vlan,tcpip-d01' output/new/pack_02.json
+      - name: Assert question/answer/key/lesson invariants and exact 10 field changes
+        run: node handoff-tools/handoff/assemble-gemini-batch03-fix10-delta.mjs
+      - name: Verify frozen source and Draft repair PR SHA after export
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')" = '1f273787370a64cf39732974b60c1706e538f5bb'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/289" --jq '.head.sha')" = '835a2e09c6760e065783a33cd72814958822b0c1'
+      - name: Upload user-downloadable ZIP for Gemini App Work
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetOps-Gemini-Work-Batch03-10-Fixes-Delta-20261120
+          path: output/
+          if-no-files-found: error
+          retention-days: 90
