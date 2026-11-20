@@ -143,6 +143,23 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={lesson.id !== 'l1-copper-fault-poe'} />
       </header>
 
+      {lesson.animation && (
+        <figure className="mx-auto w-full max-w-[31rem] overflow-hidden rounded-2xl border border-cyan-400/30 bg-[#06111d] p-3 shadow-sm" data-lesson-animation={lesson.animation.file}>
+          <div className="mb-2 text-sm font-semibold text-cyan-100">{lesson.animation.label}</div>
+          <video
+            src={`${import.meta.env.BASE_URL}lesson-images/${lesson.animation.file}`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            preload="metadata"
+            aria-label={lesson.animation.label}
+            className="mx-auto block w-full rounded-xl"
+          />
+          <figcaption className="mt-2 text-xs leading-relaxed text-slate-300">{lesson.animation.description}</figcaption>
+        </figure>
+      )}
       {lesson.diagram === 'sni' && <SniDiagram />}
 
       <div className="space-y-4">
@@ -196,6 +213,13 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                   <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>
                 </div>
               </details>
+            )}
+            {b.relatedLesson && onOpenLesson && (
+              <button type="button" onClick={() => onOpenLesson(b.relatedLesson!.id)}
+                data-related-lesson={b.relatedLesson.id}
+                className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-700 underline underline-offset-2 hover:bg-cyan-500/20 dark:text-cyan-300">
+                <BookOpen className="h-4 w-4" aria-hidden="true" />{b.relatedLesson.label}
+              </button>
             )}
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
           </section>
