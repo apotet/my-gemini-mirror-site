@@ -8,6 +8,44 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+// Independent 30-ID Gemini Work review (source SHA 1f273787, 2026-11-20):
+// prevent reintroducing placeholders and English-only contextual lessons.
+for(const {id,trapPattern,tipPattern} of [
+ {id:'l3-d08',trapPattern:/ECMP per-flow/,tipPattern:/несколько ECMP next hops/},
+ {id:'l4-x03',trapPattern:/UDP сам гарантирует/,tipPattern:/DNS ID, RTP sequence/},
+ {id:'l7-new-02',trapPattern:/PMTU/,tipPattern:null},
+ {id:'l7-new-03',trapPattern:/RRSIG/,tipPattern:null},
+]){
+ const question=pool.find(q=>q.id===id);
+ assert.ok(question,id+': frozen Understanding question exists');
+ const dive=m.getQuestionDeepDive(question);
+ assert.match(dive?.commonTrap||'',trapPattern,id+': targeted common trap');
+ assert.doesNotMatch(dive.commonTrap,/Смотрите точные формулировки стандартов и исключения/,id+': no generic trap placeholder');
+ if(tipPattern)assert.match(dive?.practicalTip||'',tipPattern,id+': actionable context-specific practical tip');
+}
+for(const {id,mode,prohibited,required} of [
+ {id:'l3-d04',mode:'professional',prohibited:/входное TTL1/,required:/входное TTL=1/},
+ {id:'l3-ospf-03',mode:'plain',prohibited:/Type1|Type2/,required:/Type 1|Type 2/},
+ {id:'l3-ospf-03',mode:'professional',prohibited:/Type1|Type2/,required:/Type 1|Type 2/},
+ {id:'l3-vrrp02',mode:'professional',prohibited:/использует255/,required:/использует 255/},
+ {id:'l6-01',mode:'professional',prohibited:/какD0 AF/,required:/как D0 AF/},
+ {id:'l7-01',mode:'professional',prohibited:/RFC9110\/9111/,required:/RFC 9110\/9111/},
+ {id:'l7-new-02',mode:'plain',prohibited:/size1232/,required:/size=1232/},
+ {id:'l7-05',mode:'professional',prohibited:/404 Not Found conveys/,required:/404 Not Found означает/},
+]){
+ const lesson=m.getLessonForQuestion(id);
+ assert.ok(lesson,id+': mapped lesson exists');
+ const anchor=m.getLessonSectionForQuestion(lesson.id,id);
+ assert.ok(anchor,id+': contextual anchor exists');
+ const block=m.getLessonBlocksWithSections(lesson,mode).find(x=>x.anchorId===anchor);
+ assert.ok(block?.body,id+': '+mode+' section exists');
+ assert.doesNotMatch(block.body,prohibited,id+': audit regression');
+ assert.match(block.body,required,id+': accepted correction present');
+}
+const lb=m.getQuestionDeepDive(pool.find(q=>q.id==='l4-lb-01'));
+assert.match(lb.briefAnswer,/HTTP 503/);
+assert.doesNotMatch(lb.briefAnswer,/HTTP503/);
+
 // Gemini independent material review: typography must remain legible in BOTH lesson modes.
 // Pin the exact question section instead of checking arbitrary lesson text or a CI extract.
 for(const {id,prohibited} of [
