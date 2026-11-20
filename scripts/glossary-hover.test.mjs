@@ -24,4 +24,20 @@ assert.equal(compoundParts.map(part => part.text).join(''), compoundText);
 assert.deepEqual(compoundParts.filter(part => part.term).map(part => part.term), compounds);
 assert.ok(!splitGlossaryText('XPHY-to-PHYY store-and-forwarding').some(part => compounds.includes(part.term)));
 assert.deepEqual(splitGlossaryText('неизвестно'), [{ text: 'неизвестно' }]);
+// Regression: every PoE standard named in the budget lesson is hoverable.
+const poeLine = 'IEEE 802.3af — 15,4 Вт; 802.3at — 30 Вт; 802.3bt — 60/90 Вт.';
+const poeParts = splitGlossaryText(poeLine);
+assert.equal(poeParts.map(part => part.text).join(''), poeLine);
+assert.deepEqual(
+  poeParts.filter(part => part.term && part.term.startsWith('802.3')).map(part => part.term),
+  ['802.3af', '802.3at', '802.3bt'],
+  'each standard must be a recognized tooltip trigger',
+);
+for (const term of ['802.3af', '802.3at', '802.3bt']) {
+  assert.ok(GLOSSARY[term], 'missing glossary term: ' + term);
+  assert.ok(GLOSSARY_TOOLTIPS[term]?.summary, 'missing live hover popup: ' + term);
+}
+assert.match(GLOSSARY_TOOLTIPS['802.3bt'].summary, /Type 3.*60.*Type 4.*90/s, 'Type 3 vs Type 4 explained in tooltip');
+assert.ok(!splitGlossaryText('802.3btX').some(part => part.term === '802.3bt'), 'no partial match inside longer tokens');
+
 console.log(`PASS: ${GLOSSARY_ABBREVIATIONS.length} abbreviations, ${Object.keys(GLOSSARY_TOOLTIPS).length} complete tooltips; boundaries and longest matches`);
