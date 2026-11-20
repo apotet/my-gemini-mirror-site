@@ -430,5 +430,10 @@ for(const [id,mode,prohibited] of [
  assert.doesNotMatch(section.body,prohibited,id+': fixed Gemini-noted spacing');
 }
 assert.doesNotMatch(m.getQuestionDeepDive(pool.find(q=>q.id==='l4-lb-01'))?.briefAnswer??'',/HTTP503/,'HTTP 503 formatted properly');
+const rtpTip=m.getQuestionDeepDive(pool.find(q=>q.id==='l4-04'))?.practicalTip??'';
+assert.match(rtpTip,/межпакетные интервалы прихода \(Delta\)/,'Wireshark RTP Analysis measures interarrival delta');
+assert.match(rtpTip,/воспроизведения.*отдельно на приёмнике/,'receiver playout not measurable in RTP pcap');
+assert.doesNotMatch(rtpTip,/измерь.*интервалы воспроизведения/,'do not conflate Wireshark Delta with audio playout');
+
 
 console.log('PASS: actual164-ID Understanding pool; structural two-style lessons, links, active glossary, and 698 other-level deep dives unchanged; independent semantic PASS still pending');
