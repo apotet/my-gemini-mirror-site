@@ -106,4 +106,10 @@ for (const term of expected) {
   assert.ok(html.includes('data-glossary-term="' + term + '"'), term + ' has real rendered tooltip trigger');
 }
 assert.ok(!html.includes('data-glossary-term="A"'), 'do not show irrelevant DNS A-record tooltip for wiring A');
+const pairHtml = renderBlock('A–A, B–B, A–B, B–A, A-A, A-B, A — B');
+assert.ok(!pairHtml.includes('data-glossary-term="A"'),
+  'wiring pair notation never opens irrelevant DNS A-record tooltip');
+const dnsHtml = renderBlock('DNS-запись A содержит IPv4-адрес');
+assert.ok(dnsHtml.includes('data-glossary-term="A"'),
+  'standalone DNS A-record remains clickable outside T568 pair notation');
 console.log('PASS: redundant block removed; T568 chart shown immediately, glossary, three cheat sheets and 16 question links preserved');
