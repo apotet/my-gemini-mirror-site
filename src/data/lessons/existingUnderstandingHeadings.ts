@@ -290,8 +290,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
       "plain": "Типы элементов данных Zabbix: пассивный и активный агент, SNMP и Trapper",
       "professional": "Сетевая топология сбора в Zabbix"
     }
-  }
-
+  },
   {
     "lessonId": "l1-copper-fault-poe",
     "questionIds": [
