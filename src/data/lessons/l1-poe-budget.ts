@@ -3,6 +3,7 @@ export const LESSON_L1_POE_BUDGET = {
   title: 'PoE: бюджет порта и бюджет коммутатора',
   topic: 'L1',
   difficulty: 'beginner',
+  osiLayers: ['L1'],
   summary: 'Как прикинуть, хватит ли питания: класс устройства, мощность порта, общий бюджет коммутатора и запас.',
   terms: ['PoE', 'PSE', 'PD', 'Class', 'бюджет'],
   blocks: [
