@@ -146,17 +146,22 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
       {lesson.animation && (
         <figure className="mx-auto w-full max-w-[31rem] overflow-hidden rounded-2xl border border-cyan-400/30 bg-[#06111d] p-3 shadow-sm" data-lesson-animation={lesson.animation.file}>
           <div className="mb-2 text-sm font-semibold text-cyan-100">{lesson.animation.label}</div>
-          <video
-            src={`${import.meta.env.BASE_URL}lesson-images/${lesson.animation.file}`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            controls
-            preload="metadata"
-            aria-label={lesson.animation.label}
-            className="mx-auto block w-full rounded-xl"
-          />
+          {lesson.animation.file.endsWith('.svg') ? (
+            <img
+              src={`${import.meta.env.BASE_URL}lesson-images/${lesson.animation.file}`}
+              alt={lesson.animation.label}
+              loading="lazy"
+              className="mx-auto block w-full rounded-xl"
+              data-poe-motion-image
+            />
+          ) : (
+            <video
+              src={`${import.meta.env.BASE_URL}lesson-images/${lesson.animation.file}`}
+              autoPlay muted loop playsInline controls preload="metadata"
+              aria-label={lesson.animation.label}
+              className="mx-auto block w-full rounded-xl"
+            />
+          )}
           <figcaption className="mt-2 text-xs leading-relaxed text-slate-300">{lesson.animation.description}</figcaption>
         </figure>
       )}
