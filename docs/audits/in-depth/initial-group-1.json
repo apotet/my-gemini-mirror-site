@@ -1,0 +1,2505 @@
+{
+  "schemaVersion": 1,
+  "phase": "initial-independent-read-only-audit",
+  "reviewer": "independent_review",
+  "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "sourceSnapshot": "scripts/.cache/in-depth/audit-group-1.json",
+  "sourceSnapshotSha256": "dd64d8f51a027a58133b967377832cd96200fa8ae821c17a00f4ed55aab309c7",
+  "scope": {
+    "questionsRead": 40,
+    "linkedLessonsReadFully": [
+      "l2-access-guard",
+      "ts-copp-storm",
+      "tcp-window-retransmit",
+      "tcpip-encapsulation",
+      "osi-pdu",
+      "l7-dns",
+      "l7-dns-dhcp",
+      "l7-services",
+      "l2-stp",
+      "ts-method"
+    ],
+    "glossaryDefinitionsInspected": 190,
+    "glossaryInspectionMethod": "Read definitions, context and target for every actual matcher key in question/deep/full linked lesson snapshot; incidental matches in identifiers are not classified as errors. Additional essential missing terms PPP/IPCP/APIPA/MBAP etc checked directly.",
+    "unlinkedLessonRecommendations": "Exact IDs verified from actual LESSONS registry and section catalogs; recommendation does not constitute full semantic acceptance of an unlinked lesson.",
+    "runtime": "PENDING; no browser or live navigation claims"
+  },
+  "summary": {
+    "questions": 40,
+    "missingQuestionLesson": 27,
+    "missingQuestionPro": 16,
+    "linkedLessonsWithoutPro": [
+      "tcp-window-retransmit",
+      "l7-dns-dhcp",
+      "l7-services"
+    ],
+    "keyAmbiguitiesFound": 0,
+    "statusCounts": {
+      "REVIEW": 4,
+      "FIX": 36
+    },
+    "defectOccurrences": {
+      "CONTEXTUAL_GLOSSARY_DEFECT": 14,
+      "LESSON_MISSING_PRO": 3,
+      "MISSING_LESSON": 27,
+      "MISSING_PRO": 16,
+      "WHY_TOO_GENERIC": 1,
+      "WRONG_PAYLOAD_BOUNDARY": 1,
+      "PRO_TOO_SHALLOW_FOR_STEM": 1,
+      "LESSON_PLATFORM_EFFECT_MISSING": 1
+    }
+  },
+  "importantFindings": [
+    "k-02 plain incorrectly places TCP header/data inside IP header; key remains correct.",
+    "DNS NS, DNS RR, STP cost and physical порты expose real glossary polysemy, not blanket unknown-acronym errors.",
+    "SNMP polling/traps does not guarantee retention of every change; glossary guarantee is too strong.",
+    "Linked DHCP Snooping lesson fails to teach platform-specific full-port err-disable, despite correct question.",
+    "Three linked thematic lessons lack actual professional mode; anchored pro fragment alone cannot claim complete lesson coverage."
+  ],
+  "rows": [
+    {
+      "id": "gap-pack2-05",
+      "status": "REVIEW",
+      "semanticStatus": "PASS",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "49c776ce95ad2cae7453d6a3178fed53ffdfac7e45c5bae102c7d299081bda4c",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Пересчитанная FCS соответствует уже изменённому кадру; checksum неизменённого IPv4 header не охватывает payload. Ключ[0] и все три дистрактора однозначны."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain объясняет две области и точки расчёта, pro корректно различает hop-local CRC и end-to-end контроль."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "tcpip-encapsulation",
+          "evidence": "Секция «FCS и checksum: что именно проверено» и pro «FCS, IPv4 checksum и диагностика повреждений» действительно объясняют ситуацию."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Объяснить английские hop/payload/digest рядом с употреблением при редактуре; это readability REVIEW, не доказанная фактологическая ошибка."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [],
+      "recommendedLesson": {
+        "lessonId": "tcpip-encapsulation",
+        "anchorId": null,
+        "proposedSectionId": "integrity-check-boundaries",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-05",
+        "getQuestionDeepDive(gap-pack2-05)",
+        "getLessonForQuestion(gap-pack2-05)"
+      ]
+    },
+    {
+      "id": "gap-pack2-10",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "d35c3af50f373ef821f18f5669989a3dbcf4a07d87828c326e7a5b0305116d24",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "После готового IPCP IPv4 идёт в PPP с Protocol0x0021;17 относится к UDP в IPv4. Ключ[1] не требует ARP или per-packet IPCP."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/Plain причинно отделяют установление связи от штатной передачи; pro точен по RFC1661/1332."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "tcpip-encapsulation",
+          "evidence": "Plain «PPP после IPCP» и pro «Туннель и PPP» покрывают механизм; не нужен новый урок."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "PPP имеет glossary entry, но tooltip отсутствует; IPCP не имеет entry/tooltip. Это существенные термины самой задачи, добавить определения/интерактивность, а не просто тег."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "PPP tooltip absent",
+          "repair": "PPP имеет glossary entry, но tooltip отсутствует; IPCP не имеет entry/tooltip. Это существенные термины самой задачи, добавить определения/интерактивность, а не просто тег."
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "IPCP glossary/tooltip absent",
+          "repair": "PPP имеет glossary entry, но tooltip отсутствует; IPCP не имеет entry/tooltip. Это существенные термины самой задачи, добавить определения/интерактивность, а не просто тег."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "tcpip-encapsulation",
+        "anchorId": null,
+        "proposedSectionId": "ppp-ipcp-established",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-10",
+        "getQuestionDeepDive(gap-pack2-10)",
+        "getLessonForQuestion(gap-pack2-10)"
+      ]
+    },
+    {
+      "id": "gap-pack2-11",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "b001de31c5e703b6904710569d6f537f8692b8b489a1a9bca46d87afffa8d39a",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "NOERROR+empty Answer+SOA, авторитетность/referral/TC явно ограничены; отсутствие AAAA не отменяет A. Ключ[0] точный."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/Plain ясно отличают имя от RRset; pro верно использует NODATA, а не отдельный RCODE."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": "l7-dns-dhcp",
+          "evidence": "Plain NODATA-секция точна, но у связанного урока целиком отсутствует professional."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Добавить полезные контекстные определения RRset/RCODE и NOERROR, сохранив отличие от NXDOMAIN; не трактовать английские имена полей как отдельные подтверждённые дефекты без контекста."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "LESSON_MISSING_PRO",
+          "evidence": "l7-dns-dhcp professional absent",
+          "repair": "add actual professional lesson style, not only an anchored fragment"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-dns-dhcp",
+        "anchorId": null,
+        "proposedSectionId": "dns-nodata-existing-name",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-11",
+        "getQuestionDeepDive(gap-pack2-11)",
+        "getLessonForQuestion(gap-pack2-11)"
+      ]
+    },
+    {
+      "id": "gap-pack2-16",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "bb0fef4de3b5498c99a0ff5bb47ce1d4f5796fdb61e1be2ebb3d4d7f2702fb74",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Stratum0+RATE — управляющий KoD; увеличить интервал, не использовать sample. Ключ[2] верный."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Причинные why/plain/pro согласованы; stratum0 не выдаётся за reference clock."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": "l7-services",
+          "evidence": "Есть точная plain секция «NTP KoD RATE»; professional у всего l7-services отсутствует."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "NTP glossary ссылка уводит в l4-tcp-loss, не к NTP-службе; направить на существующий l7-services/точную секцию. KoD/RATE объяснены в тексте, но отдельной интерактивной расшифровки нет."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "LESSON_MISSING_PRO",
+          "evidence": "l7-services professional absent",
+          "repair": "add actual professional lesson style, not only an anchored fragment"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "NTP glossary lessonId is l4-tcp-loss, unrelated to NTP RATE",
+          "repair": "NTP glossary ссылка уводит в l4-tcp-loss, не к NTP-службе; направить на существующий l7-services/точную секцию. KoD/RATE объяснены в тексте, но отдельной интерактивной расшифровки нет."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-services",
+        "anchorId": null,
+        "proposedSectionId": "ntp-kod-rate",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-16",
+        "getQuestionDeepDive(gap-pack2-16)",
+        "getLessonForQuestion(gap-pack2-16)"
+      ]
+    },
+    {
+      "id": "gap-pack2-21",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "b945510b77f186a656493357b782f7d70a377f2b6e77f11aced6beec7dcc8385",
+      "key": [
+        3
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Все старые данные ACKed, rwnd0, потеря window update: persist probes предотвращают зависание. Ключ[3]; MSS/SYN/обычный RTO не замена."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro причинно точны и не обещают неограниченную обычную передачу при rwnd0."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": "tcp-window-retransmit",
+          "evidence": "Plain «Нулевое окно и persist» подробно покрывает вопрос; professional у урока отсутствует."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "rwnd/cwnd/persist — существенные термины; plain раскрывает оба окна и пробы, нужна интерактивная поддержка этих определений, не массовое добавление английских слов."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "tcp",
+          "evidence": "Candidate existing destination tcp; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "LESSON_MISSING_PRO",
+          "evidence": "tcp-window-retransmit professional absent",
+          "repair": "add actual professional lesson style, not only an anchored fragment"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "tcp-window-retransmit",
+        "anchorId": null,
+        "proposedSectionId": "tcp-zero-window-persist",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-21",
+        "getQuestionDeepDive(gap-pack2-21)",
+        "getLessonForQuestion(gap-pack2-21)"
+      ]
+    },
+    {
+      "id": "gap-pack2-27",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "bb9642109e8b78bde070a9741122b1eeed157eb3718584ba16c5c094bdaf1042",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Length8 означает UDP header без payload; успешный recvfrom0 не TCP EOF. Ключ[0], дистракторы про header/timeout неверны."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain объясняет арифметику8−8 и API-семантику; pro корректно ограничен Linux/datagram socket."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; переиспользовать транспортный l4-tcp с отдельным двустильным блоком UDP datagram vs stream EOF."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Раскрыть recvfrom как приём одной датаграммы и EOF как конец TCP-потока; не требовать расшифровки каждого API-идентификатора."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l4-tcp; section proposal udp-empty-datagram-recvfrom"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l4-tcp",
+        "anchorId": null,
+        "proposedSectionId": "udp-empty-datagram-recvfrom",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack2-27",
+        "getQuestionDeepDive(gap-pack2-27)",
+        "getLessonForQuestion(gap-pack2-27)"
+      ]
+    },
+    {
+      "id": "gap-pack3-08",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "f99f2d97f6fb939e23b0aa74c6d3909f94642408e675b2a445cf53532f054c54",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Обычный IPv6 UDP checksum0 отвергается; специальные туннели исключены. Ключ[1] точен, FCS не заменяет checksum."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro согласованы, исключения RFC6935/6936 названы без распространения на обычное приложение."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; добавить к существующему IPv6-уроку оба стиля про обязательный UDP checksum и границу исключений."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "IPv6/UDP/FCS определения существуют. Пояснить pseudo-header в pro, если сохраняется, а не выдавать все английские labels за ошибки."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l3-ipv6; section proposal ipv6-udp-mandatory-checksum"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l3-ipv6",
+        "anchorId": null,
+        "proposedSectionId": "ipv6-udp-mandatory-checksum",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack3-08",
+        "getQuestionDeepDive(gap-pack3-08)",
+        "getLessonForQuestion(gap-pack3-08)"
+      ]
+    },
+    {
+      "id": "gap-pack3-12",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "f03d5d2c28cfa736fcf14184b02b66b34ff625d04d78f9b7f237d11ac2a7a767",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "CNAME chain замкнута; остановка с resolution failure, не NXDOMAIN и не NODATA. Ключ[0] верен."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain показывают повтор посещённого имени; pro корректен по существу, но содержит неоднозначный термин RR."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-dns уже объясняет CNAME; добавить targeted цикл/ошибку в plain/pro."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "Конкретная ошибка: RR в pro «CNAME RR alias chain» получает глобальное определение BGP Route Reflector. Нужен контекстный DNS Resource Record либо полное русское слово; не заменять глобальный BGP RR вслепую."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-dns; section proposal dns-cname-loop"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "RR tooltip is BGP Route Reflector in DNS Resource Record context",
+          "repair": "Конкретная ошибка: RR в pro «CNAME RR alias chain» получает глобальное определение BGP Route Reflector. Нужен контекстный DNS Resource Record либо полное русское слово; не заменять глобальный BGP RR вслепую."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-dns",
+        "anchorId": null,
+        "proposedSectionId": "dns-cname-loop",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack3-12",
+        "getQuestionDeepDive(gap-pack3-12)",
+        "getLessonForQuestion(gap-pack3-12)"
+      ]
+    },
+    {
+      "id": "gap-pack3-15",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "c8c9b739d3ad0cb1fa102761d26c0ac20f7f4da48e7ffd369005f245367368a9",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "HEAD200 не имеет body, Content-Length описывает соответствующий GET; чтение5000 нарушит framing. Ключ[2] однозначен."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro правильно учитывают метод, persistent connection и отсутствие Transfer-Encoding."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-services уже рассматривает HTTP ranges, добавить рядом HEAD и длину тела в обоих стилях."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Content-Length/HEAD/GET объяснить как поля/методы в новом блоке; нельзя утверждать, что существующий урок уже покрывает HEAD."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-services; section proposal http-head-response-framing"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-services",
+        "anchorId": null,
+        "proposedSectionId": "http-head-response-framing",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gap-pack3-15",
+        "getQuestionDeepDive(gap-pack3-15)",
+        "getLessonForQuestion(gap-pack3-15)"
+      ]
+    },
+    {
+      "id": "gen-diag-0",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "4386c7cee4d85525f5916be94c608ede9495212f95cc979161b566eb3de8cdcd",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "LinkUp не гарантирует ingress frames; source-MAC learning зависит от VLAN и policy. Ключ[0] лучший из вариантов."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Все слои объясняют почему нужны свежие кадры и VLAN; не навязывают cable fault."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; точный существующий урок l2-ethernet, раздел «Как коммутатор запоминает и выбирает порт»."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Source MAC/VLAN/Link доступны и определения соответствуют контексту; show counters не следует выдавать за существующий интерактивный стенд."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "cli-diagnostic",
+          "evidence": "Candidate existing destination cli-diagnostic; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l2-ethernet; section proposal mac-learning-needs-source-frame"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l2-ethernet",
+        "anchorId": null,
+        "proposedSectionId": "mac-learning-needs-source-frame",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-0",
+        "getQuestionDeepDive(gen-diag-0)",
+        "getLessonForQuestion(gen-diag-0)"
+      ]
+    },
+    {
+      "id": "gen-diag-10",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "94e0bad93867767c991a242d333bcade682cae7ab45108d39dde8a1a34d5fb21",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Исключённая VLAN не идёт по единственному trunk; native VLAN не обход фильтра. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro согласованы и проверяют effective allowed/forwarding на обоих концах."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l2-trunk diagnostics — готовый профильный lessonId cli-trunk-vlan-diagnostics, раздел show interfaces trunk."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Основные термины defined. Существующий cli-trunk link есть и разрешается в реальный сценарий; его точное упражнение ещё проверить браузером."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": "cli-trunk",
+          "candidate": "cli-trunk",
+          "evidence": "Declared existing destination cli-trunk; registry read, actual simulator actions/browser not run."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to cli-trunk-vlan-diagnostics; section proposal trunk-vlan-allowed-forwarding"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "cli-trunk-vlan-diagnostics",
+        "anchorId": null,
+        "proposedSectionId": "trunk-vlan-allowed-forwarding",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-10",
+        "getQuestionDeepDive(gen-diag-10)",
+        "getLessonForQuestion(gen-diag-10)"
+      ]
+    },
+    {
+      "id": "gen-diag-13",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "8c8c95a42a3e8bfe8844fe880021d2d7eeda8e564f115e61aaf7c706c1e7e5ec",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Сохранение времени, симптомов, logs/counter deltas прежде изменения — корректный первый шаг. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain/pro не путают временную корреляцию с причинностью и не предлагают стирать evidence."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; ts-method уже имеет «Не меняй всё сразу»/«Подтверди результат»; точный section может объединить временную фиксацию."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "baseline/логи определены контекстно; отдельный учебный стенд для плавающего отказа не найден, не выдумывать ссылку."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to ts-method; section proposal intermittent-incident-evidence"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "ts-method",
+        "anchorId": null,
+        "proposedSectionId": "intermittent-incident-evidence",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-13",
+        "getQuestionDeepDive(gen-diag-13)",
+        "getLessonForQuestion(gen-diag-13)"
+      ]
+    },
+    {
+      "id": "gen-diag-2",
+      "status": "REVIEW",
+      "semanticStatus": "PASS",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "0c00ab0833ae1cb2cb47a4336b9a7c300767c65a29d7e9dfb8ff87da37812e8d",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Успех ping gateway не доказывает remote route/filter/listening TCP socket. Ключ[0] корректен."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro дают правильную следующую проверку и различают SYN-ACK/RST/silence."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "ts-method",
+          "evidence": "ts-method plain «Доступность узла не равна работе сервиса» и pro «Не прыгать сразу в приложение» реально покрывают вопрос."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Глоссарий ping/TCP-порт/маршрут релевантен. Runtime exact destination/return остаётся неподтверждённым."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "cli-diagnostic",
+          "evidence": "Candidate existing destination cli-diagnostic; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [],
+      "recommendedLesson": {
+        "lessonId": "ts-method",
+        "anchorId": null,
+        "proposedSectionId": "gateway-ping-not-service",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-2",
+        "getQuestionDeepDive(gen-diag-2)",
+        "getLessonForQuestion(gen-diag-2)"
+      ]
+    },
+    {
+      "id": "gen-diag-5",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "64139cc2fbe9ad7864fde6a0c25d4b7cb36f99753ac1abf6624f20eb13e8177f",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "При одиночном разрыве корректного MRP manager открывает ранее blocked ring port. Ключ[0], не STP/LACP/VRRP."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Plain/pro оговаривают single break и ненулевое время восстановления; вывод о причине требует событий MRP."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; ts-method уже содержит промышленное кольцо, но pro отдельного MRP-восстановления нет. Добавить targeted оба стиля, не брать expert failure-case вместо основы."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "MRP/WBM определения есть; отдельного MRP симулятора в действующем practice registry нет — не добавлять фиктивный."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to ts-method; section proposal mrp-single-ring-break"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "ts-method",
+        "anchorId": null,
+        "proposedSectionId": "mrp-single-ring-break",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-5",
+        "getQuestionDeepDive(gen-diag-5)",
+        "getLessonForQuestion(gen-diag-5)"
+      ]
+    },
+    {
+      "id": "gen-diag-6",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "494040279b015717b43df3cd71c64bb653c827be56ec3ecc08c6b29b48f598f3",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Duplicate IPv4 может вызвать ARP MAC changes/уведомления; вероятностная формулировка и exception virtual IP верны. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Все слои отделяют случайный дубль от ECMP/кластерного адреса/BPDU Guard."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l3-arp, добавить оба стиля про detection и сравнение ARP/DHCP/static assignments."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "ARP/ECMP/BPDU Guard доступны; raw слова duplicate/leases раскрыть при редактуре pro, это контекстная читабельность."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l3-arp; section proposal ipv4-duplicate-address"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l3-arp",
+        "anchorId": null,
+        "proposedSectionId": "ipv4-duplicate-address",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-6",
+        "getQuestionDeepDive(gen-diag-6)",
+        "getLessonForQuestion(gen-diag-6)"
+      ]
+    },
+    {
+      "id": "gen-diag-7",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "1fd31b92f1b15c224b697a0b308d0c3feccf0182f99779b7275de3688f02d4aa",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Windows automatic169.254/16 часто APIPA при отсутствии DHCP lease, но не единственное доказательство причины. Ключ[0] с частотной оговоркой корректен."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain объясняют резервный локальный адрес и проверку DHCP; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-dhcp с targeted APIPA/no-offer diagnostic section."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "APIPA существенный термин и отсутствует в glossary/tooltips; дать Automatic Private IP Addressing, ограниченную link-local достижимость и отсутствие доказательства единственной причины."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "dhcp",
+          "evidence": "Candidate existing destination dhcp; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-dhcp; section proposal dhcp-apipa-not-proof"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "APIPA glossary/tooltip absent",
+          "repair": "APIPA существенный термин и отсутствует в glossary/tooltips; дать Automatic Private IP Addressing, ограниченную link-local достижимость и отсутствие доказательства единственной причины."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-dhcp",
+        "anchorId": null,
+        "proposedSectionId": "dhcp-apipa-not-proof",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-7",
+        "getQuestionDeepDive(gen-diag-7)",
+        "getLessonForQuestion(gen-diag-7)"
+      ]
+    },
+    {
+      "id": "gen-diag-9",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "cb26e45497ba5d504b084f952b2803e16a833e97c1598929ff2c2c45b76d38f0",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "ARP entry доказывает сохранённое IP–MAC, а не живость/forwarding/remote route/DNS. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro учитывают static/stale и свежие наблюдения, команды ip neigh уместны."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l3-arp «Адрес известен, но давно не проверялся» уже профильный блок."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "ARP/кэш соседей/шлюз релевантны; не нужно добавлять нового вымышленного тренажёра."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "cli-diagnostic",
+          "evidence": "Candidate existing destination cli-diagnostic; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l3-arp; section proposal arp-entry-not-live-reachability"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l3-arp",
+        "anchorId": null,
+        "proposedSectionId": "arp-entry-not-live-reachability",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-diag-9",
+        "getQuestionDeepDive(gen-diag-9)",
+        "getLessonForQuestion(gen-diag-9)"
+      ]
+    },
+    {
+      "id": "gen-osi-a-18",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "0cfd276076b11cac109ea6929ab3bfafb5e7e9756a77c7082337b20fbe5dfcbf",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Разбор команды/пути, выбор handler и semantic response — L7; L6/L5/L4 distractors корректно отделены. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why causal; plain не требует отдельного L7 модуля, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; osi-pdu/L7 ролей достаточно для общего фона, добавить короткий двастильный section с конкретным request/handler/response."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "OSI/L7 definitions есть; не назначать термином неизвестный путь /reports/7."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to osi-pdu; section proposal application-request-semantics"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "osi-pdu",
+        "anchorId": null,
+        "proposedSectionId": "application-request-semantics",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-osi-a-18",
+        "getQuestionDeepDive(gen-osi-a-18)",
+        "getLessonForQuestion(gen-osi-a-18)"
+      ]
+    },
+    {
+      "id": "gen-osi-a-19",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "8b1f64509947c8d66f2a6c23f89ead96610aa814e7eaf974e554edfb86b1c714",
+      "key": [
+        3
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "QTYPE A и NXDOMAIN интерпретируются прикладным resolver; порт/кодировка/сеанс не анализируют результат. Ключ[3]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro точные; NXDOMAIN не спутан с отсутствием только A."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "l7-dns",
+          "evidence": "Есть exact section dns-nxdomain-application в l7-dns в обоих стилях и обе базы урока; новый раздел не нужен."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "DNS/A/NXDOMAIN контекстные определения корректны. Но в полном linked l7-dns «NS» получает IPv6 tooltip, отдельная confirmed lesson glossary проблема."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "linked full l7-dns NS term has IPv6 Neighbor Solicitation definition in DNS Name Server context",
+          "repair": "DNS/A/NXDOMAIN контекстные определения корректны. Но в полном linked l7-dns «NS» получает IPv6 tooltip, отдельная confirmed lesson glossary проблема."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-dns",
+        "anchorId": "dns-nxdomain-application",
+        "proposedSectionId": null,
+        "sectionStatus": "existing",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-osi-a-19",
+        "getQuestionDeepDive(gen-osi-a-19)",
+        "getLessonForQuestion(gen-osi-a-19)"
+      ]
+    },
+    {
+      "id": "gen-osi-a-2",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "34d5a3e4accd2b968bdf8153dc2812cb0e4bc761a8067539df73c2ab418a66b4",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Нормализация уровней вместе с retiming отличает regeneration от усиления/фильтра/делителя. Ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain технически аккуратны, учитывают что чистая форма не исключает битовых ошибок; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; добавить отдельный regeneration/retiming section в существующий l1-phy-symbol-rate, не объявлять текущие symbol-rate блоки достаточными."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Регенерация/тактирование объяснены plain, словарь нужен по существенным понятиям, а не 0.7/1.3В."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l1-phy-symbol-rate; section proposal signal-regeneration-and-clock"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l1-phy-symbol-rate",
+        "anchorId": null,
+        "proposedSectionId": "signal-regeneration-and-clock",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-osi-a-2",
+        "getQuestionDeepDive(gen-osi-a-2)",
+        "getLessonForQuestion(gen-osi-a-2)"
+      ]
+    },
+    {
+      "id": "gen-port-11",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "104cfbc5676767da25d37d451b288be4c7d4715f5aea5269bf6b56d29d35d201",
+      "key": [
+        3
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "LI3 alarm unsynchronised исключает sample несмотря на stratum2 и успешную доставку; LI1/2 иные значения. Ключ[3]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain причинны, отличают иерархию от пригодности; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-services NTP topic есть, добавить LI/stratum section в обоих стилях и pro базу."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "NTP glossary topic l4-tcp-loss не соответствует роли; нужен service section. Leap Indicator и Stratum раскрыть предметно, а не просто подписью."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-services; section proposal ntp-leap-indicator-alarm"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "NTP glossary lessonId is l4-tcp-loss",
+          "repair": "NTP glossary topic l4-tcp-loss не соответствует роли; нужен service section. Leap Indicator и Stratum раскрыть предметно, а не просто подписью."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-services",
+        "anchorId": null,
+        "proposedSectionId": "ntp-leap-indicator-alarm",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-port-11",
+        "getQuestionDeepDive(gen-port-11)",
+        "getLessonForQuestion(gen-port-11)"
+      ]
+    },
+    {
+      "id": "gen-port-14",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "7e2b060180ebb0ccbcba12eb7ea063b2c2388c229d4a92db834eedf0318013c3",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Inform требует Response и configured retry; Trap не подтверждается, потеря Response не доказывает потери Inform. Ключ[2]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain объясняют retry и duplicate, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; профильный существующий l7-monitoring-snmp-syslog, exact section polling/notifications."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "InformRequest definition релевантно. SNMP glossary утверждает, что polling+traps «не даёт терять изменения», что слишком категорично: сочетание снижает риск, не даёт универсальной гарантии сохранения всех событий."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-monitoring-snmp-syslog; section proposal snmp-inform-response-retry"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "SNMP glossary promises lossless changes from polling+traps",
+          "repair": "InformRequest definition релевантно. SNMP glossary утверждает, что polling+traps «не даёт терять изменения», что слишком категорично: сочетание снижает риск, не даёт универсальной гарантии сохранения всех событий."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-monitoring-snmp-syslog",
+        "anchorId": null,
+        "proposedSectionId": "snmp-inform-response-retry",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-port-14",
+        "getQuestionDeepDive(gen-port-14)",
+        "getLessonForQuestion(gen-port-14)"
+      ]
+    },
+    {
+      "id": "gen-transport-1",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "db57b68136de4c48c919be1e93411cf9318d3b2b019626f33867c7f0452b88e1",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "HTTP2 HTTPS/TCP443/TLS vs HTTP3 QUIC/UDP443 корректно при прямом стандартном подключении. Ключ[1]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain объясняет port number≠transport и сохранение защиты, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l4-service-ports web section расширить сравнением HTTP2/3 в plain/pro."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "QUIC tooltip существует, но нет перехода в профильную тему; inline объяснить HTTP version/TLS integration, не расширять QUIC как вымышленную аббревиатуру."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l4-service-ports; section proposal https-http2-vs-http3-transport"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l4-service-ports",
+        "anchorId": null,
+        "proposedSectionId": "https-http2-vs-http3-transport",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-1",
+        "getQuestionDeepDive(gen-transport-1)",
+        "getLessonForQuestion(gen-transport-1)"
+      ]
+    },
+    {
+      "id": "gen-transport-14",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "34d2b9dee8fd40ed44f9f054780ce9dc8db571241bfb74be57ccbd9368b84f71",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Trap идёт device→notification receiver UDP162, а не poll agent161. Ключ[2]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain чётко задают инициатора/отсутствие Get, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-monitoring-snmp-syslog содержит polling/traps раздел и нужен target/anchor."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "SNMP Trap определён; убрать общее обещание SNMP glossary о невозможности потери изменений."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-monitoring-snmp-syslog; section proposal snmp-trap-initiator-port162"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "SNMP glossary promises lossless changes from polling+traps",
+          "repair": "SNMP Trap определён; убрать общее обещание SNMP glossary о невозможности потери изменений."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-monitoring-snmp-syslog",
+        "anchorId": null,
+        "proposedSectionId": "snmp-trap-initiator-port162",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-14",
+        "getQuestionDeepDive(gen-transport-14)",
+        "getLessonForQuestion(gen-transport-14)"
+      ]
+    },
+    {
+      "id": "gen-transport-16",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "46b2031dd5f5af18ec2cd90ff6914a5457de5ea3e49e94c8955f47e86484f384",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Прямой RDP продолжает TCP при blocked UDP; дополнительный UDP требует успешного negotiation/path. Ключ[0], исключён Gateway."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Plain причинно объясняет TCP reachability≠UDP; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; точный существующий l4-directory-remote-industrial-ports, RDP section."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "RDP/TCP/UDP доступны; разбору нужен negotiation/fallback scope, не просто запоминание3389."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l4-directory-remote-industrial-ports; section proposal rdp-tcp-udp-fallback"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l4-directory-remote-industrial-ports",
+        "anchorId": null,
+        "proposedSectionId": "rdp-tcp-udp-fallback",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-16",
+        "getQuestionDeepDive(gen-transport-16)",
+        "getLessonForQuestion(gen-transport-16)"
+      ]
+    },
+    {
+      "id": "gen-transport-17",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "1c243b1adafbf96e5fb3b7c0b52a98c6554d3b1879c892e5e74e602dac7d1f69",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Стандартный Modbus TCP server502+MBAP+PDU, без RTU CRC/TLS; ключ[1] корректен."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why слишком общий «сетевой вариант» — не называет ключевой механизм TCP/MBAP, plain уже объясняет; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; точный существующий lesson l4-directory-remote-industrial-ports, Modbus section расширить MBAP/RTU distinction в обоих стилях."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "MBAP отсутствует в glossary: нужен Modbus Application Protocol header, transaction/protocol/length/unit context. PDU существует, не дублировать."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l4-directory-remote-industrial-ports; section proposal modbus-tcp-mbap-not-rtu"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "WHY_TOO_GENERIC",
+          "evidence": "Программа опрашивает контроллер по сетевому варианту протокола.",
+          "repair": "state TCP server502 and MBAP/PDU causal distinction rather than only сетевой вариант"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "MBAP glossary/tooltip absent; essential header name unexplained expansion",
+          "repair": "MBAP отсутствует в glossary: нужен Modbus Application Protocol header, transaction/protocol/length/unit context. PDU существует, не дублировать."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l4-directory-remote-industrial-ports",
+        "anchorId": null,
+        "proposedSectionId": "modbus-tcp-mbap-not-rtu",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-17",
+        "getQuestionDeepDive(gen-transport-17)",
+        "getLessonForQuestion(gen-transport-17)"
+      ]
+    },
+    {
+      "id": "gen-transport-5",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "0fe4e529c9c7a7f9b7f69976b250a3897359f6f1e5c8515aedb24ae56cd2fb6f",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "MTA A инициирует delivery TCP25 к B из MX;587/465 submission, обратный pull не требуется. Ключ[1]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain объясняют initiator и SMTP server как client, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-mail-mx профильнее абстрактного port lesson, добавить targeted SMTP delivery vs submission."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "SMTP/MX definitions есть; MTA/STARTTLS если добавлены раскрывать по контексту, не обещать mandatory implicit TLS25."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-mail-mx; section proposal smtp-mx-server-role-port25"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-mail-mx",
+        "anchorId": null,
+        "proposedSectionId": "smtp-mx-server-role-port25",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-5",
+        "getQuestionDeepDive(gen-transport-5)",
+        "getLessonForQuestion(gen-transport-5)"
+      ]
+    },
+    {
+      "id": "gen-transport-7",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "61959948420b34ed14b2a95913647346650e488f1fab4bc2299b5b992a576caf",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "INIT без saved lease→DHCPDISCOVER0.0.0.0→255.255.255.255; Request/Inform другие состояния. Ключ[1]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro явно различают INIT, INIT-REBOOT, renew и информирование."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l7-dhcp точный действующий урок, нужен explicit mapping/section без замены вопроса."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Discover/Request/DHCPv4 defined. Действующий practice dhcp указан и существует; сначала проверить, что упражнение реально показывает INIT/DORA, а не объявлять browser PASS."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": "dhcp",
+          "candidate": "dhcp",
+          "evidence": "Declared existing destination dhcp; registry read, actual simulator actions/browser not run."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l7-dhcp; section proposal dhcp-init-discover-no-lease"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l7-dhcp",
+        "anchorId": null,
+        "proposedSectionId": "dhcp-init-discover-no-lease",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:gen-transport-7",
+        "getQuestionDeepDive(gen-transport-7)",
+        "getLessonForQuestion(gen-transport-7)"
+      ]
+    },
+    {
+      "id": "k-01",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "26768ad59b186092286a838a18e4ccba34ca95049069bad79ffaf762dab0eff7",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Byte delivery не определяет message format/field semantics/sequence; ключ[1] корректно отделяет application protocol."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain дают механизм; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; tcpip-model Application section с targeted framing/semantics vs transport."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Существенных неопределённых abbreviations в вопросе нет; не требовать вымышленных терминов или нового стенда."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to tcpip-model; section proposal application-protocol-format-sequence"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "tcpip-model",
+        "anchorId": null,
+        "proposedSectionId": "application-protocol-format-sequence",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-01",
+        "getQuestionDeepDive(k-01)",
+        "getLessonForQuestion(k-01)"
+      ]
+    },
+    {
+      "id": "k-02",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "6e4fae8883baea029b98927765bdd60c011d4239af6c599ba7a3e5706d8bf034",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "TCP segment становится IP payload; заголовок TCP сохраняется, не переносится в IP header. Ключ[2] верен."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Подтверждённая ошибка plain: «TCP-заголовок и прикладные байты остаются вместе внутри IP-заголовка». Должно быть внутри IP-пакета после его заголовка. Pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; tcpip-encapsulation уже содержит иерархию полей, использовать явный section TCP→IP."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "TCP/IP definitions доступны; исправить смысловую границу заголовок/пакет прежде косметики."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to tcpip-encapsulation; section proposal tcp-segment-is-ip-payload"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "WRONG_PAYLOAD_BOUNDARY",
+          "evidence": "deepAnalysis: TCP-заголовок и прикладные байты остаются вместе внутри IP-заголовка",
+          "repair": "IP-пакета после заголовка"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "tcpip-encapsulation",
+        "anchorId": null,
+        "proposedSectionId": "tcp-segment-is-ip-payload",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-02",
+        "getQuestionDeepDive(k-02)",
+        "getLessonForQuestion(k-02)"
+      ]
+    },
+    {
+      "id": "k-03",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "8d60bd4755cbc7ddc1c64ab191b0e44f61c8a51f96a9b9bb51782e112b357aa8",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Нужный ordered reliable byte stream даёт TCP, не IP/канал/PHY; ключ[0]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain причинны, доставка между endpoints независима от Ethernet/WiFi; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l4-tcp «О чём ...»/поток/повторы; target отдельный section при необходимости."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "TCP и уровни доступны, подходящая практика tcp существует: добавить только если existing flow показывает порядки/ACK, не обещать arbitrary-loss simulator."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "tcp",
+          "evidence": "Candidate existing destination tcp; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l4-tcp; section proposal tcp-ordered-byte-stream-service"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l4-tcp",
+        "anchorId": null,
+        "proposedSectionId": "tcp-ordered-byte-stream-service",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-03",
+        "getQuestionDeepDive(k-03)",
+        "getLessonForQuestion(k-03)"
+      ]
+    },
+    {
+      "id": "k-04",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "1665e60f220fd5173969ec67535a99c4feafe3230704f89d1d25c46b7f3a310e",
+      "key": [
+        3
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "При identical bytes/different symbols сначала representation/encoding, L6. Ключ[3]; реальная реализация в app/library оговорена."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain точны, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "osi-pdu",
+          "evidence": "Текущий osi-pdu L6 краток. Существующий более точный osi-session-presentation предпочтителен; добавить concrete encoding section обоим стилям, не создавать дубль."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "L6 определение корректно; не нужно объявлять любые символы протокольными терминами."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "osi-session-presentation",
+        "anchorId": null,
+        "proposedSectionId": "presentation-encoding-identical-bytes",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-04",
+        "getQuestionDeepDive(k-04)",
+        "getLessonForQuestion(k-04)"
+      ]
+    },
+    {
+      "id": "k-05",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "fa5a3f92dec378eec3e5d459fe5e1cc0deee237c74c3105ad5e8dbd49eb7dfe7",
+      "key": [
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "4-layer Link включает L2+L1;5-layer разделяет, key[1]. Дистракторы не соответствуют моделям."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain корректно объясняют детализацию одной роли, pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; tcpip-model раздел4/5-layer с targeted section."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "Link tooltip имеет нужный model context; реальную физическую надпись Link не путать с названием уровня."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to tcpip-model; section proposal tcpip-four-vs-five-link"
+        },
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "tcpip-model",
+        "anchorId": null,
+        "proposedSectionId": "tcpip-four-vs-five-link",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-05",
+        "getQuestionDeepDive(k-05)",
+        "getLessonForQuestion(k-05)"
+      ]
+    },
+    {
+      "id": "k-06",
+      "status": "REVIEW",
+      "semanticStatus": "PASS",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "a525048295edfbdcc422d3893d71172c11794c2379c634b4de78450761222486",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Каждый указанный уровень добавляет собственные fields, а не шифрует/заменяет header; key[0]."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro точны: TCP ports/Seq/ACK, IPv4, Ethernet FCS; media-specific L2 оговорено."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "tcpip-encapsulation",
+          "evidence": "tcpip-encapsulation обоими стилями действительно покрывает; packet practice уже указан и существует."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "PDU/MAC/FCS/TCP definitions актуальны; английские src/dst/header — reader-review кандидаты, не подтверждённая ошибка сами по себе."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": "packet",
+          "candidate": "packet",
+          "evidence": "Declared existing destination packet; registry read, actual simulator actions/browser not run."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [],
+      "recommendedLesson": {
+        "lessonId": "tcpip-encapsulation",
+        "anchorId": null,
+        "proposedSectionId": "encapsulation-adds-control-fields",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-06",
+        "getQuestionDeepDive(k-06)",
+        "getLessonForQuestion(k-06)"
+      ]
+    },
+    {
+      "id": "k-07",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "2961aa12a32f3fdef383783b66e780cbaa9e950cfdec13b6637d456949bf31cc",
+      "key": [
+        2
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "End host обычный разбор Ethernet→IPv4→TCP→app, key[2], offload implementation не меняет учебную логическую иерархию."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain понятны и causal; pro отсутствует."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "osi-pdu",
+          "evidence": "osi-pdu plain содержит явную цепочку, pro только описывает PDU/абстракции: добавить symmetric detailed decode section."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "EtherType/Protocol существенны для next handler; Protocol entry существует, но tooltip отсутствует."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": "packet",
+          "evidence": "Candidate existing destination packet; verify scenario-specific relevance before adding. No new stand invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_PRO",
+          "evidence": "actual getQuestionDeepDive professional is absent",
+          "repair": "write subject-specific professional layer; do not copy plain"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "Protocol glossary entry has no tooltip",
+          "repair": "EtherType/Protocol существенны для next handler; Protocol entry существует, но tooltip отсутствует."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "osi-pdu",
+        "anchorId": null,
+        "proposedSectionId": "decapsulation-ethernet-ipv4-tcp",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:k-07",
+        "getQuestionDeepDive(k-07)",
+        "getLessonForQuestion(k-07)"
+      ]
+    },
+    {
+      "id": "l1-02",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "66de528609217d9e3d83a4de84cd2a98941b729d54f51df37c4348d222972212",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "PHY-to-PHY repeater сохраняет общий collision domain при соблюдении delay/length; bridge/cut-through нет. Ключ[0] точен при явно заданном half-duplex."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro отличают marketing name от datapath, limits оговорены."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; l2-ethernet half/full-duplex раздел расширить repeater/bridge в обоих стилях."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "PHY-to-PHY/cut-through/store-and-forward определены. datapath можно заменить на «режим обработки», не выдумывать расшифровку."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to l2-ethernet; section proposal halfduplex-repeater-not-bridge"
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l2-ethernet",
+        "anchorId": null,
+        "proposedSectionId": "halfduplex-repeater-not-bridge",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:l1-02",
+        "getQuestionDeepDive(l1-02)",
+        "getLessonForQuestion(l1-02)"
+      ]
+    },
+    {
+      "id": "l1-04",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "2b75f7eeaf5dc32efd5d8cdda701d96e7a105e0ca01a5b97ff99659cc963db46",
+      "key": [
+        0,
+        1
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "При fixedTx падениеRx может быть dirt/bend; overload и sensitivity не создают attenuation. Ключ[0,1] корректен."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro не приписывают ровно6dB одной причине и задают sequential checks."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": null,
+          "evidence": "Связи нет; ts-optics плюс targeted attenuation sources section: загрязнение/изгиб vs overload/threshold."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "dB entry существует без tooltip; важно различить отношение/затухание dB и мощность dBm. Не заявлять проведение реального оптического измерения."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "MISSING_LESSON",
+          "evidence": "actual getLessonForQuestion resolver returned null",
+          "repair": "explicit mapping to ts-optics; section proposal optical-loss-dirt-bend"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "dB glossary entry has no tooltip",
+          "repair": "dB entry существует без tooltip; важно различить отношение/затухание dB и мощность dBm. Не заявлять проведение реального оптического измерения."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "ts-optics",
+        "anchorId": null,
+        "proposedSectionId": "optical-loss-dirt-bend",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:l1-04",
+        "getQuestionDeepDive(l1-04)",
+        "getLessonForQuestion(l1-04)"
+      ]
+    },
+    {
+      "id": "l12-copp01",
+      "status": "REVIEW",
+      "semanticStatus": "PASS",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "a70ed5c61ec2ff2f9390dee2f62c5d3a31d264e58e35a36980a183ed95d24554",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Ping/SSH к device могут ограничиваться CoPP при intact transit; key[0] — первая гипотеза, не единственная доказанная причина."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Все слои последовательно требуют policy/class drops/CPU; technical specificity достаточна."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "ts-copp-storm",
+          "evidence": "ts-copp-storm plain/pro полно объясняют классы control plane, data plane и счётчики; не нужен новый урок."
+        },
+        "termsAndGlossary": {
+          "status": "REVIEW",
+          "evidence": "CoPP/control plane/policing/CRC релевантны; фактический device command output не воспроизводился."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [],
+      "recommendedLesson": {
+        "lessonId": "ts-copp-storm",
+        "anchorId": null,
+        "proposedSectionId": "copp-device-vs-transit",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:l12-copp01",
+        "getQuestionDeepDive(l12-copp01)",
+        "getLessonForQuestion(l12-copp01)"
+      ]
+    },
+    {
+      "id": "l12-d05",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "534a5b624e5e34e662c5e842e018547e04fa8aec496bf60ef5e720958bfdaece",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Два independent forwarding links дают loop broadcast; FCS не duplicate-ID, MAC learning не ограничивает broadcast, LAG hashing не применяется. Key[0]."
+        },
+        "whyPlainPro": {
+          "status": "FIX",
+          "evidence": "Why/plain конкретны; pro слишком кратко перечисляет STP/storm-control/design и не разъясняет дистракторы. Storm-control подавляет последствия, не устраняет петлю."
+        },
+        "lessonCoverage": {
+          "status": "PASS",
+          "actualLessonId": "l2-stp",
+          "evidence": "l2-stp plain/pro покрывают loop/TTL/LACP, но про cost glossary уводит к OSPF. Target concrete section можно переиспользовать."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "cost в STP lesson получает OSPF-only definition/link. Нужен STP path cost context либо явное имя, сохраняя OSPF смысл для других материалов."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "PRO_TOO_SHALLOW_FOR_STEM",
+          "evidence": "Ethernet не декрементирует TTL. Петля размножает flood до насыщения каналов.\nНужны STP/RSTP/MSTP, storm-control, разумный дизайн без L2-колец без защиты.",
+          "repair": "explain two independent links, FCS not duplicate detection, MAC learning vs broadcast; storm-control is mitigation not topology repair"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "STP cost tooltip has OSPF-only meaning and target",
+          "repair": "cost в STP lesson получает OSPF-only definition/link. Нужен STP path cost context либо явное имя, сохраняя OSPF смысл для других материалов."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l2-stp",
+        "anchorId": null,
+        "proposedSectionId": "ethernet-loop-two-independent-links",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:l12-d05",
+        "getQuestionDeepDive(l12-d05)",
+        "getLessonForQuestion(l12-d05)"
+      ]
+    },
+    {
+      "id": "l12-ds04",
+      "status": "FIX",
+      "semanticStatus": "FIX",
+      "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+      "questionContentHash": "2d8331f2bd54c7e27240c9287d1e23717a338671d0977ee59e66b1783aec2cc7",
+      "key": [
+        0
+      ],
+      "criteria": {
+        "conditionKeyDistractors": {
+          "status": "PASS",
+          "evidence": "Задана Cisco Catalyst IOSXE; превышение DHCP Snooping rate→err-disabled dhcp-rate-limit. Key[0] соответствует платформе, не обычный drop police."
+        },
+        "whyPlainPro": {
+          "status": "PASS",
+          "evidence": "Why/plain/pro технически причинны, учитывают legitimate burst/recovery."
+        },
+        "lessonCoverage": {
+          "status": "FIX",
+          "actualLessonId": "l2-access-guard",
+          "evidence": "Linked l2-access-guard в обоих стилях говорит лишь «limit rate ... режет ... Discover», не объясняет полное err-disable из вопроса. Нужен targeted section с причиной, проверкой, recovery и burst, в обоих стилях."
+        },
+        "termsAndGlossary": {
+          "status": "FIX",
+          "evidence": "err-disabled/rate limit определены. Generic «порты» tooltip описывает TCP/UDP endpoints, а lesson говорит physical ports: контекстная полисемия требует исправления rendering/словоупотребления."
+        },
+        "practice": {
+          "status": "REVIEW",
+          "declared": null,
+          "candidate": null,
+          "evidence": "No exact existing stand verified for this subject; absence alone is not a confirmed defect and no practice invented."
+        },
+        "runtimeNavigation": {
+          "status": "PENDING",
+          "evidence": "No browser, rendered tooltip, exact destination, section scroll, style toggle or return scenario executed by this initial auditor."
+        }
+      },
+      "defects": [
+        {
+          "code": "LESSON_PLATFORM_EFFECT_MISSING",
+          "evidence": "l2-access-guard plain/pro Binding: слишком низкий limit rate ... режет и обычные Discover; no DHCP rate err-disable explanation",
+          "repair": "explicit Catalyst IOSXE dhcp-rate-limit err-disable both styles"
+        },
+        {
+          "code": "CONTEXTUAL_GLOSSARY_DEFECT",
+          "evidence": "physical порты matches transport-only glossary meaning",
+          "repair": "err-disabled/rate limit определены. Generic «порты» tooltip описывает TCP/UDP endpoints, а lesson говорит physical ports: контекстная полисемия требует исправления rendering/словоупотребления."
+        }
+      ],
+      "recommendedLesson": {
+        "lessonId": "l2-access-guard",
+        "anchorId": null,
+        "proposedSectionId": "dhcp-snooping-rate-errdisable",
+        "sectionStatus": "proposal-only-not-implemented",
+        "architecture": "Use explicit lessonSectionLinks plus both actual lesson modes. Existing whole-lesson mapping may remain if its relevant blocks are already sufficient."
+      },
+      "evidencePaths": [
+        "question:l12-ds04",
+        "getQuestionDeepDive(l12-ds04)",
+        "getLessonForQuestion(l12-ds04)"
+      ]
+    }
+  ],
+  "limitations": [
+    "No edits to question bank, keys, source lessons, UI, protected baselines or production.",
+    "PASS within a semantic dimension means text independently read in this initial snapshot, not complete runtime acceptance. Overall REVIEW remains for content without identified defects until runtime checks.",
+    "No external HTTP availability or source-verification browser session executed. Named RFC references cross-checked against established protocol behavior, not counted as newly fetched official evidence.",
+    "Candidate English words and acronyms are not automatically confirmed defects.",
+    "All section IDs described as proposals require implementation and validation; only dns-nxdomain-application was already present in this group."
+  ]
+}

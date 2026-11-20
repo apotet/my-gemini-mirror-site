@@ -69,6 +69,13 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
     window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
 
+  const clearFocusedQuestion = () => {
+    // "К каталогу" must clear the local focus set by "Вернуться к вопросу"
+    // as well as any question supplied by the parent navigation.
+    setFocusQuestionId(null);
+    onClearInitialQuestion?.();
+  };
+
   const effectiveQuestionId = focusQuestionId || initialQuestionId;
 
   return (
@@ -121,7 +128,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
           onReturnToExam={onReturnToExam}
           onNavigateToIpv4={onNavigateToIpv4}
           onNavigateToIpv6={onNavigateToIpv6}
-          onClearInitialQuestion={onClearInitialQuestion}
+          onClearInitialQuestion={onClearInitialQuestion ? clearFocusedQuestion : undefined}
           onOpenLesson={openLesson}
         />
       )}

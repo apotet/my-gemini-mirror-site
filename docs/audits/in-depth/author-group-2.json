@@ -1,0 +1,1220 @@
+{
+  "schemaVersion": 1,
+  "author": "/root/l2_review_group2",
+  "baselineSHA": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "initialAuditCommit": "2907bc6",
+  "scope": {
+    "count": 40,
+    "ids": [
+      "l12-storm01",
+      "l12-x02",
+      "l12-x03",
+      "l1v2-a-category-limit",
+      "l1v2-a-jacket-kink",
+      "l1v2-a-jacket-limit",
+      "l1v2-a-label-sftp",
+      "l1v2-a-pairs",
+      "l1v2-a-solid-use",
+      "l1v2-a-strain-view",
+      "l1v2-b-bend-loss",
+      "l1v2-b-position-cause",
+      "l1v2-b-screen-xy",
+      "l1v2-b-transfer",
+      "l1v2-c-bidi-wrong-pair",
+      "l1v2-c-closure-service",
+      "l1v2-c-converter-polarity",
+      "l1v2-c-industrial-fiber-ports",
+      "l1v2-c-splitter-role",
+      "l2-04",
+      "l2-12",
+      "l2-sec-05",
+      "l2-sec-08",
+      "l2-sec-13",
+      "l2-sec-18",
+      "l3-16",
+      "l3-bgp-06",
+      "l3-d04",
+      "l3-d07",
+      "l3-d08",
+      "l3-ospf-03",
+      "l3-vrrp02",
+      "l3-vrrp04",
+      "l4-03",
+      "l4-04",
+      "l4-d04",
+      "l4-d06",
+      "l4-lb-01",
+      "l4-new-05",
+      "l4-new-07"
+    ]
+  },
+  "moduleSHA256": "42b82dc5cf0d4ab53e274ffea2a0e16b3f795dcee86366499175bd001d0eef8e",
+  "implementation": {
+    "questionPatches": 28,
+    "explicitLinks": 27,
+    "sections": 17,
+    "existingLessonPatches": [
+      "l3-vrrp"
+    ],
+    "termPatches": 28,
+    "batches": [
+      {
+        "id": "l2-copper-photos-and-switching",
+        "count": 15
+      },
+      {
+        "id": "l2-optical-photos-and-ring",
+        "count": 10
+      },
+      {
+        "id": "l2-routing-and-transport-mechanisms",
+        "count": 15
+      }
+    ],
+    "newLessons": 0,
+    "questionSourceOrKeyChanges": 0,
+    "unchangedGoodQuestions": [
+      "l12-storm01",
+      "l2-04",
+      "l2-sec-05",
+      "l2-sec-08",
+      "l2-sec-13",
+      "l2-sec-18",
+      "l3-bgp-06",
+      "l4-03"
+    ]
+  },
+  "selfChecks": {
+    "esbuild": "PASS: isolated actual module, type-only imports erased",
+    "exactScope": "PASS:40 unique IDs exactly match frozen own group",
+    "batchSizes": "PASS:15/10/15, no batch exceeds20",
+    "sectionAnchors": "PASS: all17 afterHeading pairs exist in frozen real LESSONS with professional material",
+    "lessonTargets": "PASS: all27 explicit targets exist in frozen catalog",
+    "goodLayerPreservation": "PASS:8 initially good question entries have no patches; existing converter plain/pro and all other unpatched layers retained",
+    "mrpShared": "PASS: gen-diag-5,l2-12,tr-11 share mrp-manager-client-fundamentals",
+    "visualDiagram": "Confirmed SYN-handshake diagram removed only from TCP half-close; other diagrams unchanged"
+  },
+  "independentAcceptance": {
+    "status": "PENDING",
+    "reason": "Author selfchecks are not independent semantic PASS. Root must integrate all groups, run regressions/browser, commit final content SHA and assign another executor."
+  },
+  "runtimeAcceptance": {
+    "status": "PENDING",
+    "reason": "No claim of current browser, CI, saved-attempt or deployed staging verification from isolated author module."
+  },
+  "contentChanges": [
+    "Individually causal copper/fibre photo layers replace foreign fibre-polish fallback on copper/PoE. All16 photo originals were already visually checked in initial audit; keys preserved.",
+    "LACP passive/passive, MRP manager/client fundamentals, TTL expiry, proxy ARP, ECMP, UDP checksums, TCP half-close and real-time transport receive missing/incomplete technical layers and reused lesson sections.",
+    "Only inaccurate VRRP professional role/preemption blocks changed, retaining good plain.",
+    "OSPFv2 Network-LSA DR coverage added to existing OSPF lesson; existing correct question layers preserved.",
+    "Only vague/tautological why replaced for DNS TCP/AXFR and health checks.",
+    "Existing glossary definitions preserved where metadata alone suffices; exact shielding-code metadata prevents FTP file-transfer tooltip inside S/FTP/U/FTP.",
+    "Known foreign photo practical tips replaced with relevant diagnosis; old handshake diagram removed from half-close."
+  ],
+  "sourceReferences": [
+    "RFC768",
+    "RFC8200 §8.1",
+    "RFC6935/6936 scope restrictions",
+    "RFC9293 TCP closing/half-close",
+    "RFC3768 §§6.4.1/6.4.2",
+    "RFC2328 §12.4.2",
+    "RFC1027 Proxy ARP",
+    "IEC62439-2 MRP",
+    "ITU-T G.8032 ERPS",
+    "Pinned photo originals apotet/osi-tcpip-exam-public@1c52fa81222167dc4377fe4788de86f3e36ad444"
+  ],
+  "rows": [
+    {
+      "id": "l12-storm01",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "ts-copp-storm",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l12-storm01"
+      ]
+    },
+    {
+      "id": "l12-x02",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro",
+        "trap"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_INCOMPLETE"
+      ],
+      "lessonId": "l2-stp",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l12-x02"
+      ]
+    },
+    {
+      "id": "l12-x03",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l2-stp-guard-design",
+      "section": "lacp-active-passive-start",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l12-x03"
+      ]
+    },
+    {
+      "id": "l1v2-a-category-limit",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l1-copper-cable",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-category-limit"
+      ]
+    },
+    {
+      "id": "l1v2-a-jacket-kink",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l1-copper-termination-quality",
+      "section": "copper-mechanical-strain",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-jacket-kink"
+      ]
+    },
+    {
+      "id": "l1v2-a-jacket-limit",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l1-copper-cable",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-jacket-limit"
+      ]
+    },
+    {
+      "id": "l1v2-a-label-sftp",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "MISLEADING_PARTIAL_TOOLTIP"
+      ],
+      "lessonId": "l1-copper-cable",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-label-sftp"
+      ]
+    },
+    {
+      "id": "l1v2-a-pairs",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l1-copper-cable",
+      "section": "twisted-pair-common-mode",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-pairs"
+      ]
+    },
+    {
+      "id": "l1v2-a-solid-use",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l1-copper-cable",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-solid-use"
+      ]
+    },
+    {
+      "id": "l1v2-a-strain-view",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l1-copper-termination-quality",
+      "section": "copper-mechanical-strain",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-a-strain-view"
+      ]
+    },
+    {
+      "id": "l1v2-b-bend-loss",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l1-optical-testing-equipment",
+      "section": "vfl-visible-bend-loss",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-b-bend-loss"
+      ]
+    },
+    {
+      "id": "l1v2-b-position-cause",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l1-fiber-splicing",
+      "section": "splicer-position-two-views",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-b-position-cause"
+      ]
+    },
+    {
+      "id": "l1v2-b-screen-xy",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l1-fiber-splicing",
+      "section": "splicer-position-two-views",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-b-screen-xy"
+      ]
+    },
+    {
+      "id": "l1v2-b-transfer",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l1-fiber-splicing",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-b-transfer"
+      ]
+    },
+    {
+      "id": "l1v2-c-bidi-wrong-pair",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l1-fiber-identification",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-c-bidi-wrong-pair"
+      ]
+    },
+    {
+      "id": "l1v2-c-closure-service",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l1-optical-testing-equipment",
+      "section": "closure-single-ended-access",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-c-closure-service"
+      ]
+    },
+    {
+      "id": "l1v2-c-converter-polarity",
+      "initialStatus": "FIX",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l1-switch-panel-identification",
+      "section": "optical-duplex-polarity",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-c-converter-polarity"
+      ]
+    },
+    {
+      "id": "l1v2-c-industrial-fiber-ports",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l1-switch-panel-identification",
+      "section": "optical-duplex-polarity",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-c-industrial-fiber-ports"
+      ]
+    },
+    {
+      "id": "l1v2-c-splitter-role",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "FOREIGN_FALLBACK",
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l1-copper-fault-poe",
+      "section": "poe-splitter-versus-injector",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l1v2-c-splitter-role"
+      ]
+    },
+    {
+      "id": "l2-04",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l2-ethernet",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-04"
+      ]
+    },
+    {
+      "id": "l2-12",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "expert-mrp-vlan-failover",
+      "section": "mrp-manager-client-fundamentals",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-12"
+      ]
+    },
+    {
+      "id": "l2-sec-05",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l2-stp-guard-design",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-sec-05"
+      ]
+    },
+    {
+      "id": "l2-sec-08",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l2-stp-guard-design",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-sec-08"
+      ]
+    },
+    {
+      "id": "l2-sec-13",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l2-vlan-security",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-sec-13"
+      ]
+    },
+    {
+      "id": "l2-sec-18",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l2-vlan-security",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l2-sec-18"
+      ]
+    },
+    {
+      "id": "l3-16",
+      "initialStatus": "FIX",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "LESSON_MISSING"
+      ],
+      "lessonId": "l3-route-selection",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-16"
+      ]
+    },
+    {
+      "id": "l3-bgp-06",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l3-bgp",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-bgp-06"
+      ]
+    },
+    {
+      "id": "l3-d04",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l3-icmp-basics",
+      "section": "ipv4-ttl-time-exceeded",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-d04"
+      ]
+    },
+    {
+      "id": "l3-d07",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_INCOMPLETE",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l3-arp",
+      "section": "proxy-arp-masks-network-error",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-d07"
+      ]
+    },
+    {
+      "id": "l3-d08",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l3-route-selection",
+      "section": "ecmp-flow-hash-order",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-d08"
+      ]
+    },
+    {
+      "id": "l3-ospf-03",
+      "initialStatus": "FIX",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l3-ospf",
+      "section": "ospfv2-network-lsa-dr",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-ospf-03"
+      ]
+    },
+    {
+      "id": "l3-vrrp02",
+      "initialStatus": "FIX",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "LESSON_PRO_INACCURATE"
+      ],
+      "lessonId": "l3-vrrp",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-vrrp02"
+      ]
+    },
+    {
+      "id": "l3-vrrp04",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_INACCURATE",
+        "LESSON_PRO_INACCURATE"
+      ],
+      "lessonId": "l3-vrrp",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l3-vrrp04"
+      ]
+    },
+    {
+      "id": "l4-03",
+      "initialStatus": "PASS",
+      "authoredFields": [],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [],
+      "lessonId": "l4-tcp",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-03"
+      ]
+    },
+    {
+      "id": "l4-04",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l4-tcp",
+      "section": "real-time-udp-delay-budget",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-04"
+      ]
+    },
+    {
+      "id": "l4-d04",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "brief"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "WHY_UNSPECIFIC"
+      ],
+      "lessonId": "l7-dns",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-d04"
+      ]
+    },
+    {
+      "id": "l4-d06",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief",
+        "existing.plain"
+      ],
+      "resolvedDefects": [
+        "PRO_INCOMPLETE",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "qos-basics",
+      "section": "policer-tcp-congestion-window",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-d06"
+      ]
+    },
+    {
+      "id": "l4-lb-01",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "brief"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.plain",
+        "existing.pro"
+      ],
+      "resolvedDefects": [
+        "WHY_TAUTOLOGY"
+      ],
+      "lessonId": "l4-lb",
+      "section": null,
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-lb-01"
+      ]
+    },
+    {
+      "id": "l4-new-05",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING"
+      ],
+      "lessonId": "l4-tcp",
+      "section": "udp-checksum-ipv4-ipv6",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-new-05"
+      ]
+    },
+    {
+      "id": "l4-new-07",
+      "initialStatus": "FIX",
+      "authoredFields": [
+        "plain",
+        "pro",
+        "visualDiagram",
+        "trap",
+        "practicalTip"
+      ],
+      "retainedGoodFields": [
+        "question.text",
+        "question.answers",
+        "question.correct",
+        "existing.brief"
+      ],
+      "resolvedDefects": [
+        "PLAIN_INCOMPLETE",
+        "PRO_MISSING",
+        "LESSON_MISSING",
+        "LESSON_SECTION_MISSING",
+        "TOOLTIP_GAP"
+      ],
+      "lessonId": "l4-tcp-connection-closing",
+      "section": "tcp-half-close-directions",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "runtimeAcceptance": "PENDING_ROOT_INTEGRATION_AND_BROWSER",
+      "evidence": [
+        "src/data/inDepth/group2.ts",
+        "docs/audits/in-depth/initial-group-2.json#l4-new-07"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,579 @@
+{
+  "schemaVersion": 1,
+  "author": "independent_review (group1 author phase; not independent acceptance)",
+  "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "frozenInitialAudit": "2907bc6",
+  "status": "AUTHOR_SELF_CHECK_PENDING_INDEPENDENT_REVIEW",
+  "file": "src/data/inDepth/group1.ts",
+  "sha256": "1ccf2cef33f73508e11947c3c52a92e02ec3b6688a1e008187f6504d097c403f",
+  "questionIds": [
+    "gap-pack2-05",
+    "gap-pack2-10",
+    "gap-pack2-11",
+    "gap-pack2-16",
+    "gap-pack2-21",
+    "gap-pack2-27",
+    "gap-pack3-08",
+    "gap-pack3-12",
+    "gap-pack3-15",
+    "gen-diag-0",
+    "gen-diag-10",
+    "gen-diag-13",
+    "gen-diag-2",
+    "gen-diag-5",
+    "gen-diag-6",
+    "gen-diag-7",
+    "gen-diag-9",
+    "gen-osi-a-18",
+    "gen-osi-a-19",
+    "gen-osi-a-2",
+    "gen-port-11",
+    "gen-port-14",
+    "gen-transport-1",
+    "gen-transport-14",
+    "gen-transport-16",
+    "gen-transport-17",
+    "gen-transport-5",
+    "gen-transport-7",
+    "k-01",
+    "k-02",
+    "k-03",
+    "k-04",
+    "k-05",
+    "k-06",
+    "k-07",
+    "l1-02",
+    "l1-04",
+    "l12-copp01",
+    "l12-d05",
+    "l12-ds04"
+  ],
+  "questionPatchIds": [
+    "gap-pack2-05",
+    "gap-pack2-10",
+    "gap-pack2-21",
+    "gap-pack2-27",
+    "gap-pack3-08",
+    "gap-pack3-12",
+    "gen-diag-10",
+    "gen-diag-13",
+    "gen-diag-2",
+    "gen-diag-5",
+    "gen-diag-7",
+    "gen-osi-a-18",
+    "gen-osi-a-2",
+    "gen-port-11",
+    "gen-port-14",
+    "gen-transport-1",
+    "gen-transport-14",
+    "gen-transport-16",
+    "gen-transport-17",
+    "gen-transport-5",
+    "gen-transport-7",
+    "k-01",
+    "k-02",
+    "k-03",
+    "k-04",
+    "k-05",
+    "k-07",
+    "l12-copp01",
+    "l12-d05"
+  ],
+  "preservation": "Good existing why/plain/pro retained unless specifically repaired. Original questions, answer options and keys untouched. Existing gen-osi-a-19 #250 anchor untouched.",
+  "batches": [
+    {
+      "id": "in-depth-g1-packet-transport",
+      "title": "Границы пакетов, транспорт и обработка сообщений",
+      "questionIds": [
+        "gap-pack2-05",
+        "gap-pack2-10",
+        "gap-pack2-21",
+        "gap-pack2-27",
+        "gap-pack3-08",
+        "gap-pack3-15",
+        "gen-transport-1",
+        "gen-transport-16",
+        "gen-transport-17",
+        "gen-transport-5",
+        "gen-transport-7",
+        "k-02",
+        "k-03",
+        "k-06",
+        "k-07"
+      ]
+    },
+    {
+      "id": "in-depth-g1-application-models",
+      "title": "Прикладные ответы, время, уведомления и учебные модели",
+      "questionIds": [
+        "gap-pack2-11",
+        "gap-pack2-16",
+        "gap-pack3-12",
+        "gen-osi-a-18",
+        "gen-osi-a-19",
+        "gen-osi-a-2",
+        "gen-port-11",
+        "gen-port-14",
+        "gen-transport-14",
+        "k-01",
+        "k-04",
+        "k-05"
+      ]
+    },
+    {
+      "id": "in-depth-g1-diagnostics-l1-l2",
+      "title": "Наблюдения, локальный тракт и защита интерфейсов",
+      "questionIds": [
+        "gen-diag-0",
+        "gen-diag-10",
+        "gen-diag-13",
+        "gen-diag-2",
+        "gen-diag-5",
+        "gen-diag-6",
+        "gen-diag-7",
+        "gen-diag-9",
+        "l1-02",
+        "l1-04",
+        "l12-copp01",
+        "l12-d05",
+        "l12-ds04"
+      ]
+    }
+  ],
+  "sharedMaterial": {
+    "fullProfessionalLessons": {
+      "tcp-window-retransmit": [
+        "Как отправитель не переполняет получателя",
+        "Нулевое окно и persist: ждать, но не потерять связь",
+        "Window Scale: исключение для SYN и SYN-ACK",
+        "Повтор и измерение задержки: алгоритм Карна",
+        "Дублированные данные не становятся новым сообщением",
+        "Seq и ACK относятся к разным направлениям",
+        "FIN и half-close: закончить отправку, продолжая приём",
+        "Встречные кортежи и счётчик соединений",
+        "Bandwidth-delay product: сколько данных должно помещаться в пути",
+        "Практика: два направления на TCP-стенде",
+        "Четыре практических вывода"
+      ],
+      "l7-dns-dhcp": [
+        "Сначала получить настройки, затем найти адрес по имени",
+        "NOERROR/NODATA и NXDOMAIN: чего именно нет",
+        "Relay и giaddr: из какой сети пришёл клиент",
+        "T1, T2 и срок аренды: три разные границы",
+        "Пример: прошло 3200 секунд из 3600",
+        "MX: меньший номер предпочтительнее, следующий — резервный",
+        "Четыре практических вывода"
+      ],
+      "l7-services": [
+        "Что нужно выяснить в прикладном обмене",
+        "HTTP 206: куда записать полученную часть",
+        "mTLS: доверие клиентскому CA настраивают на сервере",
+        "SSH local forwarding: к цели подключается jump",
+        "NTP KoD RATE: увеличить интервал запросов",
+        "Syslog PRI: сначала разобрать, затем фильтровать",
+        "SMTP submission: STARTTLS на порту 587",
+        "Четыре практических вывода"
+      ]
+    },
+    "ntpSectionUsers": [
+      "gap-pack2-16",
+      "gen-port-11",
+      "tcpip-ntp01",
+      "review-syslog-25"
+    ],
+    "mrp": "Only link gen-diag-5→expert-mrp-vlan-failover; full shared MRP section is group2 responsibility.",
+    "monitoring": "Only new Inform/Trap section and global SNMP glossary reliability correction. Existing monitoring bodies left to group3.",
+    "dnsPolysemy": "Contextual DNS RR/DNS NS terms; targeted l7-dns and l7-mail-mx bodies. Global BGP RR and IPv6 NS unchanged.",
+    "stpPolysemy": "Contextual STP cost in l2-stp plain block; global OSPF cost untouched.",
+    "terms": [
+      "PPP",
+      "IPCP",
+      "Protocol",
+      "APIPA",
+      "MBAP",
+      "DNS RR",
+      "DNS NS",
+      "STP cost",
+      "RRset",
+      "RCODE",
+      "QTYPE",
+      "QNAME",
+      "NOERROR",
+      "persist",
+      "rwnd",
+      "Window Scale",
+      "BDP",
+      "SRTT",
+      "HEAD",
+      "GET",
+      "Content-Length",
+      "NTP",
+      "KoD",
+      "RATE",
+      "Stratum",
+      "Leap Indicator",
+      "SNMP",
+      "recvfrom",
+      "EOF",
+      "PPP Protocol",
+      "giaddr",
+      "ciaddr",
+      "дБ"
+    ],
+    "otherGroupsTermsReliedOn": [
+      "dB",
+      "cwnd"
+    ]
+  },
+  "sections": [
+    {
+      "lessonId": "l4-tcp",
+      "anchorId": "in-depth-udp-empty-message",
+      "questionIds": [
+        "gap-pack2-27"
+      ],
+      "afterHeading": {
+        "plain": "Поток не сохраняет границы отправок",
+        "professional": "Чем UDP отличается"
+      }
+    },
+    {
+      "lessonId": "l3-ipv6",
+      "anchorId": "in-depth-ipv6-udp-checksum",
+      "questionIds": [
+        "gap-pack3-08"
+      ],
+      "afterHeading": {
+        "plain": "Как узнать соседа без ARP",
+        "professional": "DAD: проверить уникальность адреса"
+      }
+    },
+    {
+      "lessonId": "l7-dns",
+      "anchorId": "in-depth-dns-cname-cycle",
+      "questionIds": [
+        "gap-pack3-12"
+      ],
+      "afterHeading": {
+        "plain": "Какие данные можно попросить",
+        "professional": "A и AAAA: адреса и алиасы"
+      }
+    },
+    {
+      "lessonId": "l7-services",
+      "anchorId": "in-depth-http-head-no-body",
+      "questionIds": [
+        "gap-pack3-15"
+      ],
+      "afterHeading": {
+        "plain": "HTTP 206: куда записать полученную часть",
+        "professional": "HTTP 206: куда записать полученную часть"
+      }
+    },
+    {
+      "lessonId": "l2-ethernet",
+      "anchorId": "in-depth-source-learning-observation",
+      "questionIds": [
+        "gen-diag-0"
+      ],
+      "afterHeading": {
+        "plain": "Как коммутатор запоминает и выбирает порт",
+        "professional": "По какому адресу пересылает коммутатор"
+      }
+    },
+    {
+      "lessonId": "cli-trunk-vlan-diagnostics",
+      "anchorId": "in-depth-trunk-allowed-single-path",
+      "questionIds": [
+        "gen-diag-10"
+      ],
+      "afterHeading": {
+        "plain": "Прочитать все списки show interfaces trunk",
+        "professional": "Allowed list против фактической передачи"
+      }
+    },
+    {
+      "lessonId": "ts-method",
+      "anchorId": "in-depth-observation-scope-and-evidence",
+      "questionIds": [
+        "gen-diag-13",
+        "gen-diag-2"
+      ],
+      "afterHeading": {
+        "plain": "Одно наблюдение отвечает на один вопрос",
+        "professional": "Не прыгать сразу в приложение"
+      }
+    },
+    {
+      "lessonId": "l3-arp",
+      "anchorId": "in-depth-arp-evidence-and-duplicate",
+      "questionIds": [
+        "gen-diag-6",
+        "gen-diag-9"
+      ],
+      "afterHeading": {
+        "plain": "Адрес известен, но давно не проверялся — или пока неизвестен",
+        "professional": "Что означает incomplete"
+      }
+    },
+    {
+      "lessonId": "l7-dhcp",
+      "anchorId": "in-depth-dhcp-init-and-apipa",
+      "questionIds": [
+        "gen-diag-7",
+        "gen-transport-7"
+      ],
+      "afterHeading": {
+        "plain": "Как клиент договаривается о выдаче",
+        "professional": "DORA по шагам"
+      }
+    },
+    {
+      "lessonId": "tcpip-model",
+      "anchorId": "in-depth-application-protocol-semantics",
+      "questionIds": [
+        "k-01",
+        "gen-osi-a-18"
+      ],
+      "afterHeading": {
+        "plain": "Кому доставлять на каждом шаге",
+        "professional": "Четыре уровня DoD"
+      }
+    },
+    {
+      "lessonId": "l1-phy-symbol-rate",
+      "anchorId": "in-depth-regeneration-levels-clock",
+      "questionIds": [
+        "gen-osi-a-2"
+      ],
+      "afterHeading": {
+        "plain": "Почему скорость полезных данных меньше",
+        "professional": "Инженерная проверка единиц"
+      }
+    },
+    {
+      "lessonId": "l7-services",
+      "anchorId": "in-depth-ntp-source-validity-rate",
+      "questionIds": [
+        "gap-pack2-16",
+        "gen-port-11",
+        "tcpip-ntp01",
+        "review-syslog-25"
+      ],
+      "afterHeading": {
+        "plain": "NTP KoD RATE: увеличить интервал запросов",
+        "professional": "NTP KoD RATE: увеличить интервал запросов"
+      }
+    },
+    {
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchorId": "in-depth-snmp-trap-inform-roles",
+      "questionIds": [
+        "gen-port-14",
+        "gen-transport-14"
+      ],
+      "afterHeading": {
+        "plain": "Polling (UDP 161) и уведомления (UDP 162): почему одних трапов мало",
+        "professional": "Надёжность доставки: Polling + Traps + InformRequest"
+      }
+    },
+    {
+      "lessonId": "l4-service-ports",
+      "anchorId": "in-depth-http2-http3-port443",
+      "questionIds": [
+        "gen-transport-1"
+      ],
+      "afterHeading": {
+        "plain": "Веб и удалённый доступ",
+        "professional": "Номера и реальный транспорт"
+      }
+    },
+    {
+      "lessonId": "l4-directory-remote-industrial-ports",
+      "anchorId": "in-depth-rdp-udp-fallback",
+      "questionIds": [
+        "gen-transport-16"
+      ],
+      "afterHeading": {
+        "plain": "RDP: 3389/TCP, но бывает и UDP",
+        "professional": "RDP и удалённый доступ"
+      }
+    },
+    {
+      "lessonId": "l4-directory-remote-industrial-ports",
+      "anchorId": "in-depth-modbus-mbap-vs-rtu",
+      "questionIds": [
+        "gen-transport-17"
+      ],
+      "afterHeading": {
+        "plain": "Modbus TCP: 502/TCP и промышленная зона",
+        "professional": "Modbus/TCP и защита оборудования"
+      }
+    },
+    {
+      "lessonId": "l7-mail-mx",
+      "anchorId": "in-depth-smtp-mx-delivery-port25",
+      "questionIds": [
+        "gen-transport-5"
+      ],
+      "afterHeading": {
+        "plain": "Как выбрать сервер по MX",
+        "professional": "DNS-формат и поведение отправителя"
+      }
+    },
+    {
+      "lessonId": "l4-tcp",
+      "anchorId": "in-depth-tcp-byte-stream-service",
+      "questionIds": [
+        "k-03"
+      ],
+      "afterHeading": {
+        "plain": "Поток не сохраняет границы отправок",
+        "professional": "Чем UDP отличается"
+      }
+    },
+    {
+      "lessonId": "tcpip-encapsulation",
+      "anchorId": "in-depth-tcp-ip-encapsulation-boundary",
+      "questionIds": [
+        "k-02",
+        "k-06"
+      ],
+      "afterHeading": {
+        "plain": "Что происходит при передаче пакета",
+        "professional": "Иерархия полей: от Ethernet до приложения"
+      }
+    },
+    {
+      "lessonId": "osi-session-presentation",
+      "anchorId": "in-depth-l6-identical-bytes-encoding",
+      "questionIds": [
+        "k-04"
+      ],
+      "afterHeading": {
+        "plain": "L6: одинаковый смысл — разные байты",
+        "professional": "Presentation service и кодирование"
+      }
+    },
+    {
+      "lessonId": "tcpip-model",
+      "anchorId": "in-depth-four-five-layer-link",
+      "questionIds": [
+        "k-05"
+      ],
+      "afterHeading": {
+        "plain": "Почему TCP/IP не копирует OSI один в один",
+        "professional": "Чем TCP/IP отличается от OSI"
+      }
+    },
+    {
+      "lessonId": "osi-pdu",
+      "anchorId": "in-depth-host-decap-order",
+      "questionIds": [
+        "k-07"
+      ],
+      "afterHeading": {
+        "plain": "Что снимает получатель и в каком порядке",
+        "professional": "PDU: бит, кадр, пакет, сегмент"
+      }
+    },
+    {
+      "lessonId": "l2-ethernet",
+      "anchorId": "in-depth-halfduplex-repeater-bridge",
+      "questionIds": [
+        "l1-02"
+      ],
+      "afterHeading": {
+        "plain": "Одновременно в обе стороны или по очереди",
+        "professional": "Что такое Ethernet-кадр"
+      }
+    },
+    {
+      "lessonId": "ts-optics",
+      "anchorId": "in-depth-optical-loss-dirt-bend",
+      "questionIds": [
+        "l1-04"
+      ],
+      "afterHeading": {
+        "plain": "Сравнить с порогами своего модуля",
+        "professional": "Rx power, температура и пороги"
+      }
+    },
+    {
+      "lessonId": "l2-access-guard",
+      "anchorId": "in-depth-dhcp-rate-errdisable",
+      "questionIds": [
+        "l12-ds04"
+      ],
+      "afterHeading": {
+        "plain": "Binding и что дальше",
+        "professional": "Binding и что дальше"
+      }
+    }
+  ],
+  "lessonPatchIds": [
+    "tcp-window-retransmit",
+    "l7-dns-dhcp",
+    "l7-services",
+    "l2-access-guard",
+    "l7-dns",
+    "l2-stp",
+    "l7-mail-mx"
+  ],
+  "scopeCounts": {
+    "questions": 40,
+    "explanationPatches": 29,
+    "newOrChangedLinks": 30,
+    "sections": 25,
+    "fullProfessionalLessons": 3,
+    "termPatches": 33
+  },
+  "selfChecks": [
+    {
+      "check": "standalone esbuild bundle",
+      "result": "PASS"
+    },
+    {
+      "check": "40 unique batch IDs and own-only question patches",
+      "result": "PASS"
+    },
+    {
+      "check": "all40 effective professional explanations and explicit/current lesson mapping",
+      "result": "PASS",
+      "limit": "Content existence check, not independent semantic acceptance."
+    },
+    {
+      "check": "25sections x2 exact insertion headings, unique anchors and question section assignment",
+      "result": "PASS"
+    },
+    {
+      "check": "three full professional lessons mirror every current plain heading exactly",
+      "result": "PASS"
+    },
+    {
+      "check": "all term patch definitions/metadata/targets and targeted replacement headings",
+      "result": "PASS"
+    },
+    {
+      "check": "existing gen-osi-a-19 anchor not remapped; k-02 erroneous plain boundary removed",
+      "result": "PASS"
+    },
+    {
+      "check": "repository tsc --noEmit",
+      "result": "BLOCKED_BY_CENTRAL_WORK_IN_PROGRESS",
+      "evidence": "lessonSectionLinks.ts73 missing comma before central spread; root notified, no central edits by author."
+    },
+    {
+      "check": "Cyrillic дБ in optical question receives a contextual alias; existing group2 dB record not duplicated",
+      "result": "AUTHOR_REVIEWED"
+    }
+  ],
+  "remainingLimits": [
+    "Author is not final independent reviewer.",
+    "Runtime/navigation/style/tooltip/browser tests pending central wiring and full final review.",
+    "No source/production deployment, commit, push or merge by author.",
+    "Section references require root combined contract tests after all four groups are present.",
+    "Source URLs and protocol references are supporting references, not freshly fetched external validation.",
+    "Physical порты polysemy outside targeted new paragraphs remains a root integration concern; generic transport glossary must not be substituted into physical-port context."
+  ]
+}

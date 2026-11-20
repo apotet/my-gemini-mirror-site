@@ -1,0 +1,679 @@
+{
+  "phase": "AUTHORING_NOT_FINAL_ACCEPTANCE",
+  "baseline": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "inventoryCommit": "2907bc6",
+  "scope": "Original 40 IDs from initial-group-4.json. Only group4.ts and this report authored.",
+  "standard": "docs/LEARNING_CONTENT_STANDARD.md соблюдён по структуре; независимая final-SHA и браузерная приёмка ожидаются.",
+  "protected": "Question conditions/options/keys, approvedBase, sourceCommit and source bank files preserved. Deferred Base TODO unchanged.",
+  "counts": {
+    "questions": 40,
+    "explanationPatchIds": 40,
+    "newProfessional": 19,
+    "explicitLinks": 40,
+    "sharedTopicSections": 22,
+    "targetedExistingLessonBlocks": 22,
+    "termPatches": 31
+  },
+  "sharedOwnership": {
+    "NTP": "group1 → l7-services includes tcpip-ntp01 and review-syslog-25; no competing group4 section.",
+    "MRP": "group2 → expert-mrp-vlan-failover / mrp-manager-client-fundamentals includes tr-11; no competing section.",
+    "tcp-06": "Existing approved #250 tcpip-end-to-end-fields section preserved."
+  },
+  "sources": [
+    "RFC 791 / RFC 792: IPv4 fragmentation, TTL, DF and ICMP",
+    "RFC 1191 / RFC 8201 / RFC 8899: PMTUD and implementation boundaries",
+    "RFC 9293: TCP byte stream, ports and retransmission",
+    "RFC 5905 / RFC 5424: time synchronisation and log timestamps",
+    "RFC 3704 / RFC 8704: reverse-path filtering and asymmetric routing",
+    "IEEE 802.3 / IEEE 802.1Q / IEEE 802.1Qbb: Ethernet, STP/VLAN, priority pause",
+    "RFC 7664: Dragonfly PAKE properties — https://www.rfc-editor.org/rfc/rfc7664",
+    "RFC 8110: OWE — https://www.rfc-editor.org/rfc/rfc8110",
+    "Wi-Fi Alliance WPA3 / IEEE 802.11: SAE, RSNA key hierarchy, PMF, OFDMA, regulatory channel use",
+    "Cisco UDLD / RSTP platform guides; Linux iproute2, NetworkManager and systemd-networkd configuration semantics"
+  ],
+  "verification": {
+    "authorStructuralChecks": "PASS isolated esbuild module + frozen actual snapshots/current l2-vlan,l2-ethernet:40 exact IDs in patches/links/batches; batches≤20;22 paired sections have exact insertion headings;22 targeted replacement headings exist;31 glossary metadata complete. tsc --noEmit passed. Integrated import currently blocked by cross-group RRset conflict; no runtime or independent semantic PASS claimed.",
+    "independentSemantic": "PENDING fresh non-author executor at final SHA",
+    "desktopMobileRuntime": "PENDING root integrated browser tests",
+    "noClaimOfFullPASS": true
+  },
+  "batches": [
+    {
+      "id": "l2-g4-tcp-path-services",
+      "title": "IP-путь, MTU, TCP и корреляция времени",
+      "questionIds": [
+        "tcp-05",
+        "tcp-06",
+        "tcp-10",
+        "tcpip-d01",
+        "tcpip-d02",
+        "tcpip-d04",
+        "tcpip-ntp01",
+        "tcpip-x14",
+        "tcpip-x21",
+        "tcpip-x26",
+        "review-syslog-25",
+        "tr-08"
+      ]
+    },
+    {
+      "id": "l2-g4-l2-state-diagnostics",
+      "title": "Состояние L2, ARP, VLAN, PFC и сохранение конфигурации",
+      "questionIds": [
+        "stp-new-04",
+        "stp-new-09",
+        "tr-05",
+        "tr-09",
+        "tr-11",
+        "tr-12",
+        "ts-x06",
+        "ts-x07",
+        "ts-x09",
+        "ts-d02",
+        "ts-pfc01",
+        "ts-linux01"
+      ]
+    },
+    {
+      "id": "l2-g4-service-radio-diagnostics",
+      "title": "Границы диагностических проб и Wi-Fi",
+      "questionIds": [
+        "tr-01",
+        "tr-02",
+        "tr-03",
+        "tr-10",
+        "ts-d03",
+        "ts-d05",
+        "ts-x01",
+        "ts-x02",
+        "ts-x03",
+        "ts-x08",
+        "ts-x10",
+        "wifi-roam-01",
+        "wifi-sec-01",
+        "wifi-sec-05",
+        "wifi-std-01",
+        "wifi-std-04"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "questionId": "review-syslog-25",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l7-services",
+      "anchor": "owned by group1 shared NTP section",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "stp-new-04",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l2-rstp-convergence",
+      "anchor": "indepth-rstp-root-failure",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "stp-new-09",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l2-stp-protection",
+      "anchor": "indepth-udld-aggressive-neighbor",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcp-05",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcp-06",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "tcpip-model",
+      "anchor": "tcpip-end-to-end-fields",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcp-10",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-mtu-df-pmtud",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-d01",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-d02",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-mtu-df-pmtud",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-d04",
+      "changedFields": [
+        "visualDiagram",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "ts-method",
+      "anchor": "indepth-stateful-asymmetric-path",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-ntp01",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "l7-services",
+      "anchor": "owned by group1 shared NTP section",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-x14",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "pro",
+        "trap",
+        "nextStudy"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-mtu-df-pmtud",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-x21",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l4-service-ports",
+      "anchor": "indepth-service-port-filter",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tcpip-x26",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-01",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-local-success-remote-path",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-02",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-loopback-physical-link",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-03",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-dns-name-vs-address",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-05",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l3-arp",
+      "anchor": "indepth-arp-local-delivery",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-08",
+      "changedFields": [
+        "visualDiagram",
+        "practicalTip",
+        "nextStudy"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l4-tcp-loss",
+      "anchor": "indepth-capture-retransmission",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-09",
+      "changedFields": [
+        "practicalTip",
+        "nextStudy"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l2-ethernet",
+      "anchor": "indepth-duplex-and-fcs",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-10",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-local-success-remote-path",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-11",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "expert-mrp-vlan-failover",
+      "anchor": "mrp-manager-client-fundamentals",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "tr-12",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l2-ethernet",
+      "anchor": "indepth-duplex-and-fcs",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-d02",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "l2-vlan",
+      "anchor": "indepth-same-prefix-vlan-migration",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-d03",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "ts-method",
+      "anchor": "indepth-traceroute-vs-service",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-d05",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-strict-urpf-fib",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-linux01",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-linux-runtime-persistence",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-pfc01",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "qos-basics",
+      "anchor": "indepth-pfc-congestion-spreading",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x01",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "ts-method",
+      "anchor": "indepth-loopback-physical-link",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x02",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "ts-method",
+      "anchor": "indepth-local-success-remote-path",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x03",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "ts-method",
+      "anchor": "indepth-dns-name-vs-address",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x06",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "l2-ethernet",
+      "anchor": "indepth-duplex-and-fcs",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x07",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "l2-vlan",
+      "anchor": "indepth-same-prefix-vlan-migration",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x08",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "ts-method",
+      "anchor": "indepth-traceroute-vs-service",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x09",
+      "changedFields": [
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": true,
+      "lessonId": "l3-arp",
+      "anchor": "indepth-arp-local-delivery",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "ts-x10",
+      "changedFields": [
+        "practicalTip",
+        "pro",
+        "trap"
+      ],
+      "preservedIndividualPlain": true,
+      "preservedIndividualPro": false,
+      "lessonId": "l4-service-ports",
+      "anchor": "indepth-service-port-filter",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "wifi-roam-01",
+      "changedFields": [
+        "pro",
+        "plain",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": false,
+      "preservedIndividualPro": false,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-client-roaming",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "wifi-sec-01",
+      "changedFields": [
+        "brief",
+        "plain",
+        "pro",
+        "trap",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": false,
+      "preservedIndividualPro": false,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-sae-vs-psk",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "wifi-sec-05",
+      "changedFields": [
+        "plain",
+        "pro",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": false,
+      "preservedIndividualPro": false,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-hidden-ssid",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "wifi-std-01",
+      "changedFields": [
+        "brief",
+        "plain",
+        "pro",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": false,
+      "preservedIndividualPro": false,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-channel-plan",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    },
+    {
+      "questionId": "wifi-std-04",
+      "changedFields": [
+        "brief",
+        "plain",
+        "pro",
+        "practicalTip"
+      ],
+      "preservedIndividualPlain": false,
+      "preservedIndividualPro": false,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-ofdma-6ghz",
+      "reason": "Fixes documented in initial-group-4.json; retains good authored layers, supplies causal missing/shallow layers and removes generic auxiliary fallback.",
+      "contentStatus": "AUTHORED_REQUIRES_INDEPENDENT_REVIEW",
+      "runtimeStatus": "PENDING"
+    }
+  ],
+  "metadataCorrection": "Все relatesTo словарных записей заменены предметным техническим контекстом; общая учебная заглушка удалена. PMTU формулировку и разрешение межгруппового дубликата изменяет root.",
+  "authoredModuleSha256": "e90b0c958037e1a506c3ea2c7abe0fa9002b985f882ec96d01107b7ff0cdde00"
+}

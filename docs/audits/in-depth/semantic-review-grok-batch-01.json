@@ -1,0 +1,389 @@
+{
+  "batch": "01",
+  "sha": "e833593dc2cb34303bd6f884eb346d18cfd1dc1f",
+  "reviewer": "Grok (independent re-review against material delta)",
+  "date": "2026-11-19",
+  "source": "semantic-delta-batch-01.json (Codex #263 vs PR #264)",
+  "entries": [
+    {
+      "id": "l4-03",
+      "priorReviewHash": "8c353ad7ace5c971d2aee674bd38c479f770bf7482b63ea934976848ba09e8fa",
+      "currentHash": "f9b9da8de6bc0c2ef144026c8202a5e8948811913705167fdc41241ae2282df2",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 2,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "retransmission",
+          "sequence number"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "FIX",
+        "terms": "PASS"
+      },
+      "finalStatus": "FIX",
+      "finalReason": "Lesson l4-tcp exists, but no specific anchor for the question. Requirement: addressable transition to the relevant section. Fix: add an anchor or confirm the section ID.",
+      "evidence": "getLessonForQuestion(\"l4-03\") returns l4-tcp with no section id matching the question."
+    },
+    {
+      "id": "l4-04",
+      "priorReviewHash": "a03eb9ecfae40ba4a5f77f38b6910a43b3d2978b8af5638df2b7d98947d9560b",
+      "currentHash": "52e44ff53e2efa1561a4bc1d25fb1afdd454d9afb03befdd0ce83e614a4de698",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 2,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "retransmission",
+          "sequence number"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    },
+    {
+      "id": "l5-02",
+      "priorReviewHash": "5e8219d420e986cd7fa4e7be5278a2137b44c6fb66d8cf0fa60dbcf74244e5fc",
+      "currentHash": "ba42790f99051cc9bd7a41baa2807f09d4d13b2beaa2dd2064ba95c934e66cf3",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 1,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "retransmission"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    },
+    {
+      "id": "l6-01",
+      "priorReviewHash": "9a012648895d6da9ec46f23e6b72993a12fdc85bf2003b766a6076a8d93a79e4",
+      "currentHash": "977f3b31e2aa3b809bda4b26012a4821c3ff891383ac9f2872f6c6e6f05b8828",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 1,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "retransmission"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    },
+    {
+      "id": "tcp-05",
+      "priorReviewHash": "9e785265a0e75bb6d5ed1543fc9e8d0a92c441033809a42d7a8702b19a4a60b3",
+      "currentHash": "801bfff761eddd54579043d697b26c3b0fa52634a7c09b055c20945bd6cbfeab",
+      "referenceMatchesIndependentReview": false,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 0,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": []
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Fresh content review (historical hash unavailable): question correctly asks which field is rewritten on the next Ethernet segment. Key [0] L2 Source/Destination MAC is correct. Distractors (IP without NAT, TCP port, HTTP body) are plausible but wrong. Plain/pro and lesson tcpip-encapsulation present and accurate. No invented commands.",
+      "evidence": "Current text, key [0], explanations, and lesson verified against standard routing behavior (MAC rewrite per hop, IP preserved without NAT)."
+    },
+    {
+      "id": "tr-03",
+      "priorReviewHash": "21d18ee304906edc2f2e49edb5ac128fa3a0b65a0b2b905df8dbd208104adbf5",
+      "currentHash": "b21bc73fce757151ed8110bf0dc1ea5ff58ed1a0afe117ead788ca1514f8c73e",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 3,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 1,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [
+          "answers[1]",
+          "answers[2]",
+          "answers[3]"
+        ],
+        "glossary": [
+          "кэш"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "FIX",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "FIX",
+      "finalReason": "Professional block ts-method#indepth-dns-name-vs-address claims \"в данном билете исходный симптом — ping\", but the question is HTTP by IP works, HTTP by name fails. Fix: rewrite the sentence to match the HTTP symptom.",
+      "evidence": "src/data/inDepth/group4.ts professional.body line ~351: \"в данном билете исходный симптом — ping, а не результат HTTP\". Distractors updated but key preserved.",
+      "distractorNote": "Updated distractors are more specific; some border on overly detailed but remain plausible for Understanding level."
+    },
+    {
+      "id": "tr-08",
+      "priorReviewHash": "b852f036fbd5c814b631c0e332cfc38ef5c806de18e0238fea8ff15d2fdd8781",
+      "currentHash": "aa4a6c5030e8b2bf0dbe578ef0ccdb2bef813668be12f28322d92a8119a2e548",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 3,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "Sequence Number",
+          "retransmission",
+          "sequence number"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    },
+    {
+      "id": "tr-10",
+      "priorReviewHash": "06c02a8cebf63cf3d8677bdc572b68b2dafe206c88842af60c9f37791d6dea12",
+      "currentHash": "750d84ab720763fde8b476c7b923632ad4eb91fdbb6cf9cd2e152185bf0ac1ad",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 3,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 3,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [
+          "answers[1]",
+          "answers[2]",
+          "answers[3]"
+        ],
+        "glossary": [
+          "access",
+          "half-duplex",
+          "кэш"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Three distractors rewritten to be more specific and less ambiguous. Correct answer unchanged. Glossary updates are additive. Old attempts preserved via PREVIOUS_IN_DEPTH_QUESTIONS.",
+      "evidence": "Distractors updated; key preserved; historical attempts retained.",
+      "distractorNote": "Updated distractors emphasize incorrect local-resolution assumptions; plausible for the level."
+    },
+    {
+      "id": "gen-transport-1",
+      "priorReviewHash": "e8ab2fc07673226f8338c4e1b2046109731f46ed01366198e316a536f13f136b",
+      "currentHash": "a672e79d013fc56004349bd2aa880ae97baad74f192bbb4558f98807fbc41dd0",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 2,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "PASV",
+          "STARTTLS"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    },
+    {
+      "id": "gen-transport-5",
+      "priorReviewHash": "10d9ce3dcf3e62fc2ea21f168060064e36e9791b4cc8a61853c7a79b0d70cbc4",
+      "currentHash": "648c70ed8e7b3a9e417ae5ef1b28ec57ae0fadb007b2c3d6b2ab826de01492ec",
+      "referenceMatchesIndependentReview": true,
+      "changeCounts": {
+        "question": 0,
+        "explanation": 0,
+        "lessonPlain": 0,
+        "lessonProfessional": 0,
+        "lessonMetadata": 0,
+        "glossaryDefinitions": 6,
+        "lessonRoute": 0
+      },
+      "changedFields": {
+        "question": [],
+        "glossary": [
+          "RR.entry.description",
+          "RR.entry.relatesTo",
+          "RR.tooltip.english",
+          "RR.tooltip.russian",
+          "RR.tooltip.summary",
+          "STARTTLS"
+        ]
+      },
+      "keyCheck": "Correct answer index unchanged. Distractors reviewed for plausibility.",
+      "whyPlainPro": "Explanations unchanged in this delta; prior content remains.",
+      "lesson": "Lesson route unchanged.",
+      "termsPractice": "Glossary terms added or refined; no invented commands.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Only glossary definitions added/updated. Question, key, explanations, and lesson unchanged. Glossary changes do not alter the correct answer.",
+      "evidence": "Glossary-only changes."
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "batch": "02",
+  "sha": "3c769601aa3627ca9c700982f1a170fc6c3352cb",
+  "reviewer": "Grok (independent)",
+  "date": "2026-11-19",
+  "entries": [
+    {
+      "id": "gen-port-11",
+      "finalStatus": "PASS",
+      "finalReason": "Port mapping correct; why/plain/pro present; lesson l7-services resolves. Glossary-only changes do not affect key.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "gen-port-14",
+      "finalStatus": "PASS",
+      "finalReason": "SNMP/Syslog port distinction correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "gen-transport-14",
+      "finalStatus": "PASS",
+      "finalReason": "Transport-layer service identification correct; explanations match.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "gen-transport-16",
+      "finalStatus": "PASS",
+      "finalReason": "Directory/remote port mapping correct; lesson l4-directory-remote-industrial-ports present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "gen-transport-17",
+      "finalStatus": "PASS",
+      "finalReason": "Industrial port identification correct; explanations consistent.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "k-03",
+      "finalStatus": "PASS",
+      "finalReason": "New TCP stream section added without rewriting other sections. Key and explanations correct. Anchor in-depth-tcp-stream-record-framing present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "k-04",
+      "finalStatus": "PASS",
+      "finalReason": "Session/presentation distinction correct; lesson osi-session-presentation present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "review-slaac-4",
+      "finalStatus": "FIX",
+      "finalReason": "Lesson l3-ipv6 exists, but specific anchor for NS definition is missing. Fix: add addressable section for Neighbor Solicitation.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "FIX",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "review-ptp-17",
+      "finalStatus": "PASS",
+      "finalReason": "Fresh content review (historical hash unavailable): PTP/monitoring distinction correct; key and explanations match. Lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      }
+    },
+    {
+      "id": "review-qos-22",
+      "finalStatus": "FIX",
+      "finalReason": "Lesson qos-basics exists and ECN section added, but no specific anchor for the question. Fix: add addressable transition to the relevant QoS/ECN section.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "FIX",
+        "terms": "PASS"
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+name: NetOps Understanding four transferred FIX regressions (read-only)
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - audit/gemini-batch03-50-fixes-20261120
+    paths:
+      - 'src/data/inDepth/group5.ts'
+      - 'src/data/inDepth/specificPracticalTips.ts'
+      - 'scripts/in-depth-new4-fixes.test.mjs'
+      - '.github/workflows/in-depth-new4-fixes-20261120.yml'
+      - 'docs/ROADMAP.md'
+permissions:
+  contents: read
+jobs:
+  new4-content-and-browser:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/understanding-new4-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'audit/gemini-batch03-50-fixes-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout without write tokens
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Four-ID exact source regression (author-side, not semantic PASS)
+        run: node scripts/in-depth-new4-fixes.test.mjs
+      - name: Existing 164-ID contracts
+        run: npm run test:in-depth
+      - name: Historical attempts
+        run: npm run test:in-depth-history
+      - name: TypeScript
+        run: npm run lint
+      - name: Build local preview without deploy
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Browser verify exactly four transferred questions x mobile and desktop
+        env:
+          NETOPS_L2_IDS: l3-d05,l4-d03,l4-d05,tcpip-d05
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort >/tmp/netops-new4-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ >/dev/null
+          node scripts/in-depth.browser.mjs
+      - name: Export exact corrected four-ID source packs for separate reviewer
+        run: node scripts/in-depth-four-new-audit-pack.mjs
+      - name: Retain browser screenshots and independent-review source material
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new4-content-browser-audit
+          path: |
+            scripts/.cache/in-depth/four-new-independent-audit.json
+            scripts/.cache/in-depth/browser/shard-0-of-1/
+          if-no-files-found: warn

@@ -1,0 +1,41 @@
+{
+  "initialAuditSHA": "d08d24c814c4a60731d42addeb7ef7b4b3a16cef",
+  "integratedMainSHA": "8134b34657b167fc2fe0f78f739d17c90f1693cd",
+  "protectedFileMigration": [
+    {
+      "path": "src/components/LessonView.tsx",
+      "before": "754db1dcc4666c3757ba24ee940dfd368b87c71332ffbbb3696c758b96ea66d1",
+      "after": "55f2096a1bc19b7b015d096b9ea888dcad6f9d19c94541d1ddb84e11527ae784"
+    },
+    {
+      "path": "src/data/glossary.ts",
+      "before": "2c70cd74b5e76eb446cba3e50b07ed3d7c57788ea0a18fa320e027d6ae54b8d0",
+      "after": "502c870770c322b0001ccf9f4b9409ea937ba32743453ffb72fac69ceded7c74"
+    },
+    {
+      "path": "src/data/lessons/index.ts",
+      "before": "6a132b47c1cb10672d88866553179ebb804a7ef6dcdfcfe80b35cd95ef28b1d5",
+      "after": "d116ee2cbb2916e1d8f4d2237ab446d3c8ffa4295f0e748481f1fbb6b8a4a6c0"
+    },
+    {
+      "path": "src/data/questionExplanations.ts",
+      "before": "bf83a67543f32e9794b9528cda3e06b8934d1da572bca84d9c056e6a16798d90",
+      "after": "e6e27cf3c1bff8de26512f982c12df0ca3e4858e4817cbc3b2e9d60f21412872"
+    },
+    {
+      "path": "src/data/questionsExtra.ts",
+      "before": "5c769473b18e143f3f9f31dd9662fcc36eb3aca904406465db07c3b2bf9fb197",
+      "after": "da6eca48df860cb966f98bdd2ee28fe4178866c73a2a63f64e3fb580d8b4ca6c"
+    },
+    {
+      "path": "src/utils/examProgress.ts",
+      "before": "4778b5ba1c7e869c751b94e32fe70a1206133245bd1942fcf307650f61200c43",
+      "after": "61ed287469fe409b5dad90fa861bac552d2a9ca090f12eb4a10238df5d7a327b"
+    }
+  ],
+  "bankBefore": "905f48a0ed6f3dd49d1e3236547609d4afc819de6c58c3274931703fc56fc896",
+  "bankAfter": "a770242911eb3e802bad0a83cbf428543f1fdfeba8bd7bd5478cdfe21b66e2cf",
+  "bankChange": "Only four false answer-option labels for l4-x03/l4-x04; stems/correct answers/correct indices/registry unchanged. Exact old snapshots explicitly recognized by restoreSession; unknown drift remains rejected.",
+  "otherLevels": "702 deep dives invariant against original audit baseline; verified by in-depth-content test",
+  "reviewStatus": "Independent final-SHA acceptance pending"
+}

@@ -19,8 +19,14 @@ const bankBefore = JSON.stringify(ALL_QUESTIONS);
 const quality = before.questionQualityUpdate;
 const combinedPack = before.expertPack177;
 const explanationQuality = before.explanationQuality228;
-assert.equal(hash(ALL_QUESTIONS), explanationQuality.bankSHA256, 'bank includes only the approved explanation edits');
-const priorBank = ALL_QUESTIONS.map(q => Object.hasOwn(explanationQuality.priorExplanations, q.id)
+// Historical fingerprints predate the four reviewed L2 distractor labels.
+// Reconstruct only those labels for the older guards; the L2 contract independently
+// proves that no stem, key, order, classification or other bank field changed.
+const { PREVIOUS_IN_DEPTH_QUESTIONS } = await bundleEntry('src/data/inDepth/previousQuestions.ts', 'beginner-l2-history.mjs');
+const bankAtExplanationAudit = ALL_QUESTIONS.map(q => PREVIOUS_IN_DEPTH_QUESTIONS[q.id]
+  ? { ...q, answers: PREVIOUS_IN_DEPTH_QUESTIONS[q.id].answers } : q);
+assert.equal(hash(bankAtExplanationAudit), explanationQuality.bankSHA256, 'bank includes only the approved explanation edits');
+const priorBank = bankAtExplanationAudit.map(q => Object.hasOwn(explanationQuality.priorExplanations, q.id)
   ? { ...q, explanation: explanationQuality.priorExplanations[q.id] } : q);
 assert.equal(hash(priorBank), combinedPack.bankSHA256, 'other bank content, all answers and difficulties are unchanged');
 const bankBeforeExpert = priorBank.filter(q => !q.id.startsWith('expert177-'));

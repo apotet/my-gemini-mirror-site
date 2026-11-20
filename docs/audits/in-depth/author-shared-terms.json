@@ -1,0 +1,1423 @@
+{
+  "schemaVersion": 1,
+  "author": "/root/l2_review_group2",
+  "scope": "Concrete glossary/tag dependency gaps in lessons newly linked to L2; no Base questions reworked",
+  "module": "src/data/inDepth/sharedTerms.ts",
+  "moduleSHA256": "ca47f0eee6814f73b923699fb73b7090605bcdd2e7bbeabdcac863f21691005d",
+  "inventory": {
+    "exactTags": 74,
+    "newDefinitions": 29,
+    "preservedExistingDefinitions": 44,
+    "existingDefinitionBroadened": [
+      "порт"
+    ]
+  },
+  "preservation": "44 existing descriptions and relatesTo strings remain byte-identical; existing lessonId values retained. Only порт definition broadened explicitly for physical vs L4 meanings.",
+  "polysemy": {
+    "порт": "First sentence separates physical interface from TCP/UDP16bit endpoint; no physical-port16bit claim.",
+    "Class": "PoE powerclass, QoS trafficclass and legacyIPv4 class explicitly distinct.",
+    "duplex": "Full/half-duplex modes distinguished from paired optical assembly.",
+    "символ": "PHY signalling symbol distinguished from character encoding symbol.",
+    "preference": "MX lower-number preference scoped; BGP Local Preference opposite ordering explicit.",
+    "exchange": "DNS MX hostname field distinguished from OSPF Exchange database-description stage."
+  },
+  "authorSelfChecks": {
+    "isolatedEsbuild": "PASS",
+    "exactDebtCoverage": "PASS74/74",
+    "realMatcher": "PASS74/74 using actual splitGlossaryText with virtual in-memory integration; repository source dictionary untouched by this author",
+    "definitionAndContext": "PASS74/74",
+    "compactTooltip": "PASS all summaries under300characters",
+    "lessonTargets": "PASS all exact existing lessonIDs",
+    "oldDefinitionPreservation": "PASS44 byte-identical old description/relatesTo pairs",
+    "polysemyAssertions": "PASS six context-dependent terms explicitly scoped"
+  },
+  "independentAcceptance": {
+    "status": "PENDING",
+    "reason": "Author metadata/content selfcheck is not independent semantic acceptance; root final-SHA reviewer must assess definitions and actual integrated UI."
+  },
+  "runtimeAcceptance": "PENDING root integration and browser smoke; virtual author test is not UI evidence",
+  "evidence": [
+    "scripts/.cache/in-depth/glossary-debt.json",
+    "scripts/.cache/in-depth/shared-terms-author.mjs",
+    "src/utils/glossaryText.ts",
+    "src/data/glossary.ts"
+  ],
+  "technicalReferences": [
+    "RFC1035 §3.3.9 MX and §3.3.12 PTR",
+    "RFC5321 §5.1 MX preference/target processing",
+    "RFC2328 §10.1 Exchange state",
+    "RFC9293 TIME-WAIT and MSL",
+    "IEEE802.3af/at/bt PoE types and power budgets",
+    "TIA pair assignment T568A/T568B and copper measurement terminology",
+    "NFPA70/NEC riser/plenum optical cable classifications"
+  ],
+  "rows": [
+    {
+      "term": "порт",
+      "change": "BROADEN_CONTEXT_AND_ADD_METADATA",
+      "lessonId": "l4-tcp",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l4-directory-remote-industrial-ports",
+          "mode": "plain",
+          "title": "Порты служб: LDAP, RDP и Modbus TCP"
+        },
+        {
+          "lessonId": "l4-directory-remote-industrial-ports",
+          "mode": "pro",
+          "title": "Порты служб: LDAP, RDP и Modbus TCP"
+        },
+        {
+          "lessonId": "l4-service-ports",
+          "mode": "plain",
+          "title": "TCP/UDP-порты: как найти нужную службу"
+        },
+        {
+          "lessonId": "l4-service-ports",
+          "mode": "pro",
+          "title": "TCP/UDP-порты: как найти нужную службу"
+        },
+        {
+          "lessonId": "osi-session-presentation",
+          "mode": "plain",
+          "title": "OSI L5 и L6: диалог и представление данных"
+        }
+      ]
+    },
+    {
+      "term": "Modbus TCP",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l4-directory-remote-industrial-ports",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l4-directory-remote-industrial-ports",
+          "mode": "plain",
+          "title": "Порты служб: LDAP, RDP и Modbus TCP"
+        },
+        {
+          "lessonId": "l4-directory-remote-industrial-ports",
+          "mode": "pro",
+          "title": "Порты служб: LDAP, RDP и Modbus TCP"
+        }
+      ]
+    },
+    {
+      "term": "RJ-45",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-installation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "plain",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "pro",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "plain",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "pro",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        }
+      ]
+    },
+    {
+      "term": "pass-through",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-fault-poe",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "plain",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "pro",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        }
+      ]
+    },
+    {
+      "term": "Cat6A",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-fault-poe",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "plain",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "pro",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        }
+      ]
+    },
+    {
+      "term": "wiremap",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-fault-poe",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "plain",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-copper-fault-poe",
+          "mode": "pro",
+          "title": "Медная линия и PoE: дефекты, pass-through и проверка"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "HTTP 301",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l7-http-status-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "plain",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        },
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "pro",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        }
+      ]
+    },
+    {
+      "term": "HTTP 404",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l7-http-status-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "plain",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        },
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "pro",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        }
+      ]
+    },
+    {
+      "term": "redirect",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l7-http-status-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "plain",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        },
+        {
+          "lessonId": "l7-http-status-basics",
+          "mode": "pro",
+          "title": "HTTP: коды 301 и 404 без путаницы"
+        }
+      ]
+    },
+    {
+      "term": "стриппер оптический",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "скалыватель",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "сварочный аппарат",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "КДЗС",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "сплайс-кассета",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "пигтейл",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "LC",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "OM3",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "арамид",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "буферное покрытие",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        }
+      ]
+    },
+    {
+      "term": "оптическая муфта",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-splicing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "plain",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-fiber-splicing",
+          "mode": "pro",
+          "title": "Сварка оптики: подготовка волокна, КДЗС и кассеты"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "оптический измеритель мощности",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-optical-testing-equipment",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "инспекция торца",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-optical-testing-equipment",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "100BASE-TX",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-optical-testing-equipment",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "100BASE-FX",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-optical-testing-equipment",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "медиаконвертер",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-optical-testing-equipment",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "plain",
+          "title": "Оптические измерения и физические интерфейсы"
+        },
+        {
+          "lessonId": "l1-optical-testing-equipment",
+          "mode": "pro",
+          "title": "Оптические измерения и физические интерфейсы"
+        }
+      ]
+    },
+    {
+      "term": "витая пара",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-cable",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "plain",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        },
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "pro",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        }
+      ]
+    },
+    {
+      "term": "Cat5e",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-cable",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "plain",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        },
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "pro",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        }
+      ]
+    },
+    {
+      "term": "Cat6",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-cable",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "plain",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        },
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "pro",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        }
+      ]
+    },
+    {
+      "term": "Category 7A",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-cable",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "plain",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        },
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "pro",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        }
+      ]
+    },
+    {
+      "term": "4P",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-cable",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "plain",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        },
+        {
+          "lessonId": "l1-copper-cable",
+          "mode": "pro",
+          "title": "Медная СКС: витая пара, экраны и маркировка"
+        }
+      ]
+    },
+    {
+      "term": "SC",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "ST",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "FC",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "GBIC",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "патч-корд",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "оптический кросс",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-fiber-hardware",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "plain",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        },
+        {
+          "lessonId": "l1-fiber-hardware",
+          "mode": "pro",
+          "title": "Оптика на фото: LC, SC, ST, FC, SFP и кросс"
+        }
+      ]
+    },
+    {
+      "term": "Telnet",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "cli-console-ssh-telnet",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l4-service-ports",
+          "mode": "plain",
+          "title": "TCP/UDP-порты: как найти нужную службу"
+        },
+        {
+          "lessonId": "l4-service-ports",
+          "mode": "pro",
+          "title": "TCP/UDP-порты: как найти нужную службу"
+        }
+      ]
+    },
+    {
+      "term": "Wireshark",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l3-icmp-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l3-icmp-basics",
+          "mode": "plain",
+          "title": "ICMP и ping: где живёт служебное сообщение"
+        },
+        {
+          "lessonId": "l3-icmp-basics",
+          "mode": "pro",
+          "title": "ICMP и ping: где живёт служебное сообщение"
+        }
+      ]
+    },
+    {
+      "term": "ICMPv4",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l3-icmp-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l3-icmp-basics",
+          "mode": "pro",
+          "title": "ICMP и ping: где живёт служебное сообщение"
+        }
+      ]
+    },
+    {
+      "term": "Time Exceeded",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l3-icmp-basics",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l3-icmp-basics",
+          "mode": "pro",
+          "title": "ICMP и ping: где живёт служебное сообщение"
+        }
+      ]
+    },
+    {
+      "term": "GRE",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "tcpip-encapsulation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "tcpip-encapsulation",
+          "mode": "pro",
+          "title": "TCP/IP: инкапсуляция, фрагменты и туннели"
+        }
+      ]
+    },
+    {
+      "term": "сеанс",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "osi-session-presentation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "osi-session-presentation",
+          "mode": "plain",
+          "title": "OSI L5 и L6: диалог и представление данных"
+        },
+        {
+          "lessonId": "osi-session-presentation",
+          "mode": "pro",
+          "title": "OSI L5 и L6: диалог и представление данных"
+        }
+      ]
+    },
+    {
+      "term": "кодировка",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "osi-session-presentation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "osi-session-presentation",
+          "mode": "plain",
+          "title": "OSI L5 и L6: диалог и представление данных"
+        }
+      ]
+    },
+    {
+      "term": "сериализация",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "osi-session-presentation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "osi-session-presentation",
+          "mode": "pro",
+          "title": "OSI L5 и L6: диалог и представление данных"
+        }
+      ]
+    },
+    {
+      "term": "MX",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l7-mail-mx",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-dns-dhcp",
+          "mode": "plain",
+          "title": "DNS и DHCP: ответы, подсеть клиента и продление аренды"
+        },
+        {
+          "lessonId": "l7-dns-dhcp",
+          "mode": "pro",
+          "title": "DNS и DHCP: ответы, подсеть клиента и продление аренды"
+        },
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "plain",
+          "title": "DNS MX: куда отправлять электронную почту"
+        },
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "pro",
+          "title": "DNS MX: куда отправлять электронную почту"
+        }
+      ]
+    },
+    {
+      "term": "T568A",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-copper-termination-quality",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "T568B",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-copper-termination-quality",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "NEXT",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-copper-termination-quality",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "развивка пары",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-copper-termination-quality",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "кримпер",
+      "change": "ADD_METADATA_ONLY",
+      "lessonId": "l1-copper-installation",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "plain",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        },
+        {
+          "lessonId": "l1-copper-termination-quality",
+          "mode": "pro",
+          "title": "Медная СКС: контакты, распиновка и проверка оконцеваний"
+        }
+      ]
+    },
+    {
+      "term": "IEEE 802.3af",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-poe-screen-reading",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "plain",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        },
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "pro",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        }
+      ]
+    },
+    {
+      "term": "IEEE 802.3at",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-poe-screen-reading",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "plain",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        },
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "pro",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        }
+      ]
+    },
+    {
+      "term": "IEEE 802.3bt",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-poe-screen-reading",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "plain",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        },
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "pro",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        }
+      ]
+    },
+    {
+      "term": "Class",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-poe-screen-reading",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "plain",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        },
+        {
+          "lessonId": "l1-poe-screen-reading",
+          "mode": "pro",
+          "title": "PoE на приборе: напряжение, классы, PSE и маркировка портов"
+        }
+      ]
+    },
+    {
+      "term": "OFNR",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-fiber-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "OFNP",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-fiber-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "QSFP",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-fiber-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "1310 нм",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-fiber-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "1550 нм",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-fiber-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "plain",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        },
+        {
+          "lessonId": "l1-fiber-identification",
+          "mode": "pro",
+          "title": "Оптические модули и маркировка: OM3, SM/MM, BiDi и наклейки"
+        }
+      ]
+    },
+    {
+      "term": "combo port",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-switch-panel-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "plain",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "pro",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        }
+      ]
+    },
+    {
+      "term": "SFP+",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-switch-panel-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "plain",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "pro",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        }
+      ]
+    },
+    {
+      "term": "LED",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-switch-panel-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "plain",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "pro",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        }
+      ]
+    },
+    {
+      "term": "duplex",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-switch-panel-identification",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "plain",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        },
+        {
+          "lessonId": "l1-switch-panel-identification",
+          "mode": "pro",
+          "title": "Панель коммутатора: combo-порты, LED и оптические гнёзда"
+        }
+      ]
+    },
+    {
+      "term": "baud",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "символ",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "PAM4",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "бит/с",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "символьная скорость",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "битовая скорость",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l1-phy-symbol-rate",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "plain",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        },
+        {
+          "lessonId": "l1-phy-symbol-rate",
+          "mode": "pro",
+          "title": "Физический уровень: символы, биты и многоуровневое кодирование"
+        }
+      ]
+    },
+    {
+      "term": "TIME-WAIT",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l4-tcp-connection-closing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l4-tcp-connection-closing",
+          "mode": "plain",
+          "title": "TCP: FIN, RST и TIME-WAIT при завершении соединения"
+        },
+        {
+          "lessonId": "l4-tcp-connection-closing",
+          "mode": "pro",
+          "title": "TCP: FIN, RST и TIME-WAIT при завершении соединения"
+        }
+      ]
+    },
+    {
+      "term": "MSL",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l4-tcp-connection-closing",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l4-tcp-connection-closing",
+          "mode": "plain",
+          "title": "TCP: FIN, RST и TIME-WAIT при завершении соединения"
+        },
+        {
+          "lessonId": "l4-tcp-connection-closing",
+          "mode": "pro",
+          "title": "TCP: FIN, RST и TIME-WAIT при завершении соединения"
+        }
+      ]
+    },
+    {
+      "term": "PTR",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l7-mail-mx",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "plain",
+          "title": "DNS MX: куда отправлять электронную почту"
+        }
+      ]
+    },
+    {
+      "term": "preference",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l7-mail-mx",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "plain",
+          "title": "DNS MX: куда отправлять электронную почту"
+        },
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "pro",
+          "title": "DNS MX: куда отправлять электронную почту"
+        }
+      ]
+    },
+    {
+      "term": "exchange",
+      "change": "ADD_DEFINITION_AND_METADATA",
+      "lessonId": "l7-mail-mx",
+      "status": "READY_FOR_INDEPENDENT_REVIEW",
+      "usages": [
+        {
+          "lessonId": "l7-mail-mx",
+          "mode": "pro",
+          "title": "DNS MX: куда отправлять электронную почту"
+        }
+      ]
+    }
+  ]
+}

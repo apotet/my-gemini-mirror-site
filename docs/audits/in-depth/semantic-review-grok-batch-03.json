@@ -1,0 +1,229 @@
+{
+  "batch": "03",
+  "sha": "4b505c72d75e53317b5d515f23a13f850eaa5c3e",
+  "reviewer": "Grok (independent re-review)",
+  "date": "2026-11-19",
+  "note": "Re-review with actual materialHash. Subjects corrected: syslog=time sync, NTP RATE, TCP persist, PoE budget, S/FTP cable.",
+  "entries": [
+    {
+      "id": "review-syslog-25",
+      "priorHash": "7df6dc8d7a78f78f91f8a4ef63c3ee9e4996add81dc4661322a0029ef4307a21",
+      "currentHash": "7accf102af4aaa6c0c07ae0135885af17c15db5c4596bb09bb901d7b3c7c8c1b",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "REVIEW",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Correct answer [0] — synchronization and timezone. Distractors (facility, severity, transport) do not address time correlation. Why/plain/pro present. Lesson l7-services.",
+      "evidence": "Prior hash 7df6dc8d7a78f78f → current 7accf102af4aaa6c. null — general lesson, no specific time-sync section"
+    },
+    {
+      "id": "review-poe-30",
+      "priorHash": "5db515217fca30ba3dcb33326ba374372ee1c0f262c39372b6e4e319923684c0",
+      "currentHash": "64ab036c51147713c25debb6c4447ebdf1a4f5bae65be07c54b45275a4cd9fc9",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Correct answer [0] — class and power budget. Distractors (speed, IP, MAC) are not first checks for PoE power. Gemini material reviewed; no invented claims.",
+      "evidence": "Prior hash 5db515217fca30ba → current 64ab036c51147713. l1-poe-screen-reading (general)"
+    },
+    {
+      "id": "review-osi-34",
+      "priorHash": "dac5b9a8c93bd6390dbd8892c62fe7b0f725d7375567430adb6eecc2fd72080a",
+      "currentHash": "248639f73b76ae9a83a372463b1677a211f2e4c8eb506654e0ff9946cc91604e",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Session/presentation distinction correct. Key and explanations match.",
+      "evidence": "Prior hash dac5b9a8c93bd639 → current 248639f73b76ae9a. osi-session-presentation"
+    },
+    {
+      "id": "l1v2-a-category-limit",
+      "priorHash": "8441b51e6a1667af7b53c0835af58ffa108cee277b75d82cf9279fd49261ff91",
+      "currentHash": "5b9aba3edd1bb37a1e271bde243fa56ca3c8e3e7f40423a16b90da36f1fc342d",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Screen reading of category limit. Key correct for the photo.",
+      "evidence": "Prior hash 8441b51e6a1667af → current 5b9aba3edd1bb37a. l1-copper-cable"
+    },
+    {
+      "id": "l1v2-a-pairs",
+      "priorHash": "62ef6048c9f3d22405d034ff8125e9ca2b397a739d0f959cfd80917c17a5117a",
+      "currentHash": "444cae525f1a21c8c5c6f048522a487149ecfa33b66520136e60cfccb65bf339",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Pair identification correct. Key matches screen.",
+      "evidence": "Prior hash 62ef6048c9f3d224 → current 444cae525f1a21c8. l1-copper-cable"
+    },
+    {
+      "id": "l1v2-a-jacket-limit",
+      "priorHash": "ded1174634011305429505de3e9d54eca57cd8fb4a4e9452a7d5f1aa3dd1903f",
+      "currentHash": "d4ec8c709dff2c1744a26ac0f6a0cd975f395c03d4f121e83da46be0390b7f9f",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Jacket limit reading correct.",
+      "evidence": "Prior hash ded1174634011305 → current d4ec8c709dff2c17. l1-copper-cable"
+    },
+    {
+      "id": "l1v2-a-label-sftp",
+      "priorHash": "b09d5afcd7dc80ff4b1db0a375598c5fba2dbb23c01c5fa2053bb060ebd47b71",
+      "currentHash": "599cdf6ed387bd04b1d1fa5fbdab732fc2a2c5dba7fe3770029e53f2c2ae27be",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "S/FTP = Screened Foiled Twisted Pair (braid + foil), not FTP protocol. Key [2] correct. Explanations distinguish cable construction.",
+      "evidence": "Prior hash b09d5afcd7dc80ff → current 599cdf6ed387bd04. l1-copper-cable"
+    },
+    {
+      "id": "l1v2-a-solid-use",
+      "priorHash": "3810574a224b4a1ec3d47fe6981b841c4322b686a50e603b6f8621f1d15d374e",
+      "currentHash": "0b58ffb643ce69aa0955cb09b40657137e8876c418fae0c05ef49349319926c0",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Solid conductor use case correct.",
+      "evidence": "Prior hash 3810574a224b4a1e → current 0b58ffb643ce69aa. l1-copper-cable"
+    },
+    {
+      "id": "gap-pack2-16",
+      "priorHash": "6b5860d77ea684d3f051e34a2b33b9d6a58eedadd2c4aba9085825026a1b8b8b",
+      "currentHash": "e69f280c36167f98f36efe708db9172aa2846290ad8ff3aeb729daf6d1df750b",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Correct answer [2] — increase poll interval and do not use Stratum=0 RATE response as a time measurement. Distractors (reduce interval, use immediately, treat as stratum 0) are incorrect per NTP.",
+      "evidence": "Prior hash 6b5860d77ea684d3 → current e69f280c36167f98. l7-services"
+    },
+    {
+      "id": "gap-pack2-21",
+      "priorHash": "ad91f4bad8e01c9eb3121661f5b6ce93eede956a1b11c2f9e8dff72962b4e47c",
+      "currentHash": "0229844341b6997c5d0ef6a6eee79f571dbee26be9cb0b22b0dcc354e94dc2cd",
+      "hashMatch": false,
+      "hashChangeReason": "Glossary or lesson bindings updated since prior REVIEW; question and key unchanged in sample.",
+      "keyCheck": "Key verified against condition; distractors reviewed.",
+      "whyPlainPro": "Individual why, plain, and pro present and distinct.",
+      "lesson": "Lesson resolved; anchor status noted.",
+      "termsPractice": "Glossary terms present; no invented commands observed.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS",
+        "terms": "PASS"
+      },
+      "finalStatus": "PASS",
+      "finalReason": "Correct answer [3] — persist mechanism with window probes after zero window. Distractors (retransmit acknowledged data, restart handshake, reduce MSS) are incorrect.",
+      "evidence": "Prior hash ad91f4bad8e01c9e → current 0229844341b6997c. tcp-window-retransmit"
+    }
+  ]
+}

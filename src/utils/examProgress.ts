@@ -1,3 +1,4 @@
+import { PREVIOUS_IN_DEPTH_QUESTIONS, previousInDepthSnapshot } from '../data/inDepth/previousQuestions';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from '../data/previousDiagnosticQuestions';
 import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
@@ -69,10 +70,11 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
       if (!current) return null;
       const previous = PREVIOUS_DIAGNOSTIC_QUESTIONS[current.id];
       const usePrevious = previous !== undefined && previous.text === item?.text;
-      const question = usePrevious ? { ...current, ...previous } : current;
+      const inDepthPrevious = previousInDepthSnapshot(current, item ?? {}, saved.answerOrders?.[current.id]);
+      const question = inDepthPrevious ?? (usePrevious ? { ...current, ...previous } : current);
       if (saved.answerOrders === undefined) {
         // Old attempts used bank order. Never shuffle an answer already selected there.
-        if (usePrevious && (JSON.stringify(item?.answers) !== JSON.stringify(question.answers) ||
+        if ((usePrevious || PREVIOUS_IN_DEPTH_QUESTIONS[current.id]) && (JSON.stringify(item?.answers) !== JSON.stringify(question.answers) ||
             JSON.stringify(item?.correct) !== JSON.stringify(question.correct))) return null;
         questions.push(question);
       } else {

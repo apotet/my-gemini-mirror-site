@@ -1,0 +1,21 @@
+import { bundleEntry } from './load-bank.mjs';
+import { createHash } from 'node:crypto';
+import { mkdirSync,writeFileSync } from 'node:fs';
+import { dirname,resolve } from 'node:path';
+const output=resolve(process.argv[2]||'scripts/.cache/in-depth/material-snapshot.json');
+const m=await bundleEntry('scripts/in-depth-entry.ts','in-depth-material-snapshot-bundle.mjs');
+const expand=lesson=>lesson?({...lesson,blocks:m.getLessonBlocksWithSections(lesson,'plain'),professional:lesson.professional?{...lesson.professional,blocks:m.getLessonBlocksWithSections(lesson,'professional')}:undefined}):null;
+const strings=value=>typeof value==='string'?[value]:value&&typeof value==='object'?Object.values(value).flatMap(strings):[];
+const items=m.getTestingPool('mixed','in-depth').map(question=>{
+  const deep=m.getQuestionDeepDive(question);
+  const lesson=m.getLessonForQuestion(question.id);
+  const expanded=expand(lesson);
+  const terms=[...new Set(strings({question,deep,lesson:expanded}).flatMap(text=>m.splitGlossaryText(text).flatMap(s=>s.term?[s.term]:[])).concat(expanded?.terms??[],expanded?.professional?.terms??[]))].sort();
+  const definitions=Object.fromEntries(terms.map(term=>[term,{entry:m.GLOSSARY[term],tooltip:m.GLOSSARY_TOOLTIPS[term]}]));
+  const material={question,deep,lesson:expanded,definitions};
+  const materialHash=createHash('sha256').update(JSON.stringify(material)).digest('hex');
+  return {id:question.id,materialHash,lessonId:lesson?.id??null,anchor:m.getLessonSectionForQuestion(lesson?.id??'',question.id)??null,material};
+});
+mkdirSync(dirname(output),{recursive:true});
+writeFileSync(output,JSON.stringify({schemaVersion:1,items},null,2)+'\n');
+console.log(JSON.stringify({snapshot:output,questions:items.length,bytes:items.length&&items.reduce((n,r)=>n+JSON.stringify(r).length,0)}));

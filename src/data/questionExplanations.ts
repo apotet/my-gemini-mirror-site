@@ -1,3 +1,4 @@
+import { applyInDepthExplanation } from './inDepth';
 import { AUDITED_QUESTION_EXPLANATIONS } from './auditedQuestionExplanations';
 import { explanationText } from '../utils/explanationFormat';
 import { explainGeneratedMask, ipv4CalculationPrefix } from './ipv4ExplanationPractice';
@@ -755,7 +756,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
       }
     : individual?.professional ?? diagnostic;
 
-  return {
+  const resolved: QuestionDeepDive = {
     questionId: question.id,
     category,
     categoryLabel: question.topic,
@@ -787,6 +788,8 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     keyTakeaways: generateKeyTakeaways(question, correctText, ipv4Prefix !== undefined),
     nextStudy: individual?.next,
   };
+  // Historical diagnostic snapshots retain their original authored interpretation.
+  return historical ? resolved : applyInDepthExplanation(question.id, resolved, question);
 }
 
 function detectCategory(q: Question): QuestionDeepDive['category'] {

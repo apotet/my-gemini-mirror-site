@@ -1,0 +1,36 @@
+{
+  "batch": "01-fix-recheck",
+  "sha": "3c769601aa3627ca9c700982f1a170fc6c3352cb",
+  "reviewer": "Grok (independent recheck)",
+  "date": "2026-11-19",
+  "entries": [
+    {
+      "id": "tr-03",
+      "finalStatus": "PASS",
+      "finalReason": "Professional block ts-method#indepth-dns-name-vs-address now correctly distinguishes HTTP-by-IP vs HTTP-by-name (tr-03) from ping-by-IP vs ping-by-name (ts-x03). No longer claims the ticket symptom is only ping.",
+      "criteria": {
+        "pro": "PASS",
+        "lesson": "PASS"
+      },
+      "evidence": "group4.ts professional.body now separates the two observations."
+    },
+    {
+      "id": "ts-x03",
+      "finalStatus": "PASS",
+      "finalReason": "Same shared lesson correctly handles the ping-by-IP vs ping-by-name case without distorting the HTTP scenario.",
+      "criteria": {
+        "pro": "PASS"
+      },
+      "evidence": "Professional text explicitly references both cases."
+    },
+    {
+      "id": "l4-03",
+      "finalStatus": "PASS",
+      "finalReason": "New anchor l4-tcp#in-depth-tcp-stream-record-framing present with plain and professional sections explaining TCP byte stream vs application framing. Navigation works.",
+      "criteria": {
+        "lesson": "PASS"
+      },
+      "evidence": "group2.ts anchorId in-depth-tcp-stream-record-framing with both styles."
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "batch": "04",
+  "sha": "7a1ce5c38f09f5ec36691e2ac2d4d1a342981189",
+  "reviewer": "Grok (independent)",
+  "date": "2026-11-19",
+  "entries": [
+    {
+      "id": "gap-pack2-27",
+      "finalStatus": "PASS",
+      "finalReason": "TCP concept correct; key and explanations match. Lesson l4-tcp present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "gap-pack3-08",
+      "finalStatus": "PASS",
+      "finalReason": "IPv6 concept correct; lesson l3-ipv6 present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "gap-pack3-15",
+      "finalStatus": "PASS",
+      "finalReason": "Service identification correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "stp-new-09",
+      "finalStatus": "PASS",
+      "finalReason": "STP protection concept correct; lesson l2-stp-protection present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "l3-bgp-06",
+      "finalStatus": "PASS",
+      "finalReason": "BGP concept correct; lesson l3-bgp present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "l4-new-05",
+      "finalStatus": "PASS",
+      "finalReason": "TCP concept correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "l4-new-07",
+      "finalStatus": "PASS",
+      "finalReason": "TCP closing concept correct; lesson l4-tcp-connection-closing present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "tcpip-x21",
+      "finalStatus": "PASS",
+      "finalReason": "Service port concept correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "l57-x19",
+      "finalStatus": "PASS",
+      "finalReason": "Service concept correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    },
+    {
+      "id": "ts-x10",
+      "finalStatus": "PASS",
+      "finalReason": "Service port concept correct; lesson present.",
+      "criteria": {
+        "key": "PASS",
+        "why": "PASS",
+        "plain": "PASS",
+        "pro": "PASS",
+        "lesson": "PASS"
+      }
+    }
+  ]
+}
