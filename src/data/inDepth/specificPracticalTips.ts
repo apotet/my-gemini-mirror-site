@@ -3,6 +3,7 @@
  * This map does not add trainer links or alter question keys.
  */
 export const SPECIFIC_PRACTICAL_TIPS: Readonly<Record<string,string>> = {
+  "review-qos-22": "На входе проверь trust/remarking DSCP, затем действующее DSCP→класс→egress queue сопоставление и алгоритм обслуживания очереди на перегруженном выходном порту. При контролируемой нагрузке сравни фактическую маркировку, queue counters и drops/marks; сама DSCP-метка не резервирует полосу. На Cisco IOS/IOS-XE при применимой политике смотри `show policy-map interface`, на других платформах — аппаратные счётчики QoS.",
   "l3-d05": "Для PAT сопоставь внутренние IP:port и внешние IP:port в таблице `show ip nat translations` (Cisco) либо `conntrack -L -p tcp` / `-p udp` (Linux), затем проверь обратный пакет. Учитывай протокол, время жизни записи и особенности endpoint-mapping конкретного NAT — одного `ip route` недостаточно.",
   "l4-d03": "В TCP-захвате проверь FIN/ACK и 4-tuple закрытого соединения, затем `ss -tan state time-wait` на Linux или TCP-состояния через `netstat -ano` на Windows. Отличай TIME-WAIT от CLOSE-WAIT и не объявляй большое количество записей ошибкой без проверки частоты коротких подключений.",
   "l4-d05": "В Wireshark проверь SACK-Permitted в SYN/SYN-ACK, затем при потере или переупорядочивании сегмента сопоставь cumulative ACK, число SACK-блоков (`tcp.options.sack.count`), их границы (`tcp.options.sack_le` и `tcp.options.sack_re`) и ретрансляции. Если SACK не согласован, отсутствие SACK-блоков само по себе не доказывает неисправность.",
