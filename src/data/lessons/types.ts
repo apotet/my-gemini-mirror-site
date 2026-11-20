@@ -43,6 +43,21 @@ export interface LessonCommand {
   note?: string;
 }
 
+/** Optional stand-alone reinforcement: does not alter the main question bank or user scores. */
+export interface LessonCheckQuestion {
+  id: string;
+  prompt: string;
+  choices: { id: string; label: string }[];
+  correctChoiceId: string;
+  explanation: string;
+}
+
+export interface LessonKnowledgeCheck {
+  title: string;
+  intro?: string;
+  questions: LessonCheckQuestion[];
+}
+
 export interface LessonTrainerLink {
   label: string;
   target: 'ipv4' | 'cli' | 'practice';
@@ -71,4 +86,6 @@ export interface Lesson {
   sources: string[];
   diagram?: 'sni';
   animation?: { file: string; label: string; description: string };
+  /** Optional short in-lesson self-check; intentionally separate from tracked exam attempts. */
+  knowledgeCheck?: LessonKnowledgeCheck;
 }
