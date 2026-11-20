@@ -21,8 +21,8 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
-      - name: Glossary and lesson regression
-        run: node scripts/copper-cheatsheet-glossary.test.mjs
+      - name: PoE summary tooltip regression
+        run: node scripts/poe-summary-glossary.test.mjs
 
   build:
     if: github.event_name == 'workflow_dispatch'

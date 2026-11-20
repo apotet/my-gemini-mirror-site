@@ -140,7 +140,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
-        <FormattedExplanation text={content.summary} />
+        <FormattedExplanation text={content.summary} plainGlossaryTerms={lesson.id === 'l1-poe-budget' && textMode === 'professional' ? ['802.3af'] : undefined} />
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget'].includes(lesson.id)} />
       </header>
 
