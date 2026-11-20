@@ -29,8 +29,8 @@ await build({
 });
 const { lesson, render } = await import(pathToFileURL(outfile).href);
 assert.ok(lesson && lesson.professional);
-assert.ok(lesson.professional.summary.includes('IEEE 802.3af/at/bt'));
-const professionalSummary = render(lesson.professional.summary, { plainGlossaryTerms: ['802.3af'] });
+assert.ok(!lesson.professional.summary.includes('802.3af/at/bt'), 'compact IEEE notation removed from intro');
+const professionalSummary = render(lesson.professional.summary);
 assert.ok(!professionalSummary.includes('data-glossary-term="802.3af"'), 'no isolated 802.3af popup in summary');
 assert.ok(professionalSummary.includes('data-glossary-term="PSE"'), 'PSE hint retained in summary');
 for (const term of ['802.3af', '802.3at', '802.3bt']) {
