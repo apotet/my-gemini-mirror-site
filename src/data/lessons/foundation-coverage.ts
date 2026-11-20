@@ -339,7 +339,14 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "l1v2-a-cutters-error",
       "l1v2-a-outlet-a",
       "l1v2-a-untwist",
-      "l1v2-a-wiremap-limit"
+      "l1v2-a-wiremap-limit",
+      "l1v2-a-contact-damage",
+      "l1v2-a-panel-untwist",
+      "l1v2-a-panel-rating",
+      "l1v2-a-crimper-incomplete",
+      "l1v2-a-outlet-b",
+      "l1v2-a-strain-fix",
+      "l1v2-a-jacket-kink-action"
     ],
     "sources": [
       "ANSI/TIA-568 — Balanced Twisted-Pair Telecommunications Cabling",
@@ -407,7 +414,8 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "l1v2-a-dest-label",
       "l1v2-a-panel-label",
       "l1v2-a-rack-management",
-      "l1v2-a-rack-trace"
+      "l1v2-a-rack-trace",
+      "l1v2-a-device-label"
     ],
     "sources": [
       "ANSI/TIA-606 — Administration Standard for Telecommunications Infrastructure",

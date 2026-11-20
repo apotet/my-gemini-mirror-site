@@ -291,4 +291,101 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
       "professional": "Сетевая топология сбора в Zabbix"
     }
   }
+
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-pass-view"
+    ],
+    "anchorId": "copper-pass-through",
+    "afterHeading": {
+      "plain": "Обычный 8P8C и pass-through: что меняется",
+      "professional": "Обычный 8P8C и pass-through: что меняется"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-t568b"
+    ],
+    "anchorId": "copper-t568-pinout",
+    "afterHeading": {
+      "plain": "Раскладка жил перед обжимом",
+      "professional": "Раскладка жил перед обжимом"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1-06"
+    ],
+    "anchorId": "copper-four-wires",
+    "afterHeading": {
+      "plain": "Для чего нужны A и B и когда можно обжать четыре жилы",
+      "professional": "Для чего нужны A и B и когда можно обжать четыре жилы"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-pass-finish",
+      "l1v2-a-pass-offcut",
+      "l1v2-a-pass-crimper-view",
+      "l1v2-a-pass-crimper-blade",
+      "l1v2-a-precrimp"
+    ],
+    "anchorId": "copper-pass-crimper",
+    "afterHeading": {
+      "plain": "Чем и как обрезают выступающие жилы",
+      "professional": "Чем и как обрезают выступающие жилы"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-nick-view",
+      "l1v2-a-nick-fix",
+      "l1v2-a-stripper-depth"
+    ],
+    "anchorId": "copper-nick-stripping",
+    "afterHeading": {
+      "plain": "Надрезанная или оборванная медь — дефект",
+      "professional": "Надрезанная или оборванная медь — дефект"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-corrosion-view",
+      "l1v2-a-corrosion-action"
+    ],
+    "anchorId": "copper-corrosion",
+    "afterHeading": {
+      "plain": "Потемнение контактов: что можно понять по виду",
+      "professional": "Потемнение контактов: что можно понять по виду"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-mark-cat6a"
+    ],
+    "anchorId": "copper-cat-label",
+    "afterHeading": {
+      "plain": "Надпись Cat6 или Cat6A не проверяет всю линию",
+      "professional": "Надпись Cat6 или Cat6A не проверяет всю линию"
+    }
+  },
+  {
+    "lessonId": "l1-copper-fault-poe",
+    "questionIds": [
+      "l1v2-a-tester",
+      "l1v2-a-tester-safe"
+    ],
+    "anchorId": "copper-tester-wiremap",
+    "afterHeading": {
+      "plain": "Проверка после обжима: не ограничивайся Link Up",
+      "professional": "Проверка после обжима: не ограничивайся Link Up"
+    }
+  },
 ];
