@@ -1,0 +1,66 @@
+name: One-shot Gemini Hydrogen API smoke test (read-only, no retries)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-hydrogen-smoke-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  hydrogen-smoke:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'audit/gemini-hydrogen-smoke-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: One minimal Gemini Hydrogen API request - no retries
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          test -n "$GEMINI_API_KEY" || { echo 'Missing API secret; no request issued'; exit 1; }
+          node --input-type=module <<'NODE'
+          const model='gemini-4-hydrogen';
+          const started=Date.now();
+          const body={
+            contents:[{role:'user',parts:[{text:'Return exactly the single word PONG. Do not explain.'}]}],
+            generationConfig:{temperature:0,maxOutputTokens:256}
+          };
+          let response;
+          try {
+            response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{
+              method:'POST',
+              headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY},
+              body:JSON.stringify(body),
+              signal:AbortSignal.timeout(75000)
+            });
+          }catch(e){
+            console.error('Gemini smoke: TRANSPORT_ERROR',e?.name||'Error',String(e?.cause?.code||e?.cause?.name||''));
+            process.exitCode=2;
+          }
+          if(response){
+            let parsed={};
+            try{parsed=await response.json();}catch{console.error('Gemini smoke: invalid JSON response');process.exitCode=3;}
+            console.log('Gemini smoke: HTTP',response.status,'elapsed_ms',Date.now()-started);
+            if(!response.ok){
+              const err=parsed.error||{};
+              const msg=String(err.message||'').replace(/AIza[A-Za-z0-9_-]{15,}/g,'[REDACTED]').slice(0,260);
+              console.error('Gemini smoke: API_ERROR',String(err.status||'UNSPECIFIED'),msg);
+              process.exitCode=4;
+            }else{
+              const candidate=parsed.candidates?.[0];
+              const output=(candidate?.content?.parts||[]).filter(p=>typeof p.text==='string').map(p=>p.text).join('');
+              console.log('Gemini smoke: finish_reason',String(candidate?.finishReason||'NONE'));
+              console.log('Gemini smoke: output',JSON.stringify(output.slice(0,100)));
+              console.log('Gemini smoke: usage_tokens',JSON.stringify(parsed.usageMetadata||{}));
+              if(!output.trim()) {console.error('Gemini smoke: HTTP 200 but empty model output');process.exitCode=5;}
+              else console.log('Gemini smoke: MODEL_RESPONDED');
+            }
+          }
+          NODE
