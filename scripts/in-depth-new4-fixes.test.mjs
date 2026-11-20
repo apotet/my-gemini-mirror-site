@@ -13,7 +13,7 @@ const expected=[
   'l4-tcp-connection-closing','in-depth-tcp-time-wait',/FIN[/]ACK.*4-tuple.*ss -tan state time-wait/,null],
  ['l4-d05','Selective ACK (SACK) помогает…',
   ['Подтверждать несмежные блоки и эффективнее догонять потери','Выбирать VLAN на trunk','Шифровать payload как TLS','Назначать IP из DHCP'],
-  'l4-tcp-sack','in-depth-tcp-sack-blocks',/SACK-Permitted.*cumulative ACK.*tcp.options.sack/,null],
+  'l4-tcp-sack','in-depth-tcp-sack-blocks',/SACK-Permitted.*cumulative ACK.*tcp\.options\.sack\.count.*tcp\.options\.sack_le.*tcp\.options\.sack_re/,null],
  ['tcpip-d05','ECN (если согласован) позволяет…',
   ['Сигнализировать перегрузку без обязательного drop (CE mark)','Заменить IP-адреса','Отключить TCP','Назначить native VLAN'],
   'qos-basics','in-depth-ecn-congestion',/ECT[/]CE.*ECE[/]CWR/,null]
@@ -38,6 +38,17 @@ for (const [id,question,answers,lessonId,anchor,tipPattern,practiceLink] of expe
   assert.ok(blocks[0].body.trim(),id+': target '+mode+' section must have content');
  }
  assert.equal(d.practiceLink??null,practiceLink,id+': keep existing practice destination; never invent a trainer');
+ if(id==='l4-d05'){
+  // Current Wireshark SACK fields; the bare tcp.options.sack display field is historical.
+  const pro=d.professional.deep;
+  const lessonPro=m.getLessonBlocksWithSections(lesson,'professional').find(b=>b.anchorId===anchor).body;
+  for(const [kind,body] of [['practicalTip',d.practicalTip],['professional',pro],['linkedLessonProfessional',lessonPro]]){
+    for(const field of ['tcp.options.sack.count','tcp.options.sack_le','tcp.options.sack_re']){
+      assert.ok(body.includes(field),id+': '+kind+' must use current field '+field);
+    }
+    assert.doesNotMatch(body,/tcp\.options\.sack(?![._\w])/,id+': '+kind+' must not use obsolete bare SACK field');
+  }
+ }
  if(id==='l4-d03'){
   assert.match(d.commonTrap||'',/TIME-WAIT.*SYN flood.*CLOSE-WAIT/,id+': accurate active-close pitfall');
   assert.doesNotMatch(d.commonTrap||'',/Смотрите точные формулировки стандартов и исключения/,id+': reject generic trap');
