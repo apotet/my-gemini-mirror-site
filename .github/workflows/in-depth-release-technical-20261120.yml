@@ -1,0 +1,216 @@
+name: NetOps Understanding full technical release rehearsal (semantic GATE still BLOCK)
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+    paths:
+      - '.github/workflows/in-depth-release-technical-20261120.yml'
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.ref == 'audit/understanding-new4-fixes-20261120' &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci --no-fund --no-audit
+
+      - name: Validate question bank (esbuild real modules)
+        run: npm run validate:questions
+
+      - name: In-depth Understanding 164 structural contracts
+        run: npm run test:in-depth
+
+      - name: Previous-answer attempt compatibility
+        run: npm run test:in-depth-history
+
+      - name: State non-semantic scope — original CI fingerprint review remains mandatory
+        run: echo "Technical-only rehearsal; semantic fingerprint and GATE-01..10 are NOT passed or waived by this job." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Coverage report
+        run: npm run coverage:explanations
+
+      - name: Cisco IOS show diagnosis lab regression
+        run: node scripts/cli-show-diagnostic.test.mjs
+
+      - name: CLI Tab regression tests
+        run: node scripts/cli-tab.test.mjs
+
+      - name: Cisco IOS unique abbreviations regression
+        run: node scripts/cli-abbreviations.test.mjs
+
+      - name: Cisco IOS canonical command resolution regression
+        run: node scripts/cli-canonical-resolution.test.mjs
+
+      - name: Cisco IOS argument grammar regression
+        run: node scripts/cli-arguments.test.mjs
+
+      - name: Cisco CLI command catalog integrity
+        run: node scripts/cli-command-catalog.test.mjs
+
+      - name: Four-switch port label overlap geometry
+        run: node scripts/cli-topology-label-overlap.test.mjs
+
+      - name: Four-switch eight-PC live ring regression
+        run: node scripts/cli-four-switch-host-ring.test.mjs
+
+      - name: CLI topology port details regression
+        run: node scripts/cli-topology-port-details.test.mjs
+
+      - name: CLI topology layer selection regression
+        run: node scripts/cli-topology-layers.test.mjs
+
+      - name: CLI scenario-specific theory coverage
+        run: node scripts/cli-theory-links.test.mjs
+
+      - name: Cisco IOS contextual question-mark help regression
+        run: node scripts/cli-contextual-help.test.mjs
+
+      - name: Targeted SVI running-config and IP-mask regression
+        run: node scripts/cli-svi-show.test.mjs
+
+      - name: Cisco show interfaces and help regression
+        run: node scripts/cli-show-interfaces.test.mjs
+
+      - name: Cisco interface operational state regression
+        run: node scripts/cli-operational-state.test.mjs
+
+      - name: Cisco IOS modes learning lab regression
+        run: node scripts/cli-ios-modes-lab.test.mjs
+
+      - name: CLI lesson glossary links regression
+        run: node scripts/cli-lesson-terms.test.mjs
+
+      - name: CLI reference scope and links regression
+        run: node scripts/cli-reference.test.mjs
+
+      - name: Two-switch VLAN path regression
+        run: node scripts/cli-two-switch.test.mjs
+
+      - name: Three-switch VLAN fault regression
+        run: node scripts/cli-three-switch.test.mjs
+
+      - name: Diagnostic Learn no-spoiler regression
+        run: node scripts/cli-diagnostic-hints.test.mjs
+
+      - name: Selective trunk VLAN diagnostics regression
+        run: node scripts/cli-trunk-diagnostics.test.mjs
+
+      - name: Cisco trunk allowed VLAN operations regression
+        run: node scripts/cli-trunk-allowed-ops.test.mjs
+
+      - name: Cisco IOS running/startup persistence regression
+        run: node scripts/cli-persistence.test.mjs
+
+      - name: Deterministic IEEE 802.1D CST regression
+        run: node scripts/cli-stp.test.mjs
+
+      - name: CST forwarding and SVI integration regression
+        run: node scripts/cli-stp-forwarding.test.mjs
+
+      - name: Cisco IOS CST diagnostic commands regression
+        run: node scripts/cli-spanning-tree.test.mjs
+
+      - name: Cisco IOS CST configuration regression
+        run: node scripts/cli-stp-configuration.test.mjs
+
+      - name: Modeled PC ping regression
+        run: node scripts/cli-host-ping.test.mjs
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Pinned shared image resources
+        run: npm run test:shared-assets
+
+      - name: Photo REVIEW content and scope
+        run: npm run test:photo-review
+
+      - name: Production build
+        run: npm run build
+
+      - name: Quiz logic unit tests
+        run: npm run test:logic
+
+      - name: Explanations quality
+        run: npm run test:explanations
+
+      - name: Applied L3 service sessions batch 1 (12 tickets and two-style lessons)
+        run: node scripts/applied-l3-session-batch1.test.mjs
+
+      - name: Applied L3 lesson glossary inline hover (plain and pro)
+        run: node scripts/applied-l3-glossary-dom.test.mjs
+
+      - name: Beginner foundations batch 2 (20 tickets and lessons)
+        run: node scripts/fundamentals-batch2.test.mjs
+
+      - name: Review lesson links and missing materials
+        run: npm run test:review-navigation
+
+      - name: Base foundations 20-ticket content and lesson coverage
+        run: node scripts/base-foundations-batch2.test.mjs
+
+      - name: Beginner foundations batch 3 (20 tickets and lesson glossary)
+        run: node scripts/base-foundations-batch3.test.mjs
+
+      - name: Beginner foundations batch 4 (20 photo tickets and two-style optics lesson)
+        run: node scripts/base-foundations-batch4.test.mjs
+
+      - name: Beginner foundations batch 5 (20 copper photo questions and two lessons)
+        run: node scripts/base-foundations-batch5.test.mjs
+
+      - name: Beginner foundations batch 6 (20 optical photo questions and two lessons)
+        run: node scripts/base-foundations-batch6.test.mjs
+
+      - name: Final beginner foundations batch 7 (15 tickets and full 253 coverage)
+        run: node scripts/base-foundations-batch7.test.mjs
+
+      - name: Base level lessons complete (220 L1 plus screenshot regressions)
+        run: node scripts/foundation-lessons.test.mjs
+
+      - name: Question-to-paragraph lesson anchors (both reading modes)
+        run: node scripts/lesson-section-links.test.mjs
+
+      - name: Responsive explanation flows
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/photo-viewer.browser.mjs
+          node scripts/explanations.browser.mjs
+          node scripts/review-materials.browser.mjs
+          node scripts/base-level.browser.mjs
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-coverage
+          path: |
+            scripts/.cache/coverage-report.json
+            scripts/.cache/coverage-summary.txt
+            scripts/.cache/review-material-coverage.json
+            scripts/.cache/review-browser/*.png
+            scripts/.cache/review-browser/matrix-evidence.json
+            scripts/.cache/validate-summary.txt
+            scripts/.cache/in-depth/
+          if-no-files-found: ignore
+

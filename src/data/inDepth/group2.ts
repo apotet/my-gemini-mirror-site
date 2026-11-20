@@ -211,6 +211,23 @@ export const GROUP2_LINKS: Record<string, string> = {
 
 export const GROUP2_SECTIONS: SectionLink[] = [
   {
+    lessonId: 'l3-route-selection',
+    questionIds: ['l3-16'],
+    anchorId: 'in-depth-connected-vs-default-only',
+    afterHeading: {
+      plain: 'Сначала совпадение, затем самая длинная маска',
+      professional: 'RIB/FIB, route selection и разрешение next hop',
+    },
+    plain: {
+      heading: 'Два маршрута: своя подсеть напрямую, всё остальное через шлюз',
+      body: 'В этом билете у компьютера есть только маршрут подключённой локальной подсети и default route. Поэтому для обычного unicast-адреса своей подсети выбирается прямой маршрут, а для адреса за её пределами — маршрут по умолчанию через шлюз. Это частный результат поиска самого конкретного подходящего маршрута: других более точных маршрутов условие не задаёт.\n\nПустой ARP-кэш не меняет выбор маршрута. Для локального IP компьютер запрашивает MAC этого соседа; для удалённого — MAC выбранного шлюза. Не путай IP конечного адресата с IP следующего канального получателя.',
+    },
+    professional: {
+      heading: 'Connected prefix против 0.0.0.0/0: route lookup и ARP next hop',
+      body: 'В условии RIB/FIB хоста содержит connected IPv4 route к его локальной сети и default 0.0.0.0/0, без более конкретных записей. Longest-prefix match для on-link назначения выбирает connected prefix, для off-link unicast — default next hop. В Linux сравни ip route get для локального и удалённого адресов, в Windows — route print -4; затем проверь ARP/IP neighbor для адреса, который действительно надо разрешить на L2.\n\nДля локального получателя ARP Target Protocol Address равен его IP; для удалённого — IP шлюза, хотя IPv4 Destination остаётся удалённым адресом. Отсутствие ARP-записи запускает разрешение next hop, не переводит пакет на default route. При дополнительных маршрутах выбор мог бы отличаться — именно поэтому их отсутствие прямо оговорено в вопросе.',
+    },
+  },
+  {
     "lessonId": "l1-copper-cable",
     "questionIds": [
       "l1v2-a-solid-use"
