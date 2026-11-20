@@ -11,7 +11,7 @@ export const LESSON_TS_METHOD: Lesson = {
     "L4",
     "L7"
   ],
-  "difficulty": "beginner",
+  "difficulty": "applied",
   "summary": "Как превратить симптом в проверяемую гипотезу: сначала наблюдение, затем одна дешёвая проверка и только после неё обратимое изменение.",
   "terms": [
     "uRPF",

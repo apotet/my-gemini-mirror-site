@@ -8,7 +8,7 @@ export const LESSON_L1_FIBER_SPLICING: Lesson = {
   "osiLayers": [
     "L1"
   ],
-  "difficulty": "beginner",
+  "difficulty": "applied",
   "summary": "Цепочка от разделки кабеля до укладки сварок: стриппер, скалыватель, сварочник, оценка потерь, нагреватель КДЗС и кассета.",
   "terms": [
     "стриппер оптический",

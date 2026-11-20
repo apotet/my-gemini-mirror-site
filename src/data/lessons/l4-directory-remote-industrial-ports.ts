@@ -9,7 +9,7 @@ export const LESSON_L4_DIRECTORY_REMOTE_INDUSTRIAL_PORTS: Lesson = {
     "L4",
     "L7"
   ],
-  "difficulty": "beginner",
+  "difficulty": "applied",
   "summary": "Зачем LDAP, RDP и промышленный Modbus TCP используют разные номера TCP-портов, как не перепутать TLS, UDP и реальный сервис.",
   "terms": [
     "TCP",

@@ -76,7 +76,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
   "osiLayers": [
     "L4"
   ],
-  "difficulty": "beginner",
+  "difficulty": "applied",
   "summary": "Что означает выборочное подтверждение SACK, чем оно дополняет накопительный ACK и как помогает восстановить пропущенные TCP-байты.",
   "terms": [
     "TCP",
@@ -422,7 +422,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "L1",
       "L2"
     ],
-    "difficulty": "beginner",
+    "difficulty": "applied",
     "summary": "Как читать результаты PoE-тестера, не смешивая напряжение без нагрузки, запрошенный/полученный класс и выделенную мощность.",
     "terms": [
       "PoE",
@@ -489,7 +489,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
     "osiLayers": [
       "L1"
     ],
-    "difficulty": "beginner",
+    "difficulty": "applied",
     "summary": "Что можно достоверно прочитать на оболочке и SFP/QSFP, как различать 850/1310/1550 нм и номинальную дальность.",
     "terms": [
       "OM3",
@@ -568,7 +568,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
     "osiLayers": [
       "L1"
     ],
-    "difficulty": "beginner",
+    "difficulty": "applied",
     "summary": "Как прочитать настройки SM/MM, длину волны, длительность импульса и режим вывода рефлектограмм без догадок.",
     "terms": [
       "OTDR",
@@ -786,7 +786,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
     "osiLayers": [
       "L1"
     ],
-    "difficulty": "beginner",
+    "difficulty": "advanced",
     "summary": "Как из символьной скорости и числа уровней получить битовую скорость до вычета служебной избыточности.",
     "terms": [
       "baud",
@@ -850,7 +850,7 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
     "osiLayers": [
       "L4"
     ],
-    "difficulty": "beginner",
+    "difficulty": "applied",
     "summary": "Зачем сохранять TIME-WAIT после активного закрытия и чем аварийный RST отличается от согласованного FIN.",
     "terms": [
       "TCP",

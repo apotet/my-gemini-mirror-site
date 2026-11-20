@@ -9,7 +9,7 @@ export const LESSON_L1_OPTICAL_TESTING_EQUIPMENT: Lesson = {
     "L1",
     "L2"
   ],
-  "difficulty": "beginner",
+  "difficulty": "applied",
   "summary": "Как читать dB/dBm, OTDR и VFL, осматривать торцы, распознавать медиаконвертер и порты PoE по конкретной маркировке.",
   "terms": [
     "VFL",

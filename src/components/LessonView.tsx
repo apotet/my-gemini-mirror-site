@@ -8,6 +8,7 @@ import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../dat
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { LessonTermTags } from './LessonTermTags';
+import { LessonReviewBadge } from './LessonReviewBadge';
 import { SniDiagram } from './SniDiagram';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
@@ -102,7 +103,10 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>·</span>
           <span>{lesson.difficulty}</span>
         </div>
-        <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText>{lesson.title}</GlossaryText></h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText>{lesson.title}</GlossaryText></h2>
+          <LessonReviewBadge lessonId={lesson.id} />
+        </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         <FormattedExplanation text={content.summary} />
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} />

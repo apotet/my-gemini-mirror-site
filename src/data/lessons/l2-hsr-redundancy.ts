@@ -8,7 +8,7 @@ export const LESSON_L2_HSR_REDUNDANCY: Lesson = {
   "osiLayers": [
     "L2"
   ],
-  "difficulty": "beginner",
+  "difficulty": "advanced",
   "summary": "Как узлы HSR дублируют кадры по обоим направлениям кольца, зачем удаляют дубликаты и почему это не STP и не PRP.",
   "terms": [
     "HSR",
