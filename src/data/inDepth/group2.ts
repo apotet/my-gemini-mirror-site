@@ -196,7 +196,7 @@ export const GROUP2_LINKS: Record<string, string> = {
   "l1v2-c-closure-service": "l1-optical-testing-equipment",
   "l1v2-c-converter-polarity": "l1-switch-panel-identification",
   "l1v2-c-industrial-fiber-ports": "l1-switch-panel-identification",
-  "l1v2-c-splitter-role": "l1-copper-fault-poe",
+  "l1v2-c-splitter-role": "l1-poe-screen-reading",
   "l2-12": "expert-mrp-vlan-failover",
   "gen-diag-5": "expert-mrp-vlan-failover",
   "tr-11": "expert-mrp-vlan-failover",
@@ -440,14 +440,14 @@ export const GROUP2_SECTIONS: SectionLink[] = [
     }
   },
   {
-    "lessonId": "l1-copper-fault-poe",
+    "lessonId": "l1-poe-screen-reading",
     "questionIds": [
       "l1v2-c-splitter-role"
     ],
     "anchorId": "poe-splitter-versus-injector",
     "afterHeading": {
-      "plain": "PoE: PSE питает, PD потребляет",
-      "professional": "PoE detection, PSE и PD"
+      "plain": "PSE предлагает питание, PD его принимает",
+      "professional": "PoE detection/classification"
     },
     "plain": {
       "heading": "Splitter выделяет питание, injector его добавляет",

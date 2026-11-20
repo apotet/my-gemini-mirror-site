@@ -335,8 +335,8 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     ],
     "anchorId": "copper-pass-crimper",
     "afterHeading": {
-      "plain": "Чем и как обрезают выступающие жилы",
-      "professional": "Чем и как обрезают выступающие жилы"
+      "plain": "Обычный обжим 8P8C и отличие pass-through",
+      "professional": "Обычный обжим 8P8C и отличие pass-through"
     }
   },
   {
