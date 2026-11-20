@@ -40,4 +40,21 @@ for (const term of ['802.3af', '802.3at', '802.3bt']) {
 assert.match(GLOSSARY_TOOLTIPS['802.3bt'].summary, /Type 3.*60.*Type 4.*90/s, 'Type 3 vs Type 4 explained in tooltip');
 assert.ok(!splitGlossaryText('802.3btX').some(part => part.term === '802.3bt'), 'no partial match inside longer tokens');
 
+// Regression: the exact highlighted terms from the PoE budget lesson open full term tooltips.
+const poeDiagnosticText = 'Совместимым PoE-тестером проверь класс. Не путай «порт up» с «питание есть».';
+const poeDiagnosticParts = splitGlossaryText(poeDiagnosticText);
+assert.equal(poeDiagnosticParts.map(part => part.text).join(''), poeDiagnosticText);
+assert.deepEqual(
+  poeDiagnosticParts.filter(part => part.term).map(part => part.term),
+  ['PoE-тестером', 'порт up'],
+  'PoE diagnostic phrases must be recognized as full tokens rather than the nested PoE word',
+);
+for (const term of ['PoE-тестер', 'PoE-тестером', 'порт up']) {
+  assert.ok(GLOSSARY[term]?.description, 'missing glossary entry: ' + term);
+  assert.ok(GLOSSARY_TOOLTIPS[term]?.summary, 'missing hover tooltip: ' + term);
+}
+assert.match(GLOSSARY_TOOLTIPS['порт up'].summary, /физическое соединение.*не доказывает достаточность PoE-питания/u);
+assert.match(GLOSSARY_TOOLTIPS['PoE-тестером'].summary, /под нагрузкой.*ток и мощность/u);
+assert.ok(!splitGlossaryText('PoE-тестеромX').some(part => part.term === 'PoE-тестером'), 'do not match inside a longer token');
+
 console.log(`PASS: ${GLOSSARY_ABBREVIATIONS.length} abbreviations, ${Object.keys(GLOSSARY_TOOLTIPS).length} complete tooltips; boundaries and longest matches`);
