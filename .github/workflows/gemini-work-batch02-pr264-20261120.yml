@@ -1,0 +1,85 @@
+name: Gemini Work batch02 30-question offline archive PR264 (NO LLM API)
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - '.github/workflows/gemini-work-batch02-pr264-20261120.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-export:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.head.repo.full_name == 'apotet/my-gemini-mirror-site' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'export/gemini-work-batch02-pr264-20261120' &&
+      github.event.pull_request.user.login == 'apotet'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Verify original draft PR 264 HEAD before packaging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = '1f273787370a64cf39732974b60c1706e538f5bb' || { echo 'Source changed; refusing stale export'; exit 1; }
+
+      - name: Checkout trusted exporter from main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout exact PR264 frozen content
+        uses: actions/checkout@v4
+        with:
+          ref: 1f273787370a64cf39732974b60c1706e538f5bb
+          path: subject
+          persist-credentials: false
+
+      - name: Checkout manually prepared export assembler at pinned SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 97b6aad3135620baead374bea3f4b566d6c92ff0
+          path: handoff-tools
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned bundler dependencies without package scripts
+        working-directory: subject
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Create six exact source packs of five records each, NO GEMINI CALLS
+        run: |
+          mkdir -p output/packs
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l1v2-a-category-limit,l1v2-a-jacket-kink,l1v2-a-jacket-limit,l1v2-a-label-sftp,l1v2-a-pairs' output/packs/pack_01.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l1v2-a-solid-use,l1v2-a-strain-view,l1v2-b-bend-loss,l1v2-b-position-cause,l1v2-b-screen-xy' output/packs/pack_02.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l1v2-b-transfer,l1v2-c-bidi-wrong-pair,l1v2-c-closure-service,l1v2-c-converter-polarity,l1v2-c-industrial-fiber-ports' output/packs/pack_03.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'l1v2-c-splitter-role,mon-snmp-01,mon-syslog-01,mon-syslog-05,mon-zabbix-01' output/packs/pack_04.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'review-dot1x-20,review-igmp-9,review-osi-34,review-ospf-27,review-poe-30' output/packs/pack_05.json
+          node trusted/scripts/gemini-audit-pack.mjs subject 'review-ptp-17,review-qos-22,review-slaac-4,review-syslog-25,wifi-roam-01' output/packs/pack_06.json
+
+      - name: Build and validate 30 standalone Markdown questions, source manifest and SHA256 checksums
+        run: node handoff-tools/handoff/assemble-gemini-work-30.mjs
+
+      - name: Verify PR264 source still matches archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/pulls/264" --jq '.head.sha')
+          test "$ACTUAL" = '1f273787370a64cf39732974b60c1706e538f5bb' || { echo 'Source changed mid-export; refusing upload'; exit 1; }
+
+      - name: Upload single downloadable ZIP with all 30 questions and Work instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetOps-Gemini-Work-Batch02-30-Questions-20261120
+          path: output/
+          if-no-files-found: error
+          retention-days: 90
