@@ -1,6 +1,8 @@
-name: NetOps manual diagnostics (no automatic CI)
+name: NetOps PR checks
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 jobs:
