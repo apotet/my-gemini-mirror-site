@@ -7,6 +7,11 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
+  "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
+  "пассивный PoE": { description: "Нестандартная для IEEE 802.3af/at/bt схема подачи питания по Ethernet-кабелю; типичный источник подаёт DC без обнаружения и классификации IEEE PD. Нельзя считать совместимым по одному RJ-45 или надписи PoE: сверяй напряжение, контакты и полярность.", relatesTo: "Риски повреждения оборудования и проверка совместимости источника с PD.", lessonId: "l1-poe-injectors-splitters" },
+  "Midspan": { description: "Промежуточный источник PoE-питания PSE на линии Ethernet между обычным коммутатором и PD. Пример — IEEE-совместимый PoE-инжектор.", relatesTo: "Размещение источника питания в кабельной линии.", lessonId: "l1-poe-injectors-splitters" },
+  "Endspan": { description: "Источник PoE-питания PSE внутри Ethernet-коммутатора. Противопоставляется отдельному midspan-инжектору, но не задаёт конкретную схему цветов T568A/B.", relatesTo: "Питание непосредственно от PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "Alternative A": { description: "Подача PoE по контактам 1–2 и 3–6 RJ-45. В T568B это оранжевая и зелёная пары; в T568A цвета этих групп переставлены.", relatesTo: "Питание через пары 1–2 и 3–6; совпадает с Mode A.", lessonId: 'l1-poe-budget' },
   "Alternative B": { description: "Подача PoE по контактам 4–5 и 7–8 RJ-45: синяя и коричневая пары при T568A и T568B. При 10/100BASE-TX они не передают данные, а в гигабитном Ethernet участвуют в передаче.", relatesTo: "Питание через пары 4–5 и 7–8; совпадает с Mode B.", lessonId: 'l1-poe-budget' },
   "Mode A": { description: "Способ подачи PoE по контактам 1–2 и 3–6 RJ-45, иначе Alternative A. Выбор схемы определяется источником PSE; Mode A не означает обжим T568A.", relatesTo: "Alternative A и отличие от T568A.", lessonId: 'l1-poe-budget' },
@@ -2304,6 +2309,11 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "AWG": ["American Wire Gauge", "Калибр проводника", true],
   "Cat6": ["Category 6", "Категория кабеля Cat6", false],
   "дисбаланс пар": ["DC Resistance Unbalance", "Неравномерность сопротивления проводников и пар", false],
+  "PoE-инжектор": ["IEEE PoE Injector / Midspan", "Промежуточный источник питания PoE", false],
+  "PoE-сплиттер": ["PoE Splitter", "Разделяет входной PoE на Ethernet и DC-питание", false],
+  "пассивный PoE": ["Passive PoE", "Питание без стандартного IEEE detection/classification", false],
+  "Midspan": ["Midspan PSE", "Промежуточный источник PoE", false],
+  "Endspan": ["Endspan PSE", "PoE-питание от коммутатора", false],
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
   "PoE-тестер": ["PoE Tester", "Прибор для проверки PoE-питания", false],
   "PoE-тестером": ["PoE Tester", "Прибор для проверки PoE-питания", false],
