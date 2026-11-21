@@ -97,6 +97,9 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
+  const activeKnowledgeCheck = textMode === 'professional'
+    ? lesson.knowledgeCheck
+    : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);
   const blocks = getLessonBlocksWithSections(lesson, textMode === 'professional' && lesson.professional ? 'professional' : 'plain');
   const targetAnchor = getLessonSectionForQuestion(lesson.id, returnQuestionId);
   const anchorElements = useRef<Record<string, HTMLElement | null>>({});
@@ -317,8 +320,11 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         </section>
       )}
 
-      {lesson.knowledgeCheck && (
-        <LessonKnowledgeCheck key={lesson.id} check={lesson.knowledgeCheck} />
+      {activeKnowledgeCheck && (
+        <LessonKnowledgeCheck
+          key={`${lesson.id}-${textMode}`}
+          check={activeKnowledgeCheck}
+        />
       )}
 
       {related.length > 0 && (

@@ -88,4 +88,7 @@ export interface Lesson {
   animation?: { file: string; label: string; description: string };
   /** Optional short in-lesson self-check; intentionally separate from tracked exam attempts. */
   knowledgeCheck?: LessonKnowledgeCheck;
+  /** If provided, replace the default check in the "Простыми словами" mode.
+   * The full knowledgeCheck remains for professional mode; no impact on exam statistics. */
+  plainKnowledgeCheck?: LessonKnowledgeCheck;
 }
