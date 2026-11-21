@@ -34,41 +34,43 @@ const PoEStandardsChart: React.FC = () => {
   ] as const;
 
   return (
-    <div data-poe-standards-chart="responsive" className="rounded-2xl bg-[#06111d] p-3 text-slate-100 sm:p-4">
-      <p className="mb-3 text-xs leading-relaxed text-cyan-100 sm:text-sm">
-        <strong>PSE</strong> — мощность на источнике; <strong>PD</strong> — на входе устройства.
-        <strong> Class</strong> — класс мощности PD, не текущее потребление.
+    <div data-poe-standards-chart="responsive" className="rounded-xl bg-[#06111d] p-2 text-slate-100 sm:rounded-2xl sm:p-4">
+      <p className="mb-2 text-[11px] leading-snug text-cyan-100 sm:mb-3 sm:text-sm sm:leading-relaxed">
+        <strong>PSE</strong> — источник питания; <strong>PD</strong> — устройство;
+        <strong> Class</strong> — класс мощности, не текущее потребление.
       </p>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
         {standards.map(row => (
-          <div key={row.type} className={`rounded-xl border border-slate-700 border-l-4 ${row.accent} bg-[#10263a] p-3`}>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div className="text-sm font-bold text-white">{row.standard}</div>
-                <div className={`text-xs font-semibold ${row.tag}`}>{row.name} · {row.type}</div>
+          <div key={row.type} className={`rounded-lg border border-slate-700 border-l-4 ${row.accent} bg-[#10263a] p-2 sm:rounded-xl sm:p-3`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold leading-tight text-white sm:text-sm">{row.standard}</div>
+                <div className={`text-[11px] font-semibold leading-tight sm:text-xs ${row.tag}`}>{row.name} · {row.type}</div>
               </div>
-              <div className="rounded-lg border border-cyan-500/40 bg-cyan-950/70 px-3 py-1.5 text-center">
-                <div className="text-[10px] uppercase tracking-wider text-cyan-200">Class</div>
-                <div className="text-xl font-bold text-white">{row.powerClass}</div>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="rounded-lg bg-[#06111d] px-3 py-2">
-                <div className="text-xs text-cyan-200">PSE · источник</div>
-                <div className="text-lg font-bold text-white">{row.pse}</div>
-              </div>
-              <div className="rounded-lg bg-[#06111d] px-3 py-2">
-                <div className="text-xs text-cyan-200">PD · устройство</div>
-                <div className="text-lg font-bold text-white">{row.pd}</div>
+              <div className="flex shrink-0 items-baseline gap-1 rounded-md border border-cyan-500/40 bg-cyan-950/70 px-2 py-1 sm:block sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-center">
+                <span className="text-[10px] uppercase text-cyan-200">Class</span>
+                <span className="text-base font-bold leading-none text-white sm:block sm:text-xl">{row.powerClass}</span>
               </div>
             </div>
-            <div className="mt-2 text-xs text-slate-300">Питание: <strong className="text-white">{row.pairs}</strong>{row.type === 'Type 3' ? ' при максимальных 60 Вт' : ''}</div>
+            <div className="mt-1.5 grid grid-cols-2 gap-1.5 sm:mt-3 sm:gap-2">
+              <div className="rounded-md bg-[#06111d] px-2 py-1 sm:rounded-lg sm:px-3 sm:py-2">
+                <span className="text-[10px] text-cyan-200 sm:text-xs">PSE</span>
+                <span className="ml-1 whitespace-nowrap text-[13px] font-bold text-white sm:ml-0 sm:block sm:text-lg">{row.pse}</span>
+              </div>
+              <div className="rounded-md bg-[#06111d] px-2 py-1 sm:rounded-lg sm:px-3 sm:py-2">
+                <span className="text-[10px] text-cyan-200 sm:text-xs">PD</span>
+                <span className="ml-1 whitespace-nowrap text-[13px] font-bold text-white sm:ml-0 sm:block sm:text-lg">{row.pd}</span>
+              </div>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-slate-300 sm:mt-2 sm:text-xs">
+              Питание: <strong className="text-white">{row.pairs}</strong>{row.type === 'Type 3' ? ' при 60 Вт' : ''}
+            </p>
           </div>
         ))}
       </div>
-      <p className="mt-3 text-xs leading-relaxed text-slate-300">
-        Указаны классы верхних уровней каждого Type: старшие типы поддерживают и младшие классы.
-        Максимумы PSE/PD не равны фактическому потреблению; общий бюджет коммутатора проверяется отдельно.
+      <p className="mt-2 text-[11px] leading-snug text-slate-300 sm:mt-3 sm:text-xs sm:leading-relaxed">
+        Показаны классы максимальной мощности каждого Type; старшие типы поддерживают младшие классы.
+        PSE/PD — пределы, а не фактическое потребление. Общий бюджет коммутатора проверяй отдельно.
       </p>
     </div>
   );
