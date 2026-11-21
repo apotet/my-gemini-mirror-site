@@ -7,7 +7,7 @@ export const LESSON_L1_POE_BUDGET: Lesson = {
   difficulty: 'beginner',
   osiLayers: ['L1'],
   summary: 'Как прикинуть, хватит ли питания: класс устройства, мощность порта, общий бюджет коммутатора и запас.',
-  terms: ['PoE', 'PSE', 'PD', 'Class', 'бюджет'],
+  terms: ['PoE', 'PSE', 'PD', 'Class', 'Type', 'PoE-бюджет', 'PoE-тестер'],
   blocks: [
     {
       heading: 'Класс — сколько устройство просит',
@@ -30,7 +30,7 @@ export const LESSON_L1_POE_BUDGET: Lesson = {
   ],
   professional: {
     summary: 'Мощность PSE и PD по стандартам PoE, выделение питания по классу, ограничения отдельного порта и общего бюджета коммутатора, диагностика.',
-    terms: ['PoE', 'PSE', 'PD', 'Class', 'бюджет'],
+    terms: ['PoE', 'PSE', 'PD', 'Class', 'Type', 'PoE-бюджет', '802.3af', '802.3at', '802.3bt', 'Mode A/B', 'LLDP'],
     blocks: [
       {
         heading: 'Стандарты и типичные значения',
