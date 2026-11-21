@@ -24,6 +24,56 @@ interface LessonViewProps {
   returnQuestionId?: string | null;
 }
 
+/** Native, mobile-readable PoE cheat sheet: no tiny SVG columns or cached image. */
+const PoEStandardsChart: React.FC = () => {
+  const standards = [
+    { standard: 'IEEE 802.3af', name: 'PoE', type: 'Type 1', powerClass: '0–3', pse: '15,4 Вт', pd: '12,95 Вт', pairs: '2 пары', accent: 'border-cyan-400', tag: 'text-cyan-300' },
+    { standard: 'IEEE 802.3at', name: 'PoE+', type: 'Type 2', powerClass: '4', pse: '30 Вт', pd: '25,5 Вт', pairs: '2 пары', accent: 'border-teal-400', tag: 'text-teal-300' },
+    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 3', powerClass: '5–6', pse: '60 Вт', pd: '51 Вт', pairs: '4 пары', accent: 'border-amber-400', tag: 'text-amber-300' },
+    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 4', powerClass: '7–8', pse: '90 Вт', pd: '71,3 Вт', pairs: '4 пары', accent: 'border-blue-400', tag: 'text-blue-300' },
+  ] as const;
+
+  return (
+    <div data-poe-standards-chart="responsive" className="rounded-2xl bg-[#06111d] p-3 text-slate-100 sm:p-4">
+      <p className="mb-3 text-xs leading-relaxed text-cyan-100 sm:text-sm">
+        <strong>PSE</strong> — мощность на источнике; <strong>PD</strong> — на входе устройства.
+        <strong> Class</strong> — класс мощности PD, не текущее потребление.
+      </p>
+      <div className="grid gap-3 md:grid-cols-2">
+        {standards.map(row => (
+          <div key={row.type} className={`rounded-xl border border-slate-700 border-l-4 ${row.accent} bg-[#10263a] p-3`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-sm font-bold text-white">{row.standard}</div>
+                <div className={`text-xs font-semibold ${row.tag}`}>{row.name} · {row.type}</div>
+              </div>
+              <div className="rounded-lg border border-cyan-500/40 bg-cyan-950/70 px-3 py-1.5 text-center">
+                <div className="text-[10px] uppercase tracking-wider text-cyan-200">Class</div>
+                <div className="text-xl font-bold text-white">{row.powerClass}</div>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-[#06111d] px-3 py-2">
+                <div className="text-xs text-cyan-200">PSE · источник</div>
+                <div className="text-lg font-bold text-white">{row.pse}</div>
+              </div>
+              <div className="rounded-lg bg-[#06111d] px-3 py-2">
+                <div className="text-xs text-cyan-200">PD · устройство</div>
+                <div className="text-lg font-bold text-white">{row.pd}</div>
+              </div>
+            </div>
+            <div className="mt-2 text-xs text-slate-300">Питание: <strong className="text-white">{row.pairs}</strong>{row.type === 'Type 3' ? ' при максимальных 60 Вт' : ''}</div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs leading-relaxed text-slate-300">
+        Указаны классы верхних уровней каждого Type: старшие типы поддерживают и младшие классы.
+        Максимумы PSE/PD не равны фактическому потреблению; общий бюджет коммутатора проверяется отдельно.
+      </p>
+    </div>
+  );
+};
+
 /** Shared photo markup; optional pass-through photos can be disclosed on demand. */
 const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
 <figure className="w-full max-w-xs space-y-2 justify-self-start md:justify-self-end">
@@ -218,12 +268,16 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                   <span className="hidden shrink-0 text-xs font-medium text-cyan-700 dark:text-cyan-300 group-open:inline">Свернуть</span>
                 </summary>
                 <div className="space-y-3 border-t border-cyan-300/40 p-3">
-                  <ZoomableImage
-                    src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}
-                    alt={b.cheatsheet.alt}
-                    previewFullHeight
-                    className="w-full"
-                  />
+                  {b.cheatsheet.file === 'poe-standards-cheatsheet.svg' ? (
+                    <PoEStandardsChart />
+                  ) : (
+                    <ZoomableImage
+                      src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}
+                      alt={b.cheatsheet.alt}
+                      previewFullHeight
+                      className="w-full"
+                    />
+                  )}
                   <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>
                 </div>
               </details>
