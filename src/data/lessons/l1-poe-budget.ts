@@ -195,6 +195,6 @@ export const LESSON_L1_POE_BUDGET: Lesson = {
     }
   ]
 },
-  relatedQuestionIds: ['review-poe-30', 'l1v2-a-poe-limit'],
+  relatedQuestionIds: ['l12-x04', 'l1v2-c-poe-budget'],
   sources: ['IEEE 802.3 — Power over Ethernet', 'Cisco — Configuring Power over Ethernet (IOS XE)']
 };
