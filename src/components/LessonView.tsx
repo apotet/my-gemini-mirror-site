@@ -277,7 +277,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                       src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}
                       alt={b.cheatsheet.alt}
                       previewFullHeight
-                      className="w-full"
+                      className={b.cheatsheet.file === 'poe-pairs-compact.svg' ? 'w-full md:mx-auto md:max-w-[46rem]' : 'w-full'}
                     />
                   )}
                   <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{b.cheatsheet.note}</p>

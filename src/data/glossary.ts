@@ -7,6 +7,11 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "Alternative A": { description: "Подача PoE по контактам 1–2 и 3–6 RJ-45. В T568B это оранжевая и зелёная пары; в T568A цвета этих групп переставлены.", relatesTo: "Питание через пары 1–2 и 3–6; совпадает с Mode A.", lessonId: 'l1-poe-budget' },
+  "Alternative B": { description: "Подача PoE по контактам 4–5 и 7–8 RJ-45: синяя и коричневая пары при T568A и T568B. При 10/100BASE-TX они не передают данные, а в гигабитном Ethernet участвуют в передаче.", relatesTo: "Питание через пары 4–5 и 7–8; совпадает с Mode B.", lessonId: 'l1-poe-budget' },
+  "Mode A": { description: "Способ подачи PoE по контактам 1–2 и 3–6 RJ-45, иначе Alternative A. Выбор схемы определяется источником PSE; Mode A не означает обжим T568A.", relatesTo: "Alternative A и отличие от T568A.", lessonId: 'l1-poe-budget' },
+  "Mode B": { description: "Способ подачи PoE по контактам 4–5 и 7–8 RJ-45, иначе Alternative B. Mode B не означает обжим T568B.", relatesTo: "Alternative B и отличие от T568B.", lessonId: 'l1-poe-budget' },
+  "Mode A/B": { description: "Два способа подачи PoE: Mode A использует контакты 1–2 и 3–6, Mode B — 4–5 и 7–8. Это не схемы цветов T568A/T568B; мощный четырёхпарный PoE использует обе группы.", relatesTo: "Расположение питающих пар RJ-45 и выбор источника PSE.", lessonId: 'l1-poe-budget' },
   "T568A": {"description":"Схема оконцевания симметричного кабеля на 8P8C по ANSI/TIA-568.2-E: зелёная пара на контактах 1–2, оранжевая на 3 и 6. Это не отдельный тип Ethernet-порта.","relatesTo":"На обоих концах A–A даёт прямой кабель; распиновку см. в шпаргалке по обжиму.","lessonId":"l1-copper-fault-poe"},
   "T568B": {"description":"Альтернативная схема оконцевания по ANSI/TIA-568.2-E: оранжевая пара на контактах 1–2, зелёная на 3 и 6. По характеристикам не быстрее T568A.","relatesTo":"B–B — прямой кабель, A–B — перекрёстный для 10/100BASE-T; подробная раскладка цветов — в шпаргалке.","lessonId":"l1-copper-fault-poe"},
   "Auto MDI-X": {"description":"Automatic Medium Dependent Interface Crossover — автоматическое согласование передающих и принимающих пар интерфейса Ethernet. Современные порты обычно обходятся без отдельного crossover-кабеля.","relatesTo":"Не предполагай поддержку Auto MDI-X у старого оборудования: смотри паспорт порта и настройки автосогласования.","lessonId":"l1-copper-fault-poe"},
@@ -2284,6 +2289,11 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "ifInErrors": ["ifInErrors (IF-MIB)", "Нарастающий SNMP-счётчик входящих ошибок кадра", false],
   "MCS": ["Modulation and Coding Scheme", "Индекс модуляции и кодирования в 802.11", true],
   "OKC": ["Opportunistic Key Caching", "Кэширование PMK для быстрого роуминга 802.1X", true],
+  "Alternative A": ["PoE Alternative A", "Питание PoE по парам 1–2 и 3–6", false],
+  "Alternative B": ["PoE Alternative B", "Питание PoE по парам 4–5 и 7–8", false],
+  "Mode A": ["PoE Mode A", "Режим питания по контактам 1–2 и 3–6", false],
+  "Mode B": ["PoE Mode B", "Режим питания по контактам 4–5 и 7–8", false],
+  "Mode A/B": ["PoE power pairsets A and B", "Альтернативные наборы питающих пар PoE", false],
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
   "PoE-тестер": ["PoE Tester", "Прибор для проверки PoE-питания", false],
   "PoE-тестером": ["PoE Tester", "Прибор для проверки PoE-питания", false],
