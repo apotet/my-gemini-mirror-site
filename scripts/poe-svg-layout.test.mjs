@@ -7,6 +7,9 @@ assert.match(svg, /viewBox="0 0 860 720"/, 'keep SVG viewBox and responsive scal
 assert.match(svg, /<title id="title">/, 'retain accessible title');
 assert.match(svg, /<desc id="desc">/, 'retain accessible description');
 assert.equal((svg.match(/<animateMotion\b/g) || []).length, 12, 'retain 12 animated impulses, 3 on each of 4 branches');
+for (const x of [135, 330, 530, 725]) {
+  assert.ok(svg.includes(`L${x} 222`), 'keep cable endpoint and pulse route for device at x=' + x);
+}
 
 for (const id of ['poe-camera', 'poe-wifi', 'poe-voip', 'poe-access']) {
   const panel = svg.match(new RegExp('<g id="' + id + '" transform="translate\\([\\d,]+\\)">([\\s\\S]*?)</g>'));
