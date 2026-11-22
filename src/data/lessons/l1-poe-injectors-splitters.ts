@@ -16,8 +16,10 @@ export const LESSON_L1_POE_INJECTORS_SPLITTERS: Lesson = {
     "PD",
     "PoE-инжектор",
     "PoE-сплиттер",
+    "DC-выход",
     "пассивный PoE",
-    "Midspan"
+    "Midspan",
+    "полярность"
   ],
   "blocks": [
     {
@@ -53,12 +55,16 @@ export const LESSON_L1_POE_INJECTORS_SPLITTERS: Lesson = {
       "PD",
       "PoE-инжектор",
       "PoE-сплиттер",
+      "DC-выход",
       "пассивный PoE",
       "Midspan",
       "Endspan",
       "Alternative A",
       "Alternative B",
-      "802.3at"
+      "802.3at",
+      "Class",
+      "Type",
+      "полярность"
     ],
     "blocks": [
       {

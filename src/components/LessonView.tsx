@@ -205,7 +205,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
             </p>
           </div>
         ) : <FormattedExplanation text={content.summary} />}
-        <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget'].includes(lesson.id)} />
+        <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />
       </header>
 
       {lesson.animation && (lesson.id !== 'l1-poe-budget' || textMode === 'meaning') && (
