@@ -1718,6 +1718,8 @@ GLOSSARY["Server Name Indication"] = GLOSSARY["SNI"];
 GLOSSARY["SNAT"] = GLOSSARY["Source NAT"];
 GLOSSARY["NAPT"] = GLOSSARY["PAT"];
 GLOSSARY["NAT overload"] = GLOSSARY["PAT"];
+// English term used in PoE lessons: share the same safety definition and lesson link.
+GLOSSARY["passive PoE"] = GLOSSARY["пассивный PoE"];
 
 
 export interface GlossaryTooltip {
@@ -2348,6 +2350,13 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "read-only": ["Read-only diagnostics", "Диагностика без изменения настроек", false],
   "Type": ["IEEE PoE Type", "Тип питания по IEEE 802.3af/at/bt", false],
   "пассивный PoE": ["Passive PoE", "Питание без стандартного IEEE detection/classification", false],
+  "passive PoE": ["Passive Power over Ethernet", "Пассивное питание по Ethernet", false, "Типичный пассивный источник подаёт питание без стандартного IEEE-обнаружения потребителя; перед подключением обязательно сверяй напряжение, контакты и полярность."],
+  // Formula notation is exposed ONLY in the two exact equations in the PoE budget case.
+  "ΔU": ["Voltage drop", "ΔU — падение напряжения (В)", false, "Разница напряжений на входе и выходе рассматриваемого токового контура: показывает потери напряжения на кабеле и соединениях."],
+  "I": ["Electric current", "I — сила тока (А)", false, "Ток в рассматриваемом питающем контуре; нужен для расчёта падения напряжения и тепловых потерь."],
+  "R": ["Circuit resistance", "R — сопротивление контура (Ω)", false, "Полное сопротивление пути прохождения тока, включая прямой и обратный проводники и контакты; не сопротивление одной жилы."],
+  "I²": ["Current squared", "I² — ток в квадрате (А²)", false, "В формуле потерь ток возводят в квадрат: при удвоении тока нагрев при неизменном сопротивлении возрастает в четыре раза."],
+  "Pпотерь": ["Power dissipation", "Pпотерь — потери мощности (Вт)", false, "Мощность, превращающаяся в тепло в этом токовом контуре; для нескольких контуров потери рассчитывают и складывают отдельно."],
   "Midspan": ["Midspan PSE", "Промежуточный источник PoE", false],
   "Endspan": ["Endspan PSE", "PoE-питание от коммутатора", false],
   "PoE": ["Power over Ethernet", "Передача электропитания по кабелю Ethernet", true],
