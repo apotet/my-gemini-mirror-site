@@ -97,6 +97,7 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
+  const glossaryScope = ['l1-poe-budget', 'cli-poe-diagnostics', 'l1-poe-injectors-splitters', 'l1-copper-fault-poe'].includes(lesson.id) ? 'poe' as const : undefined;
   const activeKnowledgeCheck = textMode === 'professional'
     ? lesson.knowledgeCheck
     : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);
@@ -191,7 +192,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>{lesson.difficulty}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText>{lesson.title}</GlossaryText></h2>
+          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white"><GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText></h2>
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
@@ -242,10 +243,10 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
-              <span className="min-w-0"><GlossaryText key={textMode}>{b.heading}</GlossaryText></span>
+              <span className="min-w-0"><GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText></span>
             </h3>
             <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
-              <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} />{b.pinout === 't568' && <EthernetPinout />}</div>
+              <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} glossaryScope={glossaryScope} />{b.pinout === 't568' && <EthernetPinout />}</div>
               {b.image && !b.imageCollapsible && <LessonPhoto image={b.image} />}
             </div>
             {b.image && b.imageCollapsible && (
@@ -306,7 +307,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
             <div key={c.cmd} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3 space-y-2">
               <div className="text-xs font-medium text-slate-700 dark:text-slate-200">{c.title}</div>
               <FormattedExplanation text={c.cmd} command />
-              {c.note && <p className="text-[11px] text-slate-500 dark:text-slate-400"><GlossaryText key={textMode}>{c.note}</GlossaryText></p>}
+              {c.note && <p className="text-[11px] text-slate-500 dark:text-slate-400"><GlossaryText key={textMode} scope={glossaryScope}>{c.note}</GlossaryText></p>}
               <button
                 type="button"
                 onClick={() => copy(c.cmd)}
