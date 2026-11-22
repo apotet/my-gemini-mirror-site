@@ -16,7 +16,10 @@ export const LESSON_CLI_POE_DIAGNOSTICS: Lesson = {
     "PSE",
     "PD",
     "Class",
-    "LLDP"
+    "LLDP",
+    "Available",
+    "Used",
+    "Remaining"
   ],
   "blocks": [
     {
@@ -80,7 +83,14 @@ export const LESSON_CLI_POE_DIAGNOSTICS: Lesson = {
       "PSE",
       "PD",
       "Class",
-      "LLDP"
+      "LLDP",
+      "Type",
+      "Available",
+      "Used",
+      "Remaining",
+      "Allocated",
+      "Utilized",
+      "Measured"
     ],
     "blocks": [
       {
