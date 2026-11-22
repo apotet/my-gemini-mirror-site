@@ -27,10 +27,10 @@ interface LessonViewProps {
 /** Native, mobile-readable PoE cheat sheet: no tiny SVG columns or cached image. */
 const PoEStandardsChart: React.FC = () => {
   const standards = [
-    { standard: 'IEEE 802.3af', name: 'PoE', type: 'Type 1', powerClass: '0–3', pse: '15,4 Вт', pd: '12,95 Вт', pairs: '2 пары', accent: 'border-cyan-400', tag: 'text-cyan-300' },
-    { standard: 'IEEE 802.3at', name: 'PoE+', type: 'Type 2', powerClass: '4', pse: '30 Вт', pd: '25,5 Вт', pairs: '2 пары', accent: 'border-teal-400', tag: 'text-teal-300' },
-    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 3', powerClass: '5–6', pse: '60 Вт', pd: '51 Вт', pairs: '4 пары', accent: 'border-amber-400', tag: 'text-amber-300' },
-    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 4', powerClass: '7–8', pse: '90 Вт', pd: '71,3 Вт', pairs: '4 пары', accent: 'border-blue-400', tag: 'text-blue-300' },
+    { standard: 'IEEE 802.3af', name: 'PoE', type: 'Type 1', powerClass: '0–3', pse: '15,4 Вт', pd: '12,95 Вт', pairs: '2 пары', accent: 'border-l-cyan-400', tag: 'text-cyan-300' },
+    { standard: 'IEEE 802.3at', name: 'PoE+', type: 'Type 2', powerClass: '4', pse: '30 Вт', pd: '25,5 Вт', pairs: '2 пары', accent: 'border-l-teal-400', tag: 'text-teal-300' },
+    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 3', powerClass: '5–6', pse: '60 Вт', pd: '51 Вт', pairs: '4 пары', accent: 'border-l-amber-400', tag: 'text-amber-300' },
+    { standard: 'IEEE 802.3bt', name: 'PoE++', type: 'Type 4', powerClass: '7–8', pse: '90 Вт', pd: '71,3 Вт', pairs: '4 пары', accent: 'border-l-blue-400', tag: 'text-blue-300' },
   ] as const;
 
   return (
@@ -41,7 +41,7 @@ const PoEStandardsChart: React.FC = () => {
       </p>
       <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
         {standards.map(row => (
-          <div key={row.type} className={`rounded-lg border border-slate-700 border-l-4 ${row.accent} bg-[#10263a] p-2 sm:rounded-xl sm:p-3`}>
+          <div key={row.type} data-poe-standard-card={row.type} className={`rounded-lg border border-slate-700 border-l-4 ${row.accent} bg-[#10263a] p-2 sm:rounded-xl sm:p-3`}>
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-[13px] font-bold leading-tight text-white sm:text-sm">{row.standard}</div>
