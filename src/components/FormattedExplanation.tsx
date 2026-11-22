@@ -4,10 +4,22 @@ import { GlossaryText } from './GlossaryText';
 
 const codeClass = 'max-w-full overflow-x-auto whitespace-pre rounded-lg bg-slate-100 p-3 font-mono text-xs leading-relaxed dark:bg-slate-900';
 
+const POE_EQUATION_SEGMENTS = /(ΔU = I × R|Pпотерь = I² × R)/g;
+const IS_POE_EQUATION = /^(?:ΔU = I × R|Pпотерь = I² × R)$/;
+
 function InlineExplanation({ text, plainGlossaryTerms, glossaryScope }: { text: string; plainGlossaryTerms?: string[]; glossaryScope?: "poe" }) {
-  return formatInlineExplanation(text).map((part, index) => part.code
-    ? <code key={index} className="rounded bg-slate-100 px-1 font-mono text-[.92em] dark:bg-slate-900">{part.text}</code>
-    : <Fragment key={index}><GlossaryText plainTerms={plainGlossaryTerms} scope={glossaryScope}>{part.text}</GlossaryText></Fragment>);
+  return formatInlineExplanation(text).map((part, index) => {
+    if (part.code) return <code key={index} className="rounded bg-slate-100 px-1 font-mono text-[.92em] dark:bg-slate-900">{part.text}</code>;
+    // I and R are generic symbols. Explain them only inside these two PoE formulas,
+    // never in unrelated prose, commands, or other lessons.
+    const segments = glossaryScope === 'poe' ? part.text.split(POE_EQUATION_SEGMENTS) : [part.text];
+    return <Fragment key={index}>{segments.map((segment, piece) => (
+      <GlossaryText key={piece} plainTerms={plainGlossaryTerms}
+        scope={glossaryScope === 'poe' && IS_POE_EQUATION.test(segment) ? 'poe-formula' : glossaryScope}>
+        {segment}
+      </GlossaryText>
+    ))}</Fragment>;
+  });
 }
 
 export function FormattedExplanation({ text, command = false, plainGlossaryTerms, glossaryScope }: { text: string; command?: boolean; plainGlossaryTerms?: string[]; glossaryScope?: "poe" }) {
