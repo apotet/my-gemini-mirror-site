@@ -35,7 +35,7 @@ export const LESSON_L1_POE_BUDGET: Lesson = {
   ],
   professional: {
     summary: 'Мощность PSE и PD по стандартам PoE, выделение питания по классу, ограничения отдельного порта и общего бюджета коммутатора, диагностика.',
-    terms: ['PoE', 'PSE', 'PD', 'Class', 'Type', 'PoE-бюджет', '802.3af', '802.3at', '802.3bt', 'Mode A/B', 'LLDP', 'PoE-тестер'],
+    terms: ['PoE', 'PSE', 'PD', 'Class', 'Type', 'PoE-бюджет', '802.3af', '802.3at', '802.3bt', 'Mode A/B', 'LLDP', 'PoE-тестер', 'Allocated', 'Remaining'],
     blocks: [
       {
         heading: 'Стандарты и типичные значения',
