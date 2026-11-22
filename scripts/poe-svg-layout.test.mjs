@@ -30,8 +30,11 @@ for (let i = 0; i < badges.length; i++) {
   assert.match(body, /<rect x="0" y="0" width="96" height="48" rx="8" fill="#061726" fill-opacity="0.9"/, 'opaque plate over animated pulses');
   assert.match(body, /<text x="10" y="20" fill="#4cc9ff">↑↓ Данные<\/text>/, 'blue data label');
   assert.match(body, /<text x="10" y="39" fill="#ff9c39">↑ Питание<\/text>/, 'orange power label');
-  // 96-px plate with 10-px left/right padding leaves a 76-px text area.
-  assert.equal(20 - 39, -19, 'two stacked baselines have consistent spacing');
+  const dataY = Number(body.match(/<text x="10" y="(\\d+)" fill="#4cc9ff">↑↓ Данные<\\/text>/)?.[1]);
+  const powerY = Number(body.match(/<text x="10" y="(\\d+)" fill="#ff9c39">↑ Питание<\\/text>/)?.[1]);
+  assert.ok(Number.isFinite(dataY) && Number.isFinite(powerY) && powerY - dataY >= 18 && powerY - dataY <= 24,
+    'data/power baselines must be legible and consistently separated');
+
 }
 
 assert.match(svg, /<rect x="308" y="382" width="245" height="56"/, 'central label plate taller');
