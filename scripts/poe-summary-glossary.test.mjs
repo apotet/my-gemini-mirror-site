@@ -14,8 +14,9 @@ await build({
       import { renderToStaticMarkup } from 'react-dom/server';
       import { FormattedExplanation } from './src/components/FormattedExplanation';
       import { getLesson } from './src/data/lessons';
-      import { GLOSSARY } from './src/data/glossary';
-      export { getLesson, GLOSSARY };
+      import { GLOSSARY, GLOSSARY_TOOLTIPS } from './src/data/glossary';
+      import { splitGlossaryText } from './src/utils/glossaryText';
+      export { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText };
       export const render = (text, options = {}) => renderToStaticMarkup(React.createElement(FormattedExplanation, { text, ...options }));
     `,
     resolveDir: process.cwd(),
@@ -28,7 +29,7 @@ await build({
   external: ['react', 'react-dom', 'react-dom/server', 'lucide-react'],
   logLevel: 'silent',
 });
-const { getLesson, GLOSSARY, render } = await import(pathToFileURL(outfile).href);
+const { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, render } = await import(pathToFileURL(outfile).href);
 const budget = getLesson('l1-poe-budget');
 assert.ok(budget && budget.professional);
 assert.ok(budget.professional.summary.includes('PSE') && budget.professional.summary.includes('PD'));
@@ -79,4 +80,27 @@ for (const [id, modes] of Object.entries(requiredTags)) {
     }
   }
 }
-console.log('PASS: all four PoE lessons have populated hashtags in both modes; LLDP is explicit');
+const injectors = getLesson('l1-poe-injectors-splitters');
+const passiveChecklist = injectors.blocks.find(block => block.heading.includes('Проверка перед подключением'));
+assert.ok(passiveChecklist?.body.includes('passive PoE'), 'passive PoE should occur in the injector checklist');
+assert.ok(render(passiveChecklist.body, { glossaryScope: 'poe' }).includes('data-glossary-term="passive PoE"'),
+  'passive PoE must open a glossary tooltip in the checklist');
+assert.ok(render(budget.professional.blocks.find(b => b.heading.includes('Когда в цепи есть инжектор')).body, { glossaryScope: 'poe' })
+  .includes('data-glossary-term="passive PoE"'), 'passive PoE must also be clickable in the budget lesson');
+
+const reboot = budget.professional.blocks.find(block => block.heading.includes('Кейс: камера перезагружается'));
+assert.ok(reboot?.body.includes('ΔU = I × R'), 'voltage drop formula must be present');
+assert.ok(reboot?.body.includes('Pпотерь = I² × R'), 'power loss formula must name its result');
+const formula = render(reboot.body, { glossaryScope: 'poe' });
+for (const symbol of ['ΔU', 'I', 'R', 'I²', 'Pпотерь']) {
+  assert.ok(formula.includes('data-glossary-term="' + symbol + '"'), symbol + ' should have inline hover/tap tooltip');
+  assert.ok(GLOSSARY_TOOLTIPS[symbol]?.summary.length > 35, symbol + ' needs an explanation');
+}
+assert.ok(GLOSSARY_TOOLTIPS.R.summary.includes('обратный проводники'), 'R must represent the full current loop');
+assert.ok(!render('I × R', { glossaryScope: 'poe' }).includes('data-glossary-term="I"'),
+  'bare I and R outside exact formula should never be hotlinked');
+assert.ok(!splitGlossaryText('I × R').some(part => part.term === 'I' || part.term === 'R'),
+  'single-letter symbols should never be activated in general text');
+assert.ok(!render('ΔU = I × R').includes('data-glossary-term="I"'),
+  'formula hints must not leak into unrelated lessons');
+console.log('PASS: four PoE lessons, passive PoE tooltip, scoped ΔU/I/R/I²/Pпотерь formula hints');
