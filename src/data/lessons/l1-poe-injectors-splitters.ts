@@ -16,6 +16,7 @@ export const LESSON_L1_POE_INJECTORS_SPLITTERS: Lesson = {
     "PD",
     "PoE-инжектор",
     "PoE-сплиттер",
+    "DC-выход",
     "пассивный PoE",
     "Midspan"
   ],
@@ -53,6 +54,7 @@ export const LESSON_L1_POE_INJECTORS_SPLITTERS: Lesson = {
       "PD",
       "PoE-инжектор",
       "PoE-сплиттер",
+      "DC-выход",
       "пассивный PoE",
       "Midspan",
       "Endspan",
