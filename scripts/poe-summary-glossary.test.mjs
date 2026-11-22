@@ -41,18 +41,21 @@ for (const term of ['802.3af', '802.3at', '802.3bt']) {
 }
 assert.ok(render(budget.professional.blocks[0].body).includes('data-glossary-term="802.3af"'), '802.3af hint in professional explanation');
 
+assert.ok(GLOSSARY.LLDP?.description.includes('Link Layer Discovery Protocol'), 'LLDP hashtag must resolve to an explicit protocol definition');
+assert.ok(GLOSSARY.LLDP?.relatesTo.includes('питания'), 'LLDP glossary must have useful PoE context');
+
 const requiredTags = {
   'l1-poe-budget': {
     plain: ['802.3af', '802.3at', '802.3bt'],
-    professional: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер'],
+    professional: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер', 'Allocated', 'Remaining'],
   },
   'l1-poe-injectors-splitters': {
-    plain: ['DC-выход'],
-    professional: ['DC-выход'],
+    plain: ['DC-выход', 'полярность'],
+    professional: ['DC-выход', 'Class', 'Type', 'полярность'],
   },
   'cli-poe-diagnostics': {
     plain: ['Available', 'Used', 'Remaining'],
-    professional: ['Available', 'Used', 'Remaining', 'Allocated', 'Utilized', 'Measured'],
+    professional: ['Available', 'Used', 'Remaining', 'Allocated', 'Utilized', 'Measured', 'LLDP Power-via-MDI', 'power-deny'],
   },
   'l1-poe-screen-reading': {
     plain: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер'],
@@ -76,4 +79,4 @@ for (const [id, modes] of Object.entries(requiredTags)) {
     }
   }
 }
-console.log('PASS: PoE hover standards and all four lessons\' hashtags resolve in both modes');
+console.log('PASS: all four PoE lessons have populated hashtags in both modes; LLDP is explicit');
