@@ -125,4 +125,29 @@ for (const question of feedbacks) {
 assert.ok(GLOSSARY_TOOLTIPS.Allocated?.summary.length > 25 && GLOSSARY_TOOLTIPS.Remaining?.summary.length > 25,
   'allocated and remaining popovers explain reserved versus available power');
 
-console.log('PASS: PoE hashtags, passive PoE, formulas and scoped knowledge-check feedback tooltips');
+// Regression: a PoE Alternative A/B expression must NEVER be explained as a DNS A record.
+const pairsQuestion = budget.knowledgeCheck.questions.find(question =>
+  question.explanation.includes('Переключение A/B'));
+assert.ok(pairsQuestion, 'the PoE four-wire diagnostic question is present');
+const pairsFeedback = renderCheckExplanation(pairsQuestion.explanation, 'poe');
+assert.ok(pairsFeedback.includes('data-glossary-term="Переключение A/B"'),
+  'the entire PoE switching phrase should show a contextual tooltip');
+assert.ok(!pairsFeedback.includes('data-glossary-term="A"'),
+  'the DNS A-record tooltip must never appear in the PoE A/B explanation');
+assert.ok(GLOSSARY_TOOLTIPS['Переключение A/B']?.summary.includes('Alternative A'),
+  'the tooltip must identify the PoE pairset, not DNS');
+assert.ok(GLOSSARY['Переключение A/B'].description.includes('не каждый коммутатор'),
+  'the reference must explain that changing power pairset is not universally available');
+assert.ok(GLOSSARY['Переключение A/B'].description.includes('T568A/T568B'),
+  'the reference must distinguish PoE alternatives from pinout standards');
+const barePoEAB = renderCheckExplanation('Проверь A/B.', 'poe');
+assert.ok(barePoEAB.includes('data-glossary-term="A/B"'),
+  'standalone A/B in a PoE self-check must be treated as a single PoE term');
+const bareNoScope = renderCheckExplanation('Проверь A/B.');
+assert.ok(!bareNoScope.includes('data-glossary-term="A"') &&
+  !bareNoScope.includes('data-glossary-term="A/B"'),
+  'non-PoE A/B must not trigger PoE tooltip nor a DNS A-record tooltip');
+assert.ok(render('DNS A и AAAA записи.').includes('data-glossary-term="A"'),
+  'genuine DNS A records must still retain their existing glossary hint');
+
+console.log('PASS: PoE glossary, self-check and A/B versus DNS A scope regression');
