@@ -325,6 +325,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         <LessonKnowledgeCheck
           key={`${lesson.id}-${textMode}`}
           check={activeKnowledgeCheck}
+          glossaryScope={glossaryScope}
         />
       )}
 
