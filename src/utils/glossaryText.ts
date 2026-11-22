@@ -5,6 +5,7 @@ const canonical = new Map(terms.map(term => [term.toLowerCase(), term]));
 // Generic English fields (Used, Class, Type...) mean something else in non-PoE lessons.
 // Render their PoE-specific tooltips only when an explicit PoE lesson scope is set.
 const POE_ONLY_TERMS = new Set(["Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
+const POE_FORMULA_ONLY_TERMS = new Set(["ΔU", "I", "R", "I²", "Pпотерь"]);
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Keep existing slash-separated terms such as Wi-Fi k/v/r unchanged; only
@@ -14,13 +15,14 @@ const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])(${terms.map(escape).join('|')})
 // Also accept ASCII hyphen, em dash and optional spacing; preserve standalone DNS A.
 const wiringPairs = /(?<![\p{L}\p{N}_])[AB]\s*[-–—]\s*[AB](?![\p{L}\p{N}_])/gu;
 
-export function splitGlossaryText(text: string, scope?: "poe"): { text: string; term?: string }[] {
+export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula"): { text: string; term?: string }[] {
   const parts: { text: string; term?: string }[] = [];
   let offset = 0;
   const wiringRanges = [...text.matchAll(wiringPairs)].map(match => [match.index, match.index + match[0].length] as const);
   for (const match of text.matchAll(pattern)) {
     const term = canonical.get(match[0].toLowerCase());
-    if (term && POE_ONLY_TERMS.has(term) && scope !== "poe") continue;
+    if (term && POE_ONLY_TERMS.has(term) && scope !== "poe" && scope !== "poe-formula") continue;
+    if (term && POE_FORMULA_ONLY_TERMS.has(term) && scope !== "poe-formula") continue;
     if (match[0] === 'A' && wiringRanges.some(([start, end]) => match.index >= start && match.index < end)) continue;
     // An unregistered X/FTP is cabling notation, not file-transfer FTP.
     // Registered S/FTP and U/FTP match as whole terms via longest-first ordering.
