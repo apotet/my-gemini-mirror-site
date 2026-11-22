@@ -11,6 +11,17 @@
 
 ---
 
+## 22.11.2026 — PoE: аудит хештегов, карточек терминов и лишних переходов (PR #314)
+
+- **Текущее состояние: CODE + FAST PR CI PASS, BROWSER/USER REVIEW PENDING; НЕ ПУБЛИКОВАНО.** Исправления в [Draft PR #314](https://github.com/apotet/my-gemini-mirror-site/pull/314), ветка `fix/poe-hashtags-20261122`. Рабочий `main` и production `apotet/netops` не менялись.
+- **Четыре урока:** `l1-poe-budget`, `l1-poe-injectors-splitters`, `cli-poe-diagnostics`, `l1-poe-screen-reading`. В обоих режимах исправлены отсутствующие и некорректные хештеги; в CLI добавлены Available/Used/Remaining, Allocated/Utilized/Measured, LLDP Power-via-MDI, power-deny; для инжектора — DC-выход, полярность и профессиональные Class/Type; для бюджетного урока — Allocated/Remaining.
+- **LLDP:** создана явная карточка `GLOSSARY.LLDP` с расшифровкой и разграничением LLDP и PoE Power-via-MDI. Без этого хештег опирался на автоматически подставленный общий текст без содержательного контекста.
+- **UX:** убран пункт «разобрать в теме» из раскрывающихся хештегов всех четырёх PoE-уроков; в медном уроке прежний запрет сохранён. Отдельные переходы к связанным урокам в учебных блоках не менялись.
+- **Проверки:** [NetOps checks #45013561021](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45013561021), Fast PR gate — **PASS**: typecheck, production build, `poe-summary-glossary.test.mjs` (содержательные карточки всех хештегов четырёх уроков, оба режима, LLDP). Browser click/tap на этой PR-ветке, mobile screenshots и published staging smoke **НЕ ПРОВЕРЕНЫ**; нельзя объявлять ACCEPT только по зелёному CI.
+- **К приёмке:** проверить клики на хештеги и закрытие карточки на desktop/mobile, отсутствие лишней ссылки, различие двух режимов и переходы из текстовых блоков. После подтверждения — отдельное решение о merge в staging; production только по согласованию.
+
+---
+
 ## 21.11.2026 — PoE: замечания Gemini, незакрытая приёмка и запланированные CLI-сценарии
 
 - **Статус приёмки: PENDING USER REVIEW, НЕ ACCEPT.** Пользователь повторно пройдёт основной PoE-урок 22.11.2026; положительные заключения Grok/Qwen не заменяют пользовательскую проверку. Критические FIX от Gemini устранены в коммите `9c83706a053234a9927589d1e28d74682baae769` (это авторское исправление; независимая повторная проверка на финальном SHA пока не выполнена).
