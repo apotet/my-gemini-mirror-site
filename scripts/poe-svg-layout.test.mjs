@@ -30,8 +30,8 @@ for (let i = 0; i < badges.length; i++) {
   assert.match(body, /<rect x="0" y="0" width="96" height="48" rx="8" fill="#061726" fill-opacity="0.9"/, 'opaque plate over animated pulses');
   assert.match(body, /<text x="10" y="20" fill="#4cc9ff">↑↓ Данные<\/text>/, 'blue data label');
   assert.match(body, /<text x="10" y="39" fill="#ff9c39">↑ Питание<\/text>/, 'orange power label');
-  const dataY = Number(body.match(/<text x="10" y="(\\d+)" fill="#4cc9ff">↑↓ Данные<\\/text>/)?.[1]);
-  const powerY = Number(body.match(/<text x="10" y="(\\d+)" fill="#ff9c39">↑ Питание<\\/text>/)?.[1]);
+  const dataY = Number(body.match(/y="([0-9]+)" fill="#4cc9ff"/)?.[1]);
+  const powerY = Number(body.match(/y="([0-9]+)" fill="#ff9c39"/)?.[1]);
   assert.ok(Number.isFinite(dataY) && Number.isFinite(powerY) && powerY - dataY >= 18 && powerY - dataY <= 24,
     'data/power baselines must be legible and consistently separated');
 
