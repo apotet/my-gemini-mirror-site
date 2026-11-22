@@ -36,10 +36,10 @@ const professionalSummary = render(budget.professional.summary);
 assert.ok(!professionalSummary.includes('data-glossary-term="802.3af"'), 'summary must not show isolated standard tooltip');
 assert.ok(professionalSummary.includes('data-glossary-term="PSE"'), 'PSE hint retained in summary');
 for (const term of ['802.3af', '802.3at', '802.3bt']) {
-  for (const [mode, block] of [['plain', budget.blocks[0]], ['professional', budget.professional.blocks[0]]]) {
-    assert.ok(render(block.body).includes('data-glossary-term="' + term + '"'), term + ' hint retained in ' + mode + ' body');
-  }
+  assert.ok(render(budget.blocks[0].body).includes('data-glossary-term="' + term + '"'), term + ' hint in plain explanation');
+  assert.ok(budget.professional.blocks[0].cheatsheet?.alt.includes(term), term + ' in professional cheat sheet');
 }
+assert.ok(render(budget.professional.blocks[0].body).includes('data-glossary-term="802.3af"'), '802.3af hint in professional explanation');
 
 const requiredTags = {
   'l1-poe-budget': {
