@@ -1,3 +1,13 @@
+## 23.11.2026 — PoE: ошибочный DNS A tooltip в «Переключение A/B»
+
+- **CODE + FAST PR CI PASS, STAGING PUBLICATION/USER ACCEPTANCE PENDING.** [PR #320](https://github.com/apotet/my-gemini-mirror-site/pull/320), ветка `fix/poe-ab-vs-dns-glossary-20261123`. Обнаружено владельцем при реальном просмотре 5-го профессионального вопроса «Проверь себя» в `l1-poe-budget`.
+- **Дефект:** в объяснении «Переключение A/B далеко не всегда предусмотрено» одиночная латинская `A` могла матчиться с термином DNS `A` и показывать подсказку `Address Record` про IPv4 вместо значения PoE. Причина — общий словарный matcher, который до этого был расширен на тексты объяснений самопроверки.
+- **Исправление:** словарные ключи `Переключение A/B` и `A/B` доступны только в PoE-контексте, вся фраза выделяется единым интерактивным термином. Определение разъясняет контакты Alternative A (1–2/3–6) и Alternative B (4–5/7–8), отсутствие универсальной возможности переключать схему на PSE и отличие от T568A/T568B; для четырехпарного питания возможны оба набора контактов. Отдельная DNS `A` больше не подсвечивается внутри `A/B`. Настоящие DNS A-записи продолжают работать.
+- **Регрессия:** в `scripts/poe-summary-glossary.test.mjs` добавлены SSR-проверки пятого объяснения, отсутствия DNS-подсказки, полного термина и PoE scope, отсутствие утечек в другие уроки, сохранность DNS A. Fast PR [Actions #45085253832](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45085253832): **PASS** (Typecheck, production build, SVG, glossary).
+- **Осталось:** после staging deploy пользователь проверяет наведение мыши/касание на `Переключение A/B` в 5-м вопросе. Объявлять ACCEPT только после этого; production `apotet/netops` не затронут.
+
+---
+
 ## 23.11.2026 — PoE: Allocated/Remaining в разборе «Проверь себя»
 
 - **CODE + FAST PR CI PASS, STAGING PUBLICATION PENDING; USER ACCEPTANCE PENDING.** [PR #319](https://github.com/apotet/my-gemini-mirror-site/pull/319), `fix/poe-knowledgecheck-glossary-20261123`.

@@ -4,7 +4,7 @@ const terms = Object.keys(GLOSSARY_TOOLTIPS).sort((a, b) => b.length - a.length)
 const canonical = new Map(terms.map(term => [term.toLowerCase(), term]));
 // Generic English fields (Used, Class, Type...) mean something else in non-PoE lessons.
 // Render their PoE-specific tooltips only when an explicit PoE lesson scope is set.
-const POE_ONLY_TERMS = new Set(["Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
+const POE_ONLY_TERMS = new Set(["Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","Переключение A/B","A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
 const POE_FORMULA_ONLY_TERMS = new Set(["ΔU", "I", "R", "I²", "Pпотерь"]);
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -24,6 +24,9 @@ export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula"): 
     if (term && POE_ONLY_TERMS.has(term) && scope !== "poe" && scope !== "poe-formula") continue;
     if (term && POE_FORMULA_ONLY_TERMS.has(term) && scope !== "poe-formula") continue;
     if (match[0] === 'A' && wiringRanges.some(([start, end]) => match.index >= start && match.index < end)) continue;
+    // The "A" in A/B (PoE alternatives) is NOT DNS record A.
+    // Without PoE context, leave the entire A/B token plain rather than producing a wrong DNS popup.
+    if (term === 'A' && text.slice(match.index, match.index + 3).toUpperCase() === 'A/B') continue;
     // An unregistered X/FTP is cabling notation, not file-transfer FTP.
     // Registered S/FTP and U/FTP match as whole terms via longest-first ordering.
     if (match[0].toUpperCase() === 'FTP' && match.index > 0 && text[match.index - 1] === '/') continue;
