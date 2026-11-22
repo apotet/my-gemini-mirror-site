@@ -1,3 +1,14 @@
+## 23.11.2026 — PoE: Allocated/Remaining в разборе «Проверь себя»
+
+- **CODE + FAST PR CI PASS, STAGING PUBLICATION PENDING; USER ACCEPTANCE PENDING.** [PR #319](https://github.com/apotet/my-gemini-mirror-site/pull/319), `fix/poe-knowledgecheck-glossary-20261123`.
+- В профессиональном блоке самопроверки `l1-poe-budget` два объяснения ответа употребляют `allocated/remaining` без интерактивных подсказок. В `LessonKnowledgeCheck` текст показывался как строка, минуя `GlossaryText`.
+- Добавлен `glossaryScope` только по явно указанному PoE-контексту `LessonView`. В объяснениях после выбора появляются реальные hover/focus/tap кнопки `Allocated` (выделенная / зарезервированная мощность) и `Remaining` (оставшийся бюджет). Переиспользуются существующие определения из словаря, без новых дубликатов.
+- **Инварианты:** содержание вопросов, варианты и правильные ответы, оценка, порядок самопроверки и статистика не менялись. В других уроках PoE-термины не подсвечиваются без явной области.
+- **Проверки:** [Fast PR gate #45084549538](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45084549538) PASS — TypeScript, production build, SVG regression, PoE tooltip regression; тест отрисовки проверяет оба профессиональных объяснения и отрицательный сценарий без PoE scope.
+- **Осталось:** публикация в staging `apotet.github.io/my-gemini-mirror-site`, пользовательская проверка наведения на компьютере и касания на iPhone. Production `apotet/netops` не менять.
+
+---
+
 ## 23.11.2026 — PoE: контекстные подсказки passive PoE и формулы потерь
 
 - **Статус: CODE + FAST PR CI PASS, STAGING MERGE/USER ACCEPTANCE PENDING.** [PR #318](https://github.com/apotet/my-gemini-mirror-site/pull/318), ветка `fix/poe-passive-formula-hints-20261123`. Уточнения по двум скриншотам владельца.
