@@ -1,4 +1,4 @@
-// Scoped regression: the short PoE introduction stays plain, while lesson details retain definitions.
+// Regression: PoE lesson hashtags resolve to glossary cards in both reading modes.
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -14,7 +14,8 @@ await build({
       import { renderToStaticMarkup } from 'react-dom/server';
       import { FormattedExplanation } from './src/components/FormattedExplanation';
       import { getLesson } from './src/data/lessons';
-      export const lesson = getLesson('l1-poe-budget');
+      import { GLOSSARY } from './src/data/glossary';
+      export { getLesson, GLOSSARY };
       export const render = (text, options = {}) => renderToStaticMarkup(React.createElement(FormattedExplanation, { text, ...options }));
     `,
     resolveDir: process.cwd(),
@@ -27,15 +28,52 @@ await build({
   external: ['react', 'react-dom', 'react-dom/server', 'lucide-react'],
   logLevel: 'silent',
 });
-const { lesson, render } = await import(pathToFileURL(outfile).href);
-assert.ok(lesson && lesson.professional);
-assert.ok(lesson.professional.summary.includes('IEEE 802.3af/at/bt'), 'original summary text preserved');
-const professionalSummary = render(lesson.professional.summary);
-assert.ok(!professionalSummary.includes('data-glossary-term="802.3af"'), 'no isolated 802.3af popup in summary');
+const { getLesson, GLOSSARY, render } = await import(pathToFileURL(outfile).href);
+const budget = getLesson('l1-poe-budget');
+assert.ok(budget && budget.professional);
+assert.ok(budget.professional.summary.includes('PSE') && budget.professional.summary.includes('PD'));
+const professionalSummary = render(budget.professional.summary);
+assert.ok(!professionalSummary.includes('data-glossary-term="802.3af"'), 'summary must not show isolated standard tooltip');
 assert.ok(professionalSummary.includes('data-glossary-term="PSE"'), 'PSE hint retained in summary');
 for (const term of ['802.3af', '802.3at', '802.3bt']) {
-  for (const [mode, block] of [['plain', lesson.blocks[0]], ['professional', lesson.professional.blocks[0]]]) {
+  for (const [mode, block] of [['plain', budget.blocks[0]], ['professional', budget.professional.blocks[0]]]) {
     assert.ok(render(block.body).includes('data-glossary-term="' + term + '"'), term + ' hint retained in ' + mode + ' body');
   }
 }
-console.log('PASS: PoE summary plain, all detailed standard tooltips retained');
+
+const requiredTags = {
+  'l1-poe-budget': {
+    plain: ['802.3af', '802.3at', '802.3bt'],
+    professional: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер'],
+  },
+  'l1-poe-injectors-splitters': {
+    plain: ['DC-выход'],
+    professional: ['DC-выход'],
+  },
+  'cli-poe-diagnostics': {
+    plain: ['Available', 'Used', 'Remaining'],
+    professional: ['Available', 'Used', 'Remaining', 'Allocated', 'Utilized', 'Measured'],
+  },
+  'l1-poe-screen-reading': {
+    plain: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер'],
+    professional: ['802.3af', '802.3at', '802.3bt', 'PoE-тестер'],
+  },
+};
+
+for (const [id, modes] of Object.entries(requiredTags)) {
+  const lesson = getLesson(id);
+  assert.ok(lesson, 'missing PoE lesson: ' + id);
+  for (const [mode, required] of Object.entries(modes)) {
+    const terms = mode === 'plain' ? lesson.terms : lesson.professional?.terms;
+    assert.ok(terms, id + ' lacks ' + mode + ' terms');
+    assert.equal(new Set(terms).size, terms.length, id + ' duplicate hashtag in ' + mode);
+    for (const term of required) assert.ok(terms.includes(term), id + ' missing hashtag: ' + term + ' (' + mode + ')');
+    for (const term of terms) {
+      const entry = GLOSSARY[term];
+      assert.ok(entry, id + ' has non-clickable hashtag: ' + term + ' (' + mode + ')');
+      assert.ok(entry.description?.trim().length > 20, id + ' empty hashtag description: ' + term);
+      assert.ok(entry.relatesTo?.trim().length > 10, id + ' empty hashtag relation: ' + term);
+    }
+  }
+}
+console.log('PASS: PoE hover standards and all four lessons\' hashtags resolve in both modes');
