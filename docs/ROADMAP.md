@@ -1,3 +1,12 @@
+## 22.11.2026 — PoE: опубликовано в staging, ожидается визуальная приёмка
+
+- **PUBLISHED TO STAGING; USER VISUAL ACCEPTANCE PENDING.** Ветка `apotet/my-gemini-mirror-site/main`: сначала объединён [PR #314](https://github.com/apotet/my-gemini-mirror-site/pull/314) с исправлениями терминов и хештегов, затем [PR #316](https://github.com/apotet/my-gemini-mirror-site/pull/316) с точечными корректировками `public/lesson-images/poe-data-power-loop.svg` (четыре подписи данных/питания, длинный заголовок доступа, отступы волн Wi‑Fi). Отдельный SVG-тест и проверка в Fast PR gate PASS.
+- **Доказательство опубликованной сборки:** [GitHub Pages Deploy #45027389436](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45027389436) **SUCCESS**, HEAD `0dec00586c21d2d163267a0aff66eb17917167aa`. Публичная тестовая версия: https://apotet.github.io/my-gemini-mirror-site/ .
+- **Ограничения:** реальный desktop/mobile browser acceptance и личная оценка урока не выполнены; это **не** отметка педагогического ACCEPT. Пользователь проверяет на опубликованном staging и сообщает замечания. Production `apotet/netops` не менялся. Отдельные незавершённые L2 PR остаются вне данного релиза.
+- **Gemini:** исходная задача [#315](https://github.com/apotet/my-gemini-mirror-site/issues/315) дважды упала (503 и затем 429 quota), никакие правки Gemini не поступали; SVG довёл ChatGPT с самостоятельной регрессией и успешной сборкой.
+
+---
+
 ## 22.11.2026 · L2 CLOSEOUT — утверждённое решение NETOPS-L2-CLOSEOUT-2026-11-22
 
 **Статус решения: APPROVED (22.11.2026). Статус уровня: NOT ACCEPTED, работа продолжается.**
