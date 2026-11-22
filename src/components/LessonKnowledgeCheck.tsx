@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import type { LessonKnowledgeCheck as LessonKnowledgeCheckData } from '../data/lessons/types';
+import { GlossaryText } from './GlossaryText';
+
+/** The post-answer feedback only enables PoE hints for the PoE lesson context. */
+export const LessonKnowledgeCheckExplanation: React.FC<{ explanation: string; glossaryScope?: 'poe' }> =
+  ({ explanation, glossaryScope }) => (
+    <p className="leading-relaxed">{glossaryScope
+      ? <GlossaryText scope={glossaryScope}>{explanation}</GlossaryText>
+      : explanation}</p>
+  );
 
 /**
  * Four-question reinforcement inside a lesson.
  * This is deliberately not an exam: no saved attempts or global statistics.
  */
-export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData }> = ({ check }) => {
+export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData; glossaryScope?: 'poe' }> = ({ check, glossaryScope }) => {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
@@ -84,7 +93,7 @@ export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData }>
               <p className={`font-semibold ${answeredCorrectly ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
                 {answeredCorrectly ? 'Верно' : 'Не совсем'}
               </p>
-              <p className="leading-relaxed">{question.explanation}</p>
+              <LessonKnowledgeCheckExplanation explanation={question.explanation} glossaryScope={glossaryScope} />
               <button type="button" onClick={next} className="cursor-pointer rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500">
                 {questionIndex === check.questions.length - 1 ? 'Посмотреть результат' : 'Следующий вопрос'}
               </button>
