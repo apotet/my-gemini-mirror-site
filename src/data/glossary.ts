@@ -9,6 +9,7 @@ export interface GlossaryEntry {
 export const GLOSSARY: Record<string, GlossaryEntry> = {
   "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
+  "DC-выход": { description: "Отдельный выход сплиттера для питания конечного устройства постоянным током (DC), например 12 В; Ethernet-данные передаются через другой выход. Перед подключением проверь выходное напряжение, допустимый ток, полярность и размер штекера — это не выход PoE.", relatesTo: "Подключение устройства без встроенного PoE-PD через подходящий PoE-сплиттер.", lessonId: "l1-poe-injectors-splitters" },
   "пассивный PoE": { description: "Нестандартная для IEEE 802.3af/at/bt схема подачи питания по Ethernet-кабелю; типичный источник подаёт DC без обнаружения и классификации IEEE PD. Нельзя считать совместимым по одному RJ-45 или надписи PoE: сверяй напряжение, контакты и полярность.", relatesTo: "Риски повреждения оборудования и проверка совместимости источника с PD.", lessonId: "l1-poe-injectors-splitters" },
   "Midspan": { description: "Промежуточный источник PoE-питания PSE на линии Ethernet между обычным коммутатором и PD. Пример — IEEE-совместимый PoE-инжектор.", relatesTo: "Размещение источника питания в кабельной линии.", lessonId: "l1-poe-injectors-splitters" },
   "Endspan": { description: "Источник PoE-питания PSE внутри Ethernet-коммутатора. Противопоставляется отдельному midspan-инжектору, но не задаёт конкретную схему цветов T568A/B.", relatesTo: "Питание непосредственно от PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
@@ -2311,6 +2312,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "дисбаланс пар": ["DC Resistance Unbalance", "Неравномерность сопротивления проводников и пар", false],
   "PoE-инжектор": ["IEEE PoE Injector / Midspan", "Промежуточный источник питания PoE", false],
   "PoE-сплиттер": ["PoE Splitter", "Разделяет входной PoE на Ethernet и DC-питание", false],
+  "DC-выход": ["DC Output (Direct Current)", "Выход питания постоянным током", false],
   "пассивный PoE": ["Passive PoE", "Питание без стандартного IEEE detection/classification", false],
   "Midspan": ["Midspan PSE", "Промежуточный источник PoE", false],
   "Endspan": ["Endspan PSE", "PoE-питание от коммутатора", false],
