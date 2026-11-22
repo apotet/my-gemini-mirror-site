@@ -90,7 +90,9 @@ export const LESSON_CLI_POE_DIAGNOSTICS: Lesson = {
       "Remaining",
       "Allocated",
       "Utilized",
-      "Measured"
+      "Measured",
+      "LLDP Power-via-MDI",
+      "power-deny"
     ],
     "blocks": [
       {
