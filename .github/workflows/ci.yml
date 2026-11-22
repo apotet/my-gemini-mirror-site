@@ -21,6 +21,8 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: PoE animated SVG layout regression
+        run: node scripts/poe-svg-layout.test.mjs
       - name: PoE summary tooltip regression
         run: node scripts/poe-summary-glossary.test.mjs
 
