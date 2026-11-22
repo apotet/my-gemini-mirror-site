@@ -15,9 +15,12 @@ await build({
       import { FormattedExplanation } from './src/components/FormattedExplanation';
       import { getLesson } from './src/data/lessons';
       import { GLOSSARY, GLOSSARY_TOOLTIPS } from './src/data/glossary';
+      import { LessonKnowledgeCheckExplanation } from './src/components/LessonKnowledgeCheck';
       import { splitGlossaryText } from './src/utils/glossaryText';
       export { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText };
       export const render = (text, options = {}) => renderToStaticMarkup(React.createElement(FormattedExplanation, { text, ...options }));
+      export const renderCheckExplanation = (explanation, glossaryScope) =>
+        renderToStaticMarkup(React.createElement(LessonKnowledgeCheckExplanation, { explanation, glossaryScope }));
     `,
     resolveDir: process.cwd(),
     sourcefile: 'poe-summary-glossary-entry.tsx',
@@ -29,7 +32,7 @@ await build({
   external: ['react', 'react-dom', 'react-dom/server', 'lucide-react'],
   logLevel: 'silent',
 });
-const { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, render } = await import(pathToFileURL(outfile).href);
+const { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, render, renderCheckExplanation } = await import(pathToFileURL(outfile).href);
 const budget = getLesson('l1-poe-budget');
 assert.ok(budget && budget.professional);
 assert.ok(budget.professional.summary.includes('PSE') && budget.professional.summary.includes('PD'));
@@ -103,4 +106,23 @@ assert.ok(!splitGlossaryText('I × R').some(part => part.term === 'I' || part.te
   'single-letter symbols should never be activated in general text');
 assert.ok(!render('ΔU = I × R').includes('data-glossary-term="I"'),
   'formula hints must not leak into unrelated lessons');
-console.log('PASS: four PoE lessons, passive PoE tooltip, scoped ΔU/I/R/I²/Pпотерь formula hints');
+// The knowledge-check feedback appears only after choosing an answer. Both professional
+// explanations (questions 2 and 3) use lowercase allocated/remaining; their tooltips
+// must resolve to canonical PoE glossary terms without changing the answer logic.
+const feedbacks = budget.knowledgeCheck?.questions
+  .filter(question => question.explanation.includes('allocated/remaining'));
+assert.equal(feedbacks?.length, 2, 'PoE budget professional check has two allocated/remaining explanations');
+for (const question of feedbacks) {
+  const withPoEScope = renderCheckExplanation(question.explanation, 'poe');
+  assert.ok(withPoEScope.includes('data-glossary-term="Allocated"'), 'allocated should be clickable in correct-answer feedback');
+  assert.ok(withPoEScope.includes('data-glossary-term="Remaining"'), 'remaining should be clickable in correct-answer feedback');
+  assert.equal((withPoEScope.match(/data-glossary-term=/g) || []).filter(Boolean).length >= 2, true,
+    'both glossary triggers render in the checked answer');
+  const withoutScope = renderCheckExplanation(question.explanation);
+  assert.ok(!withoutScope.includes('data-glossary-term="Allocated"'), 'ordinary lessons must not get PoE-only allocated hint');
+  assert.ok(!withoutScope.includes('data-glossary-term="Remaining"'), 'ordinary lessons must not get PoE-only remaining hint');
+}
+assert.ok(GLOSSARY_TOOLTIPS.Allocated?.summary.length > 25 && GLOSSARY_TOOLTIPS.Remaining?.summary.length > 25,
+  'allocated and remaining popovers explain reserved versus available power');
+
+console.log('PASS: PoE hashtags, passive PoE, formulas and scoped knowledge-check feedback tooltips');
