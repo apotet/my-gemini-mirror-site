@@ -436,10 +436,11 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "PoE",
       "PSE",
       "PD",
-      "IEEE 802.3af",
-      "IEEE 802.3at",
-      "IEEE 802.3bt",
-      "Class"
+      "802.3af",
+      "802.3at",
+      "802.3bt",
+      "Class",
+      "PoE-тестер"
     ],
     "blocks": [
       {
@@ -461,10 +462,11 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
         "PoE",
         "PSE",
         "PD",
-        "IEEE 802.3af",
-        "IEEE 802.3at",
-        "IEEE 802.3bt",
-        "Class"
+        "802.3af",
+        "802.3at",
+        "802.3bt",
+        "Class",
+        "PoE-тестер"
       ],
       "blocks": [
         {
