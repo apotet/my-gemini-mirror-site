@@ -21,7 +21,7 @@ export function FormattedExplanation({ text, command = false, plainGlossaryTerms
           ? <ol key={index} start={block.start} className="list-decimal space-y-1 pl-6">{items}</ol>
           : <ul key={index} className="list-disc space-y-1 pl-6">{items}</ul>;
       }
-      return <p key={index} className="whitespace-pre-line"><InlineExplanation text={block.text} plainGlossaryTerms={plainGlossaryTerms} /></p>;
+      return <p key={index} className="whitespace-pre-line"><InlineExplanation text={block.text} plainGlossaryTerms={plainGlossaryTerms} glossaryScope={glossaryScope} /></p>;
     })}
   </div>;
 }
