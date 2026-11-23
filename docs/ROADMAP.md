@@ -1,3 +1,12 @@
+## 24.11.2026 — PR #335: устранение неустойчивого hover в Chromium-проверке
+
+- Подтверждён исходный FAIL `#45263870334/job/138005489829`: `photo-txrx-link`, 1440 px, первая подсказка **в разборе вопроса до урока**. Изолированные исходные прогоны PASS; точный порядок событий старого CI не записывался.
+- Контролируемый эксперимент воспроизводит timeout при повторном `hover()` после Escape без выхода указателя с термина. В тест добавлены уход указателя перед наведением, реальное повторное открытие, Escape и проверка привязки tooltip к термину; tap/focus сохраняются. Учебный код, банк и baseline не меняются.
+- Доказательства и ограничения: [Chromium tooltip harness repair](audits/in-depth/chromium-tooltip-harness-20261124.md). Адресный Chromium: 2 ID × 2 ширины × 3 последовательных прогона = **12 PASS**; typecheck/build, контракты 164 ID, история, protected-source и review navigation PASS. CI нового SHA фиксируется отдельно; старый PASS не подменяет проверку нового коммита.
+- **GATE-06 BLOCK / L2 CONTENT ACCEPTED=NO**: содержательная приёмка — отдельный незакрытый пункт. Merge/deploy и production не выполнялись.
+
+---
+
 ## 23.11.2026 — Issue #331: утверждённая владельцем PNG-иллюстрация PoE
 
 - **OWNER IMAGE APPROVED; LESSON OWNER ACCEPTED = NO.** По [Issue #331](https://github.com/apotet/my-gemini-mirror-site/issues/331) в staging-ветке добавлено точное вложение владельца `public/lesson-images/poe-injectors-splitters-approved.png`, без перерисовки, перекодирования и изменения содержимого. SHA256: `1bd10cfa3d788a9af1d30b8e96e5b1858f1ac0ebbe4e45b333966dfec6d7b57f`.

@@ -62,7 +62,32 @@ try {
     await button('По делу',detail).click();assert.notEqual(await detail.innerText(),plain,q.id+': question style changes');
     assert.ok(normalize(await detail.innerText()).includes(normalize(deep.professional.deep).slice(0,90)),q.id+': actual authored pro');
     const term=detail.locator('[data-glossary-term]').first();
-    if(await term.count()) {await term.scrollIntoViewIfNeeded();if(mobile)await term.tap();else await term.hover();await page.getByRole('tooltip').waitFor();if(!mobile){await page.keyboard.press('Escape');await term.focus();await page.getByRole('tooltip').waitFor();}await page.keyboard.press('Escape');}
+    if(await term.count()) {
+      // A tooltip deliberately closes on scroll/Escape. If the pointer already
+      // rests on this term, hover() alone need not emit a new pointerenter.
+      // Start outside the content so this check always exercises a real entry.
+      if(!mobile) await page.mouse.move(0,0);
+      await term.scrollIntoViewIfNeeded();
+      if(mobile) await term.tap(); else await term.hover();
+      const tooltip=page.getByRole('tooltip');
+      await tooltip.waitFor({state:'visible'});
+      assert.equal(await term.getAttribute('aria-describedby'),await tooltip.getAttribute('id'),q.id+': tooltip belongs to the tested term');
+      if(!mobile) {
+        await page.keyboard.press('Escape');
+        await tooltip.waitFor({state:'hidden'});
+        // Re-enter with the pointer still at the previous hover coordinates.
+        // This guards the stationary-pointer failure mode explicitly.
+        await page.mouse.move(0,0);
+        await term.hover();
+        await tooltip.waitFor({state:'visible'});
+        await page.keyboard.press('Escape');
+        await tooltip.waitFor({state:'hidden'});
+        await term.focus();
+        await tooltip.waitFor({state:'visible'});
+      }
+      await page.keyboard.press('Escape');
+      await tooltip.waitFor({state:'hidden'});
+    }
     await button(`Перейти к уроку: ${lesson.title}`,review).click();
     await page.getByRole('heading',{name:lesson.title,exact:true}).waitFor();
     const verifyAnchor=async(stage)=>{
