@@ -8,6 +8,22 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+/** Independent audit of Gemini's 23 Nov PoE closeout archive: only two confirmed
+ * code defects were present on the frozen main. The claimed Cyrillic MAC typo
+ * and missing DC resistance unbalance distinction are NOT present in main. */
+const closeoutPoeQuestion=pool.find(q=>q.id==='review-poe-30');
+assert.ok(closeoutPoeQuestion,'review-poe-30 remains in the Understanding pool');
+const closeoutPoeDive=m.getQuestionDeepDive(closeoutPoeQuestion);
+assert.match(closeoutPoeDive.deepAnalysis,/MAC-таблице/,'PoE plain uses Latin MAC');
+assert.doesNotMatch(closeoutPoeDive.deepAnalysis,/МАС-таблице/,'PoE plain must not use Cyrillic МАС');
+assert.match(closeoutPoeDive.professional.deep,/IEEE 802\.3 LLDP Power-via-MDI/,'Explain standard IEEE power negotiation TLV');
+assert.match(closeoutPoeDive.professional.deep,/Cisco IOS\/IOS XE/,'Cisco PoE CLI must be platform scoped');
+assert.match(closeoutPoeDive.professional.deep,/доступна на данной модели/,'Detailed PoE CLI is device-dependent');
+assert.match(closeoutPoeDive.practicalTip,/Cisco IOS\/IOS XE/,'Practical CLI advice is Cisco-specific');
+assert.match(closeoutPoeDive.practicalTip,/PoE-тестером/,'Keep independent under-load test when PD reboots');
+assert.ok(pool.some(q=>q.id==='mon-zabbix-01'),'actual 164-ID pool includes monitoring question');
+assert.ok(!pool.some(q=>q.id==='l1-d04'),'audit archive ghost ID must not enter the Understanding pool');
+
 // Gemini independent material review: typography must remain legible in BOTH lesson modes.
 // Pin the exact question section instead of checking arbitrary lesson text or a CI extract.
 for(const {id,prohibited} of [
