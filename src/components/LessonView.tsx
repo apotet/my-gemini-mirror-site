@@ -97,7 +97,9 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
-  const glossaryScope = ['l1-poe-budget', 'cli-poe-diagnostics', 'l1-poe-injectors-splitters', 'l1-copper-fault-poe'].includes(lesson.id) ? 'poe' as const : undefined;
+  const glossaryScope = lesson.id === 'l3-ipv6' ? 'ipv6' as const
+    : ['l1-poe-budget', 'cli-poe-diagnostics', 'l1-poe-injectors-splitters', 'l1-copper-fault-poe'].includes(lesson.id) ? 'poe' as const
+    : undefined;
   const activeKnowledgeCheck = textMode === 'professional'
     ? lesson.knowledgeCheck
     : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);
