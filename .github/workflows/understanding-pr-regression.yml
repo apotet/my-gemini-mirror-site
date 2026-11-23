@@ -23,5 +23,7 @@ jobs:
         run: npm run test:in-depth
       - name: Verify historical options and saved attempts
         run: npm run test:in-depth-history
+      - name: Report stage-2 protected-file hash drift without mutating baseline
+        run: node scripts/stage2-protected-drift.mjs
       - name: Verify five-level registry is stable
         run: npm run test:learning-levels
