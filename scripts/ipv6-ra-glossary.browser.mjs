@@ -68,26 +68,36 @@ try {
     await page.screenshot({path:`${output}/ipv6-ra-${width}.png`});
     await button(`Вернуться к вопросу ${id}`).click();
     await review.waitFor({state:'visible'});
+    await page.close();
+    // The lesson-return route does not reopen the theory search; use a new
+    // independent review session instead of assuming persistent search state.
+    const poePage=await browser.newPage({
+      viewport:{width,height:900},isMobile:mobile,hasTouch:mobile,reducedMotion:'reduce'
+    });
+    poePage.setDefaultTimeout(15000);
+    await poePage.goto(base);
+    const poeButton=(name,root=poePage)=>root.getByRole('button',{name,exact:typeof name==='string'});
+    await poeButton(mobile?'Теория':'Теория и разборы').click();
     // PoE terminology must be scoped in the *question review* too.
-    await page.getByPlaceholder('Поиск по тексту, теме, id...').fill(poeId);
-    await button(/^#review-poe-30 ·/).click();
-    const poeReview=page.locator('[data-explanation-question-id="review-poe-30"]');
+    await poePage.getByPlaceholder('Поиск по тексту, теме, id...').fill(poeId);
+    await poeButton(/^#review-poe-30 ·/).click();
+    const poeReview=poePage.locator('[data-explanation-question-id="review-poe-30"]');
     await poeReview.waitFor({state:'visible'});
     await poeReview.getByRole('button',{name:'Подробный разбор'}).click();
-    await button('Простыми словами',poeReview).click();
+    await poeButton('Простыми словами',poeReview).click();
     const poeTerm=poeReview.locator('[data-glossary-term="PoE+"]').first();
     await poeTerm.waitFor({state:'visible'});
     await poeTerm.scrollIntoViewIfNeeded();
     if(mobile) await poeTerm.tap(); else await poeTerm.hover();
-    const poeTooltip=page.getByRole('tooltip');
+    const poeTooltip=poePage.getByRole('tooltip');
     await poeTooltip.waitFor({state:'visible'});
     assert.match(await poeTooltip.innerText(),/PoE|802\.3at|питан/i,`${width}: PoE terminology on question review`);
-    await page.keyboard.press('Escape');
+    await poePage.keyboard.press('Escape');
     await poeTooltip.waitFor({state:'hidden'});
-    await button(`Перейти к уроку: ${poeLesson.title}`,poeReview).click();
-    await page.getByRole('heading',{name:poeLesson.title,exact:true}).waitFor();
-    await page.screenshot({path:`${output}/poe-screen-reading-${width}.png`});
-    await page.close();
+    await poeButton(`Перейти к уроку: ${poeLesson.title}`,poeReview).click();
+    await poePage.getByRole('heading',{name:poeLesson.title,exact:true}).waitFor();
+    await poePage.screenshot({path:`${output}/poe-screen-reading-${width}.png`});
+    await poePage.close();
     console.log(`PASS: ${width}px real hover/tap, two teaching styles, exact lesson and return`);
   }
 } finally { await browser.close(); }
