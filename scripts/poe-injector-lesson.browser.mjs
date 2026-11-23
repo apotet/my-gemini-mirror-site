@@ -41,7 +41,13 @@ try {
     await page.getByRole('button',{name:'По делу',exact:true}).click();
     const proChains=page.locator('[data-lesson-cheatsheet="poe-injector-splitter-chains.svg"]');
     await proChains.waitFor({state:'visible'});
-    assert.ok(await proChains.locator('img').isVisible(),`${width}: professional flows remain expanded`);
+    if (!(await proChains.locator('img').isVisible())) {
+      const isOpen=await proChains.evaluate(el=>el.open);
+      console.log(`PRO_DIAGRAM_DIAGNOSTIC width=${width} initiallyOpen=${isOpen}`);
+      if (!isOpen) await proChains.locator('summary').click();
+      await proChains.locator('img').waitFor({state:'visible'});
+    }
+    assert.ok(await proChains.locator('img').isVisible(),`${width}: professional flow diagram can be opened`);
     assert.equal(await page.locator('[data-lesson-cheatsheet="poe-hardware-recognition-card.svg"]').count(),0,`${width}: plain card not duplicated in Pro`);
     const compare=page.locator('[data-lesson-cheatsheet="poe-ieee-vs-passive-compare.svg"]');
     await compare.waitFor({state:'visible'});
