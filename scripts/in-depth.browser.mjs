@@ -62,7 +62,59 @@ try {
     await button('По делу',detail).click();assert.notEqual(await detail.innerText(),plain,q.id+': question style changes');
     assert.ok(normalize(await detail.innerText()).includes(normalize(deep.professional.deep).slice(0,90)),q.id+': actual authored pro');
     const term=detail.locator('[data-glossary-term]').first();
-    if(await term.count()) {await term.scrollIntoViewIfNeeded();if(mobile)await term.tap();else await term.hover();await page.getByRole('tooltip').waitFor();if(!mobile){await page.keyboard.press('Escape');await term.focus();await page.getByRole('tooltip').waitFor();}await page.keyboard.press('Escape');}
+    if(await term.count()) {
+      // A tooltip deliberately closes on scroll/Escape. If the pointer already
+      // rests on this term, hover() alone need not emit a new pointerenter.
+      // Start outside the content so this check always exercises a real entry.
+      if(!mobile) await page.mouse.move(0,0);
+      await term.scrollIntoViewIfNeeded();
+      // scrollIntoView can return before the resulting scroll event is delivered.
+      // GlossaryText closes on that event; wait for actual geometry to settle
+      // before entering, rather than opening during an unfinished scroll.
+      await term.evaluate(element=>new Promise((resolve,reject)=>{
+        let previous='',stableSince=performance.now();
+        const deadline=performance.now()+5000;
+        const frame=()=>{
+          const r=element.getBoundingClientRect();
+          const current=[r.x,r.y,r.width,r.height,window.scrollX,window.scrollY].join(',');
+          if(current!==previous){previous=current;stableSince=performance.now();}
+          if(performance.now()-stableSince>=100){resolve(null);return;}
+          if(performance.now()>deadline){reject(new Error('Glossary trigger did not stop moving'));return;}
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }));
+      if(mobile) await term.tap(); else await term.hover();
+      const tooltip=page.getByRole('tooltip');
+      try {await tooltip.waitFor({state:'visible'});} catch(error) {
+        const state=await term.evaluate(element=>{
+          const r=element.getBoundingClientRect();
+          return {term:element.dataset.glossaryTerm,html:element.outerHTML,
+            rect:{x:r.x,y:r.y,width:r.width,height:r.height},scrollY,
+            hovered:[...document.querySelectorAll(':hover')].map(e=>e.tagName+'.'+e.className),
+            tooltip:document.querySelector('[role="tooltip"]')?.outerHTML??null};
+        });
+        await page.screenshot({path:`${output}/tooltip-failure-${q.id}-${width}.png`});
+        console.error('TOOLTIP_FAILURE',q.id,width,JSON.stringify(state));
+        throw error;
+      }
+      assert.equal(await term.getAttribute('aria-describedby'),await tooltip.getAttribute('id'),q.id+': tooltip belongs to the tested term');
+      if(!mobile) {
+        await page.keyboard.press('Escape');
+        await tooltip.waitFor({state:'hidden'});
+        // Re-enter with the pointer still at the previous hover coordinates.
+        // This guards the stationary-pointer failure mode explicitly.
+        await page.mouse.move(0,0);
+        await term.hover();
+        await tooltip.waitFor({state:'visible'});
+        await page.keyboard.press('Escape');
+        await tooltip.waitFor({state:'hidden'});
+        await term.focus();
+        await tooltip.waitFor({state:'visible'});
+      }
+      await page.keyboard.press('Escape');
+      await tooltip.waitFor({state:'hidden'});
+    }
     await button(`Перейти к уроку: ${lesson.title}`,review).click();
     await page.getByRole('heading',{name:lesson.title,exact:true}).waitFor();
     const verifyAnchor=async(stage)=>{

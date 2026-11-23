@@ -1,0 +1,94 @@
+{
+  "sourceSha": "3983019649ac671b6436b0d2df388a1578ddd27c",
+  "scope": "9 complete ID packs plus 2 bounded deltas; not a whole-L2 acceptance registry",
+  "rows": [
+    {
+      "id": "tcp-05",
+      "materialHash": "738a643207cea8a344a64bd3619d9227c55861b626a9f86f2c1dccdfd7a63fcf",
+      "questionDeepHash": "681237c1b56844501829b1c7771e6061f12f5be1f3a0aa7b4f2c87155b8c119d",
+      "sharedContextHash": "c406a2a3d9ed002a73498aaeeb3ba9cd0ac7b1088ee6c3e093bf839946c6fe8b",
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite"
+    },
+    {
+      "id": "review-ptp-17",
+      "materialHash": "610d2f9f4a19c84249fadab448ef31688f4b6b2d377b9c03e2ab4b47481664e5",
+      "questionDeepHash": "741abd89535afb80ea866027f7904618cc70c7ecdfcf1a1ba4f7e0f95a69ebe5",
+      "sharedContextHash": "5acbe05f4dea7f12047d04c9aaf618ca05703691c73998466bd08e3c1cc88ae8",
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "ptp-boundary-and-transparent-clock"
+    },
+    {
+      "id": "mon-snmp-01",
+      "materialHash": "f15f491dce058bc6fed51adc48e8b45cdb3ab8312084ab118d3c93908928f9fb",
+      "questionDeepHash": "9cc6d3c958a9880fb2bcecb2ae3d5a74c5deb76302d919a781f94354e062cbac",
+      "sharedContextHash": "f1fcc8e4e0b7f16e8d4bc223fe0db62ddd58a0342cbe1b805e80e7aa5a00d9f7",
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-snmp-01"
+    },
+    {
+      "id": "mon-syslog-01",
+      "materialHash": "de9d408a492837af95b7373a56807c8f4d92d9434d431d5ac4c13855b3be2d65",
+      "questionDeepHash": "8700289149a27cafb7927218d2628cf0e4b1752de23008474587bfd0bc3ec085",
+      "sharedContextHash": "41be5d098374f29dfa36d6c40444ec069157f9f31399c3cdf5b041467bdb71e7",
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-syslog-01"
+    },
+    {
+      "id": "mon-syslog-05",
+      "materialHash": "a397d185c3be73e9c2377032f8a089e8d34f4e39bd5a9e51d7b2962b4bf6d858",
+      "questionDeepHash": "05e30da8a00b83fb9e6aaeea0efa5652320172adb8e93462b0454142ad7c6f54",
+      "sharedContextHash": "b208bd5995f4496dadb79c51fdf05ddaaf7ebc0d3dd485995634fd9c768a6617",
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-syslog-monitor-vty"
+    },
+    {
+      "id": "mon-zabbix-01",
+      "materialHash": "9179ec648002bae4821dab7aceb965d25a74c7e057bdf929fd3ba9dc82532b98",
+      "questionDeepHash": "8df93bf285b33bd9d3e323471f185e8ff6c852350fbad6ae55dfc927c940c7b4",
+      "sharedContextHash": "c654ef407ff537ef1252d1d78e263d125e13af32637d54ffff27fb71181fc349",
+      "lessonId": "ts-zabbix-monitoring",
+      "anchor": "in-depth-existing-mon-zabbix-01"
+    },
+    {
+      "id": "wifi-std-01",
+      "materialHash": "75312801d71c4cee49ab4b9aa0e529934beff0ce8a85dc328ccd35e8163f3828",
+      "questionDeepHash": "c389f5ead6c22d76f53461eb4beb26c57a03ccc86a56edc0090f59e619f3c119",
+      "sharedContextHash": "d04ab9dfb3dae8282f65d52c2a269b63d55811affc931da241e6d202e12ef2b4",
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-channel-plan"
+    },
+    {
+      "id": "wifi-std-04",
+      "materialHash": "3d80fde6632d25454131e0380568348aaec14120598ba0031642bfe3b1a811c2",
+      "questionDeepHash": "aa19e66d556f924ab3c5f6098ccbb2477a4d93c76c88170f4e10e8a24022fd79",
+      "sharedContextHash": "5bb918a26c45d255f9f687adc84d57dfe532139667becd89e5f4b3dc7dbaaef5",
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-ofdma-6ghz"
+    },
+    {
+      "id": "wifi-roam-01",
+      "materialHash": "4a44026b731db39d8b768a8f8c189db6686eb1fa5336ab1d1cc60232c2c85395",
+      "questionDeepHash": "9330b5fc05cd208a1d9585ef3ed23eb41464eea8c8cf69962afee476ed75f2fe",
+      "sharedContextHash": "d04ab9dfb3dae8282f65d52c2a269b63d55811affc931da241e6d202e12ef2b4",
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-client-roaming"
+    },
+    {
+      "id": "wifi-sec-01",
+      "materialHash": "5a86b9d2c23f44c617b1f85e11787824f82c0e514a515e2fe61d21d2ea65e53c",
+      "questionDeepHash": "d9f5dc6bfab22766ec89ed149f25437eb442d513072b72c66e40912a5152a5f1",
+      "sharedContextHash": "ac51387c8ac18ac51d7dc62d8c56c6bce2524fb966fa5de036459b042d174d58",
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-sae-vs-psk"
+    },
+    {
+      "id": "wifi-sec-05",
+      "materialHash": "994d5c007e387d9ec6719c06aed2843d6a5d4a622f440d2a364d86b399739cc5",
+      "questionDeepHash": "df8685a21768f5b968de3d57eb639a472912e41c11b8e0daa28b5bacd957ef4c",
+      "sharedContextHash": "6dca9763b546fd0f57d8634ad6453d04d24350a5b80960fa7bee2217d4a01de5",
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-hidden-ssid"
+    }
+  ]
+}

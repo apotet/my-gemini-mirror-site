@@ -92,7 +92,7 @@ export const LESSON_TS_ZABBIX_MONITORING: Lesson = {
   ],
   professional: {
     summary:
-      'Архитектура сбора Zabbix (active vs passive agent, trapper), конвейер Preprocessing (Change per second, multiplier, Discard unchanged with heartbeat), фильтры/overrides LLD, макросы с контекстом, гистерезис и зависимости триггеров, а также разграничение CRC, ifOutDiscards и ложных тревог nodata.',
+      'Архитектура сбора Zabbix (активные и пассивные проверки агента, trapper), конвейер Preprocessing (Change per second, multiplier, Discard unchanged with heartbeat), фильтры/overrides LLD, макросы с контекстом, гистерезис и зависимости триггеров, а также разграничение CRC, ifOutDiscards и ложных тревог nodata().',
     terms: [
       'Zabbix',
       'LLD',

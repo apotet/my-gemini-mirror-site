@@ -167,7 +167,7 @@ export const LESSON_L7_MONITORING_SNMP_SYSLOG: Lesson = {
         cmd: 'snmpbulkwalk -v2c -c readonly -Cr10 10.10.0.1 IF-MIB::ifXTable',
       },
       {
-        title: 'Продуктивная конфигурация Syslog с Loopback и UTC msec',
+        title: 'Продуктивная конфигурация Syslog с Loopback и миллисекундными метками времени',
         cmd: 'logging buffered 65536 informational\nlogging console warnings\nlogging host 10.20.0.50 vrf MGMT\nlogging source-interface Loopback0\nlogging facility local6\nlogging trap informational\nservice timestamps log datetime msec show-timezone',
       },
     ],
