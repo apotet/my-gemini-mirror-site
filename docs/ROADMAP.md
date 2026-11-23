@@ -1,3 +1,12 @@
+## 23.11.2026 — Gemini 7 routes: независимые результаты и 2 подтверждённых MAJOR
+
+- Gemini read-only ZIP на `#324@b2557f0`: **4 PASS / 3 FIX routes** (4 заявленных FIX: 2 MAJOR, 2 MINOR). Мною независимо проверены исходники: **2 MAJOR подтверждены**, **2 MINOR не воспроизводятся** на замороженном SHA: `group5.ts` уже содержит латинское `MAC-таблице` и полуоткрытое `[Left Edge, Right Edge)`; не переписывать без причины.
+- Изолированная ветка от `#326@b67d934` исправляет `EngineeringReview` (контекст IPv6/PoE во всех блоках) и `LessonView` (PoE screen-reading), объединяя правила в один resolver. Добавлены отрицательные unit checks и реальный браузерный тест IPv6 `A=1` в разборе *до* урока (375/1440, plain/pro).
+- Подробная таблица evidence: [gemini-seven-route-reconciliation-20261123.md](audits/in-depth/gemini-seven-route-reconciliation-20261123.md).
+- До завершения реального CI/browser на новом SHA — **FIX PENDING VERIFICATION**, L2 не принят; PR #324 и #326 сохраняют Draft; GATE-05/06/10 остаются BLOCK. Ни merge, ни deploy, ни production.
+
+---
+
 ## 23.11.2026 — L2 final release gates: исправление контроля и явный статус GATE-01…10 (в отдельном Draft)
 
 - **Режим сохранения содержательного freeze:** PR #324 остаётся на `b2557f0`, отдельная вспомогательная ветка `fix/l2-fingerprint-gate-20261123` создана от этого SHA. Ни вопросы, ни ответы, ни принятые уроки не меняются; merge/deploy запрещён до независимой семантики.
