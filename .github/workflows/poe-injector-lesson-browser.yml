@@ -1,0 +1,42 @@
+name: PoE injector lesson owner-review browser smoke
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/lessons/l1-poe-injectors-splitters.ts'
+      - 'public/lesson-images/poe-injector-splitter-chains.svg'
+      - 'public/lesson-images/poe-ieee-vs-passive-compare.svg'
+      - 'scripts/poe-injector-lesson.browser.mjs'
+      - '.github/workflows/poe-injector-lesson-browser.yml'
+
+jobs:
+  smoke:
+    name: Actual PoE accessory lesson (375px + 1440px)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - run: npm run build
+      - name: Install headless Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Visit actual lesson via linked question; assert image and glossary UI
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/poe-injector-lesson.browser.mjs
+      - name: Upload plain and pro screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poe-accessory-owner-review-screens
+          path: scripts/.cache/poe-accessory-browser/
+          if-no-files-found: ignore
