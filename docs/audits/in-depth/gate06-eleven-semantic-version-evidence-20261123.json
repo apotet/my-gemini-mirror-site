@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "purpose": "ID-filtered existing independent audit version reconciliation; not new semantic PASS",
+  "currentSha": "b22984cc3746d35b2b2c990af59055dfe467778c",
+  "method": "git archive exact SHA src/scripts/package.json; historical load-bank.bundleEntry real in-depth-entry; ALL_QUESTIONS.find(id); existing materialFor exact original fingerprint serialization; local only, no Actions or pool-wide reconstruction",
+  "rows": [
+    {
+      "sha": "e833593dc2cb34303bd6f884eb346d18cfd1dc1f",
+      "id": "tcp-05",
+      "materialHash": "801bfff761eddd54579043d697b26c3b0fa52634a7c09b055c20945bd6cbfeab",
+      "questionDeepHash": "681237c1b56844501829b1c7771e6061f12f5be1f3a0aa7b4f2c87155b8c119d",
+      "sharedContextHash": "9b811c674de7ceced46340b5e96e05f3ba64fa5a6bf62dd6b67071785a99379c",
+      "lessonId": "tcpip-encapsulation"
+    },
+    {
+      "sha": "3c769601aa3627ca9c700982f1a170fc6c3352cb",
+      "id": "review-ptp-17",
+      "materialHash": "3621014daff9aaf383961d484e31f80c8265600e13f0ea9819ce6a6378062354",
+      "questionDeepHash": "c45f8a7fdcab22571e8cb9c826789237f3d51abf636f59b7e058c0d672dac330",
+      "sharedContextHash": "35d45c01fea9656f734804147f49e06686fcafa065c482f8a2f6f765f6d2215e",
+      "lessonId": "l7-monitoring-snmp-syslog"
+    },
+    {
+      "sha": "b22984cc3746d35b2b2c990af59055dfe467778c",
+      "id": "tcp-05",
+      "materialHash": "c242bc8ae6c2b07acd10b3c5ad18c8c3fa10d73a659f116a2e85b27bcef667b0",
+      "questionDeepHash": "681237c1b56844501829b1c7771e6061f12f5be1f3a0aa7b4f2c87155b8c119d",
+      "sharedContextHash": "c7061d7566d8454c41cb6f3486ef993a39a991cc6ea2e3b3247be396335e8db0",
+      "lessonId": "tcpip-encapsulation"
+    },
+    {
+      "sha": "b22984cc3746d35b2b2c990af59055dfe467778c",
+      "id": "review-ptp-17",
+      "materialHash": "14fd6f0d6a80ffe99c572593ce2a20db369d9ce25f23858ec55d982329bf64f5",
+      "questionDeepHash": "741abd89535afb80ea866027f7904618cc70c7ecdfcf1a1ba4f7e0f95a69ebe5",
+      "sharedContextHash": "21ca8585e9f1a61922496c405aed251348ced389425f742ebb7254627577062c",
+      "lessonId": "l7-monitoring-snmp-syslog"
+    }
+  ],
+  "tcp05": {
+    "questionEqual": true,
+    "deepEqual": true,
+    "targetSectionBodyEqualInBothModes": true,
+    "currentFullSemanticPASS": false,
+    "targetSectionBodyEqualByMode": {
+      "plain": true,
+      "professional": true
+    }
+  },
+  "reviewPtp17": {
+    "questionEqual": true,
+    "deepChangedFields": [
+      "practicalTip"
+    ],
+    "before": {
+      "practicalTip": "Не смешивайте симптомы разных слоёв модели."
+    },
+    "after": {
+      "practicalTip": "У boundary clock B отдельно проверь синхронизацию вышестоящего порта с grandmaster G и обмен PTP с C1/C2 на нижестоящих портах: B не просто пересылает исходные сообщения G."
+    },
+    "targetSectionBodyEqualInBothModes": true,
+    "currentFullSemanticPASS": false,
+    "targetSectionBodyEqualByMode": {
+      "plain": true,
+      "professional": true
+    }
+  }
+}
