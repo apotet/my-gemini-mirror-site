@@ -44,6 +44,12 @@ for(const file of new Set(images)){
   assert.match(svg,/<desc[^>]*>[^<]+<\/desc>/,`${p}: accessible description`);
   assert.doesNotMatch(svg,/<script|foreignObject|href=/i,`${p}: no scripts/external loads`);
 }
+assert.equal(lesson.blocks[0].cheatsheet?.file,'poe-hardware-recognition-card.svg','Plain mode visually recognizes hardware');
+assert.equal(lesson.professional.blocks[0].cheatsheet?.file,'poe-injector-splitter-chains.svg','Professional mode retains A/B/C flow');
+assert.ok(lesson.professional.blocks.some(b=>b.cheatsheet?.file==='poe-ieee-vs-passive-compare.svg'),'Professional mode retains second comparison');
+const plainAssets=new Set(lesson.blocks.map(b=>b.cheatsheet?.file).filter(Boolean));
+const proAssets=new Set(lesson.professional.blocks.map(b=>b.cheatsheet?.file).filter(Boolean));
+assert.ok([...plainAssets].every(x=>!proAssets.has(x)),'No duplicate schematics between modes');
 assert.ok(images.includes('poe-injector-splitter-chains.svg'));
 assert.ok(images.includes('poe-ieee-vs-passive-compare.svg'));
 assert.match(allPlain,/не (?:подключай|подавай)|НЕ подключай/i,'Passive safety notice');
