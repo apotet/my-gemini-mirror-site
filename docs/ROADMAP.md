@@ -1,3 +1,12 @@
+## 23.11.2026 — Issue #331: утверждённая владельцем PNG-иллюстрация PoE
+
+- **OWNER IMAGE APPROVED; LESSON OWNER ACCEPTED = NO.** По [Issue #331](https://github.com/apotet/my-gemini-mirror-site/issues/331) в staging-ветке добавлено точное вложение владельца `public/lesson-images/poe-injectors-splitters-approved.png`, без перерисовки, перекодирования и изменения содержимого. SHA256: `1bd10cfa3d788a9af1d30b8e96e5b1858f1ac0ebbe4e45b333966dfec6d7b57f`.
+- **Узкая область:** заменены только `blocks[0].cheatsheet.file/title/alt/note` режима «Простыми словами». Подпись прямо называет изображение сгенерированной ИИ фотореалистичной учебной иллюстрацией, а не фотографией реального брендового оборудования. Обе профессиональные SVG сохранены побайтно. Объяснения, все полные 3+5 вопросов/вариантов/ключей, ссылки, словарь и принятый `l1-poe-budget` не изменены; это закреплено хеш-проверкой всего остального объекта урока относительно `main@21d6fde`.
+- **Фактически проверено локально:** адресный unit-тест, TypeScript и build — PASS. Реальный Chromium 375/1440: PNG HTTP 200 и точный SHA, декодирование, fullscreen tap/click, увеличение, обе Pro-SVG, возврат в Plain, подсказка и отсутствие горизонтального переполнения/JS-ошибок — PASS. Шесть скриншотов и `issue-331-evidence.json` сохраняются browser CI в артефакт `poe-accessory-owner-review-screens`; фактические ссылки/статусы GitHub CI указываются в PR.
+- **Состояние:** подготовлена правка для PR в staging; merge и deploy не выполнялись. Личная приёмка всего урока остаётся PENDING. Содержательная приёмка L2 и прежний stage-2/fingerprint backlog этим изменением не закрываются. Production `apotet/netops` не затронут.
+
+---
+
 ## 23.11.2026 — PoE-инжекторы и сплиттеры: визуальная полировка перед приёмкой
 
 - **Источник:** независимый Gemini READ-ONLY ZIP по PR #329, исходный staging `main@79d8f05383c6bd181ab70501ecd339b9a3c9a901`, интегратор [PR #330](https://github.com/apotet/my-gemini-mirror-site/pull/330).
