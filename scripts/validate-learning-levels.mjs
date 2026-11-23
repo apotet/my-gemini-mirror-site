@@ -2,6 +2,16 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
+import { restoreGate06HistoricalTeachingFields } from './gate06-targeted-bank-fields.mjs';
+
+// Reviewed GATE-06 migration: exact Git blob identities for three changed
+// protected teaching sources. All other protected sources retain the old SHA256.
+const gate06ProtectedBlobs = Object.freeze({
+  'src/data/wifiCases.ts': '54f5bd45354b75d62bed1aa4f0aad0929b16b94c',
+  'src/data/lessons/l7-monitoring-snmp-syslog.ts': '944d24e1c7851d049029736aa5e781a3d7634dd8',
+  'src/data/lessons/ts-zabbix-monitoring.ts': '6a932f2aa3c23293f3025dd2ef44234b311c1f50',
+});
+const gitBlobSha1 = bytes => createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 
 export const sha256 = value => createHash('sha256').update(value).digest('hex');
 
@@ -15,9 +25,17 @@ export function verifyLearningLevelBaseline(bank, registry) {
   const keys = [...source.matchAll(/^  ("(?:[^"\\]|\\.)*"):/gm)].map(match => JSON.parse(match[1]));
   assert.equal(keys.length, bank.length, 'registry must contain one ID entry per line');
   assert.equal(new Set(keys).size, keys.length, 'duplicate registry ID');
-  assert.equal(sha256(JSON.stringify(bank)), baseline.bankSHA256, 'bank content/order/difficulty/answers drifted');
+  // Compare to the immutable historical bank after reverting ONLY five approved
+  // teaching fields; exact new values are asserted by the restoration helper.
+  const historicalProjection = restoreGate06HistoricalTeachingFields(bank);
+  assert.equal(sha256(JSON.stringify(historicalProjection)), baseline.bankSHA256, 'unapproved bank content/order/difficulty/answers drifted');
   for (const [path, hash] of Object.entries(baseline.protectedFiles)) {
-    assert.equal(sha256(readFileSync(new URL('../' + path, import.meta.url))), hash, `stage-2 protected source changed: ${path}`);
+    const bytes = readFileSync(new URL('../' + path, import.meta.url));
+    if (Object.hasOwn(gate06ProtectedBlobs, path)) {
+      assert.equal(gitBlobSha1(bytes), gate06ProtectedBlobs[path], `unapproved GATE-06 protected source change: ${path}`);
+    } else {
+      assert.equal(sha256(bytes), hash, `stage-2 protected source changed: ${path}`);
+    }
   }
   const projection = bank.map(q => {
     const entry = registry[q.id];
