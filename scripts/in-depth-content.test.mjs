@@ -8,6 +8,20 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+// The same generic "A" denotes a DNS IPv4 record elsewhere, but the RA PIO
+// Autonomous flag in the accepted Understanding SLAAC route. Never mix them.
+const ipv6Flags=m.splitGlossaryText('SLAAC: A=1, L=1, флаг A и флаги A/L.', 'ipv6');
+for (const term of ['A=1','L=1','A flag','A/L']) {
+  assert.ok(ipv6Flags.some(part=>part.term===term),term+': IPv6 scope must display correct RA flag tooltip');
+  assert.ok(m.GLOSSARY_TOOLTIPS[term]?.summary,term+': tooltip text must exist');
+}
+assert.ok(!ipv6Flags.some(part=>part.term==='A'),'SLAAC must not show DNS A-record');
+assert.ok(m.splitGlossaryText('DNS A и AAAA').some(part=>part.term==='A'),'generic DNS A remains available');
+assert.ok(m.splitGlossaryText('DNS A и AAAA','ipv6').some(part=>part.term==='A'),'explicit DNS A stays DNS inside IPv6 lesson');
+assert.ok(!m.splitGlossaryText('A=1').some(part=>part.term==='A' || part.term==='A=1'),'IPv6-specific syntax cannot leak into general text');
+assert.match(m.GLOSSARY['A=1'].description,/SLAAC/,'Autonomous A flag definition');
+assert.match(m.GLOSSARY['A/L'].description,/независимых/,'A and L are separate RA PIO flags');
+
 /** Independent audit of Gemini's 23 Nov PoE closeout archive: only two confirmed
  * code defects were present on the frozen main. The claimed Cyrillic MAC typo
  * and missing DC resistance unbalance distinction are NOT present in main. */
