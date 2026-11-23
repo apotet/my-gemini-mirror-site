@@ -68,7 +68,7 @@ export const GROUP4_PATCHES: Record<string, InDepthExplanationPatch> = {
     "practicalTip": "Сопоставь состояние синхронизации, источник и offset, затем часовой пояс и время события/получения на коллекторе. Одинаковое отображение часов не доказывает синхронизацию."
   },
   "stp-new-04": {
-    "practicalTip": "Сохрани show spanning-tree detail до и после отказа: проверь физический down P1, актуальность Alternate P2 и его новую роль Root. Не подменяй обнаружение отказа ожиданием Max Age."
+    "practicalTip": "На Cisco IOS/IOS XE сохрани вывод `show spanning-tree detail` до и после отказа; на других платформах используй собственную диагностику RSTP/BPDU и журналы событий. Проверь физический down P1, актуальность Alternate P2 и его новую роль Root. Не подменяй обнаружение отказа ожиданием Max Age."
   },
   "stp-new-09": {
     "practicalTip": "Сверь show udld interface, журнал aggressive-проверок и причину err-disabled. До восстановления порта проверь оба оптических направления; не отключай UDLD ради поднятого индикатора."
