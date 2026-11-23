@@ -7,6 +7,8 @@ const { getLessonForQuestion, getLessonSectionForQuestion } =
   await bundleEntry('scripts/in-depth-entry.ts','in-depth-ipv6-ra-lesson.mjs');
 const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playwright');
 const id='review-slaac-4',lesson=getLessonForQuestion(id);
+const poeId='review-poe-30',poeLesson=getLessonForQuestion(poeId);
+assert.equal(poeLesson?.id,'l1-poe-screen-reading');
 assert.equal(lesson?.id,'l3-ipv6');
 assert.equal(getLessonSectionForQuestion(lesson.id,id),'in-depth-slaac-ra-address-formation');
 const base=process.env.NETOPS_BASE_URL||'http://127.0.0.1:5428/my-gemini-mirror-site/';
@@ -66,6 +68,25 @@ try {
     await page.screenshot({path:`${output}/ipv6-ra-${width}.png`});
     await button(`Вернуться к вопросу ${id}`).click();
     await review.waitFor({state:'visible'});
+    // PoE terminology must be scoped in the *question review* too.
+    await page.getByPlaceholder('Поиск по тексту, теме, id...').fill(poeId);
+    await button(/^#review-poe-30 ·/).click();
+    const poeReview=page.locator('[data-explanation-question-id="review-poe-30"]');
+    await poeReview.waitFor({state:'visible'});
+    await poeReview.getByRole('button',{name:'Подробный разбор'}).click();
+    await button('Простыми словами',poeReview).click();
+    const poeTerm=poeReview.locator('[data-glossary-term="PoE+"]').first();
+    await poeTerm.waitFor({state:'visible'});
+    await poeTerm.scrollIntoViewIfNeeded();
+    if(mobile) await poeTerm.tap(); else await poeTerm.hover();
+    const poeTooltip=page.getByRole('tooltip');
+    await poeTooltip.waitFor({state:'visible'});
+    assert.match(await poeTooltip.innerText(),/PoE|802\.3at|питан/i,`${width}: PoE terminology on question review`);
+    await page.keyboard.press('Escape');
+    await poeTooltip.waitFor({state:'hidden'});
+    await button(`Перейти к уроку: ${poeLesson.title}`,poeReview).click();
+    await page.getByRole('heading',{name:poeLesson.title,exact:true}).waitFor();
+    await page.screenshot({path:`${output}/poe-screen-reading-${width}.png`});
     await page.close();
     console.log(`PASS: ${width}px real hover/tap, two teaching styles, exact lesson and return`);
   }
