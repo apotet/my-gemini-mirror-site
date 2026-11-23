@@ -29,7 +29,7 @@ try {
     const review=page.locator('[data-explanation-question-id="review-slaac-4"]');
     await review.waitFor({state:'visible'});
     // The question review itself must show the RA PIO Autonomous flag, not DNS A.
-    await review.locator('summary').click();
+    await review.getByRole('button',{name:'Подробный разбор'}).click();
     for (const mode of ['Простыми словами','По делу']) {
       await button(mode,review).click();
       const term=review.locator('[data-glossary-term="A=1"]').first();
