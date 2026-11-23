@@ -1,3 +1,11 @@
+## Актуальное интеграторское решение — 24.11.2026
+
+Candidate #335 `c8f0434`, проверенный код `9b1397b` (после него только документы). [Точный итог и остаток](gate06-integrator-decision-20261124.md). Сверка существующих 9 полных ID-пакетов и 2 дельт: **33/33 hashes PASS**, история/защита банка PASS, семь CI SUCCESS. Новый полный семантический аудит не выполнялся.
+
+**GATE-06 BLOCK / L2 CONTENT ACCEPTED NO / GATE-10 NOT STARTED.** Старые 160 REVIEW и текущие дельты требуют законченного доказательного переноса существующих заключений; адресные PASS не являются автоматическим принятием остальных материалов. Следующий шаг — реконсиляция имеющихся evidence, не новый круг переписывания кода. Старую таблицу ниже читать как исторический снимок #324, а не фактическое текущее состояние #335. Merge/deploy/production не выполнялись.
+
+---
+
 # NetOps — L2 GATE-01…10: explicit release matrix, 23 November 2026
 
 **Candidate:** Draft PR #324 at content SHA `b2557f027b500bbe6ea030b49330c54254214904`, staging base `main@298a68f6`. **Authoritative policy:** `docs/IN_DEPTH_CLOSEOUT_DECISION_20261122.md` + `docs/LEARNING_CONTENT_STANDARD.md`.
