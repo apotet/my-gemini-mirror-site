@@ -5,6 +5,8 @@
 - Доказательства и ограничения: [Chromium tooltip harness repair](audits/in-depth/chromium-tooltip-harness-20261124.md). Адресный Chromium: 2 ID × 2 ширины × 3 последовательных прогона = **12 PASS**; typecheck/build, контракты 164 ID, история, protected-source и review navigation PASS. CI нового SHA фиксируется отдельно; старый PASS не подменяет проверку нового коммита.
 - **GATE-06 BLOCK / L2 CONTENT ACCEPTED=NO**: содержательная приёмка — отдельный незакрытый пункт. Merge/deploy и production не выполнялись.
 
+- **Итог на проверенном коде `9b1397b`: 7/7 выполненных checks SUCCESS.** [Fast PR #45270245018](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245018), [Understanding #45270245004](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245004), [4-state/7-surface #45270245231](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245231), [Chromium #45270244923](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270244923) — все SUCCESS; 4 browser shards = **164 × 2 = 328 PASS**, включая прежний FAIL. Первый подход `1034f2a` не устранил CI-сбой; успешный follow-up ждёт стабильной геометрии/прокрутки перед наведением. Финальный коммит только документирует результаты с `[skip ci]`; его src/scripts/workflows идентичны проверенному `9b1397b`, отдельный запуск CI этого документа не заявляется.
+
 ---
 
 ## 23.11.2026 — Issue #331: утверждённая владельцем PNG-иллюстрация PoE

@@ -31,3 +31,18 @@ GATE-06 remains BLOCK and L2 CONTENT ACCEPTED remains NO. This repair does not s
 [Shard 2](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45268880339/job/138023048876) failed at the same first tooltip assertion for `photo-txrx-link`/1440. Pointer re-entry alone was insufficient. Fast PR, Understanding regression and four-state/seven-surface CI passed on that commit. The original unmodified 41-ID shard also passed locally (82 viewport scenarios), confirming that local success does not settle this CI failure.
 
 The follow-up waits for the trigger rectangle and page scroll coordinates to remain stable for 100 ms after scrolling (bounded at 5 seconds), before hovering/tapping. This lets pending scroll events finish; it does not increase tooltip wait time or retry a failed assertion. It also captures a failure screenshot plus actual trigger/hover/tooltip DOM state. Pending-scroll ordering remains a hypothesis until the next CI result; no claim of a confirmed fix is made from local results alone.
+
+## Final verified CI
+
+Tested code SHA: `9b1397b68683b3788dd30387427884e0ec5e42eb`.
+
+- [Fast PR #45270245018](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245018): SUCCESS.
+- [Understanding regression #45270245004](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245004): SUCCESS.
+- [Four material states / seven surfaces #45270245231](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270245231): SUCCESS.
+- [Chromium 164 IDs / 375+1440 px / four shards #45270244923](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270244923): all four SUCCESS, **328 route/viewport scenarios**. Previously failing [shard 2](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45270244923/job/138027850947) finishes with 41 IDs × two viewports PASS.
+
+All **seven executed checks** are SUCCESS; two unrelated conditional jobs are SKIPPED and are not counted as PASS. The current harness passed against a fresh lockfile build locally as well. An additional local desktop check served the exact pinned 1201×900 source photograph and passed; that check does not establish external image delivery in the user's browser.
+
+The final report-only commit uses `[skip ci]` to avoid rerunning broad browser CI on unchanged product/test/workflow sources. These are explicitly CI results for `9b1397b`, not newly executed CI for the documentation commit. Product, scripts and workflows in the report commit are identical to that tested code SHA. Exact old-run event ordering remains unknown; the established result is that scroll settling plus fresh pointer entry passes full CI without weakening tooltip assertions.
+
+Technical tooltip test repair: COMPLETE. **GATE-06 BLOCK / L2 CONTENT ACCEPTED=NO** remains a separate content/provenance decision. No merge, deploy or production changes.
