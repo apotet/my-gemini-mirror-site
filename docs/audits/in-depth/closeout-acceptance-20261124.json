@@ -1,0 +1,1158 @@
+{
+  "schemaVersion": 1,
+  "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+  "sourceCommit": "b809540b3d1e988907c1c5d642a945d2fbcc28e6",
+  "acceptedDate": "2026-11-24",
+  "decision": "Explicit owner-approved seven-route/four-stage closeout: seven direct-audit routes and 157 policy acceptances; not a new independent audit of 164 questions.",
+  "immutability": "Append-only versioned acceptance: preserve this dated file byte-for-byte; future approvals require a separate dated registry and explicit policy decision.",
+  "rows": [
+    {
+      "id": "gap-pack2-05",
+      "materialHash": "22fab88d78da4cc86afba0c21ca4e2d424d90ac30d93cb226ee6bd3f3b355fed",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack2-10",
+      "materialHash": "686415aea34ca90657cc6c40938f6db909531ad3bc35656d29809a1238866295",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack2-11",
+      "materialHash": "e7dc433ea6c597e583d1c87eea68699a2d88e10b456038532964a7bd8e32d39c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack2-16",
+      "materialHash": "d54c4d28a6b0f3f335f8d66ef240bfae82226e793e369f03509afd92b911bbe9",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack2-21",
+      "materialHash": "f7415e7840f263a93769a3ed7adbc95c21df40823571095fca8c7ccfd2837b1d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack2-27",
+      "materialHash": "25788ba7c0480917758d3349b449afd52948032a5369a3f93506332f20355fdb",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack3-08",
+      "materialHash": "cad7a0ba9b039dff90b9fb42a3fba0fef926a5096db91047be3971eb16b09f74",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack3-12",
+      "materialHash": "ef3a41c32f19ab3365d0c41f960b46f65111d6e4d0c5c405162ab480c93dee0e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gap-pack3-15",
+      "materialHash": "7e0f849de690d12d13857539ed0b43a7da11d65f92e584d058c57296809e0415",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-0",
+      "materialHash": "bb92ee869aa00eaa22b171ed1ea81e44852bcd390ab4463e9718d1f4b041e26e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-10",
+      "materialHash": "fdd551b325666bcbdf591992c6e6e62b566e989d884ea87bb2f8b8038166c47e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-13",
+      "materialHash": "95d03a1c3efc1965942717648136056a83bd4911bcdedfb9d90960d9a3580382",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-2",
+      "materialHash": "86a168a97e7d6751b7a903ef95fc19c03eb8599408fed336e45a58efe7d9f9b3",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-5",
+      "materialHash": "456de7f72199befba99ab26a62f7037842a0a670c6c5f890110c420d37f90b67",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-6",
+      "materialHash": "4183f7b9e90771c080fa94d7c4ad6b4c44171ddb92dac95d533920d1518b642f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-7",
+      "materialHash": "a92f0ba8e53f74a90770072080b8bdd2e63941581abb05676d74dc7e12d5947c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-diag-9",
+      "materialHash": "5c716dd15faa1e4ce082cbc917f7f3a1cffb1622552f77673b63f2815f0a4a82",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-osi-a-18",
+      "materialHash": "d207e2040a6b8fc833992311cb1668daec16f3807882ad2b07ce8035b6521aad",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-osi-a-19",
+      "materialHash": "f6cafcbff253a95068d8c76776c2148fefc050b1f90fede928019e07a0ecd6c2",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-osi-a-2",
+      "materialHash": "a041834ea3fb1f9f78163003f7eadb10e0a873069cb0df7850eedc1b5a68678a",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-port-11",
+      "materialHash": "451ed8d1018f2e92054a01df86bb61ca46cb187ccb7509c9c8ebe54abee2594c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-port-14",
+      "materialHash": "506d9961a40eddac3987962db983783ec47ae1a3440d92825494887dc4ead428",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-1",
+      "materialHash": "a85f5f8de10ff89ac122da1af31c171a7bfea61851a1a8d76f4345f7a626ba2e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-14",
+      "materialHash": "970106a9085796d5e068c2f10053fd23215629432ea42b45df413ab96b0667f2",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-16",
+      "materialHash": "581669d6f17733fe7c705f41525d96322457f8b32b629796c58a7183375dc032",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-17",
+      "materialHash": "815170add4eb4caf7c58c04495a218d0c6d68593394b20c8fc89da44bfca0a4c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-5",
+      "materialHash": "041c2a1bf746940d828c07babeda9db3204ac35f8326e78355f8f08b51acabcd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "gen-transport-7",
+      "materialHash": "3d7abbf2bc627138c77cd5f3d0aa2c43e3f419256ead7922949f69dfd44164e4",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-01",
+      "materialHash": "036b0518826e48c2bc3c352acaf22f35216786320d9557e399adbf2f0c9e1856",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-02",
+      "materialHash": "49f68c73364fb00f89e3c83d82b2688f10964e232b20dfb75afcc7fb6c0dd210",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-03",
+      "materialHash": "df001d3a55d3226be7fd53fca71ee283e13432b2ef17d9f6dadd0e38ba030a20",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-04",
+      "materialHash": "552de212193793fc47c06b1dd20efd6d5cad550a472ab9115f87a69de2e61d93",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-05",
+      "materialHash": "9e331fef75bd8d010781bda4e8ec31901f7416a09ccd146432cf080445e869b4",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-06",
+      "materialHash": "311d78c9c42ba730f342590523fd591c8f734e807f15b1e839cbe7108ff4b9a0",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "k-07",
+      "materialHash": "37c36e8aa715d33d63cdde9c7e6650f4f6ad1bbddcd739ab7e62649711da59c5",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1-02",
+      "materialHash": "f656a1838c834d5cafd201225a961c08af46841fc5142a4cb69b84456d0ce07b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1-04",
+      "materialHash": "9389cd56899ab74bd3295631b40976dd2a2593668a791ee753f3f8128d77b06a",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-copp01",
+      "materialHash": "4eae7275f22f6edc139526f0a5b4fbaea9a76951e6ae49bf1a5dc8259fee3387",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-d05",
+      "materialHash": "0a0037bf2ef3658ddd6abacb3e3c0da9a361701fb58cd562caa86f40f71ce3e7",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-ds04",
+      "materialHash": "cc844b30cd5e50050c19cacf5aa15805eaf3d00d596dcda8ea32eb97c40512bd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-storm01",
+      "materialHash": "5538782dfa0c78584c4c00aece4472c60b60039f1aa8c4c5796b2e9619030bdd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-x02",
+      "materialHash": "815278c27f2e1fd92f056dd13c40a0899102e54fe4173cee9b8d61ca211f8920",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l12-x03",
+      "materialHash": "31a7e3fb36dc3099b4bf05510d1f8b6760c881ef892d2ef8c8f29b60c2c59dd0",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-category-limit",
+      "materialHash": "5f00c62f27e51adda91b05dfa0383345e51a89b775b6d040083f07e22f1ff9c5",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-jacket-kink",
+      "materialHash": "b32f7af8695c47da267da80ff33e108e5fd491fabd5a0211a9931da7b337124d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-jacket-limit",
+      "materialHash": "5a03066d08587d924648c569ee0c69fcad36ff768d7be23d7314d6b18cca3526",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-label-sftp",
+      "materialHash": "0bc13f7a91f1cfd6c85ec7e125140aedafe59f64e47fa6167ebce8a967681b85",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-pairs",
+      "materialHash": "8c444d20abcc3f0181f97a185c24aa9868d5d95a966c538b581902cbaca4d6ce",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-solid-use",
+      "materialHash": "936f94eb42d76b970bbb9ec31941e93c28cd482e386e209509915bd6db5d346e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-a-strain-view",
+      "materialHash": "abeb26cff8c8baf1ff5b2c6d2a7ae2033fb4bce6276f77b3271aa4823de0828f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-b-bend-loss",
+      "materialHash": "d20d5827e17b73ed90cea3ea196e7a3e29a407552908709bbb569464997c2c8f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-b-position-cause",
+      "materialHash": "54498d29133205263199568af3603cc2e78e6a726ebb92d0a1ec4faa5334dfb9",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-b-screen-xy",
+      "materialHash": "c5378745baf3f9c197eef639f640b5bcc2c1d0645901004f285f69cf72ef4042",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-b-transfer",
+      "materialHash": "11d68e871bbb3d4c3e3094a013255eb7b3ddef390f972528fcaacacf3a60cca3",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-c-bidi-wrong-pair",
+      "materialHash": "7fe0ff7e9234369a456304e010dfea8e005c96f01fb20ac6015f624bcdb9e949",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-c-closure-service",
+      "materialHash": "97cef752c353a2161431b505e749028703e510775ea81b8268773078a2923cbe",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-c-converter-polarity",
+      "materialHash": "35074a79723d24c3a198c79a06190319de4f5066ebb9729d701d74868e997741",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-c-industrial-fiber-ports",
+      "materialHash": "86f5bbb8e8c5c62623c70d5e704264abfdf11d239d13fb80214cc222495da7cf",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l1v2-c-splitter-role",
+      "materialHash": "52f3a16a83663b57e96cc2ec882f48dcdf1ba9c18a7aac8b5ba4a796d6c1f9e0",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-04",
+      "materialHash": "3d8f4fa7620c51fb7e7c26b4b73c95268003c2da3efd419ffea56c3b0ed1428d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-12",
+      "materialHash": "7d02b4ec22d610ba99cedeefaa46aa8be898341b073ad6176c0b95ef29d62ef9",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-sec-05",
+      "materialHash": "90f09fd1b3166ad18279b0a648eae0a128d1c7c2ba8789f561d6191dd21a04e1",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-sec-08",
+      "materialHash": "36b967d31bc9a25a3c2a8e392eb6d4cf3ace0c00e808fcdf17b587e73bfa10fa",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-sec-13",
+      "materialHash": "3309741e85159d0fee694bc6ab35a6d748c79f9c7a5bde9d848853f6c44f6e7f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l2-sec-18",
+      "materialHash": "5acf04ef43406c23489b97414f15ff4c8933607f6ec19592273c0c338390d4eb",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-16",
+      "materialHash": "963cbf833c00ed3197c29df724da9c3995a4eb2d215e523139020fdcf7324776",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-bgp-06",
+      "materialHash": "4e3895984f56ea92dcce05db61f4d56f4e732a55f81820afa9cc77ca9212289b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-d04",
+      "materialHash": "acf6e38d9c8f0a34429f05fd8c353056e4eb443221f11423f6384bb42116ed3b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-d05",
+      "materialHash": "303978afa25f13dc3d6132f6656405dd33105dcb410b3b7255b4218252b28da4",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "l3-d07",
+      "materialHash": "98edb9687f965f039542dbd35f703f3c7c8db164ab0fd9f77fb7264fd7604b8c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-d08",
+      "materialHash": "1cb32b605c2ded8289838b13cf47f05b44cdd828eaab809f4f228197d843d91f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-ospf-03",
+      "materialHash": "81d9bd78c299b028e5d0e5411652691e5374725b2a972a3f66ba0a6f38a6c6b8",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-vrrp02",
+      "materialHash": "bce92586f262ff7bc4116de3c7f379cca4254cab341dc5228b033d8353102401",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l3-vrrp04",
+      "materialHash": "018893d8f7975fb64aebbf54b2e5c4cea8cf12ad9f28330805936b94c67a99da",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-03",
+      "materialHash": "6aec324934da3389bb867eb19a5bad0428a0bb8f8034fd729c0abb9e2ad95364",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-04",
+      "materialHash": "0d98a9b995a98889469f87477f915123756c5b1bebb312e0a9a5d260d986fb74",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-d03",
+      "materialHash": "1ee911ad8a5b0456fca61ff345fd2374785b8c424ecfde2f9ab1c55445696a0b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-d04",
+      "materialHash": "4edaefbf0c6d29e423659ac790ef19e80792e6669f49e4265605c69ea053060f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-d05",
+      "materialHash": "dac576dc6188695d12c0da6423aea72c7f4546a80adc720b125384b8bef53cec",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "l4-d06",
+      "materialHash": "15b557f982b0d7f1aa8f7de437bba9822e2be5eadc97a7a973e4ff965ec95c71",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-lb-01",
+      "materialHash": "4a5b7a916c11549a42522a4fa001c8260bac739f1085b523f5f4b8c7f4ef4234",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-new-05",
+      "materialHash": "1da2815f746b3f42bd156150d92c2478fb9e559f9fdac838c779da080ccbde23",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-new-07",
+      "materialHash": "d8412529fd508a738f912d1477cad42b63f5ebde4dc55fc607754e3d0acdf34a",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-x03",
+      "materialHash": "fedd0c80955260c2b66e56f451b81a8d3cdc1956d2235f11dcc7dbe3654e9242",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l4-x04",
+      "materialHash": "8cc81049e3b08c00cd8659246a0ce201e5c3eac2742fcc8abeacf98a91f4a370",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l5-02",
+      "materialHash": "f5f65e974182ea66f2a4db92ab34e6516463d7779d0e046c4d59d915a3f69608",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-d02",
+      "materialHash": "2fc4de5fd0aab50f316ad4ebf08e3b3e9abf35e68458d670190d61ecb9ba98b0",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-d04",
+      "materialHash": "33c92d763ddec4fb9283b48ff0aaa233e90352c721c561fb71979a7113805539",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-x04",
+      "materialHash": "c37fb27a91265f2783f5905c80f623d4748628858b3584c60d87c758f558b221",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-x05",
+      "materialHash": "b57bd4330606d4fdc4a9b2e8c03ec0115736fa7ad2eaeab1e46a2ffe5cecf818",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-x06",
+      "materialHash": "f08e5240fa2ba8e1e1f589f023284e732a72b5e44bb72014b0a474bed0b1fbb1",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l57-x19",
+      "materialHash": "9e794f1e3326f6c6b259d09f0ef0ed50680cf65df42833b684270bbbf3bad5fe",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l6-01",
+      "materialHash": "5892c9085feaef27b06473f2c7d266b9fbb78e78068fbe52b485f7de7cee8d64",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-01",
+      "materialHash": "87ebfde56d7d893657c10a8bd6014648a9b9ebf85ebcba0d2757b2bafa3eb35c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-02",
+      "materialHash": "8cfc7f30090ba50fdd41112d35b6c9f1d0991e8df4310b0d4a8ec064061263b1",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-03",
+      "materialHash": "071b8fec7946c9bb9a085b955f94e00cb9d3a472d1bad7e282c82208db8b9354",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-05",
+      "materialHash": "88c1b1a5e48bbee0b62d94576d65ddb365f895c198a28a016d14a233f39342fe",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-new-02",
+      "materialHash": "8bdc3f8ca934af13475bb5ccb0b40252a91fe49a8650bbc42fe74d9fdf05d7d1",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "l7-new-03",
+      "materialHash": "98e9451d9af5f247d9a48faee2709ddd3abd2f843d2ac1c677169aabf61830a6",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "l7-new-04",
+      "materialHash": "667b8ea32245c8690fc29a08c5c7da5c75f6cb4d73f1f976182a691ef550180f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "mon-snmp-01",
+      "materialHash": "f15f491dce058bc6fed51adc48e8b45cdb3ab8312084ab118d3c93908928f9fb",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "mon-syslog-01",
+      "materialHash": "de9d408a492837af95b7373a56807c8f4d92d9434d431d5ac4c13855b3be2d65",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "mon-syslog-05",
+      "materialHash": "a397d185c3be73e9c2377032f8a089e8d34f4e39bd5a9e51d7b2962b4bf6d858",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "mon-zabbix-01",
+      "materialHash": "9179ec648002bae4821dab7aceb965d25a74c7e057bdf929fd3ba9dc82532b98",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "new-tcpip-router",
+      "materialHash": "f86cfdfc1ae1f601a8f9b370fa5d530fd273fca3502c6709fe7cfff6eb6af604",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "new-ts-dns",
+      "materialHash": "0263a6e6569a0c821e29dbf2c6d4ec2202aadf160533a147f95d063f6838fd6b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "new-ts-duplex",
+      "materialHash": "37eb70440ab0e9ea937f9ba63d5cb4e7823af9c968d0beffca44be8b4e9568ae",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "new-ts-photo-panel",
+      "materialHash": "6e03ee7fa4c4e5696a939a87202671b5fc7f4d4c437acdb028c389a3bc3f5f0b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "new-ts-vlan",
+      "materialHash": "721b9ee8fd89c07b30193e7a64a21cf192b33f58ca3ba33c1f1487c51356b26f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-formfactor-compat",
+      "materialHash": "b86c5c99211bf2b64b18b14591a00370f19a25f88455a72052fcceafe0aa8221",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-otdr-end",
+      "materialHash": "389584972f15fc6b744dcf6b88dcab77eba54d2abe7a6c612cf087462bbbb1cb",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-otdr-slope",
+      "materialHash": "2c64152bab8fccad2e2c4a000f443308a6f814aeeacd9e4ed3e28402997ebac7",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-otdr-use",
+      "materialHash": "e734c13512196c4ecc79f530a206b6506e7ca55d1823ca92309dbd427c10fa35",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-sfpplus-label",
+      "materialHash": "22fafc025ccad8725152c5062acd36302f76cc345f75a18b1e40bedece13f200",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "photo-txrx-link",
+      "materialHash": "e0292bbc02b635d275ea09d99fbb322dfc029f9e181ee85f9397b67c00870bcd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-dot1x-20",
+      "materialHash": "e6e554dea906a4204c08a4b1f67450d8395666cc239abc3b88011ccb621a25af",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-igmp-9",
+      "materialHash": "1925ac2d643ce550a0fd51a5a428270f6af2c541b182f36d3e7db3a3b9f0cfa6",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-osi-34",
+      "materialHash": "84e61fe3c07c42560ea336b648c978f539d6ea2f37ffe9a12d488765bf0b8821",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-ospf-27",
+      "materialHash": "c68553a99d5190b05b3fb86c5da5cccad8c7d5e94e0ae48db00179db3d73561f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-poe-30",
+      "materialHash": "0dba56f87fd2b859856e8d7259b1a78e9c9a40022bb47ea3018b4da07d1d19cd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "review-ptp-17",
+      "materialHash": "610d2f9f4a19c84249fadab448ef31688f4b6b2d377b9c03e2ab4b47481664e5",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "review-qos-22",
+      "materialHash": "d826e83087bf62b878bdf35a2ab28abac7b47983914c5117645b03eb6e41af90",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "review-slaac-4",
+      "materialHash": "b4e93f895070161e315c4c805bd1d26164cca32042e5ac0348d503152547475d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "review-syslog-25",
+      "materialHash": "bccaa2f034479f50284bdd5ed76e451039877acae8b0cf155670c3642ff2e2be",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "stp-new-04",
+      "materialHash": "6cb5851617747e23e956226303942cb83e4b43c318ac95d3707a82bff5e47139",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "PASS_DIRECT_AUDIT",
+      "evidenceRef": "docs/audits/in-depth/gemini-seven-route-reconciliation-20261123.md"
+    },
+    {
+      "id": "stp-new-09",
+      "materialHash": "9cbd79deb71d99521244f5b9c0cba7b133a9d405c6a84191a23c17e0402ba128",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcp-05",
+      "materialHash": "738a643207cea8a344a64bd3619d9227c55861b626a9f86f2c1dccdfd7a63fcf",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcp-06",
+      "materialHash": "3f2bc80efc758cf893f056dd5c81fd629489908353287606eb8999264ff2a842",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcp-10",
+      "materialHash": "5cc3b65024e47467651bca447c0cb98ed8c434382eb3ab693313ae06b312fe9d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-d01",
+      "materialHash": "0abace746c0620324b79098103d23a7d8bf339fd2c6f6c23e752a782b896ea18",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-d02",
+      "materialHash": "29d3fa12e5ff0a3a92774868c3831430e55c68a1394e772613d03651f23483c7",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-d04",
+      "materialHash": "732f3e31d264029c9b3825c213243d4db7ca69dc502959d1718fb7a5c026baa9",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-d05",
+      "materialHash": "adb8aeb92e6e40fadd582d825bdd357d37409306ea0efeb418aafef2e159dcd3",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-ntp01",
+      "materialHash": "12aa9f1b35b73873c5cb4d261035cebe3bba8e59ef27a298609292f5da086e9b",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-x14",
+      "materialHash": "dde36bdcc5b0e7c755a69d07d3fc63da13774f8bdcb50a60d6b52bf2769473c2",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-x21",
+      "materialHash": "e21ff20408a91b7dee94907b92549d2fa12a24d71b712138dbf0706e70140d19",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tcpip-x26",
+      "materialHash": "b0dcac2c6af96c60ea2d7fd6256c856265ea04ff896b1af1d33dbc31df0daca9",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-01",
+      "materialHash": "ad7ffbf9991727d8d8a607addf58ec9f62f8d8daa95a83947ce1a39f9f70668c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-02",
+      "materialHash": "50547eee6191a9865e713036ea14a01a04044612f25ce9e766c8b0c0fa82c100",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-03",
+      "materialHash": "efe514b706f5112a440c82d8ff1479baf6886ebce27f9fd81d6c0300b45f320d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-05",
+      "materialHash": "da55c8eebf0d65d3729366c91071b288707a50954b68102d3a32abaa8c418de1",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-08",
+      "materialHash": "aa4a6c5030e8b2bf0dbe578ef0ccdb2bef813668be12f28322d92a8119a2e548",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-09",
+      "materialHash": "484051fc390b05afd8fc19f2d1bf0a85fe09c3fa5cbb71491d9dc6f65c11a470",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-10",
+      "materialHash": "111ddf3605362c50b76fbdc85f042b39adafe8e18e1f9442d0750f9c2e535d3f",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-11",
+      "materialHash": "de96621c99864c19cd85f3ad10d27bab91a70ef76f25879c3518e1ba1486a291",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "tr-12",
+      "materialHash": "28649e1a35ae73a0811ad52a4bd3a4c9715817a33fbcc66d8ac2efce55a076fa",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-d02",
+      "materialHash": "e0e01c1c32a5c19a70a0461501d1bd4e21631ea56ebe193ff949ec7547f82d4e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-d03",
+      "materialHash": "92fa98e71586d2358d022813f19c39cb3b977f6fb52ddd4db239fd46eee28c69",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-d05",
+      "materialHash": "83d9d9d92f2fdf16ddc5fdadfa07747e7c31bb2db09132232a1a91756aa5ab97",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-linux01",
+      "materialHash": "c25d5f0c518f17394d035dac044ff1e103a23d44c237f32b4e8d501b9864ac3e",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-pfc01",
+      "materialHash": "151237406411028cef3ae422facc7e36be26b155cd461fe8a99cb2c5571e4d64",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x01",
+      "materialHash": "3d305485c3b4a4f3de382d5bd4c733b858155c14fc1ad34854fa050a5aed0a6d",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x02",
+      "materialHash": "b57f0f81bf1a8c22ba46d8bade492ccc30fd54933b70e14ab535f1d3f798fd0a",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x03",
+      "materialHash": "ff0461fed3cf3d99cd83ccc0b5e190f7b755103b925ede2ec273f7e66fb933ae",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x06",
+      "materialHash": "62213cf29f32588dc15349cd5952e3ec4a4deeb1a851520c271e7246dfe41413",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x07",
+      "materialHash": "b25c851f44199d4c1e2f7cc3b59c31b4eb8a9c8fa37944c584c6f12e8acbd6a5",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x08",
+      "materialHash": "d599d0556e9480ddb315adc5f8840cb90661889b2c2635688614ed3a5dd96824",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x09",
+      "materialHash": "b4508fa522284af340ea615ee9f17d036d9ab3963af5625ea02a89d38150e9dd",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "ts-x10",
+      "materialHash": "74c7b08f5728c738747b1e40f75e6d8f9e26bb491515e018aac8f34f98eece60",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "wifi-roam-01",
+      "materialHash": "4a44026b731db39d8b768a8f8c189db6686eb1fa5336ab1d1cc60232c2c85395",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "wifi-sec-01",
+      "materialHash": "5a86b9d2c23f44c617b1f85e11787824f82c0e514a515e2fe61d21d2ea65e53c",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "wifi-sec-05",
+      "materialHash": "994d5c007e387d9ec6719c06aed2843d6a5d4a622f440d2a364d86b399739cc5",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "wifi-std-01",
+      "materialHash": "75312801d71c4cee49ab4b9aa0e529934beff0ce8a85dc328ccd35e8163f3828",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    },
+    {
+      "id": "wifi-std-04",
+      "materialHash": "3d80fde6632d25454131e0380568348aaec14120598ba0031642bfe3b1a811c2",
+      "policyBasis": "NETOPS-L2-CLOSEOUT-2026-11-22",
+      "status": "ACCEPTED_BY_CLOSEOUT_POLICY",
+      "evidenceRef": "docs/audits/in-depth/l2-release-gates-20261123.md#closeout-20261124"
+    }
+  ]
+}

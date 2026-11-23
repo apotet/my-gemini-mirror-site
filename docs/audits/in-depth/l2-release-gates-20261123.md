@@ -1,3 +1,46 @@
+## Closeout 20261124
+
+**Действующее решение владельца:** закрыть GATE-06 по `NETOPS-L2-CLOSEOUT-2026-11-22` через отдельный immutable acceptance registry, без нового аудита 164, изменения материалов или переписывания исторических REVIEW. Это явное решение о приёмке по ограниченному регламенту, а не утверждение, что все 164 комплекта заново независимо прочитаны.
+
+**Frozen учебный источник:** staging `main@b809540b3d1e988907c1c5d642a945d2fbcc28e6`, после разрешённого merge PR #335 (проверенный HEAD `43f33ebe29015c8dd571005e5bef815fdcdcf332`, все 7 выполненных CI checks SUCCESS). `src/` идентичен ранее проверенному коду 9b1397b и адресно принятому 3983019. Новый PR `fix/l2-gate06-closeout-20261124 -> main` меняет только guard/tests/CI/acceptance docs, не учебные исходники.
+
+### Фактический один read-only прогон трёх кандидатов
+
+На локальном клоне через три отдельных `git worktree` в `/tmp`, каждый SHA выполнен ровно один раз. Экспортированы реальные resolver/glossary функции соответствующей версии, без правок tracked-файлов. Формула: `sha256(JSON.stringify({question, deep, lesson: expanded, definitions}))`, expanded plain/pro, сортированный список используемых definitions. Лимита/assert на 164 в историческом пуле нет. Сравнение с неизменёнными 160 `materialHash` из final-review-1/4:
+
+| SHA | Фактический пул | matched/160 | mismatch | missing |
+| --- | ---: | ---: | ---: | ---: |
+| `188c6938ecb2c6563ba228fd31b5fa4fc74b94e4` | 160 | **149/160** | 11 | 0 |
+| `6e9fd840ef91f65430a032b5ece02ef056e08a2b` | 164 | **118/160** | 42 | 0 |
+| `d08d24c814c4a60731d42addeb7ef7b4b3a16cef` | 160 | **0/160** | 160 | 0 |
+
+Ни один кандидат не объявляется единым доказанным историческим freeze. Результат диагностики не препятствует явно утверждённой текущей приёмке по четырём этапам и не выдаётся за новый смысловой аудит.
+
+### Действующие GATE-05/06 и основания приёмки
+
+| Gate | Вердикт принятия | Основание |
+| --- | --- | --- |
+| **GATE-05** | **PASS** | 7/7 маршрутов: DNS `l7-new-03`, TCP SACK `l4-d05`, PAT `l3-d05`, SLAAC `review-slaac-4`, RSTP `stp-new-04`, QoS `review-qos-22`, PoE `review-poe-30`. Существующий [Gemini report + проверка FIX](gemini-seven-route-reconciliation-20261123.md): два MAJOR исправлены и проверены в main@b22984c; два MINOR не воспроизводились на frozen source. Принятие этих семи маршрутов подтверждено решением владельца; новый повторный аудит не запускался. |
+| **GATE-06** | **PASS по closeout acceptance** | [Реестр 164 ID](closeout-acceptance-20261124.json): 7 `PASS_DIRECT_AUDIT`, остальные 157 `ACCEPTED_BY_CLOSEOUT_POLICY`, на четырёх этапах решения и GATE-01…04/07…09. Не подменяет исторические REVIEW на PASS и не называет 157 прямыми аудитами. Фактический executable strict PASS обязателен на финальном SHA нового PR. |
+
+Общие доказательства: [четырёхэтапное решение](../../IN_DEPTH_CLOSEOUT_DECISION_20261122.md), [существующая реконсиляция](gate06-integrator-decision-20261124.md), [принятые 9 полных пакетов + 2 дельты](gate06-targeted-semantic-acceptance-20261123.md), [33 точных component hashes](gate06-targeted-semantic-hashes-20261123.json). Семь прямых маршрутов имеют указанную выше рецензию и адресную интеграторскую проверку; 157 принимаются **по явному решению владельца**, а не по выдуманным независимым рецензиям.
+
+Технические GATE-01…04/07…09: существующие [Fast PR](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45287036373), [Understanding/history](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45287036421), [4 states / 7 surfaces](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45287036748), [164 × 2 Chromium](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45287036279) на HEAD #335. В новом PR обязательный workflow `Understanding strict closeout acceptance` выполняет один раз на финальном SHA unit guard, strict fingerprint **без --report-only**, content/history, lint/build. Его фактические результаты и SHA закрепляются в PR/Actions; старый CI не представляется новым запуском.
+
+### Fail-closed и append-only контракт
+
+- Старый `evaluateInDepthFingerprintPolicy` сохранён: исторические REVIEW по-прежнему дают исторический BLOCK. Этот отдельный диагностический статус сохраняется в `historicalPolicy`; он не подменяет действующее утверждённое closeout-решение.
+- Новый evaluator требует ровно 164 уникальных ID с тем же множеством, валидными SHA256, policyBasis/evidence/status, полным `currentHash === materialHash`. Семь прямых ID строго определены; переименование policy acceptance в direct audit блокируется.
+- Оригинальные **байты** датированного реестра закреплены SHA256 в guard. Переписывание/удаление/добавление существующих записей, даже одновременная правка accepted hash и материала, даёт BLOCK. Append-only означает новую отдельную версию при будущей явно разрешённой приёмке, а не редактирование этой датированной записи. Автоматического rebaseline нет.
+- Недоступный/повреждённый реестр, пропавший evidence file, новый/пропавший ID или одно несовпадение хеша дают **BLOCK и exitCode=1** в strict CLI. `--report-only` остаётся исключительно диагностическим; обязательный CI вызывает strict CLI.
+- Формула materialHash не менялась: любое будущее изменение вопроса/разбора/expanded урока/относящихся к нему определений, меняющее хотя бы один из 164 payload, блокирует приёмку.
+
+**Исторические final-review-1.json/final-review-4.json, базовые snapshots и status=REVIEW не изменены.** Production `apotet/netops` не затрагивается. Урок `l1-poe-injectors-splitters` остаётся на staging до отдельного «ОК» владельца для переноса. Новый closeout PR не даёт такого разрешения. GATE-10 нового closeout PR — отдельный merge/Pages/live-smoke, здесь не объявляется выполненным.
+
+---
+
+## Предыдущие записи (исторические снимки, заменены решением выше)
+
 ## Актуальное интеграторское решение — 24.11.2026
 
 Candidate #335 `c8f0434`, проверенный код `9b1397b` (после него только документы). [Точный итог и остаток](gate06-integrator-decision-20261124.md). Сверка существующих 9 полных ID-пакетов и 2 дельт: **33/33 hashes PASS**, история/защита банка PASS, семь CI SUCCESS. Новый полный семантический аудит не выполнялся.
