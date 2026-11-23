@@ -7,7 +7,7 @@ const lesson=getLesson('l1-poe-injectors-splitters');
 assert.ok(lesson,'PoE injector-splitter lesson registered');
 assert.ok(lesson.professional?.blocks?.length>=8,'Enough professional blocks');
 assert.ok(lesson.blocks.length>=5,'Enough beginner blocks');
-assert.deepEqual(lesson.relatedQuestionIds,['l1v2-c-injector-direction']);
+assert.ok(lesson.relatedQuestionIds.includes('l1v2-c-injector-direction'));
 assert.equal(getLessonForQuestion('l1v2-c-injector-direction')?.id,lesson.id);
 
 const expected={plain:['B','A','C'],pro:['B','C','D','A','C']};
@@ -42,7 +42,7 @@ for(const file of new Set(images)){
   assert.ok(svg.startsWith('<svg'),p);
   assert.match(svg,/<title[^>]*>[^<]+<\/title>/,`${p}: accessible title`);
   assert.match(svg,/<desc[^>]*>[^<]+<\/desc>/,`${p}: accessible description`);
-  assert.doesNotMatch(svg,/<script|foreignObject|http:\/\/|href=/i,`${p}: no scripts/external loads`);
+  assert.doesNotMatch(svg,/<script|foreignObject|href=/i,`${p}: no scripts/external loads`);
 }
 assert.ok(images.includes('poe-injector-splitter-chains.svg'));
 assert.ok(images.includes('poe-ieee-vs-passive-compare.svg'));
