@@ -25,13 +25,24 @@ try {
     await review.getByRole('button',{name:`Перейти к уроку: ${lesson.title}`}).click();
     await page.getByRole('heading',{name:lesson.title,exact:true}).waitFor();
 
-    const schematic=page.locator('[data-lesson-cheatsheet="poe-injector-splitter-chains.svg"]');
+    const schematic=page.locator('[data-lesson-cheatsheet="poe-hardware-recognition-card.svg"]');
     await schematic.waitFor({state:'visible'});
-    assert.equal(await schematic.locator('img').count(),1,`${width}: overview illustration visible`);
-    assert.ok(await schematic.locator('img').isVisible(),`${width}: overview SVG expanded`);
+    assert.equal(await schematic.locator('img').count(),1,`${width}: hardware recognition illustration visible`);
+    assert.ok(await schematic.locator('img').isVisible(),`${width}: hardware card SVG expanded`);
+    const opener=schematic.getByRole('button',{name:/Открыть .* на весь экран/});
+    if(mobile)await opener.tap();else await opener.click();
+    const viewer=page.getByRole('dialog');
+    await viewer.waitFor({state:'visible'});
+    assert.ok(await viewer.locator('[data-photo-viewer-image]').isVisible(),`${width}: zoomable card in fullscreen`);
+    await viewer.getByRole('button',{name:'Закрыть'}).click();
+    await viewer.waitFor({state:'hidden'});
     await page.screenshot({path:`${out}/poe-accessory-plain-${width}.png`,fullPage:true});
 
     await page.getByRole('button',{name:'По делу',exact:true}).click();
+    const proChains=page.locator('[data-lesson-cheatsheet="poe-injector-splitter-chains.svg"]');
+    await proChains.waitFor({state:'visible'});
+    assert.ok(await proChains.locator('img').isVisible(),`${width}: professional flows remain expanded`);
+    assert.equal(await page.locator('[data-lesson-cheatsheet="poe-hardware-recognition-card.svg"]').count(),0,`${width}: plain card not duplicated in Pro`);
     const compare=page.locator('[data-lesson-cheatsheet="poe-ieee-vs-passive-compare.svg"]');
     await compare.waitFor({state:'visible'});
     assert.ok(await compare.locator('img').isVisible(),`${width}: comparison SVG expanded in pro`);
