@@ -28,6 +28,23 @@ try {
     await button(/^#review-slaac-4 ·/).click();
     const review=page.locator('[data-explanation-question-id="review-slaac-4"]');
     await review.waitFor({state:'visible'});
+    // The question review itself must show the RA PIO Autonomous flag, not DNS A.
+    await review.locator('summary').click();
+    for (const mode of ['Простыми словами','По делу']) {
+      await button(mode,review).click();
+      const term=review.locator('[data-glossary-term="A=1"]').first();
+      await term.waitFor({state:'visible'});
+      await term.scrollIntoViewIfNeeded();
+      if(mobile) await term.tap(); else await term.hover();
+      const tooltip=page.getByRole('tooltip');
+      await tooltip.waitFor({state:'visible'});
+      const content=await tooltip.innerText();
+      assert.match(content,/SLAAC|автоном/i,`${width}/${mode}: RA flag tooltip in question review`);
+      assert.doesNotMatch(content,/Address Record|Адресная запись IPv4/i,
+        `${width}/${mode}: DNS A tooltip must not leak into question review`);
+      await page.keyboard.press('Escape');
+      await tooltip.waitFor({state:'hidden'});
+    }
     await button(`Перейти к уроку: ${lesson.title}`,review).click();
     await page.getByRole('heading',{name:lesson.title,exact:true}).waitFor();
     for (const mode of ['Простыми словами','По делу']) {
