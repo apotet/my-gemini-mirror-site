@@ -25,3 +25,9 @@ No `src/`, content, answer key, historical snapshot, baseline, registry, or fing
 - New GitHub CI must be read on the pushed commit. A successful rerun of the parent is not CI for the repair commit.
 
 GATE-06 remains BLOCK and L2 CONTENT ACCEPTED remains NO. This repair does not settle the separate provenance/semantic acceptance decision; no merge/deploy or production change is authorized by this report.
+
+## Follow-up after real CI on 1034f2a
+
+[Shard 2](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45268880339/job/138023048876) failed at the same first tooltip assertion for `photo-txrx-link`/1440. Pointer re-entry alone was insufficient. Fast PR, Understanding regression and four-state/seven-surface CI passed on that commit. The original unmodified 41-ID shard also passed locally (82 viewport scenarios), confirming that local success does not settle this CI failure.
+
+The follow-up waits for the trigger rectangle and page scroll coordinates to remain stable for 100 ms after scrolling (bounded at 5 seconds), before hovering/tapping. This lets pending scroll events finish; it does not increase tooltip wait time or retry a failed assertion. It also captures a failure screenshot plus actual trigger/hover/tooltip DOM state. Pending-scroll ordering remains a hypothesis until the next CI result; no claim of a confirmed fix is made from local results alone.
