@@ -4,6 +4,7 @@ import { getQuestionDeepDive, type QuestionDeepDive } from '../data/questionExpl
 import type { PracticeLink } from '../data/practiceLinks';
 import type { Question } from '../types/quiz';
 import { useStudyTextMode } from '../utils/studyTextMode';
+import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { FormattedExplanation } from './FormattedExplanation';
 import { PracticeLinkButton } from './PracticeLinkButton';
 import { StudyTextToggle } from './StudyTextToggle';
@@ -49,6 +50,7 @@ export function ExplanationLesson({ questionId, onOpenLesson }: {
 /** Read-only rendering of the submitted question or saved review snapshot. */
 export function EngineeringReview({ question, ...navigation }: ExplanationNavigation & { question: Question }) {
   const deep = getQuestionDeepDive(question);
+  const glossaryScope = getLessonGlossaryScope(getLessonForQuestion(question.id)?.id);
   const [mode, setMode] = useStudyTextMode();
   const hasProfessional = Boolean(deep.professional?.deep.trim());
   const professional = hasProfessional && mode === 'professional' ? deep.professional : undefined;
@@ -59,13 +61,13 @@ export function EngineeringReview({ question, ...navigation }: ExplanationNaviga
   return <div data-explanation-question-id={question.id} className="min-w-0 max-w-full space-y-3 text-sm">
     <div data-explanation-brief className="space-y-2">
       <h4 className="font-bold">Почему так</h4>
-      <FormattedExplanation text={deep.briefAnswer} />
+      <FormattedExplanation text={deep.briefAnswer} glossaryScope={glossaryScope} />
     </div>
     {canExpand && <details data-explanation-detail className="space-y-2">
       <summary className="cursor-pointer font-bold text-cyan-700 dark:text-cyan-300">Подробный разбор</summary>
       {hasProfessional && deep.deepAnalysis.trim() ? <StudyTextToggle value={mode} onChange={setMode} /> : !hasProfessional && missingProfessional}
-      {professional?.notice && <FormattedExplanation text={professional.notice} />}
-      <FormattedExplanation text={body} />
+      {professional?.notice && <FormattedExplanation text={professional.notice} glossaryScope={glossaryScope} />}
+      <FormattedExplanation text={body} glossaryScope={glossaryScope} />
     </details>}
     {!canExpand && !hasProfessional && missingProfessional}
     <ExplanationLesson questionId={question.id} onOpenLesson={navigation.onOpenLesson} />
