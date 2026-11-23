@@ -1,0 +1,253 @@
+{
+  "base": "http://127.0.0.1:5436/my-gemini-mirror-site/",
+  "questions": 11,
+  "checks": 22,
+  "evidence": [
+    {
+      "id": "tcp-05",
+      "width": 375,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "review-ptp-17",
+      "width": 375,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "ptp-boundary-and-transparent-clock",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-snmp-01",
+      "width": 375,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-snmp-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-syslog-01",
+      "width": 375,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-syslog-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-syslog-05",
+      "width": 375,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-syslog-monitor-vty",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-zabbix-01",
+      "width": 375,
+      "lessonId": "ts-zabbix-monitoring",
+      "anchor": "in-depth-existing-mon-zabbix-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-std-01",
+      "width": 375,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-channel-plan",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-std-04",
+      "width": 375,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-ofdma-6ghz",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-roam-01",
+      "width": 375,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-client-roaming",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-sec-01",
+      "width": 375,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-sae-vs-psk",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-sec-05",
+      "width": 375,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-hidden-ssid",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "tcp-05",
+      "width": 1440,
+      "lessonId": "tcpip-encapsulation",
+      "anchor": "indepth-ipv4-router-rewrite",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "review-ptp-17",
+      "width": 1440,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "ptp-boundary-and-transparent-clock",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-snmp-01",
+      "width": 1440,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-snmp-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-syslog-01",
+      "width": 1440,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-existing-mon-syslog-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-syslog-05",
+      "width": 1440,
+      "lessonId": "l7-monitoring-snmp-syslog",
+      "anchor": "in-depth-syslog-monitor-vty",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "mon-zabbix-01",
+      "width": 1440,
+      "lessonId": "ts-zabbix-monitoring",
+      "anchor": "in-depth-existing-mon-zabbix-01",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-std-01",
+      "width": 1440,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-channel-plan",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-std-04",
+      "width": 1440,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-ofdma-6ghz",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-roam-01",
+      "width": 1440,
+      "lessonId": "l12-wifi-standards-roaming",
+      "anchor": "indepth-wifi-client-roaming",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-sec-01",
+      "width": 1440,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-sae-vs-psk",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    },
+    {
+      "id": "wifi-sec-05",
+      "width": 1440,
+      "lessonId": "l2-wifi-security-diagnostics",
+      "anchor": "indepth-wifi-hidden-ssid",
+      "questionStyles": true,
+      "lessonStyles": true,
+      "returnToQuestion": true,
+      "historicalSnapshot": true,
+      "layout": true
+    }
+  ],
+  "errors": [],
+  "sourceSha": "3983019649ac671b6436b0d2df388a1578ddd27c",
+  "browser": "Chromium 156.0.8078.79",
+  "scope": "local browser; 11 requested IDs only; not deployment/live-site acceptance"
+}

@@ -540,3 +540,5 @@ const fiveOption=pool.find(q=>q.id==='tcp-06');
 assert.equal(fiveOption?.answers?.length,5,'tcp-06: preserve fifth original answer');
 
 console.log('PASS: actual164-ID Understanding pool; structural two-style lessons, links, active glossary, and 698 other-level deep dives unchanged; independent semantic PASS still pending');
+// Keep the addressed semantic regressions in the existing CI entry point.
+await import('./gate06-targeted-semantic.test.mjs');
