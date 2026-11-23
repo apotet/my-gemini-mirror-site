@@ -1,3 +1,13 @@
+## 23.11.2026 — L2 final release gates: исправление контроля и явный статус GATE-01…10 (в отдельном Draft)
+
+- **Режим сохранения содержательного freeze:** PR #324 остаётся на `b2557f0`, отдельная вспомогательная ветка `fix/l2-fingerprint-gate-20261123` создана от этого SHA. Ни вопросы, ни ответы, ни принятые уроки не меняются; merge/deploy запрещён до независимой семантики.
+- **Техническая дыра подтверждена по коду:** прежний `scripts/in-depth-review-fingerprint.mjs` блокировал только changed IDs, но не новые непроверенные и не исторические `REVIEW`. В вспомогательной ветке предложены fail-closed правило + семь независимых unit-тестов + отдельный диагностический workflow; `--report-only` намеренно не выдаёт CONTENT ACCEPTED.
+- **Впервые формально расписаны GATE-01…10**, с конкретными URL доказательств для зелёных технических проверок и с блокерами GATE-05 (независимая оценка Геннадия), GATE-06 (полный fingerprints и решение о старых `REVIEW`) и GATE-10 (staging publish + live smoke). См. [точную матрицу](audits/in-depth/l2-release-gates-20261123.md).
+- **Старая REVIEW-проблема не скрыта:** два исторических файла содержат 160 `REVIEW` и внутренние semantic PASS не означают итоговую приёмку. Не ставить историческим строкам PASS по хешу и не запускать новый тотальный аудит 164 вместо утверждённого 7-route/delta closeout.
+- **Статус:** LOCAL UNIT TESTS 7/7 PASS; GitHub CI в новой Draft-ветке до окончания реального прогона **UNVERIFIED**; L2 CONTENT ACCEPTED — **NO**. Production `apotet/netops` не затронут.
+
+---
+
 ## 23.11.2026 — «Углублённый»: сверка Gemini closeout, два PoE FIX и реальный CI
 
 - **Статус: DRAFT/BLOCK, НЕ ACCEPTED, НЕ DEPLOYED.** Содержательная и техническая сверка скачанного `netops_understanding_closeout_2026-11-23.zip` оформлена в [PR #324](https://github.com/apotet/my-gemini-mirror-site/pull/324). Подробный независимый отчёт: [gemini-closeout-verification-20261123.md](audits/in-depth/gemini-closeout-verification-20261123.md). Опираться на настоящий регламент `NETOPS-L2-CLOSEOUT-2026-11-22`, а не на некритичный PASS модели.
