@@ -1,3 +1,4 @@
+import { restoreGate06HistoricalTeachingFields } from './gate06-targeted-bank-fields.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -234,7 +235,7 @@ assert.equal(gitRegistryBlob,'aa4682284e7803f1fbd4e930a6e154d71acc96af','Exact a
 assert.deepEqual(m.QUESTION_LEARNING_LEVELS,registry);
 assert.equal(m.ALL_QUESTIONS.length,862);
 const reconstructed=m.ALL_QUESTIONS.map(q=>m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id]?{...q,answers:m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id].answers}:q);
-assert.equal(hash(reconstructed),baseline.bankSHA256,'Only four reviewed distractors and one corrected Wi-Fi option changed; stems, keys, order and all other records preserved');
+assert.equal(hash(restoreGate06HistoricalTeachingFields(reconstructed)),baseline.bankSHA256,'Only previously reviewed options and five exact GATE-06 teaching fields changed; stems, keys, order and all other records preserved');
 assert.equal(new Set(m.IN_DEPTH_IDS).size,164);assert.equal(m.IN_DEPTH_IDS.length,164);assert.deepEqual([...m.IN_DEPTH_IDS].sort(),assignedIds,'Every ID has exactly one repair/review batch');
 for(const batch of m.IN_DEPTH_BATCHES) {assert.ok(batch.questionIds.length>0&&batch.questionIds.length<=20,`Small batch ${batch.id}`);}
 const approvedMainDrift=JSON.parse(readFileSync('docs/audits/in-depth/approved-main-outside-drift.json','utf8'));
