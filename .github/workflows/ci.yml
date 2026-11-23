@@ -27,6 +27,8 @@ jobs:
         run: node scripts/poe-standards-card-style.test.mjs
       - name: PoE summary tooltip regression
         run: node scripts/poe-summary-glossary.test.mjs
+      - name: PoE injector and splitter lesson regression (3 plain / 5 pro)
+        run: node scripts/poe-injectors-lesson.test.mjs
 
   build:
     if: github.event_name == 'workflow_dispatch'
