@@ -1,0 +1,48 @@
+name: Understanding closeout — four material states and review screens
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/**'
+      - 'src/data/inDepth/**'
+      - 'src/data/glossary.ts'
+      - 'src/utils/glossaryText.ts'
+      - 'scripts/review-materials.browser.mjs'
+      - 'scripts/explanations.browser.mjs'
+      - '.github/workflows/understanding-closeout-surfaces.yml'
+
+jobs:
+  review-materials:
+    name: Four lesson/pro states and seven review surfaces (375/1440 px)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Build fixture and check lesson-link contract
+        run: npm run test:review-navigation
+      - name: Build preview
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Check 4 material states across 7 surfaces and two viewports
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/review-materials.browser.mjs
+          node scripts/explanations.browser.mjs
+      - name: Upload review screenshots and checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: understanding-closeout-review-surfaces
+          path: scripts/.cache/review-browser/
+          if-no-files-found: ignore
