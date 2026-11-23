@@ -21,6 +21,25 @@
 
 Обновлены `src/data/inDepth/group5.ts`, `scripts/in-depth-content.test.mjs` и защита исторических попыток. Добавлен выборочный CI `understanding-pr-regression.yml` для глубоких предметных тестов. **Фактические результаты тестов фиксировать по Actions финального SHA, не по наличию шага.**
 
+## Результаты полного GitHub CI на интеграционной ветке (23.11.2026)
+
+- `npm run test:in-depth`: **PASS**, 164 ID, `IN_DEPTH_ANCHOR_INVENTORY missing=0`; независимая предметная приёмка всего текста при этом не выполнена.
+- `npm run test:in-depth-history`: **PASS**, сохранённые legacy/shuffled/current попытки, результаты и ключи сохранены; явный guard `tr-03` и `tr-10`.
+- `npm run lint`, `npm run build`, PoE SVG/стандарты/словарь: **PASS** в Fast PR gate [#45100384333](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45100384333).
+- Изначально полный `test:in-depth` обнаружил устаревшее ожидание подсказки `Class` без PoE-scope в техническом тесте (не дефект курса). Тест исправлен с сохранением PoE-only защиты, после чего **PASS**.
+- `npm run test:learning-levels`: **BLOCK/FAIL** — не из-за кода этой ветки, а из-за **10** расхождений в `protectedFiles` контрольного `docs/audits/issue-171-baseline.json`. Read-only сканер [#45100507104](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45100507104) не обновляет baseline: 178 источников, 10 несовпадений. Список:
+  `src/components/GlossaryText.tsx`,
+  `src/components/KnowledgeBase.tsx`,
+  `src/components/LessonTermTags.tsx`,
+  `src/components/LessonView.tsx`,
+  `src/components/ZoomableImage.tsx`,
+  `src/data/glossary.ts`,
+  `src/data/lessons/index.ts`,
+  `src/data/lessons/ts-method.ts`,
+  `src/data/lessons/types.ts`,
+  `src/utils/glossaryText.ts`.
+- **Решение:** не перезаписывать хеши и не отключать ворота ради зелёного CI. Требуется сверить происхождение и содержание изменений всех 10 файлов с ранее одобренными PR; только после доказательств оформлять отдельное разрешённое обновление защитной базы. Статус интеграционного PR — **DRAFT/BLOCK**, без merge и deploy.
+
 ## Ещё НЕ закрыто
 
 - Независимая полная проверка двух маршрутов `review-slaac-4` (IPv6) и `stp-new-04` (STP), в том числе результатов исходных условий и дистракторов.
