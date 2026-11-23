@@ -1,3 +1,12 @@
+## 23.11.2026 — Согласованный переход от бесконечных аудитов к техническому staging patch-release
+
+- **Область:** уже имеющиеся в staging 164 вопроса L2, выпуск только подтверждённых Gemini/UI/PoE исправлений из цепочки #324→#326→#327, без выдачи исторических 160 REVIEW за PASS и без production. Решение о разделении scope: [staging-patch-release-20261123.md](audits/in-depth/staging-patch-release-20261123.md).
+- **На кодовом SHA `d25483f`**: [Fast CI #45114129423](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129423), [7-surface/4-state and IPv6/PoE browser #45114129410](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129410), [164-ID/375+1440px Chromium #45114129394](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129394) — все **SUCCESS**. Исправлены также отдельные пути `EngineeringReview` и `TheoryRazbory` (оба ранее забывали IPv6/PoE scope). Два Gemini MINOR не воспроизводились на frozen #324, не менялись.
+- **Различай статусы:** staging технический PATCH после merge/live smoke может быть опубликован, но `GATE-06 STRICT BLOCK` и `L2 CONTENT ACCEPTED=NO` остаются, пока не появится честное подтверждение; никакого rebaseline. Не выполнять автоматический новый полный семантический аудит 164.
+- **Следующее действие:** единый cumulative PR → staging main только при зелёном финальном PR CI → Pages deploy → smoke опубликованного сайта. Production запрещён.
+
+---
+
 ## 23.11.2026 — Gemini 7 routes: независимые результаты и 2 подтверждённых MAJOR
 
 - Gemini read-only ZIP на `#324@b2557f0`: **4 PASS / 3 FIX routes** (4 заявленных FIX: 2 MAJOR, 2 MINOR). Мною независимо проверены исходники: **2 MAJOR подтверждены**, **2 MINOR не воспроизводятся** на замороженном SHA: `group5.ts` уже содержит латинское `MAC-таблице` и полуоткрытое `[Left Edge, Right Edge)`; не переписывать без причины.
