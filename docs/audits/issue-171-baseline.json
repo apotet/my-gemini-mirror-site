@@ -175,14 +175,14 @@
     "src/components/ExamReview.tsx": "218dd3f8190741350a60479106d889f382355f53af7c3aa7aeda7ce1021b15d6",
     "src/components/ExamView.tsx": "7dbc33b2bab71b4eb921652c0bb21be627145f8d3d0ef271478f0553c669dc3d",
     "src/components/GlossaryText.css": "eec97a669c42f43cf17c739fee731be3a1ac1b5d8ece0b5e7abd12f908a29f6a",
-    "src/components/GlossaryText.tsx": "6972068b3a98eb6b8226f5fa7d83eabae5d861de080cb9b95dfef636cc222f1c",
+    "src/components/GlossaryText.tsx": "e986d114a47ee2716f4f6a3214ba049c4a8348c7b5d4ffcf1ca3c02288f9ca84",
     "src/components/HomeOsiStack.tsx": "4bd31111870c332a676648f8a34a152797afdc6e0528f996d521ebf0a931d010",
     "src/components/Ipv4Trainer.tsx": "f34f1dfdd54e1ed54a38578b2c38d27e2d9cf660bedd34329f60142f26ffd0e3",
     "src/components/Ipv6Trainer.tsx": "2e92e289122de1e5caf9ef572f170898f67f8bdc3b5d8f1c20365477586278fc",
     "src/components/KnowledgeBase.tsx": "8d2ac6036ec8821434ea2eaf7a84d5dfb95bb0ba24120103930c0cd716c415fb",
     "src/components/KnowledgeRadar.tsx": "97de56f166ec05d6fbe7a94c61e2f5a834fe6f2eabdf1acca1b73d31acdc5206",
     "src/components/LessonTermTags.tsx": "0f040cf9c22c750e32aff080bc94fceb563444d8dbeefec2796e97e19fdae2a1",
-    "src/components/LessonView.tsx": "afeb0e3fa7cd53de7483335738e8c6d36833a6df57cfb4a4afc6753bfe8c4484",
+    "src/components/LessonView.tsx": "91a994d98be76d365c7a6735c7f81a054fb8bbb8098200211a71095dd6e81e55",
     "src/components/LivingOsiStack.tsx": "81ff1b6e8d0b771aca7d0f91a6dc37b9eb625aef8c0b6c70dedda73341775dba",
     "src/components/MobileTabBar.tsx": "8d743b889e2dcad0ab98b8d2f28558cc4fedaeaf99554fd833a945ff323d9d54",
     "src/components/MockDetectiveTopology.tsx": "316aaa1b43d66c6f4154f91750e62dadecb25de78cd3d14fce352ef679fe1c0f",
@@ -211,7 +211,7 @@
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
     "src/data/expertCases177.ts": "dea438970efdf30aeaa5efb4226eb99682be8f83ed226f0ceab04565a60766c8",
     "src/data/expertCases225.ts": "d714ba4489a10e5ed3dde244e2f0fc807b8923777fed6510384352b70e7d1d8d",
-    "src/data/glossary.ts": "4aa086a8739aaf0e8b492961c18e5085fe400a3f579506c5700b726f05020a41",
+    "src/data/glossary.ts": "d8690172d61dc611d26f5a0567d8e689c527a105edff8dcea56b211efc67fe18",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "3892d93bb8c269e49a395e1986c3b0f0c72729371906b06be3db9af00be31001",
@@ -288,7 +288,7 @@
     "src/types/quiz.ts": "cd539016e98143bab6af89e0138f97e8fa8064b175c12e0c27ee649422ff09a6",
     "src/utils/examProgress.ts": "5afdbfbb11456fbf69f5eff43de2021ed9ec52e2966c2bcf492884f59ff3fec5",
     "src/utils/examReview.ts": "7af2f70b2e846501a6f106454a174dd7ff41e29b6480040ec5180c323dc093f7",
-    "src/utils/glossaryText.ts": "ff05944ffdd226245040390d8d73f41c317f74f3aa3966f75fd4c237c89edf69",
+    "src/utils/glossaryText.ts": "bd1124a8b6ed8a78ca494d20452edbb8453440c2ac0b918bb8dcf44ccae001e9",
     "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
     "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
     "src/utils/studyTextMode.ts": "f3f445edb541a99643aa7bc817ede0b919f9692154f880552586a1b013d8a27c",
@@ -882,6 +882,39 @@
           "previousSHA256": "ac534593ba4adb89c1c924c474b7ee2b48767076fef25e1e4760253ff6e77dfb",
           "newSHA256": "ff05944ffdd226245040390d8d73f41c317f74f3aa3966f75fd4c237c89edf69",
           "reason": "context-scoped glossary matching and DNS-vs-PoE A/B PRs #318, #320"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-23",
+      "branch": "fix/understanding-closeout-poe-20261123",
+      "sourceMain": "298a68f6ac5c11facbc77732625f7dd26918b63e",
+      "status": "EXPLICIT_IPV6_SCOPED_TOOLTIP_FIX — awaiting CI and browser acceptance",
+      "reason": "Understanding review-slaac-4 source audit found a DNS A tooltip on SLAAC RA flag A=1. Four narrowly scoped file changes; exact proposed SHA-256 validated by read-only Actions #45101995578 before updating baseline. No question keys, learning levels, accepted lesson badges or saved attempts changed.",
+      "files": [
+        {
+          "path": "src/components/GlossaryText.tsx",
+          "previousSHA256": "6972068b3a98eb6b8226f5fa7d83eabae5d861de080cb9b95dfef636cc222f1c",
+          "newSHA256": "e986d114a47ee2716f4f6a3214ba049c4a8348c7b5d4ffcf1ca3c02288f9ca84",
+          "reason": "Typed IPv6 glossary scope for context-specific RA flags only"
+        },
+        {
+          "path": "src/components/LessonView.tsx",
+          "previousSHA256": "afeb0e3fa7cd53de7483335738e8c6d36833a6df57cfb4a4afc6753bfe8c4484",
+          "newSHA256": "91a994d98be76d365c7a6735c7f81a054fb8bbb8098200211a71095dd6e81e55",
+          "reason": "Apply IPv6 RA scope solely to l3-ipv6, preserving existing PoE scope"
+        },
+        {
+          "path": "src/data/glossary.ts",
+          "previousSHA256": "4aa086a8739aaf0e8b492961c18e5085fe400a3f579506c5700b726f05020a41",
+          "newSHA256": "d8690172d61dc611d26f5a0567d8e689c527a105edff8dcea56b211efc67fe18",
+          "reason": "Exact A=1 A=0 L=1 L=0 A/L explanations in IPv6 RA"
+        },
+        {
+          "path": "src/utils/glossaryText.ts",
+          "previousSHA256": "ff05944ffdd226245040390d8d73f41c317f74f3aa3966f75fd4c237c89edf69",
+          "newSHA256": "bd1124a8b6ed8a78ca494d20452edbb8453440c2ac0b918bb8dcf44ccae001e9",
+          "reason": "Contextual IPv6 A flag versus DNS A record with no cross-domain leak"
         }
       ]
     }
