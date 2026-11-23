@@ -1,0 +1,55 @@
+name: GATE-06 historical fingerprint reconstruction (diagnostic only)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    # Evidence-only follow-up commits must not silently rerun the investigation.
+    # Reopening allows the single authorized retry after a concrete code fix.
+    types: [opened, reopened]
+    paths:
+      - 'scripts/reconstruct-gate06-fingerprints.mjs'
+      - 'scripts/reconstruct-gate06-fingerprints.test.mjs'
+      - '.github/workflows/gate06-reconstruction.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reconstruct:
+    if: github.repository == 'apotet/my-gemini-mirror-site' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the frozen repository dependencies
+        run: npm ci --no-fund --no-audit
+      - name: Check diagnostic syntax and serialization contracts
+        run: |
+          node --check scripts/reconstruct-gate06-fingerprints.mjs
+          node scripts/reconstruct-gate06-fingerprints.test.mjs
+      - name: Reconstruct actual historical material with read-only sources
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p scripts/.cache/gate06-reconstruction
+          node scripts/reconstruct-gate06-fingerprints.mjs \
+            --output scripts/.cache/gate06-reconstruction \
+            --candidate 8165877dec44c5ad2f2265bd910cf80952d24cb0 \
+            --candidate 2907bc67f24663a7723e70340be8c590de924d62 \
+            --candidate 8134b34657b167fc2fe0f78f739d17c90f1693cd \
+            2>&1 | tee scripts/.cache/gate06-reconstruction/execution.log
+      - name: Publish evidence even when execution fails (never semantic acceptance)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate06-reconstruction-${{ github.run_id }}-${{ github.run_attempt }}
+          path: scripts/.cache/gate06-reconstruction/
+          if-no-files-found: error
+          retention-days: 30
