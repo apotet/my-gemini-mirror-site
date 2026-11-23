@@ -3,6 +3,9 @@ import { bundleEntry } from './load-bank.mjs';
 import { readFileSync } from 'node:fs';
 const {ALL_QUESTIONS,prepareAttemptQuestions,restoreSession,previousInDepthSnapshot,PREVIOUS_IN_DEPTH_QUESTIONS,serializeReview,restoreReview,reviewRows,getQuestionDeepDive}=await bundleEntry('scripts/in-depth-history-entry.ts','in-depth-history.mjs');
 const before=JSON.stringify(ALL_QUESTIONS);
+// These legacy saved questions must remain in the historical-fixture loop.
+for (const id of ['tr-03','tr-10']) assert.ok(PREVIOUS_IN_DEPTH_QUESTIONS[id],
+  id+': exact pre-Understanding answer snapshots are tested for restore and scoring');
 const fixture=(questions,extra={})=>({questions,mode:'mixed',difficulty:'in-depth',learningLevel:2,feedbackMode:'exam',currentIndex:0,isCompleted:false,startTime:1000,attemptId:'l2-old-attempt',progressEpoch:'l2-history',userAnswers:Object.fromEntries(questions.map(q=>[q.id,[q.correct[0]]])),submittedQuestions:Object.fromEntries(questions.map(q=>[q.id,true])),...extra});
 for(const previous of Object.values(PREVIOUS_IN_DEPTH_QUESTIONS)) {
   const current=ALL_QUESTIONS.find(q=>q.id===previous.id);if(previous.id==='wifi-std-04'){assert.ok(getQuestionDeepDive(previous).briefAnswer.includes('Сохранены прежняя'));assert.ok(!getQuestionDeepDive(current).briefAnswer.includes('Сохранены прежняя'));}assert.deepEqual(current.correct,previous.correct);if(previous.id!=='wifi-std-04')assert.deepEqual(current.correct.map(i=>current.answers[i]),previous.correct.map(i=>previous.answers[i]));assert.equal(current.text,previous.text);
