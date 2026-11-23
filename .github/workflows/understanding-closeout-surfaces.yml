@@ -25,6 +25,8 @@ jobs:
       - run: npm ci --no-fund --no-audit
       - name: Build fixture and check lesson-link contract
         run: npm run test:review-navigation
+      - name: Verify consistent glossary scope for review/lesson
+        run: node scripts/lesson-glossary-scope.test.mjs
       - name: Build preview
         run: npm run build
       - name: Install Chromium
