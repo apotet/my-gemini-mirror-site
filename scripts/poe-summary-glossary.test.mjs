@@ -16,9 +16,12 @@ await build({
       import { getLesson } from './src/data/lessons';
       import { GLOSSARY, GLOSSARY_TOOLTIPS } from './src/data/glossary';
       import { LessonKnowledgeCheckExplanation } from './src/components/LessonKnowledgeCheck';
+      import { LessonReviewBadge } from './src/components/LessonReviewBadge';
+      import { getLessonReviewStatus } from './src/data/lessons/reviewStatus';
       import { splitGlossaryText } from './src/utils/glossaryText';
-      export { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText };
+      export { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, getLessonReviewStatus };
       export const render = (text, options = {}) => renderToStaticMarkup(React.createElement(FormattedExplanation, { text, ...options }));
+      export const renderLessonBadge = (lessonId) => renderToStaticMarkup(React.createElement(LessonReviewBadge, { lessonId }));
       export const renderCheckExplanation = (explanation, glossaryScope) =>
         renderToStaticMarkup(React.createElement(LessonKnowledgeCheckExplanation, { explanation, glossaryScope }));
     `,
@@ -32,7 +35,7 @@ await build({
   external: ['react', 'react-dom', 'react-dom/server', 'lucide-react'],
   logLevel: 'silent',
 });
-const { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, render, renderCheckExplanation } = await import(pathToFileURL(outfile).href);
+const { getLesson, GLOSSARY, GLOSSARY_TOOLTIPS, splitGlossaryText, getLessonReviewStatus, render, renderCheckExplanation, renderLessonBadge } = await import(pathToFileURL(outfile).href);
 const budget = getLesson('l1-poe-budget');
 assert.ok(budget && budget.professional);
 assert.ok(budget.professional.summary.includes('PSE') && budget.professional.summary.includes('PD'));
@@ -150,4 +153,17 @@ assert.ok(!bareNoScope.includes('data-glossary-term="A"') &&
 assert.ok(render('DNS A и AAAA записи.').includes('data-glossary-term="A"'),
   'genuine DNS A records must still retain their existing glossary hint');
 
+// User's explicit acceptance must update the actual visible badge, not just ROADMAP.
+assert.equal(getLessonReviewStatus('l1-poe-budget'), 'approved', 'owner-approved PoE budget must be recorded');
+assert.ok(renderLessonBadge('l1-poe-budget').includes('data-lesson-review-status="approved"'),
+  'PoE budget lesson badge must display approved state');
+assert.ok(renderLessonBadge('l1-poe-budget').includes('Проверен и утверждён'),
+  'PoE budget lesson must show approved wording');
+assert.equal(getLessonReviewStatus('l1-copper-fault-poe'), 'approved',
+  'previously accepted copper troubleshooting lesson stays approved');
+for (const id of ['l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading']) {
+  assert.equal(getLessonReviewStatus(id), 'needs-review', id + ' has no owner acceptance');
+  assert.ok(renderLessonBadge(id).includes('data-lesson-review-status="needs-review"'),
+    id + ' visible badge must remain pending');
+}
 console.log('PASS: PoE glossary, self-check and A/B versus DNS A scope regression');
