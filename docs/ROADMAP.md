@@ -1,3 +1,41 @@
+## 23.11.2026 — Согласованный переход от бесконечных аудитов к техническому staging patch-release
+
+- **Область:** уже имеющиеся в staging 164 вопроса L2, выпуск только подтверждённых Gemini/UI/PoE исправлений из цепочки #324→#326→#327, без выдачи исторических 160 REVIEW за PASS и без production. Решение о разделении scope: [staging-patch-release-20261123.md](audits/in-depth/staging-patch-release-20261123.md).
+- **На кодовом SHA `d25483f`**: [Fast CI #45114129423](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129423), [7-surface/4-state and IPv6/PoE browser #45114129410](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129410), [164-ID/375+1440px Chromium #45114129394](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45114129394) — все **SUCCESS**. Исправлены также отдельные пути `EngineeringReview` и `TheoryRazbory` (оба ранее забывали IPv6/PoE scope). Два Gemini MINOR не воспроизводились на frozen #324, не менялись.
+- **Различай статусы:** staging технический PATCH после merge/live smoke может быть опубликован, но `GATE-06 STRICT BLOCK` и `L2 CONTENT ACCEPTED=NO` остаются, пока не появится честное подтверждение; никакого rebaseline. Не выполнять автоматический новый полный семантический аудит 164.
+- **Следующее действие:** единый cumulative PR → staging main только при зелёном финальном PR CI → Pages deploy → smoke опубликованного сайта. Production запрещён.
+
+---
+
+## 23.11.2026 — Gemini 7 routes: независимые результаты и 2 подтверждённых MAJOR
+
+- Gemini read-only ZIP на `#324@b2557f0`: **4 PASS / 3 FIX routes** (4 заявленных FIX: 2 MAJOR, 2 MINOR). Мною независимо проверены исходники: **2 MAJOR подтверждены**, **2 MINOR не воспроизводятся** на замороженном SHA: `group5.ts` уже содержит латинское `MAC-таблице` и полуоткрытое `[Left Edge, Right Edge)`; не переписывать без причины.
+- Изолированная ветка от `#326@b67d934` исправляет `EngineeringReview` (контекст IPv6/PoE во всех блоках) и `LessonView` (PoE screen-reading), объединяя правила в один resolver. Добавлены отрицательные unit checks и реальный браузерный тест IPv6 `A=1` в разборе *до* урока (375/1440, plain/pro).
+- Подробная таблица evidence: [gemini-seven-route-reconciliation-20261123.md](audits/in-depth/gemini-seven-route-reconciliation-20261123.md).
+- До завершения реального CI/browser на новом SHA — **FIX PENDING VERIFICATION**, L2 не принят; PR #324 и #326 сохраняют Draft; GATE-05/06/10 остаются BLOCK. Ни merge, ни deploy, ни production.
+
+---
+
+## 23.11.2026 — L2 final release gates: исправление контроля и явный статус GATE-01…10 (в отдельном Draft)
+
+- **Режим сохранения содержательного freeze:** PR #324 остаётся на `b2557f0`, отдельная вспомогательная ветка `fix/l2-fingerprint-gate-20261123` создана от этого SHA. Ни вопросы, ни ответы, ни принятые уроки не меняются; merge/deploy запрещён до независимой семантики.
+- **Техническая дыра подтверждена по коду:** прежний `scripts/in-depth-review-fingerprint.mjs` блокировал только changed IDs, но не новые непроверенные и не исторические `REVIEW`. В вспомогательной ветке предложены fail-closed правило + семь независимых unit-тестов + отдельный диагностический workflow; `--report-only` намеренно не выдаёт CONTENT ACCEPTED.
+- **Впервые формально расписаны GATE-01…10**, с конкретными URL доказательств для зелёных технических проверок и с блокерами GATE-05 (независимая оценка Геннадия), GATE-06 (полный fingerprints и решение о старых `REVIEW`) и GATE-10 (staging publish + live smoke). См. [точную матрицу](audits/in-depth/l2-release-gates-20261123.md).
+- **Старая REVIEW-проблема не скрыта:** два исторических файла содержат 160 `REVIEW` и внутренние semantic PASS не означают итоговую приёмку. Не ставить историческим строкам PASS по хешу и не запускать новый тотальный аудит 164 вместо утверждённого 7-route/delta closeout.
+- **Статус:** LOCAL UNIT TESTS 7/7 PASS; GitHub [fingerprint policy #45109543282](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45109543282) **SUCCESS** (семь защитных тестов + диагностический пересчёт), [Fast PR #45109543242](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45109543242) **SUCCESS**. Диагностика 164 ID: **10 исторических fingerprint совпали, 150 отличаются, 4 новые**, а **160 исторических статусов REVIEW** не считаются PASS. Сам строгий release gate — **BLOCK**; L2 CONTENT ACCEPTED — **NO**. Production `apotet/netops` не затронут.
+
+---
+
+## 23.11.2026 — «Углублённый»: сверка Gemini closeout, два PoE FIX и реальный CI
+
+- **Статус: DRAFT/BLOCK, НЕ ACCEPTED, НЕ DEPLOYED.** Содержательная и техническая сверка скачанного `netops_understanding_closeout_2026-11-23.zip` оформлена в [PR #324](https://github.com/apotet/my-gemini-mirror-site/pull/324). Подробный независимый отчёт: [gemini-closeout-verification-20261123.md](audits/in-depth/gemini-closeout-verification-20261123.md). Опираться на настоящий регламент `NETOPS-L2-CLOSEOUT-2026-11-22`, а не на некритичный PASS модели.
+- **Архив Gemini содержит конкретные ошибки:** неверный полный размер банка **802 вместо 862**; его 164-строчная матрица включает несуществующий `l1-d04` вместо реального `mon-zabbix-01`, 125 строк матрицы имеют статус UNVERIFIED. Текст `MAC-таблице` уже латинский, словарь про внутрипарный/межпарный DC-дисбаланс уже верный — два заявленных FIX отклонены по исходникам.
+- **Подтверждены и исправлены в отдельной ветке:** ограничение `show power inline` совместимыми Cisco IOS/IOS XE и явный `IEEE 802.3 LLDP Power-via-MDI` в `review-poe-30`. `tr-10` ранее защищён историческим тестом; добавлен guard для него и `tr-03`. `test:in-depth` (164 ID, 0 missing anchors) и `test:in-depth-history` PASS, обычные lint/build/PoE CI PASS. Тест контекстного распознавания `Class` адаптирован к уже утверждённому PoE-scope.
+- **Новый выявленный блокер stage-2 защиты:** сканер `scripts/stage2-protected-drift.mjs` показывает **10 несовпадающих SHA из 178 protectedFiles** (см. точные имена в независимом отчёте); `test:learning-levels` FAIL на первом `GlossaryText.tsx`. Не перезаписывать SHA автоматически. До полной проверки происхождения 10 изменений, независимой предметной приёмки 7 маршрутов, GATE-01…10 и живого браузера **НИКАКОГО merge/deploy**.
+- Старые Draft PR #282/#283/#289/#291, #253/#263 пока не сливать и не закрывать вслепую. Production `apotet/netops` не затронут.
+
+---
+
 ## 23.11.2026 — Приёмка владельцем: PoE — бюджет порта и бюджет коммутатора
 
 - **USER ACCEPT — принято владельцем (23.11.2026).** Урок `l1-poe-budget` «PoE: бюджет порта и бюджет коммутатора» принят после серии замечаний и опубликованных исправлений на тестовом сайте. Это **личное решение владельца**, не подмена приёмки зелёным CI.

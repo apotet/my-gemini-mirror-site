@@ -6,6 +6,7 @@ const canonical = new Map(terms.map(term => [term.toLowerCase(), term]));
 // Render their PoE-specific tooltips only when an explicit PoE lesson scope is set.
 const POE_ONLY_TERMS = new Set(["Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","Переключение A/B","A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
 const POE_FORMULA_ONLY_TERMS = new Set(["ΔU", "I", "R", "I²", "Pпотерь"]);
+const IPV6_ONLY_TERMS = new Set(["A=1", "A=0", "L=1", "L=0", "A/L"]);
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Keep existing slash-separated terms such as Wi-Fi k/v/r unchanged; only
@@ -15,12 +16,19 @@ const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])(${terms.map(escape).join('|')})
 // Also accept ASCII hyphen, em dash and optional spacing; preserve standalone DNS A.
 const wiringPairs = /(?<![\p{L}\p{N}_])[AB]\s*[-–—]\s*[AB](?![\p{L}\p{N}_])/gu;
 
-export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula"): { text: string; term?: string }[] {
+export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula" | "ipv6"): { text: string; term?: string }[] {
   const parts: { text: string; term?: string }[] = [];
   let offset = 0;
   const wiringRanges = [...text.matchAll(wiringPairs)].map(match => [match.index, match.index + match[0].length] as const);
   for (const match of text.matchAll(pattern)) {
-    const term = canonical.get(match[0].toLowerCase());
+    let term = canonical.get(match[0].toLowerCase());
+    // In an IPv6 SLAAC lesson, standalone A is the RA Prefix Information
+    // autonomous flag. A genuine DNS A record keeps the DNS meaning.
+    if (scope === "ipv6" && term === "A" &&
+        !/(?:DNS|DNS-запись|запис[ьи])\s*$/iu.test(text.slice(Math.max(0, match.index - 30), match.index))) {
+      term = "A flag";
+    }
+    if (term && IPV6_ONLY_TERMS.has(term) && scope !== "ipv6") continue;
     if (term && POE_ONLY_TERMS.has(term) && scope !== "poe" && scope !== "poe-formula") continue;
     if (term && POE_FORMULA_ONLY_TERMS.has(term) && scope !== "poe-formula") continue;
     if (match[0] === 'A' && wiringRanges.some(([start, end]) => match.index >= start && match.index < end)) continue;

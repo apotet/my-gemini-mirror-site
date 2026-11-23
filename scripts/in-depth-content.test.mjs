@@ -8,6 +8,57 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const registry=JSON.parse(readFileSync('src/data/questionLearningLevels.json','utf8'));
 const assignedIds=Object.entries(registry).filter(([,r])=>r.status==='ASSIGNED'&&r.learningLevel===2).map(([id])=>id).sort();
 const pool=m.getTestingPool('mixed','in-depth');
+// The same generic "A" denotes a DNS IPv4 record elsewhere, but the RA PIO
+// Autonomous flag in the accepted Understanding SLAAC route. Never mix them.
+const ipv6Flags=m.splitGlossaryText('SLAAC: A=1, L=1, флаг A и флаги A/L.', 'ipv6');
+for (const term of ['A=1','L=1','A flag','A/L']) {
+  assert.ok(ipv6Flags.some(part=>part.term===term),term+': IPv6 scope must display correct RA flag tooltip');
+  assert.ok(m.GLOSSARY_TOOLTIPS[term]?.summary,term+': tooltip text must exist');
+}
+assert.ok(!ipv6Flags.some(part=>part.term==='A'),'SLAAC must not show DNS A-record');
+assert.ok(m.splitGlossaryText('DNS A и AAAA').some(part=>part.term==='A'),'generic DNS A remains available');
+assert.ok(m.splitGlossaryText('DNS A и AAAA','ipv6').some(part=>part.term==='A'),'explicit DNS A stays DNS inside IPv6 lesson');
+assert.ok(!m.splitGlossaryText('A=1').some(part=>part.term==='A' || part.term==='A=1'),'IPv6-specific syntax cannot leak into general text');
+assert.match(m.GLOSSARY['A=1'].description,/SLAAC/,'Autonomous A flag definition');
+assert.match(m.GLOSSARY['A/L'].description,/независимых/,'A and L are separate RA PIO flags');
+for(const id of ['review-slaac-4','stp-new-04']) {
+  const q=pool.find(q=>q.id===id),lesson=m.getLessonForQuestion(id);
+  assert.ok(q&&lesson,id+': authentic question and linked lesson');
+  assert.equal(q.correct.length,1,id+': single key');
+  assert.equal(q.correct[0],0,id+': confirmed correct answer');
+  const deep=m.getQuestionDeepDive(q);
+  assert.ok(deep.briefAnswer&&deep.deepAnalysis&&deep.professional.deep,id+': individual explanation in all modes');
+  const anchor=m.getLessonSectionForQuestion(lesson.id,id);
+  assert.ok(anchor,id+': exact topical anchor');
+  for (const mode of ['plain','professional']) {
+    const block=m.getLessonBlocksWithSections(lesson,mode).find(b=>b.anchorId===anchor);
+    assert.ok(block?.body?.length>200,id+'/'+mode+': targeted teaching text exists');
+  }
+}
+assert.equal(m.getLessonForQuestion('review-slaac-4').id,'l3-ipv6','SLAAC lesson exact');
+assert.equal(m.getLessonSectionForQuestion('l3-ipv6','review-slaac-4'),'in-depth-slaac-ra-address-formation','SLAAC exact section');
+assert.equal(m.getLessonForQuestion('stp-new-04').id,'l2-rstp-convergence','RSTP lesson exact');
+assert.equal(m.getLessonSectionForQuestion('l2-rstp-convergence','stp-new-04'),'indepth-rstp-root-failure','RSTP exact section');
+assert.match(m.getQuestionDeepDive(pool.find(q=>q.id==='stp-new-04')).practicalTip,/Cisco IOS\/IOS XE/,
+  'Cisco RSTP show command cannot be presented as vendor-neutral');
+
+
+/** Independent audit of Gemini's 23 Nov PoE closeout archive: only two confirmed
+ * code defects were present on the frozen main. The claimed Cyrillic MAC typo
+ * and missing DC resistance unbalance distinction are NOT present in main. */
+const closeoutPoeQuestion=pool.find(q=>q.id==='review-poe-30');
+assert.ok(closeoutPoeQuestion,'review-poe-30 remains in the Understanding pool');
+const closeoutPoeDive=m.getQuestionDeepDive(closeoutPoeQuestion);
+assert.match(closeoutPoeDive.deepAnalysis,/MAC-таблице/,'PoE plain uses Latin MAC');
+assert.doesNotMatch(closeoutPoeDive.deepAnalysis,/МАС-таблице/,'PoE plain must not use Cyrillic МАС');
+assert.match(closeoutPoeDive.professional.deep,/IEEE 802\.3 LLDP Power-via-MDI/,'Explain standard IEEE power negotiation TLV');
+assert.match(closeoutPoeDive.professional.deep,/Cisco IOS\/IOS XE/,'Cisco PoE CLI must be platform scoped');
+assert.match(closeoutPoeDive.professional.deep,/доступна на данной модели/,'Detailed PoE CLI is device-dependent');
+assert.match(closeoutPoeDive.practicalTip,/Cisco IOS\/IOS XE/,'Practical CLI advice is Cisco-specific');
+assert.match(closeoutPoeDive.practicalTip,/PoE-тестером/,'Keep independent under-load test when PD reboots');
+assert.ok(pool.some(q=>q.id==='mon-zabbix-01'),'actual 164-ID pool includes monitoring question');
+assert.ok(!pool.some(q=>q.id==='l1-d04'),'audit archive ghost ID must not enter the Understanding pool');
+
 // Gemini independent material review: typography must remain legible in BOTH lesson modes.
 // Pin the exact question section instead of checking arbitrary lesson text or a CI extract.
 for(const {id,prohibited} of [

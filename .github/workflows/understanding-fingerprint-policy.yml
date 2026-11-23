@@ -1,0 +1,33 @@
+name: Understanding fingerprint policy verification (not content acceptance)
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/in-depth-review-fingerprint.mjs'
+      - 'scripts/in-depth-review-policy.mjs'
+      - 'scripts/in-depth-review-policy.test.mjs'
+      - 'docs/audits/in-depth/final-review-*.json'
+      - '.github/workflows/understanding-fingerprint-policy.yml'
+
+jobs:
+  fingerprint-policy:
+    name: Guard unit tests and read-only fingerprint diagnostics
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Verify missing, changed, REVIEW and new IDs are fail-closed
+        run: node --test scripts/in-depth-review-policy.test.mjs
+      - name: Generate exact 164-ID fingerprint report (diagnostic only)
+        run: node scripts/in-depth-review-fingerprint.mjs --report-only
+      - name: Upload explicit BLOCK report; CI success is not semantic PASS
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: understanding-fingerprint-diagnostic
+          path: scripts/.cache/in-depth/semantic-freeze-report.json
+          if-no-files-found: warn

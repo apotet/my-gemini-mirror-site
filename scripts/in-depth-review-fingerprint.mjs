@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { bundleEntry } from './load-bank.mjs';
+import { evaluateInDepthFingerprintPolicy } from './in-depth-review-policy.mjs';
+const args=process.argv.slice(2);
+assert.ok(args.length===0 || (args.length===1&&args[0]==='--report-only'),'Only --report-only is supported');
+const reportOnly=args.includes('--report-only');
 
 const m=await bundleEntry('scripts/in-depth-entry.ts','in-depth-review-fingerprint.mjs');
 const audits=[
@@ -25,8 +29,12 @@ const rows=current.map(question=>{
 });
 const mismatch=rows.filter(r=>r.priorHash&&!r.matchesReviewed),newIds=rows.filter(r=>!r.priorHash);
 const match=rows.filter(r=>r.matchesReviewed);
-const summary={reviewedRows:audited.length,latestPool:current.length,unchangedPriorFingerprints:match.length,changedSinceReview:mismatch.length,newSinceReview:newIds.length,mismatchIds:mismatch.map(x=>x.id),newIds:newIds.map(x=>x.id),note:'Changed fingerprints cannot be promoted to semantic PASS without actual content-delta review; browser green is not content acceptance'};
+const policy=evaluateInDepthFingerprintPolicy(rows,audited);
+const summary={fingerprintGate:policy.status,missingHistoricalIds:policy.missingHistoricalIds,unresolvedStatusIds:policy.unresolvedStatusIds,reviewedRows:audited.length,latestPool:current.length,unchangedPriorFingerprints:match.length,changedSinceReview:mismatch.length,newSinceReview:newIds.length,mismatchIds:mismatch.map(x=>x.id),newIds:newIds.map(x=>x.id),note:'Changed fingerprints cannot be promoted to semantic PASS without actual content-delta review; browser green is not content acceptance'};
 mkdirSync('scripts/.cache/in-depth',{recursive:true});
-writeFileSync('scripts/.cache/in-depth/semantic-freeze-report.json',JSON.stringify({summary,rows},null,2)+'\n');
+writeFileSync('scripts/.cache/in-depth/semantic-freeze-report.json',JSON.stringify({summary,policy,rows},null,2)+'\n');
 console.log(JSON.stringify(summary,null,2));
-if(mismatch.length) process.exitCode=1;
+if(!policy.pass){
+  console.error('FINGERPRINT_GUARD_BLOCK: '+policy.note);
+  if(!reportOnly)process.exitCode=1;
+}

@@ -9,6 +9,7 @@ import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../dat
 import { StudyTextToggle } from './StudyTextToggle';
 import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
 import { useStudyTextMode } from '../utils/studyTextMode';
+import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { LessonTermTags } from './LessonTermTags';
 import { LessonReviewBadge } from './LessonReviewBadge';
 import { EthernetPinout } from './EthernetPinout';
@@ -97,7 +98,7 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
 export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
-  const glossaryScope = ['l1-poe-budget', 'cli-poe-diagnostics', 'l1-poe-injectors-splitters', 'l1-copper-fault-poe'].includes(lesson.id) ? 'poe' as const : undefined;
+  const glossaryScope = getLessonGlossaryScope(lesson.id);
   const activeKnowledgeCheck = textMode === 'professional'
     ? lesson.knowledgeCheck
     : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);

@@ -1,0 +1,29 @@
+name: Understanding content and saved-attempt regression
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/inDepth/**'
+      - 'src/data/questionLearningLevels.json'
+      - 'scripts/in-depth-content.test.mjs'
+      - 'scripts/in-depth-history.test.mjs'
+      - '.github/workflows/understanding-pr-regression.yml'
+
+jobs:
+  understanding:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Verify exact Understanding pool and deep dives
+        run: npm run test:in-depth
+      - name: Verify historical options and saved attempts
+        run: npm run test:in-depth-history
+      - name: Report stage-2 protected-file hash drift without mutating baseline
+        run: node scripts/stage2-protected-drift.mjs
+      - name: Verify five-level registry is stable
+        run: npm run test:learning-levels

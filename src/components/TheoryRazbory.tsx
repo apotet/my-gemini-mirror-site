@@ -5,6 +5,8 @@ import { GlossaryText } from './GlossaryText';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_QUESTIONS, TOTAL_QUESTION_COUNT, resolveImageUrl } from '../data/questionsData';
 import { getQuestionDeepDive } from '../data/questionExplanations';
+import { getLessonForQuestion } from '../data/lessons';
+import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { StudyTextToggle } from './StudyTextToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { ZoomableImage } from './ZoomableImage';
@@ -98,6 +100,7 @@ export const TheoryRazbory: React.FC<Props> = ({
     const q = ALL_QUESTIONS.find((item) => item.id === qId);
     if (!q) return null;
     const deep = getQuestionDeepDive(q);
+    const glossaryScope = getLessonGlossaryScope(getLessonForQuestion(q.id)?.id);
     const hasProfessional = Boolean(deep.professional?.deep.trim());
     const professional = hasProfessional && textMode === 'professional' ? deep.professional : undefined;
     const engineering = professional?.deep ?? deep.deepAnalysis;
@@ -149,7 +152,7 @@ export const TheoryRazbory: React.FC<Props> = ({
               </span>
             )}
           </div>
-          <FormattedExplanation text={deep.briefAnswer} />
+          <FormattedExplanation text={deep.briefAnswer} glossaryScope={glossaryScope} />
         </div>
 
 
@@ -176,7 +179,7 @@ export const TheoryRazbory: React.FC<Props> = ({
                 {hasProfessional && deep.deepAnalysis.trim() && <StudyTextToggle value={textMode} onChange={setTextMode} />}
                 {!hasProfessional && <p className="text-xs text-slate-500 dark:text-slate-400">Профессиональный разбор пока не подготовлен</p>}
                 {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
-                <FormattedExplanation text={engineering} />
+                <FormattedExplanation text={engineering} glossaryScope={glossaryScope} />
                 {nextStudy && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">Дальше: {nextStudy}</p>
                 )}
@@ -192,7 +195,7 @@ export const TheoryRazbory: React.FC<Props> = ({
             <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 font-sans flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" /> Типичная ошибка
             </div>
-            <p className="text-sm text-amber-900 dark:text-amber-100/90 leading-relaxed break-words"><GlossaryText key={textMode} enabled={!professional || deep.glossaryInProfessional}>{trap}</GlossaryText></p>
+            <p className="text-sm text-amber-900 dark:text-amber-100/90 leading-relaxed break-words"><GlossaryText key={textMode} scope={glossaryScope} enabled={!professional || deep.glossaryInProfessional}>{trap}</GlossaryText></p>
           </div>
         )}
 
