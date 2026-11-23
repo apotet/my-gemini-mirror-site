@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/data/lessons/l1-poe-injectors-splitters.ts'
+      - 'public/lesson-images/poe-injectors-splitters-approved.png'
       - 'public/lesson-images/poe-injector-splitter-chains.svg'
       - 'public/lesson-images/poe-ieee-vs-passive-compare.svg'
       - 'scripts/poe-injector-lesson.browser.mjs'

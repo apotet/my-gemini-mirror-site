@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
 
@@ -38,13 +39,20 @@ const images=[...lesson.blocks,...lesson.professional.blocks].map(b=>b.cheatshee
 for(const file of new Set(images)){
   const p='public/lesson-images/'+file;
   assert.ok(existsSync(p),`Missing actual schematic: ${p}`);
+  if(file.endsWith('.png')) {
+    const bytes=readFileSync(p);
+    assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],`${p}: PNG signature`);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),'1bd10cfa3d788a9af1d30b8e96e5b1858f1ac0ebbe4e45b333966dfec6d7b57f','Exact owner-approved attachment, without modification');
+    assert.equal(bytes.readUInt32BE(16),1536);assert.equal(bytes.readUInt32BE(20),1024);
+    continue;
+  }
   const svg=readFileSync(p,'utf8');
   assert.ok(svg.startsWith('<svg'),p);
   assert.match(svg,/<title[^>]*>[^<]+<\/title>/,`${p}: accessible title`);
   assert.match(svg,/<desc[^>]*>[^<]+<\/desc>/,`${p}: accessible description`);
   assert.doesNotMatch(svg,/<script|foreignObject|href=/i,`${p}: no scripts/external loads`);
 }
-assert.equal(lesson.blocks[0].cheatsheet?.file,'poe-hardware-recognition-card.svg','Plain mode visually recognizes hardware');
+assert.equal(lesson.blocks[0].cheatsheet?.file,'poe-injectors-splitters-approved.png','Plain mode visually recognizes hardware');
 assert.equal(lesson.professional.blocks[0].cheatsheet?.file,'poe-injector-splitter-chains.svg','Professional mode retains A/B/C flow');
 assert.ok(lesson.professional.blocks.some(b=>b.cheatsheet?.file==='poe-ieee-vs-passive-compare.svg'),'Professional mode retains second comparison');
 const plainAssets=new Set(lesson.blocks.map(b=>b.cheatsheet?.file).filter(Boolean));
@@ -54,4 +62,9 @@ assert.ok(images.includes('poe-injector-splitter-chains.svg'));
 assert.ok(images.includes('poe-ieee-vs-passive-compare.svg'));
 assert.match(allPlain,/не (?:подключай|подавай)|НЕ подключай/i,'Passive safety notice');
 assert.match(allPro,/18 Вт/,'Professional DC calculation');
-console.log('PASS: PoE accessory two-mode teaching, 3+5 question keys, link destinations, SVG assets and passive safety');
+const untouched=structuredClone(lesson);delete untouched.blocks[0].cheatsheet;
+assert.equal(createHash('sha256').update(JSON.stringify(untouched)).digest('hex'),'a613a8bb80c8a5eb69ffe1e4685b60e52f33e0b6e7db375e77a20634baf215dd','All other lesson fields, explanations, links and all 3+5 complete questions/keys unchanged from main@21d6fde');
+for(const [file,sha] of Object.entries({'poe-injector-splitter-chains.svg':'405444045682751a9b38ba3070e489426b22bc260ea851fa0930ce9dcbfb535e','poe-ieee-vs-passive-compare.svg':'7acf3e4c2738e4a1506f86e95e2714f5c83cdb887411883c2e3a563563f6e132'})) assert.equal(createHash('sha256').update(readFileSync('public/lesson-images/'+file)).digest('hex'),sha,`${file}: original Pro SVG bytes unchanged`);
+assert.match(lesson.blocks[0].cheatsheet.alt,/ИИ.*фотореалистичная.*иллюстрация/);
+assert.match(lesson.blocks[0].cheatsheet.note,/сгенерировано ИИ.*не фотография реального брендового оборудования/);
+console.log('PASS: exact approved PNG, all other lesson fields and complete 3+5 questions/keys unchanged, original Pro SVGs intact');
