@@ -1,0 +1,31 @@
+name: Stage-2 protected source reconciliation
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/issue-171-baseline.json'
+      - 'docs/audits/stage2-protected-reconciliation-20261123.md'
+      - '.github/workflows/stage2-source-reconciliation.yml'
+
+jobs:
+  baseline-and-history:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Protected source fingerprint, 862-ID bank and level projection
+        run: npm run test:learning-levels
+      - name: Foundation mapping and legacy attempts
+        run: npm run test:base-level
+      - name: All 164 Understanding explanations and exact anchors
+        run: npm run test:in-depth
+      - name: Saved Understanding attempts including tr-03 and tr-10
+        run: npm run test:in-depth-history
+      - name: Typescript
+        run: npm run lint
+      - name: Production build
+        run: npm run build
