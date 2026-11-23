@@ -1,0 +1,51 @@
+name: Understanding closeout Chromium — 164 IDs, two viewports
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/inDepth/**'
+      - 'src/data/glossary.ts'
+      - 'src/utils/glossaryText.ts'
+      - 'src/components/GlossaryText.tsx'
+      - 'src/components/FormattedExplanation.tsx'
+      - 'src/components/LessonView.tsx'
+      - 'scripts/in-depth-content.test.mjs'
+      - 'scripts/in-depth.browser.mjs'
+      - '.github/workflows/understanding-closeout-browser.yml'
+
+jobs:
+  in-depth-browser:
+    name: Understanding 164 browser (shard ${{ matrix.shard }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-fund --no-audit
+      - name: Production build for browser
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Validate 164 real question-to-lesson routes (mobile + desktop)
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5428 --strictPort &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ >/dev/null; then break; fi
+            sleep 1
+          done
+          NETOPS_L2_SHARD_INDEX=${{ matrix.shard }} NETOPS_L2_SHARD_COUNT=4 node scripts/in-depth.browser.mjs
+      - name: Upload browser screenshots and route evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: understanding-closeout-browser-${{ matrix.shard }}
+          path: scripts/.cache/in-depth/browser/shard-${{ matrix.shard }}-of-4/
+          if-no-files-found: ignore
