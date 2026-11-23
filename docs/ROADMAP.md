@@ -1,3 +1,12 @@
+## 23.11.2026 — PoE-инжекторы и сплиттеры: Issue #328, личная приёмка урока ожидается
+
+- **Объект:** только `l1-poe-injectors-splitters`, основание [Issue #328](https://github.com/apotet/my-gemini-mirror-site/issues/328), пакет независимой доработки Gemini, frozen staging main `af54906c910a26d1b22f91eb6e1315fc43a91854`. **Приёмка владельца = PENDING, не USER ACCEPTED.**
+- **Интегратор:** [PR #329](https://github.com/apotet/my-gemini-mirror-site/pull/329) — два режима урока, три цепочки IEEE-injector / IEEE-splitter / passive injector+splitter, предупреждения 9–48V/LED/«1 Pair», пары Alternative A/B, расчёт 18 Вт против 12 Вт, проверка КПД, переходы к PoE-тестеру и CLI. Уточнение: надпись «1 Pair» на комплекте необязательно означает одну электрическую витую пару. В пассивной схеме отдельно показаны вход Ethernet и вход DC. Фотографии Commons отложены до решения владельца; две **оригинальные SVG** доступны как шпаргалки.
+- **Регрессия:** неизменны существующие **3 plain + 5 pro ID/ключи**, банк и история попыток; дописан самостоятельный `scripts/poe-injectors-lesson.test.mjs` и запуск в Fast PR. На кодовом SHA `f8d1470` [NetOps checks #45122069883](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45122069883) **SUCCESS** после исправления старого требования всплывающей подсказки `passive PoE` в чеклисте. Ранее CI [#45121951941](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45121951941) FAIL на изменённой формулировке — поправлен текст, не тест.
+- **Не трогать:** принятый владельцем `l1-poe-budget`, production `apotet/netops`; `L2 CONTENT ACCEPTED=NO` и semantic fingerprint GATE-06 BLOCK остаются отдельной задачей. После merge staging обязательно проверить GitHub Pages и предложить урок владельцу для личной приёмки, не присваивая ему статус PASS автоматически.
+
+---
+
 ## 23.11.2026 — STAGING TECHNICAL PATCH COMPLETE · выпуск #327 проверен на живом сайте
 
 - **ФАКТ:** [единый PR #327](https://github.com/apotet/my-gemini-mirror-site/pull/327), собранный из #324→#326→#327, **SQUASH MERGED** в staging `apotet/my-gemini-mirror-site/main@e8c8e99d7b9fbb1c01e35b949045c32e9abd89e4`. Исходные #324 и #326 закрыты как superseded без отдельных merge. Production `apotet/netops` **не тронут**.
