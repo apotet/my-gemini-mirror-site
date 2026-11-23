@@ -1220,6 +1220,11 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     "relatesTo": "Параметры префикса IPv6.",
     "lessonId": "l3-ipv6"
   },
+  "A=1": { description: "Флаг A=1 в Prefix Information Option сообщения IPv6 RA разрешает автономное формирование адреса (SLAAC) из подходящего префикса. Это не DNS A-запись; маршрут по умолчанию и флаг L определяются отдельно.", relatesTo: "IPv6 RA Prefix Information: флаг автономной настройки.", lessonId: "l3-ipv6" },
+  "A=0": { description: "Флаг A=0 запрещает использовать именно этот объявленный префикс для создания нового SLAAC-адреса; не означает автоматического запуска DHCPv6. Флаг L и маршрут по умолчанию независимы.", relatesTo: "IPv6 RA Prefix Information: запрет SLAAC по этому префиксу.", lessonId: "l3-ipv6" },
+  "L=1": { description: "Флаг L=1 в IPv6 RA Prefix Information объявляет префикс находящимся на данном канале (on-link), независимо от флага A и наличия SLAAC-адреса.", relatesTo: "IPv6 Neighbor Discovery и маршруты on-link.", lessonId: "l3-ipv6" },
+  "L=0": { description: "Флаг L=0 не утверждает, что префикс находится на данном канале. Это не отдельный запрет SLAAC: флаг A трактуется независимо.", relatesTo: "IPv6 RA Prefix Information: независимые A и L.", lessonId: "l3-ipv6" },
+  "A/L": { description: "Два независимых флага опции Prefix Information в IPv6 RA: A разрешает автономную настройку адреса, L сообщает on-link принадлежность префикса. Не путать с DNS A и вариантами PoE A/B.", relatesTo: "SLAAC и определение on-link префикса.", lessonId: "l3-ipv6" },
   "L flag": {
     "description": "Флаг on-link в информации о префиксе RA. Он сообщает, что префикс можно считать находящимся на данном канале, и независим от разрешения SLAAC флагом A.",
     "relatesTo": "Достижимость префикса IPv6.",
@@ -2193,6 +2198,11 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "SLAAC": ["Stateless Address Autoconfiguration", "Автонастройка адреса без хранения состояния сервером", true],
   "DAD": ["Duplicate Address Detection", "Обнаружение дублирующегося адреса", true],
   "A flag": ["Autonomous Address-Configuration Flag", "Флаг автономного формирования адреса", false],
+  "A=1": ["IPv6 RA Autonomous Flag set", "A=1 — SLAAC разрешён для префикса", false],
+  "A=0": ["IPv6 RA Autonomous Flag clear", "A=0 — SLAAC запрещён для префикса", false],
+  "L=1": ["IPv6 RA On-Link Flag set", "L=1 — префикс on-link", false],
+  "L=0": ["IPv6 RA On-Link Flag clear", "L=0 — on-link не объявлен", false],
+  "A/L": ["IPv6 RA Autonomous / On-Link Flags", "Независимые флаги A и L", false],
   "L flag": ["On-Link Flag", "Флаг локального префикса", false],
   "Router Lifetime": ["Router Lifetime", "Срок пригодности маршрутизатора", false],
   "диагностика": ["Troubleshooting", "Поиск причин неисправности", false],
