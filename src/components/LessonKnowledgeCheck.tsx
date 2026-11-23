@@ -3,7 +3,7 @@ import type { LessonKnowledgeCheck as LessonKnowledgeCheckData } from '../data/l
 import { GlossaryText } from './GlossaryText';
 
 /** The post-answer feedback only enables PoE hints for the PoE lesson context. */
-export const LessonKnowledgeCheckExplanation: React.FC<{ explanation: string; glossaryScope?: 'poe' }> =
+export const LessonKnowledgeCheckExplanation: React.FC<{ explanation: string; glossaryScope?: 'poe' | 'ipv6' }> =
   ({ explanation, glossaryScope }) => (
     <p className="leading-relaxed">{glossaryScope
       ? <GlossaryText scope={glossaryScope}>{explanation}</GlossaryText>
@@ -14,7 +14,7 @@ export const LessonKnowledgeCheckExplanation: React.FC<{ explanation: string; gl
  * Four-question reinforcement inside a lesson.
  * This is deliberately not an exam: no saved attempts or global statistics.
  */
-export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData; glossaryScope?: 'poe' }> = ({ check, glossaryScope }) => {
+export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData; glossaryScope?: 'poe' | 'ipv6' }> = ({ check, glossaryScope }) => {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
