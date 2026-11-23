@@ -4,7 +4,7 @@
 - **Техническая дыра подтверждена по коду:** прежний `scripts/in-depth-review-fingerprint.mjs` блокировал только changed IDs, но не новые непроверенные и не исторические `REVIEW`. В вспомогательной ветке предложены fail-closed правило + семь независимых unit-тестов + отдельный диагностический workflow; `--report-only` намеренно не выдаёт CONTENT ACCEPTED.
 - **Впервые формально расписаны GATE-01…10**, с конкретными URL доказательств для зелёных технических проверок и с блокерами GATE-05 (независимая оценка Геннадия), GATE-06 (полный fingerprints и решение о старых `REVIEW`) и GATE-10 (staging publish + live smoke). См. [точную матрицу](audits/in-depth/l2-release-gates-20261123.md).
 - **Старая REVIEW-проблема не скрыта:** два исторических файла содержат 160 `REVIEW` и внутренние semantic PASS не означают итоговую приёмку. Не ставить историческим строкам PASS по хешу и не запускать новый тотальный аудит 164 вместо утверждённого 7-route/delta closeout.
-- **Статус:** LOCAL UNIT TESTS 7/7 PASS; GitHub CI в новой Draft-ветке до окончания реального прогона **UNVERIFIED**; L2 CONTENT ACCEPTED — **NO**. Production `apotet/netops` не затронут.
+- **Статус:** LOCAL UNIT TESTS 7/7 PASS; GitHub [fingerprint policy #45109543282](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45109543282) **SUCCESS** (семь защитных тестов + диагностический пересчёт), [Fast PR #45109543242](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45109543242) **SUCCESS**. Диагностика 164 ID: **10 исторических fingerprint совпали, 150 отличаются, 4 новые**, а **160 исторических статусов REVIEW** не считаются PASS. Сам строгий release gate — **BLOCK**; L2 CONTENT ACCEPTED — **NO**. Production `apotet/netops` не затронут.
 
 ---
 
