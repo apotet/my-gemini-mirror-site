@@ -40,9 +40,10 @@ jobs:
             if curl -fsS http://127.0.0.1:5428/my-gemini-mirror-site/ >/dev/null; then break; fi
             sleep 1
           done
+          # Fail fast on the explicitly changed IPv6/PoE review scopes.
+          node scripts/ipv6-ra-glossary.browser.mjs
           node scripts/review-materials.browser.mjs
           node scripts/explanations.browser.mjs
-          node scripts/ipv6-ra-glossary.browser.mjs
       - name: Upload review screenshots and checks
         if: always()
         uses: actions/upload-artifact@v4
