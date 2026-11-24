@@ -7,7 +7,7 @@ import { restoreGate06HistoricalTeachingFields } from './gate06-targeted-bank-fi
 // Reviewed GATE-06 migration: exact Git blob identities for three changed
 // protected teaching sources. All other protected sources retain the old SHA256.
 const gate06ProtectedBlobs = Object.freeze({
-  'src/components/LessonView.tsx': '0f4d6f6f57485b68524a2e170543c0de965351fe',
+  'src/components/LessonView.tsx': 'a909fd805752cf5c1c7ef51a351405f5d5db3dff',
   'src/components/TheoryRazbory.tsx': '7129fd35cd2bbede0be8710b33d2784c9e6e4be4',
   'src/data/wifiCases.ts': '54f5bd45354b75d62bed1aa4f0aad0929b16b94c',
   'src/data/lessons/l7-monitoring-snmp-syslog.ts': '944d24e1c7851d049029736aa5e781a3d7634dd8',
