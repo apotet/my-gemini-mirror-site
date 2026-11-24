@@ -278,7 +278,7 @@ export const LESSON_L1_POE_INJECTORS_SPLITTERS: Lesson = {
   },
   "plainKnowledgeCheck": {
     "title": "Проверь себя: инжектор, сплиттер и пассивный PoE",
-    "intro": "Три вопроса по режиме «Простыми словами».",
+    "intro": "Три вопроса по режиму «Простыми словами».",
     "questions": [
       {
         "id": "poe-accessory-plain-01",
