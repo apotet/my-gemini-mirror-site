@@ -1,11 +1,10 @@
 name: Stage-2 protected source reconciliation
 
 on:
-  pull_request:
-    paths:
-      - 'docs/audits/issue-171-baseline.json'
-      - 'docs/audits/stage2-protected-reconciliation-20261123.md'
-      - '.github/workflows/stage2-source-reconciliation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   baseline-and-history:

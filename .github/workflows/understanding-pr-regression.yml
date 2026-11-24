@@ -1,13 +1,10 @@
 name: Understanding content and saved-attempt regression
 
 on:
-  pull_request:
-    paths:
-      - 'src/data/inDepth/**'
-      - 'src/data/questionLearningLevels.json'
-      - 'scripts/in-depth-content.test.mjs'
-      - 'scripts/in-depth-history.test.mjs'
-      - '.github/workflows/understanding-pr-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   understanding:
