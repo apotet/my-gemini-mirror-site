@@ -17,6 +17,13 @@ class Safety(unittest.TestCase):
         for change in [{'model': 'other'}, {'mode': 'edit'}, {'task': ''}, {'files': 'shell'}]:
             with self.assertRaises(ValueError):
                 z.parse_task(json.dumps({'lesson':'hsr', 'task':'audit', **change}))
+    def test_l3_task_and_pack(self):
+        import subprocess
+        task = {'branch':'work/applied-l3-20261124', 'sha':subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(),
+                'ids':['gen-port-13','gen-port-6','gen-port-7','gen-port-8'], 'model':'glm-5.3'}
+        self.assertEqual(z.parse_task(json.dumps(task)), task)
+        for change in [{'ids':[]}, {'ids':['x','x']}, {'sha':'main'}, {'model':'glm-5.3-flash'}]:
+            with self.assertRaises(ValueError): z.parse_task(json.dumps({**task, **change}))
     def test_paths(self):
         for path in ['../secret', '/etc/passwd', '.env', '.github/workflows/ci.yml']:
             with self.assertRaises(ValueError):
