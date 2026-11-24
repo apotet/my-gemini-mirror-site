@@ -1,0 +1,15 @@
+# Реестр уроков проекта NetOps (src/data/lessons, 79 файлов)
+# id урока = имя файла без расширения .ts — так их использует src/data/lessons/index.ts.
+
+Уроков в реестре: 79
+
+PoE-связанные уроки, существующие в реестре:
+- cli-poe-diagnostics
+- l1-poe-budget
+- l1-poe-injectors-splitters (текущий, исправляемый файл)
+
+ВАЖНО: урока с id 'l1-poe-screen-reading' В РЕЕСТРЕ НЕТ.
+Ссылки relatedLesson с таким id — битые (рендер кнопки даст переход в никуда).
+
+Полный список id:
+cli-console-ssh-telnet, cli-ios-modes, cli-ip-static-route, cli-poe-diagnostics, cli-save-config, cli-show-help-tab, cli-trunk-vlan-diagnostics, cli-vlan-trunk, existingUnderstandingHeadings, foundation-coverage, index, l1-copper-cable, l1-copper-fault-poe, l1-copper-installation, l1-fiber-hardware, l1-fiber-splicing, l1-optical-testing-equipment, l1-poe-budget, l1-poe-injectors-splitters, l12-wifi-standards-roaming, l2-access-auth, l2-access-guard, l2-bpdu-guard, l2-dai, l2-ethernet, l2-hsr-redundancy, l2-igmp-snooping, l2-ipsg, l2-mstp-advanced, l2-rstp-convergence, l2-stp, l2-stp-election, l2-stp-guard-design, l2-stp-protection, l2-svi, l2-vlan, l2-vlan-security, l2-wifi-security-diagnostics, l3-arp, l3-bgp, l3-eigrp, l3-icmp-basics, l3-ipv6, l3-masks, l3-nat, l3-ospf, l3-private-ipv4, l3-route-selection, l3-rpki, l3-subnets, l3-vrrp, l4-applied-tcp-session-flows, l4-directory-remote-industrial-ports, l4-load-balancing, l4-service-ports, l4-tcp, l4-tcp-loss, l7-dhcp, l7-dns, l7-dns-dhcp, l7-dns-ttl, l7-http-status-basics, l7-monitoring-snmp-syslog, l7-services, l7-udp-transactions-tftp-ntp-snmp, lessonSectionLinks, osi-pdu, osi-session-presentation, qos-basics, reviewStatus, tcp-window-retransmit, tcpip-encapsulation, tcpip-model, tls-sni, ts-copp-storm, ts-method, ts-optics, ts-zabbix-monitoring, types
