@@ -161,7 +161,9 @@ assert.ok(renderLessonBadge('l1-poe-budget').includes('Проверен и ут�
   'PoE budget lesson must show approved wording');
 assert.equal(getLessonReviewStatus('l1-copper-fault-poe'), 'approved',
   'previously accepted copper troubleshooting lesson stays approved');
-for (const id of ['l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading']) {
+assert.equal(getLessonReviewStatus('l1-poe-injectors-splitters'), 'approved',
+  'owner acceptance recorded on 24 November must remain visible');
+for (const id of ['cli-poe-diagnostics', 'l1-poe-screen-reading']) {
   assert.equal(getLessonReviewStatus(id), 'needs-review', id + ' has no owner acceptance');
   assert.ok(renderLessonBadge(id).includes('data-lesson-review-status="needs-review"'),
     id + ' visible badge must remain pending');

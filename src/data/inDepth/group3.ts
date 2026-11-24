@@ -291,8 +291,8 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     ],
     "anchorId": "http-etag-validation",
     "afterHeading": {
-      "plain": "Статус HTTP — результат обработки запроса",
-      "professional": "Семейства статусов и границы протоколов"
+      "plain": "Дополнительно: кэш, методы и соединения",
+      "professional": "Дополнительно: кэш, методы и соединения"
     },
     "plain": {
       "heading": "304: проверить копию, не скачивая тело снова",
@@ -310,8 +310,8 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     ],
     "anchorId": "http-put-idempotence",
     "afterHeading": {
-      "plain": "Как не перепутать с 201, 502 и редиректами",
-      "professional": "Диагностика HTTP-кодов"
+      "plain": "Дополнительно: кэш, методы и соединения",
+      "professional": "Дополнительно: кэш, методы и соединения"
     },
     "plain": {
       "heading": "Повтор PUT и потерянный ответ",
@@ -329,8 +329,8 @@ export const GROUP3_SECTIONS: SectionLink[] = [
     ],
     "anchorId": "http11-persistent-reuse",
     "afterHeading": {
-      "plain": "Как не перепутать с 201, 502 и редиректами",
-      "professional": "Диагностика HTTP-кодов"
+      "plain": "Дополнительно: кэш, методы и соединения",
+      "professional": "Дополнительно: кэш, методы и соединения"
     },
     "plain": {
       "heading": "Несколько запросов по одному соединению",

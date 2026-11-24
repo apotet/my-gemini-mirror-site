@@ -193,7 +193,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>{lesson.difficulty}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{lesson.id === 'l1-poe-injectors-splitters' ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
+          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
@@ -205,8 +205,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <GlossaryText>{content.summary.split('IEEE 802.3af/at/bt')[1]}</GlossaryText>
             </p>
           </div>
-        ) : <FormattedExplanation text={content.summary} />}
-        <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />
+        ) : <FormattedExplanation text={content.summary} glossaryScope={glossaryScope} />}
+        <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} currentLessonId={lesson.id} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />
       </header>
 
       {lesson.animation && (lesson.id !== 'l1-poe-budget' || textMode === 'meaning') && (
@@ -216,6 +216,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
             <img
               src={`${import.meta.env.BASE_URL}lesson-images/${lesson.animation.file}`}
               alt={lesson.animation.label}
+              width={lesson.id === 'l7-http-status-basics' ? 360 : undefined}
+              height={lesson.id === 'l7-http-status-basics' ? 820 : undefined}
               loading="lazy"
               className="mx-auto block w-full rounded-xl"
               data-poe-motion-image
@@ -244,7 +246,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
-              <span className="min-w-0">{lesson.id === 'l1-poe-injectors-splitters' ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
+              <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
             <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
               <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} glossaryScope={glossaryScope} />{b.pinout === 't568' && <EthernetPinout />}</div>
@@ -341,7 +343,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                 onClick={() => onOpenQuestion?.(id)}
                 className="px-3 py-1.5 rounded-xl text-xs font-mono bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 cursor-pointer"
               >
-                {id}
+                {lesson.id === 'l7-http-status-basics' ? ({ 'l57-x03': '301: постоянный переезд', 'l57-x17': '404: ресурс не найден', 'l7-01': '304: проверка кэша', 'l57-x04': 'PUT: повтор запроса', 'l7-05': '404: смысл ответа', 'l7-new-04': 'HTTP/1.1: соединение' }[id] ?? id) : id}
               </button>
             ))}
           </div>

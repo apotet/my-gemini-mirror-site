@@ -7,6 +7,8 @@ export interface ExistingHeadingLink {
   afterHeading: {plain: string; professional: string};
 }
 export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
+  { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
+    afterHeading: { plain: '301 Moved Permanently', professional: '301 и Location' } },
   {
     "lessonId": "l2-ethernet",
     "questionIds": [
@@ -30,7 +32,8 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   {
     "lessonId": "l7-http-status-basics",
     "questionIds": [
-      "l7-05"
+      "l7-05",
+      "l57-x17"
     ],
     "anchorId": "in-depth-existing-l7-05",
     "afterHeading": {

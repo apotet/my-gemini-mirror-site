@@ -16,12 +16,14 @@ const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])(${terms.map(escape).join('|')})
 // Also accept ASCII hyphen, em dash and optional spacing; preserve standalone DNS A.
 const wiringPairs = /(?<![\p{L}\p{N}_])[AB]\s*[-–—]\s*[AB](?![\p{L}\p{N}_])/gu;
 
-export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula" | "ipv6"): { text: string; term?: string }[] {
+export function splitGlossaryText(text: string, scope?: "poe" | "poe-formula" | "ipv6" | "http"): { text: string; term?: string }[] {
   const parts: { text: string; term?: string }[] = [];
   let offset = 0;
   const wiringRanges = [...text.matchAll(wiringPairs)].map(match => [match.index, match.index + match[0].length] as const);
   for (const match of text.matchAll(pattern)) {
     let term = canonical.get(match[0].toLowerCase());
+    // HTTP prose must not borrow meanings from DNS, DHCP or BGP.
+    if (scope === "http" && term && ["a", "update", "request", "trusted", "keepalive"].includes(term.toLowerCase())) continue;
     // In an IPv6 SLAAC lesson, standalone A is the RA Prefix Information
     // autonomous flag. A genuine DNS A record keeps the DNS meaning.
     if (scope === "ipv6" && term === "A" &&
