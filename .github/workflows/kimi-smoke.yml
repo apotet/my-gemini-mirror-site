@@ -8,8 +8,13 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [kimi-k3, kimi-k3.1-pro]
     steps:
       - env:
+          TEST_MODEL: ${{ matrix.model }}
           MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
         run: |
           python3 - <<'PY'
@@ -23,7 +28,7 @@ jobs:
               with urllib.request.urlopen(urllib.request.Request(base+"/models",headers=headers),timeout=20) as r:
                   models=[m["id"] for m in json.load(r)["data"]]
               print("Available models:",json.dumps(models))
-              model="kimi-k3" if "kimi-k3" in models else None
+              model=os.environ["TEST_MODEL"] if os.environ["TEST_MODEL"] in models else None
               if not model:
                   raise SystemExit("No known model available")
               print("Testing:",model)
