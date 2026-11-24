@@ -1,3 +1,23 @@
+## 24.11.2026 — Заяц: постоянный ZAI Issue Agent
+
+Реализован audit-only механизм `.github/workflows/zai-issue.yml`, существующий ZAI_API_KEY.
+ChatGPT через GitHub API от apotet создаёт Issue с title `[ZAI] ...` и JSON body:
+`{"lesson":"l2-hsr-redundancy","model":"glm-5.3","mode":"audit-only","task":"Полный инженерный аудит"}`.
+Точный API формат, связанные файлы и порядок работы: [ZAI_ISSUE_AGENT.md](ZAI_ISSUE_AGENT.md).
+Default полноценная GLM-5.3; только явный выбор glm-5.3-flash. Один запрос на Issue,
+без retries/fallback/comments triggers; owner-only, durable claim, reruns запрещены.
+100000 bytes messages + 2048 framing, output 16384 включая reasoning, предварительный
+лимит $0.25 (консервативный максимум ~$0.216 при тарифах 24.11.2026). Usage/cache/cost
+сохраняются; timeout = неизвестное списание, повтор не выполнять. Artifact 30 дней,
+краткий результат в Issue, реальное Telegram подтверждение через существующую инфраструктуру.
+ChatGPT читает отчёт и проверяет замечания, агент не меняет уроки и не публикует сайт.
+Оригинальный инженерный промт Геннадия и точные критерии шкалы не найдены; найденные
+PoE/HTTP задания не подменяют оригинал. Шкала /10 известна только из ROADMAP.
+Первый HSR run и его расход пока PENDING, не считать выполненным до фактического API-ответа.
+Production, HSR content, Gemini и Kimi не изменяются. Новые CI checks не добавлены.
+
+---
+
 ## 24.11.2026 — HTTP 301/404: реализация согласованного NETOPS-AUDIT-TRIO
 
 - Реализованы русский plain/pro, границы 301/404/308/410/502, кэш браузера/CDN, HEAD vs GET, учебные HTTP-сообщения, DevTools и четыре команды curl. Добавлена одна адаптивная SVG-схема, 3 простых и 4 практических вопроса закрепления, сохранена шпаргалка.
