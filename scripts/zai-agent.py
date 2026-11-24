@@ -97,7 +97,10 @@ def pack(task):
     question_ids = set(re.findall(r'\"([^\"]+)\"', lesson.read_text().split('relatedQuestionIds', 1)[-1]))
     questions = json.loads(Path('src/data/questions.json').read_text())
     if isinstance(questions, list):
-        selected = [q for q in questions if q.get('id') in question_ids or lesson.stem in json.dumps(q)]
+        title = re.search(r'\"title\"\s*:\s*\"([^\"]+)', lesson.read_text())
+        acronym = re.match(r'[A-Z]{2,8}(?=[: /])', title[1]) if title else None
+        selected = [q for q in questions if q.get('id') in question_ids or lesson.stem in json.dumps(q)
+                    or (acronym and re.search(r'\b' + acronym[0] + r'\b', json.dumps(q, ensure_ascii=False)))]
         files.append({'path': 'src/data/questions.json', 'coverage': 'selected full question objects only', 'content': json.dumps(selected, ensure_ascii=False)})
     return {'sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
             'lesson': str(lesson), 'referencePaths': refs, 'files': files,
