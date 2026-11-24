@@ -24,6 +24,26 @@ class Safety(unittest.TestCase):
         self.assertEqual(z.parse_task(json.dumps(task)), task)
         for change in [{'ids':[]}, {'ids':['x','x']}, {'sha':'main'}, {'model':'glm-5.3-flash'}]:
             with self.assertRaises(ValueError): z.parse_task(json.dumps({**task, **change}))
+    def test_l3_complete_text_and_budget(self):
+        fixture = json.loads(z.Path('docs/audits/applied-l3-20261124/batch-01-source.json').read_text())
+        ids = ['gen-port-13','gen-port-6','gen-port-7','gen-port-8']
+        task = {'branch':'work/applied-l3-20261124','sha':'a'*40,'ids':ids,'model':'glm-5.3'}
+        def read(args, **kwargs):
+            return json.dumps(fixture) if args[1] == 'show' else ''
+        with patch.object(z, 'github', return_value={'object':{'sha':task['sha']}}), patch.object(z.subprocess, 'run'), patch.object(z.subprocess, 'check_output', side_effect=read):
+            pack = z.pack_l3(task)
+        self.assertEqual([q['id'] for q in pack['questions']], ids)
+        for q in pack['questions']:
+            original = next(x for x in fixture['questions'] if x['id']==q['id'])
+            for field in ['question','plain','pro','lesson','practice']:
+                self.assertEqual(q[field], original[field])
+        for lesson in pack['lessons']:
+            original = next(x for x in fixture['lessons'] if x['id']==lesson['id'])
+            self.assertEqual(lesson['resolvedBlocks'], original['resolvedBlocks'])
+        size = len((z.L3_SYSTEM + json.dumps(pack, ensure_ascii=False)).encode())
+        self.assertLess(size, 115000)
+        self.assertLess(((size+2048)*1.4+z.MAX_OUTPUT*4.4)/1e6, .25)
+
     def test_paths(self):
         for path in ['../secret', '/etc/passwd', '.env', '.github/workflows/ci.yml']:
             with self.assertRaises(ValueError):
