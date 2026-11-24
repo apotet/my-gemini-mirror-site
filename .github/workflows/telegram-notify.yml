@@ -20,9 +20,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python3 - <<'PY'
-          import json, os, urllib.request, urllib.parse
-          token = os.environ.get("TELEGRAM_BOT_TOKEN")
-          chat = os.environ.get("TELEGRAM_CHAT_ID")
+          import json, os, urllib.request, urllib.parse, urllib.error, socket, time
+          token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+          chat = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
           if not token or not chat:
               raise SystemExit("Telegram secrets missing")
           with open(os.environ["GITHUB_EVENT_PATH"]) as f:
@@ -41,11 +41,21 @@ jobs:
           else:
               message = "✅ NetOps CI: тестовое уведомление. Telegram подключён."
           data = urllib.parse.urlencode({"chat_id": chat, "text": message}).encode()
-          try:
-              with urllib.request.urlopen("https://api.telegram.org/bot" + token + "/sendMessage", data=data, timeout=20) as response:
-                  if not json.load(response).get("ok"):
-                      raise ValueError("Telegram rejected message")
-          except Exception:
-              raise SystemExit("Telegram delivery failed; check secrets and bot /start") from None
-          print("Telegram notification delivered")
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen("https://api.telegram.org/bot" + token + "/sendMessage", data=data, timeout=15) as response:
+                      if not json.load(response).get("ok"):
+                          raise SystemExit("Telegram rejected message")
+                  print("Telegram notification delivered")
+                  break
+              except urllib.error.HTTPError as exc:
+                  print(f"Telegram HTTP status: {exc.code}")
+                  if exc.code < 500 and exc.code != 429:
+                      raise SystemExit("Telegram API rejected request") from None
+              except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                  reason = getattr(exc, "reason", exc)
+                  print(f"Telegram network failure: {type(reason).__name__}")
+              if attempt == 2:
+                  raise SystemExit("Telegram delivery failed after retries")
+              time.sleep(3 * (attempt + 1))
           PY
