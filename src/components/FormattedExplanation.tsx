@@ -7,7 +7,7 @@ const codeClass = 'max-w-full overflow-x-auto whitespace-pre rounded-lg bg-slate
 const POE_EQUATION_SEGMENTS = /(ΔU = I × R|Pпотерь = I² × R)/g;
 const IS_POE_EQUATION = /^(?:ΔU = I × R|Pпотерь = I² × R)$/;
 
-function InlineExplanation({ text, plainGlossaryTerms, glossaryScope }: { text: string; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" }) {
+function InlineExplanation({ text, plainGlossaryTerms, glossaryScope }: { text: string; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" | "http" }) {
   return formatInlineExplanation(text).map((part, index) => {
     if (part.code) return <code key={index} className="rounded bg-slate-100 px-1 font-mono text-[.92em] dark:bg-slate-900">{part.text}</code>;
     // I and R are generic symbols. Explain them only inside these two PoE formulas,
@@ -22,7 +22,7 @@ function InlineExplanation({ text, plainGlossaryTerms, glossaryScope }: { text: 
   });
 }
 
-export function FormattedExplanation({ text, command = false, plainGlossaryTerms, glossaryScope }: { text: string; command?: boolean; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" }) {
+export function FormattedExplanation({ text, command = false, plainGlossaryTerms, glossaryScope }: { text: string; command?: boolean; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" | "http" }) {
   if (command) return <pre className={codeClass}><code>{text}</code></pre>;
   return <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
     {formatExplanation(text).map((block, index) => {

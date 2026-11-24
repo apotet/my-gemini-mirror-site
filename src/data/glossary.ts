@@ -7,6 +7,11 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "Location": {"description": "Заголовок HTTP-ответа с URI назначения. В ответе 301 обычно указывает новый адрес; относительный URI разрешается относительно адреса запроса. Само наличие адреса не гарантирует успех перехода.", "relatesTo": "HTTP: запросы, ответы и кэширование.", "lessonId": "l7-http-status-basics"},
+  "Cache-Control": {"description": "Заголовок HTTP с правилами кэширования: max-age задаёт свежесть, no-cache требует проверки перед повторным использованием, no-store запрещает хранение. Ответы 301 и 404 тоже могут кэшироваться.", "relatesTo": "HTTP: запросы, ответы и кэширование.", "lessonId": "l7-http-status-basics"},
+  "GET": {"description": "HTTP-метод получения представления ресурса. Обычный curl без изменения метода отправляет GET; это не HEAD.", "relatesTo": "HTTP: запросы, ответы и кэширование.", "lessonId": "l7-http-status-basics"},
+  "HEAD": {"description": "HTTP-метод получения метаданных как для GET, но без тела ответа. curl -I отправляет HEAD; фактическая обработка маршрута может отличаться от GET.", "relatesTo": "HTTP: запросы, ответы и кэширование.", "lessonId": "l7-http-status-basics"},
+
   "AP": { description: "Access Point — точка доступа Wi-Fi, подключающая беспроводных клиентов к сети.", relatesTo: "Точки доступа могут получать питание по PoE." },
   "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
@@ -1740,6 +1745,14 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "Location": ["HTTP Location", "Адрес назначения перенаправления", false],
+  "Cache-Control": ["HTTP Cache-Control", "Правила кэширования HTTP", false],
+  "GET": ["HTTP GET", "Получение представления ресурса", false],
+  "HEAD": ["HTTP HEAD", "Метаданные без тела ответа", false],
+  "HTTP 301": ["HTTP 301 Moved Permanently", "Постоянное перенаправление", false],
+  "HTTP 404": ["HTTP 404 Not Found", "Ресурс не найден", false],
+  "redirect": ["HTTP redirect", "Перенаправление HTTP", false],
+
   "IEEE": ["Institute of Electrical and Electronics Engineers", "Институт инженеров электротехники и электроники", true, "Организация, разрабатывающая стандарты; IEEE 802.3 определяет Ethernet и стандартное питание PoE."],
   "DC IN": ["DC Input", "Вход постоянного напряжения", false, "Вход для внешнего блока питания постоянного тока; напряжение, полярность и допустимый ток сверяют по паспорту устройства."],
   "пусковой ток": ["Inrush current", "Ток при включении устройства", false, "Кратковременный повышенный ток при запуске, например при заряде входных конденсаторов; его учитывают при выборе источника и сплиттера."],
