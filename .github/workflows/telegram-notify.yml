@@ -1,0 +1,51 @@
+name: NetOps Telegram notifications
+on:
+  workflow_run:
+    workflows: ["NetOps checks", "Fast PR", "In-depth Understanding", "Deploy to GitHub Pages"]
+    types: [completed]
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  notify:
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse
+          token = os.environ.get("TELEGRAM_BOT_TOKEN")
+          chat = os.environ.get("TELEGRAM_CHAT_ID")
+          if not token or not chat:
+              raise SystemExit("Telegram secrets missing")
+          with open(os.environ["GITHUB_EVENT_PATH"]) as f:
+              event = json.load(f)
+          run = event.get("workflow_run")
+          pr = event.get("pull_request")
+          if run:
+              result = run.get("conclusion", "unknown")
+              if result == "skipped":
+                  raise SystemExit(0)
+              icon = "✅" if result == "success" else "❌" if result == "failure" else "⚠️"
+              prs = ", ".join("#" + str(p["number"]) for p in run.get("pull_requests", []))
+              message = f"{icon} NetOps staging | {run['name']} — {result}\n{prs} {run.get('head_branch', '')}\nSHA: {run.get('head_sha', '')[:8]}\n{run['html_url']}"
+          elif pr:
+              message = f"🔀 NetOps staging | PR #{pr['number']} merged\n{pr['title']}\n{pr['html_url']}"
+          else:
+              message = "✅ NetOps CI: тестовое уведомление. Telegram подключён."
+          data = urllib.parse.urlencode({"chat_id": chat, "text": message}).encode()
+          try:
+              with urllib.request.urlopen("https://api.telegram.org/bot" + token + "/sendMessage", data=data, timeout=20) as response:
+                  if not json.load(response).get("ok"):
+                      raise ValueError("Telegram rejected message")
+          except Exception:
+              raise SystemExit("Telegram delivery failed; check secrets and bot /start") from None
+          print("Telegram notification delivered")
+          PY
