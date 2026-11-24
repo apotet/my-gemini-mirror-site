@@ -1,3 +1,11 @@
+## 24.11.2026 — PR #345: лёгкий CI и публикация PoE-подсказок
+
+**Действующее решение владельца: NETOPS-LIGHT-CI-2026-11-24.** [Регламент](DEVELOPMENT_WORKFLOW.md) имеет приоритет над историческими обязательными fingerprint/append-only/strict-gate требованиями ниже. Мелкие изменения проверяются адресно, без нового глобального аудита. Тяжёлые CI только workflow_dispatch; fingerprints информационные; прежние аудиты сохраняются, но не блокируют разработку. Новые guards/реестры не создаются, glossary pin не восстанавливается. После базовых проверок — самостоятельный staging merge/deploy/live smoke; production только по отдельному разрешению.
+
+Изменения публикуются через существующий [PR #345](https://github.com/apotet/my-gemini-mirror-site/pull/345), исходный HEAD b6072c35a38e129030fda87a5052d2cd1e5dadf5. Четыре тяжёлых workflow и legacy Understanding batch переведены в ручной режим. Main API сообщает protected=false, required checks пусты; rulesets отсутствуют. Локально в настоящем Chromium проверены все 11 заданных подсказок и дополнительные IEEE, DC IN, пусковой ток: 26 plain + 50 pro всплывающих определений при 375/1440 px, hover/tap, все блоки, без подсказок в заголовках и без overflow. Фактические merge/deploy/live/Telegram результаты публикуются в итоговом комментарии PR после выполнения; подготовка не считается публикацией.
+
+---
+
 ## 24.11.2026 — PoE: опубликованные заголовки без подсказок; Telegram пока BLOCK
 
 - Урок `l1-poe-injectors-splitters`: [PR #340](https://github.com/apotet/my-gemini-mirror-site/pull/340) merged после 7/7 CI checks. Заголовок урока, вводный summary и короткие заголовки блоков показываются без glossary-триггеров; подсказки в основном тексте сохранены. Учебный текст и glossary не изменялись.

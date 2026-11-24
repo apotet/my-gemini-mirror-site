@@ -21,6 +21,10 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: Core quiz logic regression
+        run: npm run test:logic
+      - name: Question and lesson navigation regression
+        run: npm run test:review-navigation
       - name: PoE animated SVG layout regression
         run: node scripts/poe-svg-layout.test.mjs
       - name: PoE standards card neutral-border regression
@@ -59,7 +63,7 @@ jobs:
         run: bash scripts/in-depth-material-delta.sh
 
       - name: Compare 160 independent semantic-review fingerprints to current material
-        run: node scripts/in-depth-review-fingerprint.mjs
+        run: node scripts/in-depth-review-fingerprint.mjs --report-only
 
       - name: Coverage report
         run: npm run coverage:explanations

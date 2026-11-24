@@ -7,6 +7,7 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "AP": { description: "Access Point — точка доступа Wi-Fi, подключающая беспроводных клиентов к сети.", relatesTo: "Точки доступа могут получать питание по PoE." },
   "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
   "DC/DC": { description: "Преобразователь одного постоянного напряжения в другое, например напряжения PoE около 48 В в 5 или 12 В для конечного устройства.", relatesTo: "Преобразование питания внутри сплиттера; само по себе не подтверждает соответствие IEEE PoE.", lessonId: "l1-poe-injectors-splitters" },
@@ -1739,6 +1740,20 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "IEEE": ["Institute of Electrical and Electronics Engineers", "Институт инженеров электротехники и электроники", true, "Организация, разрабатывающая стандарты; IEEE 802.3 определяет Ethernet и стандартное питание PoE."],
+  "DC IN": ["DC Input", "Вход постоянного напряжения", false, "Вход для внешнего блока питания постоянного тока; напряжение, полярность и допустимый ток сверяют по паспорту устройства."],
+  "пусковой ток": ["Inrush current", "Ток при включении устройства", false, "Кратковременный повышенный ток при запуске, например при заряде входных конденсаторов; его учитывают при выборе источника и сплиттера."],
+  "MPS": ["Maintain Power Signature","Сигнатура поддержания питания PoE",false,"Признак присутствия питаемого устройства, по которому PSE определяет необходимость продолжать подачу питания."],
+  "DC": ["Direct Current","Постоянный ток",false,"Электрический ток постоянного направления; на сплиттере DC обозначает отдельное питание постоянным напряжением."],
+  "DC OUT": ["DC Output","Выход постоянного напряжения",false,"Разъём выдачи питания; проверяй напряжение, допустимый ток и полярность."],
+  "Data IN": ["Data Input","Вход данных",false,"Порт инжектора для Ethernet-данных от коммутатора без подачи питания на этот вход."],
+  "Data + Power OUT": ["Data and Power Output","Выход данных и питания",false,"Порт инжектора, передающий Ethernet и питание PoE к потребителю."],
+  "LED": ["Light Emitting Diode","Светодиод",false,"Индикатор состояния; сам по себе не подтверждает согласование PoE."],
+  "КПД": ["Efficiency","Коэффициент полезного действия",false,"Отношение полезной выходной мощности к входной; часть мощности теряется в преобразователе."],
+  "ИК-подсветка": ["Infrared illumination","Инфракрасная подсветка",false,"Подсветка камеры для ночной съёмки, включение которой может увеличить потребляемую мощность."],
+  "БП": ["Power supply","Блок питания",false,"Устройство, обеспечивающее требуемое напряжение и допустимый ток нагрузки."],
+  "upstream": ["Upstream","В сторону вышестоящего оборудования",false,"Направление к вышестоящему оборудованию сети; в этой схеме — к коммутатору перед инжектором со стороны источника данных."],
+  "AP": ["Access Point", "Точка доступа Wi-Fi", true],
   "T568A": ["ANSI/TIA-568 T568A wiring scheme", "Схема оконцевания T568A", true],
   "T568B": ["ANSI/TIA-568 T568B wiring scheme", "Схема оконцевания T568B", true],
   "Auto MDI-X": ["Automatic Medium Dependent Interface Crossover", "Автоматическое согласование пар Ethernet", true],
