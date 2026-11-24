@@ -39,6 +39,15 @@ def github(method, endpoint, data=None):
 
 def parse_task(body):
     task = json.loads(body)
+    if isinstance(task, dict) and 'ids' in task:
+        if set(task) != {'branch', 'sha', 'ids', 'model'} or task['model'] != 'glm-5.3':
+            raise ValueError('L3 requires branch, sha, ids, model=glm-5.3')
+        if not re.fullmatch(r'work/applied-l3-[A-Za-z0-9-]+', task['branch']) or not re.fullmatch('[a-f0-9]{40}', task['sha']):
+            raise ValueError('Invalid branch/SHA')
+        ids = task['ids']
+        if not isinstance(ids, list) or not 1 <= len(ids) <= 4 or not all(isinstance(i, str) and re.fullmatch('[A-Za-z0-9_-]{2,80}', i) for i in ids) or len(set(ids)) != len(ids):
+            raise ValueError('One to four unique IDs required')
+        return task
     if not isinstance(task, dict) or set(task) - {'lesson', 'model', 'mode', 'task', 'files'}:
         raise ValueError('Use documented JSON task fields')
     if task.get('mode', 'audit-only') != 'audit-only':
@@ -107,6 +116,49 @@ def pack(task):
             'limitations': 'Text-only source audit. Browser and omitted context UNVERIFIED. Original Gennady engineering prompt unavailable.'}
 
 
+def pack_l3(task):
+    def git(*args):
+        return subprocess.check_output(['git', *args], text=True).strip()
+    ref = github('GET', '/git/ref/heads/' + task['branch'])
+    if ref['object']['sha'] != task['sha']:
+        raise ValueError('Branch moved')
+    subprocess.run(['git', 'fetch', '--no-tags', 'origin', task['sha']], check=True)
+    snapshot = json.loads(git('show', task['sha'] + ':docs/audits/applied-l3-20261124/batch-01-source.json'))
+    if git('diff', '--name-only', snapshot['sourceSHA'], task['sha'], '--', 'src', 'public'):
+        raise ValueError('Inventory stale; prepare targeted source first')
+    questions = {q['id']: q for q in snapshot['questions']}
+    selected = [questions[i] for i in task['ids']]
+    if any(q['assignment']['learningLevel'] != 3 for q in selected):
+        raise ValueError('Not L3')
+    # Keep full authoritative text once, plus observed link/anchor and recurrence evidence.
+    fields = ['id', 'question', 'assignment', 'plain', 'pro', 'lesson', 'practice',
+              'hashtags', 'glossaryTerms', 'practicalTipOccurrences', 'commonTrapOccurrences']
+    compact = [{k: q[k] for k in fields} for q in selected]
+    for q, c in zip(selected, compact):
+        c['deepDive'] = {k:v for k,v in q['deepDive'].items() if k not in
+                        ['deepAnalysis', 'pro', 'engineeringDeep', 'professional']}
+    lesson_ids = {q['lesson']['id'] for q in selected}
+    lessons = [{k:v for k,v in l.items() if k not in ['blocks', 'professional']}
+               for l in snapshot['lessons'] if l['id'] in lesson_ids]
+    terms = {t for q in selected for t in q['glossaryTerms']}
+    return {'target': task, 'sourceSHA': snapshot['sourceSHA'], 'questions': compact,
+            'lessons': lessons, 'glossary': {k:v for k,v in snapshot['glossary'].items() if k in terms},
+            'practiceDestinations': snapshot['practiceDestinations'],
+            'limitations': 'Full resolved lesson blocks in both modes; source only, UI/browser UNVERIFIED. Inventory flags are observations, not verdicts.'}
+
+L3_SYSTEM = SYSTEM + """
+Аудит прикладного уровня L3 (не OSI L3). Для каждого ID отдельный вердикт PASS/FIX/REVIEW/UNVERIFIED
+с доказательствами: техническая корректность; правильный ответ и КАЖДЫЙ неверный вариант с индексом;
+соответствие прикладному уровню; отдельно обучающая ценность Простыми словами и По делу;
+индивидуальность practicalTip и commonTrap; глоссарий и хештеги; релевантность урока и точного anchor
+в обоих режимах; практическое закрепление. Для КАЖДОГО подтверждённого недостатка цитата, причина
+и ГОТОВЫЙ текст исправления или точная предлагаемая ссылка/секция. Не выдавай предлагаемый anchor
+за существующий. Не повторяй автоматические флаги как независимые выводы. PASS только при достаточных
+доказательствах по всем критериям. Пиши компактный, содержательно полный Markdown, по одному разделу
+'## ID — VERDICT' на каждый запрошенный ID в исходном порядке. Никаких изменений контента или gates.
+"""
+
+
 def prepare():
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     issue = event['issue']
@@ -116,16 +168,17 @@ def prepare():
         os.environ.get('GITHUB_RUN_ATTEMPT', '1') != '1' or not issue['title'].startswith('[ZAI] ')):
         raise ValueError('Unauthorized event, rerun, or title')
     task = parse_task(issue['body'])
-    snapshot = pack(task)
+    l3 = 'ids' in task
+    snapshot = pack_l3(task) if l3 else pack(task)
     payload = {'model': task.get('model', 'glm-5.3'), 'stream': False, 'max_tokens': MAX_OUTPUT,
-               'messages': [{'role': 'system', 'content': SYSTEM},
-                            {'role': 'user', 'content': task['task'] + '\n\n' + json.dumps(snapshot, ensure_ascii=False)}]}
+               'messages': [{'role': 'system', 'content': L3_SYSTEM if l3 else SYSTEM},
+                            {'role': 'user', 'content': task.get('task', 'Независимый аудит выбранных L3 билетов') + '\n\n' + json.dumps(snapshot, ensure_ascii=False)}]}
     if payload['model'] == 'glm-5.3':
         payload.update(thinking={'type': 'enabled'}, reasoning_effort='high')
     size = sum(len(m['content'].encode()) for m in payload['messages'])
     # UTF-8 bytes conservatively bound BPE tokens; 2048 tokens reserved for chat framing.
     worst = ((size + 2048) * RATES[payload['model']][0] + MAX_OUTPUT * RATES[payload['model']][2]) / 1e6
-    if size > MAX_BYTES or worst > .25:
+    if size > (115000 if l3 else MAX_BYTES) or worst > .25:
         raise ValueError('Context/cost bound exceeded; reduce explicit files, never silently truncate')
     save('source-pack.json', snapshot)
     save('payload.json', payload)
@@ -175,6 +228,7 @@ def run():
         account['cost_basis'] = 'returned usage; cache unknown treated as uncached' if cached is None else 'returned usage including cache'
     account['status'] = 'response received'
     save('accounting.json', account)
+    save('response.json', json.dumps(result, ensure_ascii=False).replace(key, '[REDACTED]'))
     choice = result['choices'][0]
     report = choice.get('message', {}).get('content') or ''
     save('report.md', '# Заяц — source audit\n\nOriginal Gennady engineering prompt unavailable. Browser: UNVERIFIED.\n\n' + report.replace(key, '[REDACTED]'))
@@ -189,7 +243,7 @@ def publish():
     accounting = json.loads((OUT / 'accounting.json').read_text()) if (OUT / 'accounting.json').exists() else {'api_calls': 0}
     artifact = os.environ.get('ARTIFACT_URL') or run_url + '#artifacts'
     report = (OUT / 'report.md').read_text() if (OUT / 'report.md').exists() else 'Отчёт не получен. См. workflow; повторный платный запрос запрещён.'
-    body = f"## Заяц — {os.environ.get('AUDIT_STATUS', 'unknown')}\n\n{report[:2200]}\n\n[Полный отчёт и исходный контекст]({artifact}) · [Run]({run_url})\n\nУчёт: `{json.dumps(accounting, ensure_ascii=False)}`"
+    body = f"## Заяц — {os.environ.get('AUDIT_STATUS', 'unknown')}\n\n{report if len(report) < 55000 else report[:2200]}\n\n[Полный отчёт и исходный контекст]({artifact}) · [Run]({run_url})\n\nУчёт: `{json.dumps(accounting, ensure_ascii=False)}`"
     github('POST', f"/issues/{event['issue']['number']}/comments", {'body': body})
     save('summary.md', body)
 
