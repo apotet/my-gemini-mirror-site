@@ -106,6 +106,9 @@ jobs:
       - name: Установить typescript@5.9.3 для AST-проверки (репо пинует ts7 с native API)
         run: npm install --ignore-scripts --no-save --no-audit --no-fund typescript@5.9.3
 
+      - name: Baseline компиляции ДО обращения к API
+        run: npx tsc --noEmit
+
       - name: Разобрать входные параметры
         id: io
         run: |
@@ -122,9 +125,6 @@ jobs:
             cp "$t" "out/originals/$t"
           done
           printf '%s\n' "${TARGETS[@]}"
-
-      - name: Baseline компиляции ДО обращения к API
-        run: npx tsc --noEmit
 
       - name: Собрать payload
         run: |
@@ -205,7 +205,10 @@ jobs:
 
       - name: Компиляция после применения
         if: inputs.mode == 'edit'
-        run: npx tsc --noEmit
+        run: |
+          mv out "$RUNNER_TEMP/kimi-output"
+          trap 'mv "$RUNNER_TEMP/kimi-output" out' EXIT
+          npx tsc --noEmit
 
       - name: Регрессионный тест урока PoE (пилотный профиль)
         if: ${{ inputs.mode == 'edit' && inputs.verification == 'poe-full' }}
