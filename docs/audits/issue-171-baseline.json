@@ -211,7 +211,7 @@
     "src/data/diagnosticCases177.ts": "6d85730d9912154002c037702c95dad63739406fd6fa3d4eb8f744d2aa33d5de",
     "src/data/expertCases177.ts": "dea438970efdf30aeaa5efb4226eb99682be8f83ed226f0ceab04565a60766c8",
     "src/data/expertCases225.ts": "d714ba4489a10e5ed3dde244e2f0fc807b8923777fed6510384352b70e7d1d8d",
-    "src/data/glossary.ts": "d8690172d61dc611d26f5a0567d8e689c527a105edff8dcea56b211efc67fe18",
+    "src/data/glossary.ts": "e85b1d7be615fb785411954031c79eecfae9001892c3f0d26b10d8bbf378239d",
     "src/data/lessons/cli-console-ssh-telnet.ts": "ff4c74ed5c75fda57fa4321d28cfa20abc4adb5a015eb38df16df73e9925c240",
     "src/data/lessons/cli-ios-modes.ts": "87f996ce1a6b2944674be34ca9340094e77c00e40cfbb3b29e880cf373b6fc6d",
     "src/data/lessons/cli-ip-static-route.ts": "3892d93bb8c269e49a395e1986c3b0f0c72729371906b06be3db9af00be31001",
@@ -288,7 +288,7 @@
     "src/types/quiz.ts": "cd539016e98143bab6af89e0138f97e8fa8064b175c12e0c27ee649422ff09a6",
     "src/utils/examProgress.ts": "5afdbfbb11456fbf69f5eff43de2021ed9ec52e2966c2bcf492884f59ff3fec5",
     "src/utils/examReview.ts": "7af2f70b2e846501a6f106454a174dd7ff41e29b6480040ec5180c323dc093f7",
-    "src/utils/glossaryText.ts": "bd1124a8b6ed8a78ca494d20452edbb8453440c2ac0b918bb8dcf44ccae001e9",
+    "src/utils/glossaryText.ts": "2d83677466e93067532b48491dbe79c55d2c72d4ee953864f20cef2428b99b9e",
     "src/utils/haptics.ts": "dc5df04ba21b0720dde9d6d4907a8216b40772564b2dd0870bcf0f54115903a1",
     "src/utils/sound.ts": "5f206e7e33c24865202b548148e1484256611605f9659865c968a1761d5a9744",
     "src/utils/studyTextMode.ts": "f3f445edb541a99643aa7bc817ede0b919f9692154f880552586a1b013d8a27c",
@@ -915,6 +915,33 @@
           "previousSHA256": "ff05944ffdd226245040390d8d73f41c317f74f3aa3966f75fd4c237c89edf69",
           "newSHA256": "bd1124a8b6ed8a78ca494d20452edbb8453440c2ac0b918bb8dcf44ccae001e9",
           "reason": "Contextual IPv6 A flag versus DNS A record with no cross-domain leak"
+        }
+      ]
+    },
+    {
+      "branch": "kimi/fix-poe-injectors-splitters",
+      "date": "2026-11-24",
+      "sourceMain": "fd5130ad07549328533574f925f41a7744b286d6",
+      "reason": "Post-merge pin repair for two owner-approved PoE injector lesson PRs merged after the last baseline pin update (PR #335): PR #337 (PoE injector glossary hygiene) changed glossary.ts and glossaryText.ts; PR #340 (PoE injector lesson headings/summary without glossary tooltips) changed LessonView.tsx. No question keys, learning levels, accepted lesson content or saved attempts changed. Guard test:learning-levels must pass on the actually merged owner-approved state.",
+      "status": "PENDING OWNER ACCEPTANCE — Draft PR, no merge/deploy",
+      "files": [
+        {
+          "path": "src/data/glossary.ts",
+          "previousSHA256": "d8690172d61dc611d26f5a0567d8e689c527a105edff8dcea56b211efc67fe18",
+          "newSHA256": "e85b1d7be615fb785411954031c79eecfae9001892c3f0d26b10d8bbf378239d",
+          "reason": "PR #337 merged: scoped PoE glossary + DC/DC clarification (+2 lines)"
+        },
+        {
+          "path": "src/utils/glossaryText.ts",
+          "previousSHA256": "bd1124a8b6ed8a78ca494d20452edbb8453440c2ac0b918bb8dcf44ccae001e9",
+          "newSHA256": "2d83677466e93067532b48491dbe79c55d2c72d4ee953864f20cef2428b99b9e",
+          "reason": "PR #337 merged: PoE glossary scope handling (+7/-1)"
+        },
+        {
+          "path": "src/components/LessonView.tsx",
+          "previousGitBlobSHA1": "0f4d6f6f57485b68524a2e170543c0de965351fe",
+          "newGitBlobSHA1": "a909fd805752cf5c1c7ef51a351405f5d5db3dff",
+          "reason": "PR #340 merged: headings/summary of l1-poe-injectors-splitters render without glossary tooltips; pin lives in scripts/validate-learning-levels.mjs gate06ProtectedBlobs"
         }
       ]
     }
