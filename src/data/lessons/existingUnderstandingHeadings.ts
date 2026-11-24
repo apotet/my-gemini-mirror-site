@@ -7,6 +7,13 @@ export interface ExistingHeadingLink {
   afterHeading: {plain: string; professional: string};
 }
 export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
+  { lessonId: 'l7-udp-transactions-tftp-ntp-snmp', questionIds: ['gen-port-13'], anchorId: 'snmp-getbulk-operations',
+    afterHeading: { plain: 'Get, GetNext и GetBulk — три разные операции', professional: 'GetBulk и лексикографический обход OID' } },
+  { lessonId: 'l7-dns', questionIds: ['gen-port-6'], anchorId: 'dns-udp-request-response',
+    afterHeading: { plain: 'Как передаётся запрос', professional: 'UDP/53 и когда нужен TCP/53' } },
+  { lessonId: 'l7-dhcp', questionIds: ['gen-port-7', 'gen-port-8'], anchorId: 'dhcp-relay-ports',
+    afterHeading: { plain: 'Обычный DHCPv4 с relay: зачем посредник и какие порты', professional: 'Обычный DHCPv4 relay: порты, giaddr и участки обмена' } },
+
   { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
     afterHeading: { plain: '301 Moved Permanently', professional: '301 и Location' } },
   {

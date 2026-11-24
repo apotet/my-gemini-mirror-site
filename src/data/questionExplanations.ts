@@ -625,7 +625,7 @@ const HISTORICAL_DIAGNOSTIC_DEEP: Partial<Record<string, typeof INDIVIDUAL_DEEP[
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; ipv6Practice?: boolean; professional?: QuestionDeepDive['professional']; practiceLink?: PracticeLink }
+  { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; ipv6Practice?: boolean; professional?: QuestionDeepDive['professional']; practiceLink?: PracticeLink; practicalTip?: string; keyTakeaways?: string[] }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -772,7 +772,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     hasIndividualDeep: Boolean(individual || diagnostic || audited?.deep),
     glossaryInProfessional: individual?.glossaryInProfessional ?? Boolean(diagnostic),
     commonTrap: audited?.trap ?? (individual?.trap || detectCommonTrap(question)),
-    practicalTip: audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH7[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH6[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH5[question.id]
+    practicalTip: individual?.practicalTip ?? audited?.practicalTip ?? (question.remember || (BASE_FOUNDATIONS_BATCH7[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH6[question.id]?.practicalTip ?? (BASE_FOUNDATIONS_BATCH5[question.id]
       ? 'Для медной линии сверяйте видимую маркировку и конструкцию с документацией; после оконцевания проверяйте wiremap, а категорию канала — измерениями.'
       : getPracticalTip(category))))),
     memorizationRule: question.remember,
@@ -785,7 +785,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
     },
     ipv6Practice: question.id === 'l3-d06' ? { targetMode: 'type' }
       : individual?.ipv6Practice ? { targetMode: 'concept' } : undefined,
-    keyTakeaways: generateKeyTakeaways(question, correctText, ipv4Prefix !== undefined),
+    keyTakeaways: individual?.keyTakeaways ?? generateKeyTakeaways(question, correctText, ipv4Prefix !== undefined),
     nextStudy: individual?.next,
   };
   // Historical diagnostic snapshots retain their original authored interpretation.
