@@ -18,7 +18,7 @@ jobs:
           key = os.environ.get("ZAI_API_KEY", "").strip()
           if not key:
               raise SystemExit("ZAI_API_KEY missing")
-          payload = {"model":"glm-4.7-flash","messages":[{"role":"user","content":"Reply OK."}],"max_tokens":32,"stream":False}
+          payload = {"model":"glm-4.5-flash","messages":[{"role":"user","content":"Reply OK."}],"max_tokens":32,"stream":False}
           req = urllib.request.Request("https://api.z.ai/api/paas/v4/chat/completions", data=json.dumps(payload).encode(), headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"})
           try:
               with urllib.request.urlopen(req, timeout=45) as response:
