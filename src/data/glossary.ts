@@ -9,6 +9,7 @@ export interface GlossaryEntry {
 export const GLOSSARY: Record<string, GlossaryEntry> = {
   "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
+  "DC/DC": { description: "Преобразователь одного постоянного напряжения в другое, например напряжения PoE около 48 В в 5 или 12 В для конечного устройства.", relatesTo: "Преобразование питания внутри сплиттера; само по себе не подтверждает соответствие IEEE PoE.", lessonId: "l1-poe-injectors-splitters" },
   "DC-выход": { description: "Отдельный выход сплиттера для питания конечного устройства постоянным током (DC), например 12 В; Ethernet-данные передаются через другой выход. Перед подключением проверь выходное напряжение, допустимый ток, полярность и размер штекера — это не выход PoE.", relatesTo: "Подключение устройства без встроенного PoE-PD через подходящий PoE-сплиттер.", lessonId: "l1-poe-injectors-splitters" },
   "Available": { description: "Общая мощность, которую PoE-коммутатор может выделять в указанной сводке или модуле питания. В таблице Cisco это исходный доступный бюджет для расчёта Remaining, а не предел одного порта.", relatesTo: "Общий бюджет питания PSE и мощность отдельных портов.", lessonId: "cli-poe-diagnostics" },
   "Used": { description: "Мощность PoE, уже учтённая как используемая в сводке Cisco. Часто отражает выделенный или зарезервированный бюджет, а не сумму измеренных ватт; уточни смысл колонки по модели и команде.", relatesTo: "Учтённый бюджет против текущего потребления PD.", lessonId: "cli-poe-diagnostics" },
@@ -2343,6 +2344,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "дисбаланс пар": ["DC Resistance Unbalance", "Неравномерность сопротивления проводников и пар", false],
   "PoE-инжектор": ["IEEE PoE Injector / Midspan", "Промежуточный источник питания PoE", false],
   "PoE-сплиттер": ["PoE Splitter", "Разделяет входной PoE на Ethernet и DC-питание", false],
+  "DC/DC": ["DC-to-DC Converter", "Преобразователь постоянного напряжения", false],
   "DC-выход": ["DC Output (Direct Current)", "Выход питания постоянным током", false],
   "Available": ["PoE power available", "Доступный общий бюджет PoE", false],
   "Used": ["PoE power used", "Учтённая или выделенная мощность PoE", false],
