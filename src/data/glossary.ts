@@ -7,6 +7,7 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "AP": { description: "Access Point — точка доступа Wi-Fi, подключающая беспроводных клиентов к сети.", relatesTo: "Точки доступа могут получать питание по PoE." },
   "PoE-инжектор": { description: "Отдельный PSE (midspan), который добавляет питание к Ethernet-кабелю. IEEE-совместимый инжектор обнаруживает PD и согласует питание по поддерживаемому типу/классу; «пассивный» инжектор может работать иначе.", relatesTo: "Midspan PSE, питание камер и точек доступа без PoE-коммутатора.", lessonId: "l1-poe-injectors-splitters" },
   "PoE-сплиттер": { description: "Устройство, которое принимает совместимый PoE на входе (как PD) и выдаёт Ethernet и отдельный выход постоянного тока DC для конечного устройства. Критичны выходные напряжение, ток, штекер и полярность.", relatesTo: "Питание оборудования без встроенного IEEE PoE-PD.", lessonId: "l1-poe-injectors-splitters" },
   "DC/DC": { description: "Преобразователь одного постоянного напряжения в другое, например напряжения PoE около 48 В в 5 или 12 В для конечного устройства.", relatesTo: "Преобразование питания внутри сплиттера; само по себе не подтверждает соответствие IEEE PoE.", lessonId: "l1-poe-injectors-splitters" },
@@ -1739,6 +1740,7 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "AP": ["Access Point", "Точка доступа Wi-Fi", true],
   "T568A": ["ANSI/TIA-568 T568A wiring scheme", "Схема оконцевания T568A", true],
   "T568B": ["ANSI/TIA-568 T568B wiring scheme", "Схема оконцевания T568B", true],
   "Auto MDI-X": ["Automatic Medium Dependent Interface Crossover", "Автоматическое согласование пар Ethernet", true],
