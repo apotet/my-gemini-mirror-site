@@ -1,3 +1,13 @@
+## 24.11.2026 — PoE: опубликованные заголовки без подсказок; Telegram пока BLOCK
+
+- Урок `l1-poe-injectors-splitters`: [PR #340](https://github.com/apotet/my-gemini-mirror-site/pull/340) merged после 7/7 CI checks. Заголовок урока, вводный summary и короткие заголовки блоков показываются без glossary-триггеров; подсказки в основном тексте сохранены. Учебный текст и glossary не изменялись.
+- Публикация на зеркале подтверждена [Pages #45307822014](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45307822014), код `fcdfb54f78d7ac76cf66a887f8009c0080dc5e08`. После deploy проверен живой сайт при ширине 1363 px: plain — 0 триггеров в title/summary и всех 7 заголовках, 53 в теле; pro — 0 в title/summary и всех 11 заголовках, 76 в теле. Подсказка Endspan в тексте реально открыта и прочитана. Отдельная мобильная проверка этого урока не выполнялась.
+- Telegram: [PR #341](https://github.com/apotet/my-gemini-mirror-site/pull/341) и [PR #342](https://github.com/apotet/my-gemini-mirror-site/pull/342) merged. Учитывается серверный retry_after; отправки сериализованы; успешные промежуточные CI/merge больше не создают сообщения. Успех требует Telegram ok=true, реального message_id и совпадения настроенного chat ID. Секреты не выводятся. Локально 9/9 unit PASS; bot unit CI и Fast PR на `13a468cb` SUCCESS.
+- **Telegram delivery = BLOCK, работа по боту не завершена.** Два post-deploy запуска и повтор после паузы получили HTTP 429 (retry_after=32, ожидание 33 секунды) и TimeoutError. [Последний завершённый запуск, attempt 3](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45307941922/attempts/3): FAILURE; message_id не получен. Зелёный unit CI не выдаётся за доставку. Финальный контрольный повтор (attempt 3, завершён 24.11.2026 01:59:24 UTC) также FAILURE: TimeoutError → 429 с ожиданием 33 секунды → TimeoutError. После этого новые отправки не запускались; доставки не подтверждены.
+- Production `apotet/netops`, вопросы/ключи/уровни, immutable closeout registry и исторические final-review-1/4 не затронуты. Урок остаётся на staging до отдельного ОК владельца для production.
+
+---
+
 ## 24.11.2026 — NETOPS-PARALLEL-2026-11-24: утверждённый регламент
 
 - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — обязательный регламент параллельных lesson/* и level/* задач. Технически проверенные уроки публикуются на зеркале до личной приёмки; production только по отдельному GO.
