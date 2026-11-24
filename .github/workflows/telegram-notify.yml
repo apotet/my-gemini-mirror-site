@@ -1,7 +1,7 @@
 name: NetOps Telegram notifications
 on:
   workflow_run:
-    workflows: ["NetOps checks", "Fast PR", "In-depth Understanding", "Deploy to GitHub Pages"]
+    workflows: ["NetOps checks", "Understanding strict closeout acceptance", "Understanding closeout Chromium — 164 IDs, two viewports", "Understanding closeout — four material states and review screens", "Deploy to GitHub Pages"]
     types: [completed]
   pull_request_target:
     types: [closed]
