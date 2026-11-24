@@ -1,0 +1,10 @@
+name: Kimi Agent
+'on':
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Agent installation incomplete; no API call performed'
