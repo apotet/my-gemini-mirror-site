@@ -13,7 +13,7 @@ Default полноценная GLM-5.3; только явный выбор glm-5
 ChatGPT читает отчёт и проверяет замечания, агент не меняет уроки и не публикует сайт.
 Оригинальный инженерный промт Геннадия и точные критерии шкалы не найдены; найденные
 PoE/HTTP задания не подменяют оригинал. Шкала /10 известна только из ROADMAP.
-Первый HSR run и его расход пока PENDING, не считать выполненным до фактического API-ответа.
+Первый HSR аудит выполнен: [Issue #350](https://github.com/apotet/my-gemini-mirror-site/issues/350), [run 45416138066](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45416138066) SUCCESS, source SHA `8f471e0079052d0433a0123e374f100fb1b8362d`. GLM-5.3, ровно 1 API call, input 18737 / output 10548 (reasoning 5040) / cached 0 / total 29285, рассчитанная стоимость $0.072643. Telegram подтверждён: message_id=14, configured_chat_matches=true. [Полный отчёт](audits/zai-hsr-20261124.md), [usage/cost](audits/zai-hsr-20261124-accounting.json), [Artifact](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45416138066/artifacts/14932875329). Итог модели 6.5/10, собственная рубрика; не считать точным сравнением с Геннадием. Browser/нормативное соответствие IEC UNVERIFIED. Замечания модели требуют проверки координатором, никаких исправлений HSR не выполнено. PR #349 merged, code SHA `c2cf1743eb51fb1f17eeff8ccd0b7e699492cda4`; Fast PR gate SUCCESS. Pages 45416109944 SUCCESS, live HTTP 200; визуальная приёмка не заявляется.
 Production, HSR content, Gemini и Kimi не изменяются. Новые CI checks не добавлены.
 
 ---
