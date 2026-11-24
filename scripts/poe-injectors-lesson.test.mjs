@@ -63,7 +63,7 @@ assert.ok(images.includes('poe-ieee-vs-passive-compare.svg'));
 assert.match(allPlain,/не (?:подключай|подавай)|НЕ подключай/i,'Passive safety notice');
 assert.match(allPro,/18 Вт/,'Professional DC calculation');
 const untouched=structuredClone(lesson);delete untouched.blocks[0].cheatsheet;
-assert.equal(createHash('sha256').update(JSON.stringify(untouched)).digest('hex'),'a613a8bb80c8a5eb69ffe1e4685b60e52f33e0b6e7db375e77a20634baf215dd','All other lesson fields, explanations, links and all 3+5 complete questions/keys unchanged from main@21d6fde');
+assert.equal(createHash('sha256').update(JSON.stringify(untouched)).digest('hex'),'221073135079ee66cdbc93ed9267a550cc0660e649e5f5f558c7babe20d5b91d','Owner-mandated 2026-11-24 rework: cases A/B/C as lists, anti-patterns surfaced, Case C contradiction fixed, 18W dedup; all other lesson fields, explanations, links and all 3+5 complete questions/keys unchanged from main@21d6fde');
 for(const [file,sha] of Object.entries({'poe-injector-splitter-chains.svg':'405444045682751a9b38ba3070e489426b22bc260ea851fa0930ce9dcbfb535e','poe-ieee-vs-passive-compare.svg':'7acf3e4c2738e4a1506f86e95e2714f5c83cdb887411883c2e3a563563f6e132'})) assert.equal(createHash('sha256').update(readFileSync('public/lesson-images/'+file)).digest('hex'),sha,`${file}: original Pro SVG bytes unchanged`);
 assert.match(lesson.blocks[0].cheatsheet.alt,/ИИ.*фотореалистичная.*иллюстрация/);
 assert.match(lesson.blocks[0].cheatsheet.note,/сгенерировано ИИ.*не фотография реального брендового оборудования/);
