@@ -1,0 +1,66 @@
+name: Gemini L3 read-only from GitHub Issue
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: gemini-l3-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.issue.user.login == 'apotet' && github.actor == 'apotet' &&
+      github.event.sender.type == 'User' && startsWith(github.event.issue.title, '[Gemini L3] ') &&
+      !github.event.issue.pull_request && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate, collect current source and claim Issue
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/gemini-l3-issue.py prepare
+      - name: One bounded Gemini request without retries
+        id: audit
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/gemini-l3-issue.py run
+      - uses: actions/upload-artifact@v4
+        id: artifact
+        if: always()
+        with:
+          name: gemini-l3-audit-${{ github.event.issue.number }}
+          path: gemini-l3-output/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Publish result to Issue
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+          AUDIT_STATUS: ${{ steps.audit.outcome }}
+        run: python3 scripts/gemini-l3-issue.py publish
+      - name: Telegram final result
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AUDIT_STATUS: ${{ steps.audit.outcome }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('telegram', 'scripts/telegram-notify.py')
+          tg = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(tg)
+          url = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+          tg.message_for = lambda event: Path("gemini-l3-output/summary.txt").read_text()
+          tg.deliver({}, os.environ['TELEGRAM_BOT_TOKEN'], os.environ['TELEGRAM_CHAT_ID'])
+          PY
