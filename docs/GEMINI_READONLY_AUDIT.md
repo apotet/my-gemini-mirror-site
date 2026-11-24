@@ -1,5 +1,8 @@
 # Gemini read-only auditor for NetOps staging
 
+> Действующее решение владельца NETOPS-LIGHT-CI-2026-11-24: аудит по этому runbook выполняется по необходимости. Исторические fingerprint/gate требования ниже не являются условиями staging merge/deploy; применять актуальный DEVELOPMENT_WORKFLOW.md. Малые изменения проверять адресно, production — только по отдельному GO.
+
+
 **Owner decision (19 Nov 2026):** Gemini reviews only. **ChatGPT owns all fixes, verification, and staging merge.** No AI is allowed to auto-approve, auto-merge, deploy, edit source files, or touch `apotet/netops` production.
 
 ## One-time setup (works on iPhone)

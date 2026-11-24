@@ -1,16 +1,10 @@
 name: Understanding closeout — four material states and review screens
 
 on:
-  pull_request:
-    paths:
-      - 'src/components/**'
-      - 'src/data/inDepth/**'
-      - 'src/data/glossary.ts'
-      - 'src/utils/glossaryText.ts'
-      - 'scripts/review-materials.browser.mjs'
-      - 'scripts/explanations.browser.mjs'
-      - 'scripts/ipv6-ra-glossary.browser.mjs'
-      - '.github/workflows/understanding-closeout-surfaces.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   review-materials:

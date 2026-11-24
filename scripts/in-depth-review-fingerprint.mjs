@@ -5,7 +5,8 @@ import { bundleEntry } from './load-bank.mjs';
 import { evaluateInDepthFingerprintPolicy, evaluateCloseoutAcceptancePolicy } from './in-depth-review-policy.mjs';
 const args=process.argv.slice(2);
 assert.ok(args.length===0 || (args.length===1&&args[0]==='--report-only'),'Only --report-only is supported');
-const reportOnly=args.includes('--report-only');
+// Owner decision: fingerprint drift is diagnostic, not a release gate.
+const reportOnly=true;
 
 const m=await bundleEntry('scripts/in-depth-entry.ts','in-depth-review-fingerprint.mjs');
 const audits=[
@@ -52,6 +53,6 @@ mkdirSync('scripts/.cache/in-depth',{recursive:true});
 writeFileSync('scripts/.cache/in-depth/semantic-freeze-report.json',JSON.stringify({summary,policy,historicalPolicy,rows},null,2)+'\n');
 console.log(JSON.stringify({...summary,unresolvedStatusIds:historicalPolicy.counts.unresolvedStatus,mismatchIds:mismatch.length},null,2));
 if(!policy.pass){
-  console.error('FINGERPRINT_GUARD_BLOCK: '+policy.note);
+  console.error('FINGERPRINT_GUARD_WARNING: '+policy.note);
   if(!reportOnly)process.exitCode=1;
 }

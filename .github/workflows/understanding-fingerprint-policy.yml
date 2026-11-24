@@ -1,21 +1,14 @@
 name: Understanding strict closeout acceptance
 
 on:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'scripts/load-bank.mjs'
-      - 'scripts/in-depth-entry.ts'
-      - 'scripts/in-depth-review-fingerprint.mjs'
-      - 'scripts/in-depth-review-policy.mjs'
-      - 'scripts/in-depth-review-policy.test.mjs'
-      - 'docs/audits/in-depth/closeout-acceptance-*.json'
-      - 'docs/audits/in-depth/final-review-*.json'
-      - '.github/workflows/understanding-fingerprint-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   fingerprint-policy:
-    name: Strict registry, content, history, typecheck and build
+    name: Manual closeout diagnostics (informational fingerprints)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -26,8 +19,8 @@ jobs:
       - run: npm ci --no-fund --no-audit
       - name: Verify historical and closeout fail-closed cases
         run: node scripts/in-depth-review-policy.test.mjs
-      - name: Verify exact 164-ID acceptance (strict, no report-only)
-        run: node scripts/in-depth-review-fingerprint.mjs
+      - name: Report 164-ID historical acceptance differences (informational)
+        run: node scripts/in-depth-review-fingerprint.mjs --report-only
       - name: Verify Understanding content contracts
         run: npm run test:in-depth
       - name: Verify historical answers and saved attempts
