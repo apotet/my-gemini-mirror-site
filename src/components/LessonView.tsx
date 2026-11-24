@@ -197,7 +197,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
-        {lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
+        {lesson.id === 'l1-poe-injectors-splitters' ? <p className="whitespace-pre-line">{content.summary}</p> : lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
           <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
             <p className="whitespace-pre-line">
               <GlossaryText>{content.summary.split('IEEE 802.3af/at/bt')[0]}</GlossaryText>
