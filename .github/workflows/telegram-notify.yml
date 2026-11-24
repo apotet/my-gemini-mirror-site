@@ -3,59 +3,36 @@ on:
   workflow_run:
     workflows: ["NetOps checks", "Understanding strict closeout acceptance", "Understanding closeout Chromium — 164 IDs, two viewports", "Understanding closeout — four material states and review screens", "Deploy to GitHub Pages"]
     types: [completed]
-  pull_request_target:
-    types: [closed]
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/telegram-notify.yml'
+      - 'scripts/telegram-notify.py'
+      - 'scripts/telegram-notify.test.py'
 permissions:
   contents: read
 jobs:
-  notify:
-    if: github.event_name != 'pull_request_target' || github.event.pull_request.merged == true
+  test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 2
     steps:
-      - name: Send Telegram notification
+      - uses: actions/checkout@v4
+      - run: python3 scripts/telegram-notify.test.py
+  notify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+        (contains(fromJSON('["failure","cancelled","timed_out","action_required"]'), github.event.workflow_run.conclusion) ||
+          (github.event.workflow_run.name == 'Deploy to GitHub Pages' && github.event.workflow_run.conclusion == 'success')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: netops-staging-telegram-delivery
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deliver final result and verify Telegram message ID
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python3 - <<'PY'
-          import json, os, urllib.request, urllib.parse, urllib.error, socket, time
-          token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
-          chat = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
-          if not token or not chat:
-              raise SystemExit("Telegram secrets missing")
-          with open(os.environ["GITHUB_EVENT_PATH"]) as f:
-              event = json.load(f)
-          run = event.get("workflow_run")
-          pr = event.get("pull_request")
-          if run:
-              result = run.get("conclusion", "unknown")
-              if result == "skipped":
-                  raise SystemExit(0)
-              icon = "✅" if result == "success" else "❌" if result == "failure" else "⚠️"
-              prs = ", ".join("#" + str(p["number"]) for p in run.get("pull_requests", []))
-              message = f"{icon} NetOps staging | {run['name']} — {result}\n{prs} {run.get('head_branch', '')}\nSHA: {run.get('head_sha', '')[:8]}\n{run['html_url']}"
-          elif pr:
-              message = f"🔀 NetOps staging | PR #{pr['number']} merged\n{pr['title']}\n{pr['html_url']}"
-          else:
-              message = "✅ NetOps CI: тестовое уведомление. Telegram подключён."
-          data = urllib.parse.urlencode({"chat_id": chat, "text": message}).encode()
-          for attempt in range(3):
-              try:
-                  with urllib.request.urlopen("https://api.telegram.org/bot" + token + "/sendMessage", data=data, timeout=15) as response:
-                      if not json.load(response).get("ok"):
-                          raise SystemExit("Telegram rejected message")
-                  print("Telegram notification delivered")
-                  break
-              except urllib.error.HTTPError as exc:
-                  print(f"Telegram HTTP status: {exc.code}")
-                  if exc.code < 500 and exc.code != 429:
-                      raise SystemExit("Telegram API rejected request") from None
-              except (urllib.error.URLError, TimeoutError, OSError) as exc:
-                  reason = getattr(exc, "reason", exc)
-                  print(f"Telegram network failure: {type(reason).__name__}")
-              if attempt == 2:
-                  raise SystemExit("Telegram delivery failed after retries")
-              time.sleep(3 * (attempt + 1))
-          PY
+        run: python3 scripts/telegram-notify.py
