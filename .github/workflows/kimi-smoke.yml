@@ -23,7 +23,7 @@ jobs:
               with urllib.request.urlopen(urllib.request.Request(base+"/models",headers=headers),timeout=20) as r:
                   models=[m["id"] for m in json.load(r)["data"]]
               print("Available models:",json.dumps(models))
-              model=next((m for m in ["kimi-k3.1","kimi-k3.1-pro","kimi-k2.5","kimi-k2-0905-preview","moonshot-v1-8k"] if m in models),None)
+              model="kimi-k3" if "kimi-k3" in models else None
               if not model:
                   raise SystemExit("No known model available")
               print("Testing:",model)
