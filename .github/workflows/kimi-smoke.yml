@@ -1,0 +1,47 @@
+name: Kimi API smoke
+on:
+  push:
+    branches: [ci/kimi-api-smoke]
+    paths: [.github/workflows/kimi-smoke.yml]
+permissions: {}
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - env:
+          MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error
+          key=os.environ.get("MOONSHOT_API_KEY","").strip()
+          if not key:
+              raise SystemExit("Missing API key")
+          base="https://api.moonshot.ai/v1"
+          headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"}
+          try:
+              with urllib.request.urlopen(urllib.request.Request(base+"/models",headers=headers),timeout=20) as r:
+                  models=[m["id"] for m in json.load(r)["data"]]
+              print("Available models:",json.dumps(models))
+              model=next((m for m in ["kimi-k3.1","kimi-k3.1-pro","kimi-k2.5","kimi-k2-0905-preview","moonshot-v1-8k"] if m in models),None)
+              if not model:
+                  raise SystemExit("No known model available")
+              print("Testing:",model)
+              data=json.dumps({"model":model,"messages":[{"role":"user","content":"Reply OK"}],"max_tokens":32}).encode()
+              with urllib.request.urlopen(urllib.request.Request(base+"/chat/completions",data=data,headers=headers),timeout=45) as r:
+                  result=json.load(r)
+                  print("HTTP",r.status,"Usage",json.dumps(result.get("usage",{})))
+                  if not result.get("choices"):
+                      raise SystemExit("No completion")
+                  print("Kimi API PASS")
+          except urllib.error.HTTPError as e:
+              print("HTTP",e.code)
+              try:
+                  code=str(json.load(e).get("error",{}).get("code","unknown"))
+                  print("API code:",code if code.replace("_","").isalnum() and len(code)<80 else "unknown")
+              except Exception:
+                  pass
+              raise SystemExit(1) from None
+          except OSError as e:
+              raise SystemExit(type(e).__name__) from None
+          PY
