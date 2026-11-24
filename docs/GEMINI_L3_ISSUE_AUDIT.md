@@ -1,9 +1,10 @@
 # Gemini L3 через Issue
 
 ChatGPT создаёт Issue от apotet с заголовком `[Gemini L3] Независимый аудит`.
-Body — JSON без fences:
+Перед созданием прочитать актуальный HEAD ветки через GitHub API и заменить
+`<CURRENT_40_HEX_BRANCH_SHA>` его полным значением. Body — JSON без fences:
 
-    {"branch":"work/applied-l3-20261124","sha":"965160fcfe141a645687a508ef5e97e841b7382f","ids":["gen-port-13","gen-port-6","gen-port-7","gen-port-8"],"model":"gemini-4-hydrogen"}
+    {"branch":"work/applied-l3-20261124","sha":"<CURRENT_40_HEX_BRANCH_SHA>","ids":["gen-port-13","gen-port-6","gen-port-7","gen-port-8"],"model":"gemini-4-hydrogen"}
 
 Только issues opened, автор и sender apotet, attempt=1, durable claim до оплаты.
 Один generateContent POST, timeout 420 секунд, без retries, redirects, fallback или CLI.
