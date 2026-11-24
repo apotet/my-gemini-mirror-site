@@ -1,0 +1,41 @@
+name: ZAI API smoke
+on:
+  push:
+    branches: [ci/zai-api-smoke]
+    paths: [.github/workflows/zai-smoke.yml]
+permissions: {}
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Minimal API request
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+          key = os.environ.get("ZAI_API_KEY", "").strip()
+          if not key:
+              raise SystemExit("ZAI_API_KEY missing")
+          payload = {"model":"glm-5.3","messages":[{"role":"user","content":"Reply OK."}],"max_tokens":32,"stream":False}
+          req = urllib.request.Request("https://api.z.ai/api/paas/v4/chat/completions", data=json.dumps(payload).encode(), headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"})
+          try:
+              with urllib.request.urlopen(req, timeout=45) as response:
+                  result = json.load(response)
+                  print("HTTP", response.status)
+                  print("Usage:", json.dumps(result.get("usage", {})))
+                  if not result.get("choices"):
+                      raise SystemExit("No completion returned")
+                  print("ZAI API PASS")
+          except urllib.error.HTTPError as exc:
+              print("HTTP", exc.code)
+              try:
+                  code = str(json.load(exc).get("error", {}).get("code", "unknown"))
+                  print("API error code:", code if code.isalnum() and len(code)<32 else "unknown")
+              except Exception:
+                  pass
+              raise SystemExit(1) from None
+          except (OSError, TimeoutError) as exc:
+              raise SystemExit("Network failure: "+type(exc).__name__) from None
+          PY
