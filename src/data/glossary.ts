@@ -1740,6 +1740,16 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "MPS": ["Maintain Power Signature","Сигнатура поддержания питания PoE",false,"Признак присутствия питаемого устройства, по которому PSE определяет необходимость продолжать подачу питания."],
+  "DC": ["Direct Current","Постоянный ток",false,"Электрический ток постоянного направления; на сплиттере DC обозначает отдельное питание постоянным напряжением."],
+  "DC OUT": ["DC Output","Выход постоянного напряжения",false,"Разъём выдачи питания; проверяй напряжение, допустимый ток и полярность."],
+  "Data IN": ["Data Input","Вход данных",false,"Порт инжектора для Ethernet-данных от коммутатора без подачи питания на этот вход."],
+  "Data + Power OUT": ["Data and Power Output","Выход данных и питания",false,"Порт инжектора, передающий Ethernet и питание PoE к потребителю."],
+  "LED": ["Light Emitting Diode","Светодиод",false,"Индикатор состояния; сам по себе не подтверждает согласование PoE."],
+  "КПД": ["Efficiency","Коэффициент полезного действия",false,"Отношение полезной выходной мощности к входной; часть мощности теряется в преобразователе."],
+  "ИК-подсветка": ["Infrared illumination","Инфракрасная подсветка",false,"Подсветка камеры для ночной съёмки, включение которой может увеличить потребляемую мощность."],
+  "БП": ["Power supply","Блок питания",false,"Устройство, обеспечивающее требуемое напряжение и допустимый ток нагрузки."],
+  "upstream": ["Upstream","В сторону вышестоящего оборудования",false,"В этой схеме — коммутатор перед инжектором со стороны источника данных."],
   "AP": ["Access Point", "Точка доступа Wi-Fi", true],
   "T568A": ["ANSI/TIA-568 T568A wiring scheme", "Схема оконцевания T568A", true],
   "T568B": ["ANSI/TIA-568 T568B wiring scheme", "Схема оконцевания T568B", true],
