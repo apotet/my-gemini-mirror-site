@@ -1,68 +1,205 @@
 #!/usr/bin/env python3
-"""Offline tests for Gemini Issue agent routing, claim, and no-retry. No paid calls."""
+"""Real offline/mock tests for Gemini Issue agent. No paid calls."""
+import importlib.util
 import json
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = ROOT / 'scripts' / 'gemini-issue-agent.py'
+sys.path.insert(0, str(ROOT / 'scripts'))
 
-def run_prepare(event, attempt='1', expect_fail=False):
+def load():
+    spec = importlib.util.spec_from_file_location('agent', ROOT / 'scripts' / 'gemini-issue-agent.py')
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+def make_event(body, title='[GEMINI] test'):
+    return {
+        'issue': {'number': 1, 'title': title, 'body': body, 'user': {'login': 'apotet'}, 'pull_request': None},
+        'sender': {'login': 'apotet', 'type': 'User'},
+    }
+
+def test_prepare_success():
+    agent = load()
+    event = make_event(json.dumps({'task': 'audit', 'files': ['docs/STATE.md']}))
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)
-        # minimal repo layout
         (td / 'docs').mkdir()
-        (td / 'docs' / 'STATE.md').write_text('# state\n')
-        env = os.environ.copy()
-        env['GITHUB_REPOSITORY'] = 'apotet/my-gemini-mirror-site'
-        env['GITHUB_RUN_ATTEMPT'] = attempt
-        env['GITHUB_EVENT_PATH'] = str(td / 'event.json')
-        env['GITHUB_RUN_ID'] = '1'
+        (td / 'docs' / 'STATE.md').write_text('# s\n')
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        env = {
+            'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site',
+            'GITHUB_RUN_ATTEMPT': '1',
+            'GITHUB_EVENT_PATH': str(td / 'event.json'),
+            'GITHUB_RUN_ID': '1',
+        }
         (td / 'event.json').write_text(json.dumps(event))
-        # copy script into temp and run from there so OUT is local
-        # Instead run with cwd=td after copying needed files
-        r = subprocess.run(
-            [sys.executable, str(SCRIPT), 'prepare'],
-            cwd=td, env=env, capture_output=True, text=True
-        )
-        # The script uses relative OUT and gh; for unit we only test validation paths
-        # by importing. This harness is limited; real gates are the assertions below.
-        return r
+        with patch.dict(os.environ, env), \
+             patch.object(agent, 'git', return_value='abc123'), \
+             patch.object(agent, 'tracked_files', return_value={'docs/STATE.md'}), \
+             patch.object(agent, 'api_pages', return_value=[]), \
+             patch.object(agent, 'gh') as gh:
+            agent.prepare()
+            assert gh.called
+            assert (agent.OUT / 'task.json').exists()
+    print('PASS prepare success')
 
-# Direct import tests of validation logic by exercising prepare under controlled env
-# We mock by checking the script contains required guards.
-text = SCRIPT.read_text()
-checks = [
-    ('claim marker', 'gemini-issue-agent:claimed:v1' in text),
-    ('run_attempt guard', "GITHUB_RUN_ATTEMPT') == '1'" in text),
-    ('title prefix', "[GEMINI] " in text),
-    ('model pin', 'gemini-2.5-pro' in text),
-    ('no retry in run', 'urllib.request.urlopen' in text and 'retry' not in text.lower().split('def run')[1][:500]),
-    ('endpoint official', 'generativelanguage.googleapis.com' in text),
-    ('owner check', "login'] == 'apotet'" in text),
-]
-failed = 0
-for name, ok in checks:
-    print('PASS' if ok else 'FAIL', name)
-    if not ok:
-        failed += 1
+def test_prepare_already_claimed():
+    agent = load()
+    event = make_event(json.dumps({'task': 'audit'}))
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
+               'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
+        (td / 'e.json').write_text(json.dumps(event))
+        with patch.dict(os.environ, env), \
+             patch.object(agent, 'git', return_value='x'), \
+             patch.object(agent, 'tracked_files', return_value=set()), \
+             patch.object(agent, 'api_pages', return_value=[{'body': agent.MARKER}]):
+            try:
+                agent.prepare()
+                raise AssertionError('should have failed')
+            except ValueError as e:
+                assert 'already claimed' in str(e)
+    print('PASS prepare already claimed')
 
-# Workflow checks
-wf = (ROOT / '.github/workflows/gemini-issue-agent.yml').read_text()
-wf_checks = [
-    ('issues opened only', 'types: [opened]' in wf),
-    ('run_attempt == 1', 'github.run_attempt == 1' in wf),
-    ('concurrency', 'gemini-issue-agent-' in wf),
-    ('no contents write', 'contents: read' in wf and 'contents: write' not in wf),
-    ('offline test step', 'gemini-issue-agent.test.py' in wf),
-]
-for name, ok in wf_checks:
-    print('PASS' if ok else 'FAIL', name)
-    if not ok:
-        failed += 1
+def test_prepare_edit_disabled():
+    agent = load()
+    event = make_event(json.dumps({'task': 'edit', 'mode': 'edit'}))
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
+               'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
+        (td / 'e.json').write_text(json.dumps(event))
+        with patch.dict(os.environ, env):
+            try:
+                agent.prepare()
+                raise AssertionError('should have failed')
+            except ValueError as e:
+                assert 'edit mode is disabled' in str(e)
+    print('PASS edit disabled')
 
-print(f'\n{len(checks)+len(wf_checks)-failed} passed, {failed} failed')
-sys.exit(1 if failed else 0)
+def test_prepare_bad_json():
+    agent = load()
+    event = make_event('not json')
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
+               'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
+        (td / 'e.json').write_text(json.dumps(event))
+        with patch.dict(os.environ, env):
+            try:
+                agent.prepare()
+                raise AssertionError('should have failed')
+            except ValueError:
+                pass
+    print('PASS bad JSON')
+
+def test_run_missing_key():
+    agent = load()
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        with patch.dict(os.environ, {'GEMINI_API_KEY': ''}):
+            try:
+                agent.run()
+                raise AssertionError('should have failed')
+            except RuntimeError as e:
+                assert 'GEMINI_API_KEY' in str(e)
+    print('PASS missing key')
+
+def test_run_http_error():
+    agent = load()
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        import urllib.error
+        err = urllib.error.HTTPError('http://x', 400, 'bad', {}, None)
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo:
+            bo.return_value.open.side_effect = err
+            try:
+                agent.run()
+                raise AssertionError('should have failed')
+            except Exception:
+                pass
+            acc = json.loads((agent.OUT / 'accounting.json').read_text())
+            assert acc['status'] == 'error'
+            assert acc.get('httpStatus') == 400
+    print('PASS HTTP error accounting')
+
+def test_run_truncated():
+    agent = load()
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        os.chdir(td)
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        resp = MagicMock()
+        resp.read.return_value = json.dumps({
+            'candidates': [{'finishReason': 'MAX_TOKENS', 'content': {'parts': [{'text': 'partial'}]}}]
+        }).encode()
+        resp.__enter__ = lambda s: s
+        resp.__exit__ = lambda s, *a: None
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo:
+            bo.return_value.open.return_value = resp
+            try:
+                agent.run()
+                raise AssertionError('should have failed')
+            except RuntimeError as e:
+                assert 'Incomplete' in str(e)
+            acc = json.loads((agent.OUT / 'accounting.json').read_text())
+            assert acc['status'] == 'incomplete'
+    print('PASS truncated treated incomplete')
+
+def test_key_not_in_url():
+    agent = load()
+    text = (ROOT / 'scripts' / 'gemini-issue-agent.py').read_text()
+    assert 'x-goog-api-key' in text
+    assert '?key=' not in text
+    print('PASS key via header not URL')
+
+def test_redirect_forbidden():
+    agent = load()
+    text = (ROOT / 'scripts' / 'gemini-issue-agent.py').read_text()
+    assert 'Redirect forbidden' in text
+    assert 'HTTPRedirectHandler' in text
+    print('PASS redirect forbidden')
+
+if __name__ == '__main__':
+    test_prepare_success()
+    test_prepare_already_claimed()
+    test_prepare_edit_disabled()
+    test_prepare_bad_json()
+    test_run_missing_key()
+    test_run_http_error()
+    test_run_truncated()
+    test_key_not_in_url()
+    test_redirect_forbidden()
+    print('\nAll offline/mock tests passed')

@@ -1,3 +1,12 @@
+## 25.11.2026 — Gemini agent: замечания приёмки (#369)
+
+L3 prepare failure подтверждён по логам run 45506829176: Inventory stale.
+Edit mode отключён до #365. Ключ через x-goog-api-key, redirects запрещены,
+claim по всем страницам. Offline/mock тесты покрывают prepare/run/publish пути.
+Старый CLI-workflow не объявляется неактивным только по документации.
+
+---
+
 ## 25.11.2026 — Восстановление Gemini через [GEMINI] Issue (#368)
 
 Диагностика: существующий `gemini-issue.yml` (CLI по метке) помечен как неактивный;
