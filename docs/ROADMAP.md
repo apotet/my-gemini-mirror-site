@@ -1,3 +1,9 @@
+## 25.11.2026 — PoE на приборе: схема полей и фото тестера
+
+В урок `l1-poe-screen-reading` добавлены открытая схема полей экрана и фото LinkRunner G2. Явно разобран пример Requested 4 / Received 0 как несовпадение класса, а не обрыв. Ключи и соседние уроки не менялись.
+
+---
+
 ## 25.11.2026 — #391: OpenCode без искусственного лимита шагов
 
 Для audit-only обоих native провайдеров удалён steps=3 без нового лимита. Сохранены timeout CLI 600 секунд/job 15 минут, узкий scope, read-only, бюджетный риск (не hard cap), owner commands, single-use claim и no retry. Результат completed требует финального stop, exit=0 и явного COMPLETE модели; interrupted/incomplete/failed не выдаются за завершённый аудит. Архив расширен result.json; после исполнения в Issue публикуются краткий итог и числовой usage со ссылкой на artifact/run, без stderr/credentials. Отсутствующие/частичные данные неизвестны, не $0. Бесплатные регрессии включают более трёх шагов, таймаут, partial, error, incomplete и safe Issue publication. После CI merge разрешён задачей #391. Платная модель не запускалась. Следующий тест — отдельный Issue: l1-poe-screen-reading в src/data/lessons/foundation-coverage.ts, GLM-5.3 Standard API, тот же предмет аудита, цель $0.20 без гарантии; #388 не повторять.
