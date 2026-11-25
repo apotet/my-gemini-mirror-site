@@ -19,7 +19,13 @@ def config(model):
         'small_model': f'zai-coding-plan/{model}',
         'enabled_providers': ['zai-coding-plan'],
         'share': 'disabled', 'autoupdate': False,
-        'permission': {'*': 'deny'},
+        'permission': {
+            '*': 'deny',
+            'read': 'allow', 'glob': 'allow', 'grep': 'allow', 'list': 'allow',
+            'edit': 'deny', 'bash': 'deny', 'task': 'deny',
+            'external_directory': 'deny',
+        },
+        'snapshot': False,
     }
 
 
@@ -27,6 +33,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
     p.add_argument('--paid', action='store_true')
+    p.add_argument('--repo', default='.', help='Working repository checkout')
     p.add_argument('--prompt', default='opencode-prompt.txt')
     p.add_argument('--output', default='opencode-report')
     args = p.parse_args()
@@ -42,8 +49,10 @@ def main():
     key = os.environ.get('ZHIPU_API_KEY')
     if not key:
         raise RuntimeError('Missing OpenCode credential')
-    # No repo tools, plugins, project config, shell, GitHub token or secret files.
-    # Context is explicitly supplied by the trusted workflow as plain prompt data.
+    # Run native read/search tools in the checkout; isolate credentials and CLI state.
+    repo = Path(args.repo).resolve()
+    if not (repo / ".git").exists():
+        raise RuntimeError("Repository checkout required")
     prompt = Path(args.prompt).read_text()
     with tempfile.TemporaryDirectory(prefix='opencode-audit-') as temp:
         root = Path(temp)
@@ -51,10 +60,12 @@ def main():
         env = {k: os.environ[k] for k in ('PATH', 'LANG') if k in os.environ}
         env.update(HOME=temp, XDG_CONFIG_HOME=f'{temp}/config',
                    XDG_DATA_HOME=f'{temp}/data', XDG_CACHE_HOME=f'{temp}/cache',
-                   ZHIPU_API_KEY=key, OPENCODE_DISABLE_AUTOUPDATE='true')
+                   ZHIPU_API_KEY=key, OPENCODE_DISABLE_AUTOUPDATE='true',
+                   OPENCODE_CONFIG=str(root / 'opencode.json'),
+                   OPENCODE_PERMISSION=json.dumps(cfg['permission']))
         try:
             result = subprocess.run(['opencode', 'run', '--model', cfg['model'],
-                                     '--format', 'json', prompt], cwd=temp, env=env,
+                                     '--format', 'json', prompt], cwd=str(repo), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))

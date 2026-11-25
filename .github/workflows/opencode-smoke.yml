@@ -1,0 +1,33 @@
+name: OpenCode CLI smoke (no model)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/opencode-*.yml'
+      - 'scripts/opencode_audit.py'
+      - 'tests/test_opencode_audit.py'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline runner regression tests
+        run: python3 -m unittest discover -s tests -p test_opencode_audit.py
+      - name: Install official pinned CLI without credentials
+        run: npm install --global opencode-ai@1.19.6
+      - name: Verify real CLI version and command availability (no model request)
+        run: |
+          test "$(opencode --version)" = '1.19.6'
+          opencode run --help > /dev/null
+      - name: Dry-run both model configurations (no CLI invocation)
+        run: |
+          python3 scripts/opencode_audit.py --model glm-5.4 --output "$RUNNER_TEMP/dry-54"
+          python3 scripts/opencode_audit.py --model glm-5.3 --output "$RUNNER_TEMP/dry-53"
