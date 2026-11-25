@@ -22,6 +22,8 @@
 
 ## Последние решения
 
+- 25.11.2026: Gemini recovery (#378, SHA 9f2349cd). До 4 попыток на явные 503/429, backoff+jitter, Retry-After, после двух 503 на Hydrogen переход на Flash. Smoke #380: 4×503, генерации нет.
+
 - #377: точечная поддержка `source_sha` для audit-only, стандарты/исполняемый код из main, данные из immutable source commit. 54 offline-регрессии локально PASS; CI/merge — в отдельном PR. После merge владелец уже разрешил ZAI-аудит L3-01 (#376) на `491dfd894f229239eb54011f5970fd3b5b45263e`; повторное разрешение не требуется. Ветка Геннадия и #352 только читаются, без изменений.
 
 - 25.11.2026: независимая приёмка #365 пройдена; по прямому разрешению владельца PR выведен из Draft и слит. Merge `ca8a88fb6eda6a1af1db65c4d7ec671bcee3b49d`, принятый head `50a7bdc11bd3423a548c36ae2c5003bfe32f8a07`. [Runtime CI](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453147) и [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453255) — SUCCESS: 49/49 runtime, 11/11 Gemini, 12/12 resolver, полный Docker pipeline. Платные вызовы не запускались и пока не разрешены. #361 остаётся Draft; ветка Геннадия не затронута.
