@@ -1,5 +1,26 @@
 # ZAI lesson resolver acceptance evidence
 
+## Current context-budget follow-up (2026-11-25)
+
+The former #356 overflow below is resolved by trusted `.github/zai-agent-limits.json`:
+GLM-5.3 lesson messages <=200,000 UTF-8 bytes, output <=10,000 tokens including
+reasoning, independent hard cost cap $0.25. No Issue overrides accepted.
+The exact pack is still 140,252 bytes; full messages 144,846 bytes; conservative
+maximum cost = ((144846 + 2048) * 1.4 + 10000 * 4.4) / 1e6 = $0.2496516.
+Keeping 16,384 output tokens would cost $0.2777412 under this same bound.
+No input was removed. Model response completion remains subject to the existing
+partial-response failure check; no retry. L3 and Flash limits are unchanged.
+
+Tests: 12/12 Node PASS (includes 11/11 Python preparation/budget tests);
+90/90 registry coverage unchanged. Overflow of either context or cost fails
+before claim; exact financial boundary, trusted lower limit, invalid config,
+Issue overrides, repeat claims and reruns are covered offline. No paid calls.
+`run()`, claim block, workflow authorization and L3 packer are unchanged.
+See [ROADMAP](../../ROADMAP.md) for the current status and official model/pricing
+sources checked 2026-11-25.
+
+## Original resolver acceptance at 4b5d106 (historical)
+
 Base HEAD: `80c53d4b4d636b25ca73765461e41ea99cc871b7`.
 
 Run: `npm ci --ignore-scripts --prefix scripts/zai-runtime` then
