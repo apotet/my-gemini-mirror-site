@@ -64,9 +64,8 @@ jobs:
           python3 "$runner" --repo audit-main --expected-sha "$MAIN_SHA" --output "$RUNNER_TEMP/audit-main"
           python3 "$runner" --repo audit-pin --expected-sha "$PIN_SHA" --source "$SOURCE" --output "$RUNNER_TEMP/audit-pin"
           mkdir "$RUNNER_TEMP/no-model"
-          printf '#!/bin/sh\ntouch "$MODEL_CALLED"\nexit 99\n' > "$RUNNER_TEMP/no-model/opencode"
+          printf '#!/bin/sh\ntouch "$(dirname "$0")/called"\nexit 99\n' > "$RUNNER_TEMP/no-model/opencode"
           chmod +x "$RUNNER_TEMP/no-model/opencode"
-          export MODEL_CALLED="$RUNNER_TEMP/model-called"
           export PATH="$RUNNER_TEMP/no-model:$PATH"
           export ZHIPU_API_KEY=non-secret-test-placeholder
           for sha in '' invalid 0000000000000000000000000000000000000000; do
@@ -79,4 +78,4 @@ jobs:
             echo "Missing audit source accepted"
             exit 1
           fi
-          test ! -e "$MODEL_CALLED"
+          test ! -e "$RUNNER_TEMP/no-model/called"
