@@ -30,9 +30,8 @@ def config(model, provider=PROVIDERS[0]):
         },
         'snapshot': False,
     }
-    if provider == 'zai':
-        # Native OpenCode agent controls, not a billing guarantee.
-        cfg['agent'] = {'audit': {'mode': 'primary', 'steps': 3}}
+    # Native OpenCode agent controls for both providers, not a billing guarantee.
+    cfg['agent'] = {'audit': {'mode': 'primary', 'steps': 3}}
     return cfg
 
 
@@ -129,7 +128,7 @@ def main():
         try:
             result = subprocess.run(['opencode', 'run', '--model', cfg['model'],
                                      '--format', 'json',
-                                     *(['--agent', 'audit'] if args.provider == 'zai' else []), prompt], cwd=str(repo), env=env,
+                                     '--agent', 'audit', prompt], cwd=str(repo), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))

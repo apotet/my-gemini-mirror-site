@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/opencode-*.yml'
       - 'scripts/opencode_audit.py'
+      - 'scripts/opencode_control.cjs'
+      - 'tests/opencode_control.test.cjs'
       - 'tests/test_opencode_audit.py'
 permissions:
   contents: read
@@ -19,6 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Offline command authorization tests (no model or GitHub calls)
+        run: node --test tests/opencode_control.test.cjs
       - name: Offline runner regression tests
         run: python3 -m unittest discover -s tests -p test_opencode_audit.py
       - name: Install official pinned CLI without credentials
