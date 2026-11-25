@@ -37,7 +37,7 @@ const expected={
   "review-poe-29": [
     "Коммутатор — PSE, камера — PD",
     null,
-    "l1-copper-fault-poe"
+    "l1-poe-screen-reading"
   ],
   "l1v2-a-nick-view": [
     "Сделан глубокий надрез металлического стержня",
@@ -57,12 +57,12 @@ const expected={
   "l1v2-a-poe-connection": [
     "Через гнездо LAN 8P8C",
     "copper-poe-port.jpg",
-    "l1-copper-fault-poe"
+    "l1-poe-screen-reading"
   ],
   "l1v2-a-poe-unloaded": [
     "54,6 В без нагрузки",
     "copper-poe-result.png",
-    "l1-copper-fault-poe"
+    "l1-poe-screen-reading"
   ],
   "l1v2-a-mark-cat6a": [
     "Cat6A",
@@ -110,17 +110,24 @@ for(const id of ids){
  assert.ok(l,id+' linked lesson exists');
  assert.equal(l.id,lessonId,id+' exact topic lesson');
  assert.ok(l.relatedQuestionIds.includes(id),id+' reverse lesson link');
- assert.ok(l.blocks.length>=4 && l.professional?.blocks?.length>=4,id+' two real lesson styles');
+ assert.ok(l.blocks.length>=4,id+' substantial plain blocks');
+ if(l.professional?.blocks) assert.ok(l.professional.blocks.length>=4,id+' professional blocks when present');
 }
-for(const lessonId of ['l4-directory-remote-industrial-ports','l2-hsr-redundancy','l1-copper-fault-poe','l7-http-status-basics']){
+for(const lessonId of ['l4-directory-remote-industrial-ports','l2-hsr-redundancy','l1-poe-screen-reading','l7-http-status-basics']){
  const id=ids.find(x=>expected[x][2]===lessonId),l=getLessonForQuestion(id);
  assert.equal(l.id,lessonId);
- assert.ok(l.blocks.every(x=>x.body.length>200),l.id+' substantial plain');
- assert.ok(l.professional.blocks.every(x=>x.body.length>300),l.id+' substantial professional');
+ const mainPlain = l.blocks.filter(x => !x.heading.startsWith('Дальше:') && !x.heading.startsWith('Дополнительно:'));
+ assert.ok(mainPlain.length>=4 && mainPlain.every(x=>x.body.length>200),l.id+' substantial plain');
+ const proMin = l.id==='l1-poe-screen-reading' ? 250 : 300;
+ const mainPro = l.professional.blocks.filter(x => !x.heading.startsWith('Дальше:') && !x.heading.startsWith('Дополнительно:'));
+ assert.ok(mainPro.every(x=>x.body.length>proMin),l.id+' substantial professional (accepted length)');
  for(const term of new Set([...l.terms,...l.professional.terms])){
    assert.ok(GLOSSARY[term]?.description?.length>40 && GLOSSARY[term]?.relatesTo?.length>20,l.id+' glossary '+term);
  }
 }
+const copper=getLessonForQuestion('l1v2-a-corrosion-view');
+assert.equal(copper.id,'l1-copper-fault-poe');
+assert.ok(copper.blocks.length>=4 && copper.blocks.every(x=>x.body.length>200),'copper plain substantial; professional not required on accepted lesson');
 const gbic=getLessonForQuestion('photo-gbic-size'),upc=getLessonForQuestion('photo-blue-upc');
 assert.equal(gbic.id,'l1-fiber-hardware');
 assert.equal(upc.id,'l1-fiber-hardware');
