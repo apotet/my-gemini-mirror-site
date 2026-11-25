@@ -1,0 +1,29 @@
+{
+  "api_calls": 1,
+  "input_utf8_bytes": 22743,
+  "max_cost_usd": 0.181084,
+  "cost_limit_usd": 0.25,
+  "rates_per_million": {
+    "input": 2,
+    "cache_write": 2,
+    "cache_hit": 0.2,
+    "output": 10
+  },
+  "pricing_verified": "2026-11-25",
+  "pricing_source": "https://platform.kimi.ai/docs/pricing/chat",
+  "cost_basis": "conservative usage upper bound; exact cache TTL breakdown unavailable",
+  "cost_usd": null,
+  "status": "response received; protocol/verification may still fail",
+  "usage": {
+    "prompt_tokens": 5349,
+    "completion_tokens": 4076,
+    "total_tokens": 9425,
+    "completion_tokens_details": {
+      "reasoning_tokens": 257
+    },
+    "prompt_tokens_details": {
+      "cache_write_tokens": 5120
+    }
+  },
+  "usage_cost_upper_bound_usd": 0.062156
+}

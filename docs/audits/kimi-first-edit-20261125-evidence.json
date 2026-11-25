@@ -1,0 +1,40 @@
+{
+  "issue": 360,
+  "run": 45524251479,
+  "runAttempt": 1,
+  "infrastructurePR": 359,
+  "infrastructureMergeSHA": "bd92795f7a49f488cccc2bbea5a4b2570c471fb5",
+  "candidateSHA": "3bf2cfc010de1d95171b1a882a8cc581a219aa89",
+  "draftPR": 361,
+  "worker": "success",
+  "publishEdit": "failure",
+  "publisherFailure": "HTTPError during PR creation; HTTP status not retained",
+  "recovery": "Draft PR created through owner GitHub connection from existing verified branch; no model rerun",
+  "artifactID": 14981402449,
+  "artifactSHA256": "bf705455da568562e78f5fd3e02aea5a4c7f33e440143313ba17f605491ba99a",
+  "billingHeaders": {
+    "msh-usage-cache-write-tokens-1h": 0,
+    "msh-usage-cache-write-tokens-5m": 5120
+  },
+  "usage": {
+    "prompt_tokens": 5349,
+    "completion_tokens": 4076,
+    "total_tokens": 9425,
+    "completion_tokens_details": {
+      "reasoning_tokens": 257
+    },
+    "prompt_tokens_details": {
+      "cache_write_tokens": 5120
+    }
+  },
+  "finishReason": "stop",
+  "doneSeen": true,
+  "costUsdExact": null,
+  "costUsdRangeBeforeTax": [
+    "0.0510458",
+    "0.051458"
+  ],
+  "costRangeReason": "cache read tokens absent; 5120 5m-write tokens, 0 1h writes, remaining 229 tokens have unknown read/miss split",
+  "originalSHA256": "7c960703d7c85b1a0c4e4708cabe7d4ae79d9b6d3dd3532f4b05262bf9b04ca3",
+  "candidateSHA256": "a99f3652782ad8e06b322b6ed6b508c3a3913943aea9627c4994afc6e9b40815"
+}
