@@ -1,8 +1,8 @@
 # NetOps — компактная карта состояния
 
-**Проверенное состояние (SHA main):** `1a12583eac4ca5a050079e06a7b1c85e6ee62f54`  
-**Дата фиксации:** 2026-11-25  
-**Источник истины по истории решений:** `docs/ROADMAP.md` (полный журнал).  
+**Проверенное состояние (SHA main):** `b0a2325b2880148c6ce32e306fe76134727d8ed2`
+**Дата фиксации:** 2026-11-25
+**Источник истины по истории решений:** `docs/ROADMAP.md` (полный журнал).
 Эта карта — оперативный снимок. Полный ROADMAP читать только при необходимости.
 
 **Обязанность поддерживать актуальность:** обновлять STATE при завершении существенных задач, изменении блокеров и принятии решений. Перед использованием сверять с актуальным main и статусами открытых PR/Issue. Устаревшая карта не является источником истины.
@@ -15,18 +15,21 @@
 | [#366](https://github.com/apotet/my-gemini-mirror-site/issues/366) | Компактный контекст агентов и журнал проблем | Смержен (#367) |
 | [#364](https://github.com/apotet/my-gemini-mirror-site/issues/364) | Аудит расхода токенов | Отчёт опубликован |
 | [#361](https://github.com/apotet/my-gemini-mirror-site/pull/361) | Kimi edit: порядок проверки PoE под нагрузкой | Draft, ожидает приёмки владельцем |
-| [#365](https://github.com/apotet/my-gemini-mirror-site/pull/365) | Unified ZAI/Kimi tasks | Ветка Codex, не трогать |
+| [#365](https://github.com/apotet/my-gemini-mirror-site/pull/365) | Unified ZAI/Kimi tasks | Готов к merge по проверкам: main синхронизирован, [CI PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554268528); Draft, merge только владельцем |
 | [#352](https://github.com/apotet/my-gemini-mirror-site/pull/352) | L3 инвентаризация | Ветка Геннадия, не трогать |
 | [#358](https://github.com/apotet/my-gemini-mirror-site/issues/358) / [#356](https://github.com/apotet/my-gemini-mirror-site/issues/356) | ZAI аудит PoE на приборе | Выполнены, отчёты есть |
 
 ## Последние решения
+
+- 25.11.2026: #365 финализирован по [замечаниям приёмки](https://github.com/apotet/my-gemini-mirror-site/pull/365#issuecomment-7153787056): partial SSE сохраняется durable без повтора; STATE/стандарты передаются всем новым задачам без дублей; decoded/assembled content проверяется до validation/publication; control plane Gemini и инструкции защищены от broad scope. На коде `89001e755fa8e8ede6d46445a14c4f450124feae` CI PASS: 49/49 runtime, 11/11 Gemini, 12/12 resolver, Docker isolation и полный sandbox pipeline; [Fast PR gate PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554268526). Платных вызовов 0, merge не выполнен.
+- Gemini #369/#371 сохранён без изменений: отдельный Interactions API audit-only агент. Этот PR не включает Gemini edit/publisher и не активирует платный запуск.
 
 - 25.11.2026: Gemini Interactions API (#371, SHA 1a12583). generateContent 404 причина неизвестна; агент переведён на POST /v1beta/interactions, store:false, модель gemini-4-hydrogen. Платный тест Grok не запускал.
 - 25.11.2026: Gemini [GEMINI] Issue агент смержен (#369, SHA da89b639). Аудит и публикация отчётов готовы; edit ожидает #365.
 - 25.11.2026: разрешение Actions на создание PR включено; publisher Kimi исправлен и смержен (#362).
 - 25.11.2026: первый Kimi edit (#360) выполнен, Draft PR #361 ожидает приёмки.
 - 25.11.2026: аудит токенов (#364) зафиксировал избыточность полного чтения ROADMAP; согласована эта карта и журнал проблем (#366).
-- Потолок $0.25 на Issue — временная мера инфраструктуры, не постоянное правило (снятие согласовано отдельно).
+- Снятие потолка $0.25 согласовано и реализовано для ZAI/Kimi в #365; вступает в действие после merge. Gemini сохраняет собственный текущий контракт.
 
 ## Блокеры
 

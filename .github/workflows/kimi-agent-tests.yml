@@ -1,54 +1,46 @@
-name: Kimi offline tests
+name: Agent runtime offline tests
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        type: choice
-        options: [diagnose, reuse, create]
-        default: diagnose
-        description: 'Zero-model: policy probe, existing Draft reuse, or disposable docs-only Draft create/close'
   pull_request:
-    paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', '.github/workflows/kimi-issue.yml', 'tests/**']
+    paths:
+      - '.github/agent_runtime/**'
+      - '.github/scripts/**'
+      - '.github/agent/**'
+      - '.github/workflows/agent-task.yml'
+      - '.github/workflows/*-issue.yml'
+      - '.github/workflows/kimi-agent*'
+      - 'scripts/zai*'
+      - 'tests/**'
 permissions:
   contents: read
 jobs:
   offline:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - run: npm install --prefix tests/vendor --no-save --ignore-scripts typescript@5.9.3
-      - run: python3 tests/test_offline.py
-      - run: python3 tests/test_agent_tools.py
-      - run: python3 tests/test_agent_security.py
-      - run: python3 tests/test_kimi_issue.py
-
-  publication-diagnostic:
-    if: >-
-      github.event_name == 'workflow_dispatch' && github.actor == 'apotet' &&
-      github.repository == 'apotet/my-gemini-mirror-site' &&
-      github.ref == 'refs/heads/fix/kimi-pr-publication'
-    permissions:
-      contents: write
-      pull-requests: write
+          node-version: '22'
+      - run: npm ci --ignore-scripts --prefix scripts/zai-runtime
+      - run: python3 tests/test_agent_runtime.py
+      - run: python3 scripts/gemini-issue-agent.test.py
+      - run: node scripts/zai-lesson-resolver.test.mjs
+  sandbox-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Diagnose PR publication policy using existing verified Draft
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PROBE_MODE: ${{ inputs.mode }}
-        run: python3 .github/scripts/kimi_publication_probe.py
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Trusted credential-free isolation image
+        run: docker build -t netops-agent-checks:local .github/agent_runtime
+      - name: Real sandbox isolation smoke (no model, no GitHub write token)
+        run: python3 tests/agent_sandbox_smoke.py
+      - uses: actions/setup-node@v4
         with:
-          name: kimi-publication-diagnostic
-          path: out/publication-probe.json
-          retention-days: 30
+          node-version: '22'
+      - name: Reviewed host toolchain (no candidate lifecycle hooks)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Full isolated baseline checks (no model transport)
+        run: python3 tests/agent_sandbox_integration.py

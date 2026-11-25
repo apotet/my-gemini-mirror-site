@@ -1,87 +1,38 @@
-# Kimi Agent (v3.1) — универсальный агент заданий через GitHub Actions
+# NetOps engineering agents — v2
 
-## Что это
+**Ограничиваем опасные действия, а не интеллектуальные возможности моделей.**
 
-Универсальный механизм выполнения редактурных заданий моделью `kimi-k3.1-pro`
-через GitHub Actions. Механизм отделён от заданий: специфика находится в
-task-файлах (`.github/agent-tasks/`), механизм — в workflow и скриптах
-(`.github/workflows/kimi-agent.yml`, `.github/scripts/`).
+Согласовано владельцем: финансового потолка $0.25, искусственных низких входных/
+выходных лимитов и text-only edit больше нет. Размер и сложность задаёт координатор.
+Модели могут последовательно работать до завершения конечного grant и продолжаться
+из полного checkpoint без повторной оплаты уже отправленного запроса.
 
+## Контекст и сессии
 
-## Контекст и сессии (с 25.11.2026)
+- Читать `docs/STATE.md` первым; полный `docs/ROADMAP.md` — выборочно по необходимости.
+- Обязательные стандарты качества и контур безопасности сохраняются; API-агенту контекст передаётся явно.
+- Новая задача — новая сессия; handoff содержит SHA, прочитанные файлы и открытые вопросы, а не полный чат.
+- Перед новой проверкой учитывать существующие offline-тесты, Fast PR gate и AST.
+- Повторяющиеся проблемы: `docs/audits/recurring-issues.md`.
+- Gemini #369/#371 остаётся отдельным audit-only агентом через Interactions API; эта миграция не включает его edit/publisher.
 
-- Читать **`docs/STATE.md` первым**. Это компактная карта состояния.
-- `docs/ROADMAP.md` — полный журнал решений. Читать выборочно, только если нужна история конкретного решения. Не читать целиком на старте каждой задачи.
-- Обязательные стандарты качества (`docs/LEARNING_CONTENT_STANDARD.md` и фрагменты в `.github/agent/context/`) и контур безопасности ниже сохраняются.
-- Новая задача — новая сессия. Не продолжать длинный контекст ради экономии.
-- Передача состояния между этапами — структурированный handoff (SHA проверенного состояния, список прочитанных файлов, открытые вопросы). Не полный чат.
-- Перед предложением новой проверки убедиться, что существующая (offline-тесты, Fast PR gate, AST) не покрывает случай.
-- Потолок $0.25 на Issue — временная мера инфраструктуры, не постоянное правило.
+Документированный контракт: [docs/AGENT_RUNTIME.md](docs/AGENT_RUNTIME.md).
 
-## Размещение (точные пути)
+- Общее ядро `.github/agent_runtime/`, общий workflow `agent-task.yml`.
+- `[ZAI]` / `[KIMI]` Issue и ручной Kimi — одни правила состояния/изоляции/публикации.
+- Предмет задачи: билеты, новые уроки, схемы/иллюстрации, glossary/tooltips/tags,
+  регистрации/связи, тесты и функционал. Структурные и программные изменения допустимы.
+- Только coordinator scope; никакого доступа к секретам, host shell из ответа,
+  записи control plane, чужих веток, merge/deploy или самоутверждения результата.
+- Проверки выполняются в контейнере без секретов/сети; публикация — собственная ветка
+  и Draft PR после проверок, всегда с независимой приёмкой владельца.
+- Полные исходники, сообщения, raw responses, partial outputs, логи и usage сохраняются.
+  Неизвестная стоимость не считается нулём. Состояние резервирует попытку до HTTP.
+- Крэш/timeout не означает разрешение на повтор. Новая активация требует owner command
+  с точным SHA checkpoint; uncertain attempt требует явного подтверждения координатора.
+- Текущая работа Геннадия/Gemini не изменяется. Архитектура допускает новый provider
+  adapter без новой реализации state machine и защитных правил.
 
-```
-.github/workflows/kimi-agent.yml              # универсальный workflow
-.github/agent/system-prompt.md                # системный промпт агента
-.github/agent/context/renderer-format-rules.txt   # правила рендерера (sha-заверенная копия)
-.github/agent/context/lessons-registry.txt        # реестр уроков (79 id)
-.github/agent/context/netops-standard.txt         # фрагменты LEARNING_CONTENT_STANDARD.md
-.github/agent-tasks/poe-injectors-fix.md      # ПИЛОТНОЕ задание (урок PoE)
-.github/scripts/parse_sse.py                  # протокольный разбор SSE + целостность
-.github/scripts/extract_candidates.py         # извлечение файлов из ответа по целевым путям
-.github/scripts/build_payload.py              # сборка payload.json (без shell-интерполяции)
-.github/scripts/structure_check.mjs           # AST-проверка структуры (typescript@5.9.3)
-tests/test_offline.py                         # 25 офлайн-тестов (парсер + AST)
-tests/test_agent_tools.py                     # 17 тестов инструментов агента
-tests/README.md                               # как запускать тесты
-```
-
-Секрет: `MOONSHOT_API_KEY` в Settings → Secrets and variables → Actions.
-
-## Запуск пилота
-
-Actions → **Kimi Agent** → Run workflow → параметры по умолчанию
-(task-файл пилота, цель — урок PoE, профиль `poe-full`, Draft PR — on).
-
-## Универсальность: новое задание
-
-1. Добавьте task-файл в `.github/agent-tasks/<имя>.md` (образец — пилотный файл:
-   контекст, согласованные правки, явные структурные разрешения, какие проверки ожидать).
-2. При запуске укажите `task_file`, `target_files` (по одному в строке), `verification`:
-   - `tsc` — только компиляция;
-   - `structure` — + AST-проверка структуры каждого целевого файла;
-   - `poe-full` — + регрессионный тест `scripts/poe-injectors-lesson.test.mjs`
-     (пилотный профиль; для будущих заданий с собственными тестами добавляйте
-     профиль в workflow аналогично).
-3. Проверки — ворота: любой отказ (протокол, извлечение, AST, tsc, регрессия)
-   останавливает job до коммита. Артефакты выгружаются всегда.
-
-## Контур безопасности (согласован ранее)
-
-- ровно один платный API-запрос за запуск, без автоматических повторов;
-- `stream: true`; `finish_reason` обязан быть `stop`; `[DONE]` обязателен;
-- usage обязателен (учёт токенов); битые чанки и данные после `[DONE]` — отказ;
-- кандидат, идентичный оригиналу, — отказ;
-- извлечение строго по целевым путям (нецелевые файлы и пропуски — отказ);
-- AST-проверка: привязка id вариантов ответов, `correctChoiceId` к вопросам,
-  иллюстраций — к блокам; согласованные правки (relatedLesson, порядок блоков,
-  body) пропускаются;
-- diff оригинал/кандидат сохраняется до применения и компиляции;
-- коммит и Draft PR — только после всех ворот; merge/deploy не выполняются.
-
-## Параметры API (подтверждены официальной документацией)
-
-Модель `kimi-k3.1-pro`: reasoning всегда включён (`thinking` не отправляется),
-`reasoning_effort: high`, `max_completion_tokens: 49152` (обоснование бюджета:
-вход ~14k токенов с контекстом, reasoning ≤ ~20k, эхо файла ~11k), `stream: true`.
-Источники: platform.kimi.ai/docs/guide/kimi-k3-1-pro-quickstart;
-docs.platform.moonshot.ai (Thinking Models, Troubleshooting, Streaming).
-
-## Installation safety limits (v3.1)
-Default mode is audit-only; report is out/report.md in Actions artifacts. Edit steps
-are skipped in audit-only. Allowed targets are existing flat src/data/lessons/*.ts
-files without symlinks. Tasks must be flat .github/agent-tasks/*.md files.
-One request, no retries, 600s timeout, at most 16384 completion tokens (including
-reasoning), at most 120000 UTF-8 input bytes, at most four lessons per run.
-These are per-run bounds, not an account-wide monetary quota. Parallel runs on
-the same ref are serialized. New edit branches must use kimi/agent-run-*.
+Разработка этой миграции: только офлайн-тесты и Draft PR, без платных вызовов,
+merge/deploy и изменений учебных материалов. Старые helper scripts — исторический
+контур, а не активный механизм ограниченного агента v1.

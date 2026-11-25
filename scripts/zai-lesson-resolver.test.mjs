@@ -49,7 +49,7 @@ test('full actual runtime registry equals AST inventory, no duplicates or omissi
     console.log(`REGISTRY ${actual.length}/${actual.length}; missing=0 extra=0 duplicates=0`);
   } finally { rmSync(dir,{recursive:true,force:true}); }
 });
-test('Python pack, Issue 356, size gates, authorization and no paid/network calls', () => {
+test('Shared runtime full Issue 356 source coverage without artificial caps', () => {
   const result = spawnSync('python3',['scripts/zai-pack.test.py'],{encoding:'utf8'});
   assert.equal(result.status,0,result.stdout+result.stderr);
   console.log(result.stdout.trim());

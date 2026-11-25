@@ -1,6 +1,0 @@
-{
-  "glm-5.3": {
-    "max_input_bytes": 200000,
-    "max_output_tokens": 10000
-  }
-}

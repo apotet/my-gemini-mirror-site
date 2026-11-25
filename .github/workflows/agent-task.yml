@@ -1,0 +1,84 @@
+name: Shared coordinator task runtime
+on:
+  workflow_call:
+    inputs:
+      provider:
+        required: true
+        type: string
+    secrets:
+      PROVIDER_API_KEY:
+        required: true
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+jobs:
+  task:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' && github.actor == 'apotet' &&
+      github.ref == 'refs/heads/main' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    concurrency:
+      group: agent-${{ inputs.provider }}-${{ github.event.issue.number || github.run_id }}
+      cancel-in-progress: false
+    env:
+      AGENT_PROVIDER: ${{ inputs.provider }}
+      PYTHONPATH: .github
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Trusted toolchain (no candidate code or lifecycle hooks)
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund --prefix scripts/zai-runtime
+      - name: Authorize, snapshot context and durably claim/grant checkpoint
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m agent_runtime.cli prepare
+      - name: Build trusted validation image before provider credentials are loaded
+        if: steps.prepare.outputs.mode == 'edit' && steps.prepare.outputs.action != 'publish'
+        run: docker build -t netops-agent-checks:local .github/agent_runtime
+      - name: Controlled sequential requests and sandbox validation
+        if: steps.prepare.outputs.action == 'work'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVIDER_API_KEY: ${{ secrets.PROVIDER_API_KEY }}
+        run: python3 -m agent_runtime.cli work
+      - name: Validation-only continuation (no model credential)
+        if: steps.prepare.outputs.action == 'validate'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m agent_runtime.cli validate
+      - name: Publish only checked candidates to own branch and Draft PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m agent_runtime.cli publish
+      - name: Export full raw history from durable checkpoint blobs
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m agent_runtime.cli export
+      - uses: actions/upload-artifact@v4
+        id: artifact
+        if: always()
+        with:
+          name: agent-${{ inputs.provider }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/netops-agent-output/
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Index full results, accounting and continuation checkpoint
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+        run: python3 -m agent_runtime.cli report
