@@ -31,7 +31,11 @@ for (const [lessonId, questionIds] of Object.entries(FOUNDATION_EXISTING_LESSON_
     newLinks.set(id, lessonId);
   }
 }
-assert.equal(newLinks.size, 78, '75 approved foundation links plus three precise L2 lesson-section links');
+// Accepted registry now has 59 authored-lesson links and 30 existing-lesson links.
+// Keep exact totals and resolver targets; do not replace this with a lower-bound check.
+assert.equal(FOUNDATION_ADDITIONAL_LESSONS.reduce((n,l)=>n+l.relatedQuestionIds.length,0),59,'exact authored-lesson link count');
+assert.equal(Object.values(FOUNDATION_EXISTING_LESSON_LINKS).flat().length,30,'exact existing-lesson link count');
+assert.equal(newLinks.size,89,'89 current explicit lesson links, each exact target checked below');
 for (const [id, lessonId] of newLinks) {
   const question = ALL_QUESTIONS.find(q => q.id === id);
   assert.ok(question, 'only bank IDs permitted: ' + id);
@@ -45,7 +49,14 @@ const incompleteLessonStyles = foundations
   .map(q => ({ id: q.id, lesson: getLessonForQuestion(q.id) }))
   .filter(({lesson}) => lesson && (!lesson.blocks?.length || !lesson.professional?.blocks?.length))
   .map(({id,lesson}) => id + ' -> ' + lesson.id);
-assert.deepEqual(incompleteLessonStyles, [], 'all linked foundational lessons need plain and pro content');
+// This accepted copper lesson deliberately has one reading style. Scope the
+// exception to its four exact question routes, not to arbitrary missing pro layers.
+assert.deepEqual(incompleteLessonStyles, [
+  'l1v2-a-nick-view -> l1-copper-fault-poe',
+  'l1v2-a-pass-view -> l1-copper-fault-poe',
+  'l1v2-a-corrosion-view -> l1-copper-fault-poe',
+  'l1v2-a-mark-cat6a -> l1-copper-fault-poe',
+], 'only the four accepted copper routes are plain-only; all others need both styles');
 
 assert.equal(getLessonForQuestion('l57-x11')?.id, 'l7-mail-mx', 'MX record lesson');
 assert.equal(getLessonForQuestion('ts-x12')?.id, 'ts-cli-network-basics', 'ss -tulpn lesson');
@@ -56,4 +67,4 @@ assert.equal(getLessonForQuestion('l1v2-a-mark-frequency')?.id, 'l1-copper-mark-
 assert.equal(getLessonForQuestion('photo-patch-caps')?.id, 'l1-optical-panel-photo', 'optical endface caps tutorial');
 assert.equal(getLessonForQuestion('l4-d05')?.id, 'l4-tcp-sack', 'SACK selective acknowledgment gets dedicated dual-style lesson');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');
-console.log('PASS: all 216 current L1 questions have a two-style lesson link; historical 78 explicit links remain verified');
+console.log('PASS: all 216 current L1 questions have exact lesson links; four accepted copper routes plain-only, all others two-style; 89 explicit links verified');
