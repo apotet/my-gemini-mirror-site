@@ -1,0 +1,30 @@
+{
+  "api_calls": 1,
+  "max_cost_usd": 0.2496516,
+  "input_utf8_bytes": 144846,
+  "input_limit_bytes": 200000,
+  "max_output_tokens": 10000,
+  "cost_limit_usd": 0.25,
+  "rates_per_million": [
+    1.4,
+    0.26,
+    4.4
+  ],
+  "pricing_verified": "2026-11-25",
+  "pricing_source": "https://docs.z.ai/guides/overview/pricing",
+  "status": "response received",
+  "usage": {
+    "completion_tokens": 8470,
+    "completion_tokens_details": {
+      "reasoning_tokens": 4520
+    },
+    "prompt_tokens": 31258,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 39728
+  },
+  "cached_tokens": 0,
+  "cost_usd": 0.0810292,
+  "cost_basis": "returned usage including cache"
+}

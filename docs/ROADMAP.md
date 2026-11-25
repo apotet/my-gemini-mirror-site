@@ -1,3 +1,55 @@
+## 25.11.2026 — ZAI resolver опубликован; аудит PoE #358 завершён
+
+[PR #357](https://github.com/apotet/my-gemini-mirror-site/pull/357) прошёл независимую
+приёмку, переведён Draft → Ready и merged. Причина `mergeable=false`: конфликт
+двух новых записей в начале ROADMAP после обновления main до `6ba3dde`.
+Обе записи сохранены, ветка синхронизирована merge-коммитом
+`df89be4358bd104b180c8b11f1ffac244973b796`.
+Повторно: **12/12 Node**, включая **11/11 Python**, реестр **90/90**, без пропусков,
+лишних ID или дублей; Python compile/diff check PASS. Fast PR gate прошёл до Ready
+([run 45518977826](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45518977826))
+и после Ready ([run 45519104119](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45519104119)):
+typecheck, production build, quiz/navigation и все PoE-регрессии gate — SUCCESS.
+Merge SHA: `108226fc72885d50d08f7fd085224aba1617dbf0`.
+Автоматическая публикация после merge —
+[Pages 45519204370](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45519204370) SUCCESS;
+ручной deploy не запускался.
+
+После merge создан **один** новый [Issue #358](https://github.com/apotet/my-gemini-mirror-site/issues/358)
+от `apotet`, тело — точная копия исходного задания #356. Модель **GLM-5.3**, audit-only.
+[ZAI run 45519266897](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45519266897)
+**SUCCESS**, источник — merge SHA выше; **1 API call**, `finish_reason=stop`, без повторов.
+[Claim](https://github.com/apotet/my-gemini-mirror-site/issues/358#issuecomment-7148676700)
+и [полный отчёт в Issue](https://github.com/apotet/my-gemini-mirror-site/issues/358#issuecomment-7148716517)
+подтверждены. Telegram: `message_id=20`, `configured_chat_matches=true` в job logs.
+
+Пакет: **140 252 UTF-8 байта JSON**, сообщения с полным заданием и system prompt —
+**144 846 байт** при лимите 200 000; полный целевой объект, полный эталон
+`l1-poe-budget`, обязательные files и **7/7 полных связанных вопросов** сохранены.
+Максимальная предварительная стоимость **$0.2496516**; финансовый потолок **$0.25**.
+**Фактический usage:** input **31 258**, output **8 470**, из них reasoning **4 520**,
+cache **0**, total **39 728**. Стоимость по возвращённому usage и тарифам:
+`(31258 × $1.40 + 8470 × $4.40) / 1000000 = $0.0810292`.
+Это расчёт по usage API, а не независимая сверка банковского списания.
+
+Вердикт **модели**: **FIX, 4,5/10**. Главные замечания: закрепление в обеих вкладках,
+исходящие связи с соседними уроками, методика измерений под нагрузкой,
+интерпретация классов/мощности, пассивное питание и сверка показаний с фото.
+Замечания и предложенные технические формулировки требуют проверки координатором;
+они не приняты автоматически и не применялись. Фото, опубликованный UI и
+непредоставленные источники остаются **UNVERIFIED**. Это не независимая приёмка
+учебного материала и не воспроизведение оригинального промпта Геннадия.
+
+Сохранены исходные [отчёт модели](audits/zai-poe-screen-20261125.md) и
+[accounting/usage](audits/zai-poe-screen-20261125-accounting.json), без редакторских правок.
+[Artifact 14979716452](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45519266897/artifacts/14979716452)
+(30 дней): SHA-256 ZIP `c060fd6b651a7414f8071341630a4cca596bcaacf4a0ae0d507452fcef45ae7d`
+проверен при скачивании. SHA-256 отчёта:
+`496b91981ba76d66bb16a6e612c8195d4391292e835e492f891b31dad6980d02`.
+Учебные материалы и ветка Геннадия не изменялись. Дополнительных платных запусков нет.
+
+---
+
 ## 25.11.2026 — ZAI: снят блокер контекста аудита #356 (Draft PR #357)
 
 Лимиты уроков GLM-5.3 заданы доверенным файлом `.github/zai-agent-limits.json`
