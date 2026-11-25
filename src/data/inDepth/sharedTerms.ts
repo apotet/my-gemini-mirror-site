@@ -244,7 +244,7 @@ export const IN_DEPTH_SHARED_TERMS: Record<string, InDepthTermPatch> = {
     "abbreviation": false,
     "description": "Схема распиновки четырёхпарного медного соединителя: зелёная пара занимает контакты 1/2, оранжевая — 3/6. От T568B отличается перестановкой этих двух пар; синие и коричневые позиции не меняются. Схему выбирают по проекту и маркировке конкретного компонента.",
     "relatesTo": "Распиновка 8P8C и проверка правильных пар, не сертификация категории.",
-    "lessonId": "l1-copper-termination-quality"
+    "lessonId": "l1-copper-fault-poe"
   },
   "T568B": {
     "english": "T568B pair assignment",
@@ -252,7 +252,7 @@ export const IN_DEPTH_SHARED_TERMS: Record<string, InDepthTermPatch> = {
     "abbreviation": false,
     "description": "Схема распиновки четырёхпарного медного соединителя: оранжевая пара занимает контакты 1/2, зелёная — 3/6. От T568A отличается перестановкой этих пар. Для прямого соединения согласуют схемы на концах; одно совпадение цветов не заменяет wiremap и измерения канала.",
     "relatesTo": "Распиновка 8P8C, проектная схема и контроль оконцеваний.",
-    "lessonId": "l1-copper-termination-quality"
+    "lessonId": "l1-copper-fault-poe"
   },
   "NEXT": {
     "english": "Near-End Crosstalk",
@@ -260,7 +260,7 @@ export const IN_DEPTH_SHARED_TERMS: Record<string, InDepthTermPatch> = {
     "abbreviation": true,
     "description": "Показатель развязки между парами по перекрёстной наводке, измеряемый со стороны источника сигнала. Для сопоставимого частотного измерения больший NEXT в dB означает лучшую развязку; критерий PASS зависит от профиля канала и частоты. Простая прозвонка этот параметр не измеряет.",
     "relatesTo": "Частотная приёмка медной СКС и последствия расплетения/ошибки пар.",
-    "lessonId": "l1-copper-termination-quality"
+    "lessonId": "l1-copper-fault-poe"
   },
   "развивка пары": {
     "english": "Pair untwist",
@@ -268,7 +268,7 @@ export const IN_DEPTH_SHARED_TERMS: Record<string, InDepthTermPatch> = {
     "abbreviation": false,
     "description": "Участок, где проводники пары выпрямлены и больше не сохраняют штатную скрутку. Избыточное расплетение около контактов ухудшает баланс и перекрёстные наводки; допустимую длину определяют требования соединителя и системы, а не удобство монтажа.",
     "relatesTo": "Механика оконцевания и высокочастотные свойства витой пары.",
-    "lessonId": "l1-copper-termination-quality"
+    "lessonId": "l1-copper-fault-poe"
   },
   "IEEE 802.3af": {
     "english": "IEEE 802.3af PoE Type 1",
