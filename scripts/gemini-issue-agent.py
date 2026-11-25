@@ -144,7 +144,7 @@ def run():
     # Interactions API: generateContent returned HTTP 404 (run 45548274570).
     # Model confirmed available via models.list (run 45548868207).
     user_text = ''.join(part['text'] for part in parts)
-    payload = {'model': snapshot['model'], 'input': user_text}
+    payload = {'model': snapshot['model'], 'input': user_text, 'store': False}
     url = ENDPOINT
     req = urllib.request.Request(
         url,

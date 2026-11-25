@@ -155,6 +155,7 @@ def test_run_success():
             agent.run()
             sent = json.loads(bo.return_value.open.call_args[0][0].data.decode())
             assert sent['model'] == 'gemini-4-hydrogen'
+            assert sent.get('store') is False
             assert 'input' in sent and 'contents' not in sent
         acc = json.loads((agent.OUT / 'accounting.json').read_text())
         assert acc['status'] == 'complete'
