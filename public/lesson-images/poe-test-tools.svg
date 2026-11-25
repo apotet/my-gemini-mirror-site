@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="600" height="650" role="img" aria-labelledby="title desc">
+  <title id="title">Проверка PoE: какой прибор что доказывает</title>
+  <desc id="desc">Индикатор — признак питания. Базовый тестер — напряжение без нагрузки, другие функции зависят от модели. Нагрузочный тест — результат при заданной нагрузке. Коммутатор — класс и выделенная мощность со стороны PSE, не на конце кабеля.</desc>
+  <rect width="600" height="650" rx="20" fill="#0f172a"/>
+  <g font-family="system-ui,sans-serif" fill="#f8fafc">
+    <text x="24" y="40" font-size="26" font-weight="700">Какой прибор что доказывает</text>
+    <text x="24" y="69" font-size="20" fill="#cbd5e1">Четыре способа — разные выводы</text>
+    <g transform="translate(24 92)">
+      <rect width="552" height="116" rx="12" fill="#172b41" stroke="#475569"/>
+      <circle cx="30" cy="30" r="10" fill="#67e8f9"/>
+      <text x="52" y="38" font-size="24" font-weight="700">Индикатор / светодиод «PoE»</text>
+      <text x="20" y="72" font-size="22" fill="#a5f3fc">Признак наличия питания</text>
+      <text x="20" y="101" font-size="20" fill="#cbd5e1">Не класс, не напряжение с нагрузкой, не ватты</text>
+    </g>
+    <g transform="translate(24 220)">
+      <rect width="552" height="116" rx="12" fill="#172b41" stroke="#475569"/>
+      <rect x="20" y="16" width="20" height="28" rx="3" fill="none" stroke="#67e8f9" stroke-width="2"/>
+      <text x="52" y="38" font-size="24" font-weight="700">Базовый PoE-тестер</text>
+      <text x="20" y="72" font-size="22" fill="#a5f3fc">Напряжение без нагрузки</text>
+      <text x="20" y="101" font-size="20" fill="#cbd5e1">Класс и пары — если умеет конкретная модель</text>
+    </g>
+    <g transform="translate(24 348)">
+      <rect width="552" height="116" rx="12" fill="#172b41" stroke="#475569"/>
+      <path d="M20 30h4l3-8 5 16 4-8h5" fill="none" stroke="#67e8f9" stroke-width="2"/>
+      <text x="52" y="38" font-size="24" font-weight="700">Нагрузочный тест</text>
+      <text x="20" y="72" font-size="22" fill="#a5f3fc">Напряжение и мощность с нагрузкой</text>
+      <text x="20" y="101" font-size="20" fill="#cbd5e1">Только при заданной нагрузке и в точке теста</text>
+    </g>
+    <g transform="translate(24 476)">
+      <rect width="552" height="116" rx="12" fill="#172b41" stroke="#475569"/>
+      <rect x="16" y="21" width="28" height="18" rx="3" fill="none" stroke="#67e8f9" stroke-width="2"/>
+      <path d="M21 28h3m4 0h3m4 0h3" stroke="#67e8f9" stroke-width="3"/>
+      <text x="52" y="38" font-size="24" font-weight="700">Коммутатор: CLI и журнал</text>
+      <text x="20" y="72" font-size="22" fill="#a5f3fc">Класс и выделенная мощность PSE</text>
+      <text x="20" y="101" font-size="20" fill="#cbd5e1">Не заменяет измерение на конце кабеля</text>
+    </g>
+    <text x="24" y="627" font-size="20" fill="#cbd5e1">Результат теста ≠ гарантия работы любой камеры.</text>
+  </g>
+</svg>
