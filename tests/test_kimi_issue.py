@@ -1,5 +1,6 @@
 """Offline adapter tests: no live GitHub or model calls; shared SSE/AST tools run locally."""
 import copy
+import io
 import importlib.util
 import json
 import os
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'.github/scripts'))
 spec = importlib.util.spec_from_file_location('kimi_issue',ROOT/'.github/scripts/kimi_issue.py')
 k = importlib.util.module_from_spec(spec); spec.loader.exec_module(k)
+REAL_GITHUB = k.github
 TARGET = 'src/data/lessons/fixture.ts'
 ORIGINAL = "export const FIXTURE = { id: 'fixture', title: 'Lesson', blocks: [{ heading: 'One', body: 'Original' }], relatedQuestionIds: []\n};\n"
 CANDIDATE = ORIGINAL.replace('Original','Improved')
@@ -220,6 +222,94 @@ class IssueAdapter(unittest.TestCase):
         k.save('billing-headers.json',{'msh-usage-cache-write-tokens-5m':10,'msh-usage-cache-write-tokens-1h':20})
         k.verify();self.assertEqual(k.load('accounting.json')['cost_usd'],.002204)
 
+    def test_observed_360_usage_reports_range_not_exact_cost(self):
+        usage={'prompt_tokens':5349,'completion_tokens':4076,'prompt_tokens_details':{'cache_write_tokens':5120}}
+        headers={'msh-usage-cache-write-tokens-5m':5120,'msh-usage-cache-write-tokens-1h':0}
+        cost=k.usage_cost(usage,headers)
+        self.assertIsNone(cost['cost_usd'])
+        self.assertEqual(cost['cost_range_usd'],{'min':.0510458,'max':.051458,'before_tax':True})
+        self.assertIn('диапазон',k.cost_summary(cost))
+        self.assertNotIn('по полному usage',k.cost_summary(cost))
+
+    def test_cost_range_missing_ttl_and_all_cache_fields(self):
+        result=k.usage_cost({'prompt_tokens':100,'completion_tokens':200},{})
+        self.assertEqual(result['cost_range_usd']['min'],.00202)
+        self.assertEqual(result['cost_range_usd']['max'],.0024)
+        result=k.usage_cost({'prompt_tokens':100,'completion_tokens':200,'prompt_tokens_details':{'cached_tokens':20,'cache_write_tokens':30}},{})
+        self.assertIsNone(result['cost_usd'])
+        self.assertEqual(result['cost_range_usd']['min'],.002164)
+        self.assertEqual(result['cost_range_usd']['max'],.002224)
+
+    def test_inconsistent_cache_counters_never_produce_exact_cost(self):
+        for details in [{'cached_tokens':101}, {'cached_tokens':True}, {'cached_tokens':-1}, {'cached_tokens':90,'cache_write_tokens':30}]:
+            with self.subTest(details=details):
+                result=k.usage_cost({'prompt_tokens':100,'completion_tokens':200,'prompt_tokens_details':details},{})
+                self.assertIsNone(result['cost_usd'])
+                self.assertNotIn('cost_range_usd',result)
+
+    def test_conflicting_zero_write_usage_and_nonzero_header_is_not_exact(self):
+        result=k.usage_cost({'prompt_tokens':100,'completion_tokens':200,'prompt_tokens_details':{'cached_tokens':0,'cache_write_tokens':0}},
+                            {'msh-usage-cache-write-tokens-5m':30,'msh-usage-cache-write-tokens-1h':0})
+        self.assertIsNone(result['cost_usd'])
+        self.assertNotIn('cost_range_usd',result)
+
+    def test_single_known_ttl_header_can_complete_written_total(self):
+        usage={'prompt_tokens':100,'completion_tokens':200,'prompt_tokens_details':{'cached_tokens':0,'cache_write_tokens':30}}
+        result=k.usage_cost(usage,{'msh-usage-cache-write-tokens-5m':30})
+        self.assertEqual(result['cost_usd'],.0022)
+        self.assertEqual(result['cache_write_1h_tokens'],0)
+
+    def test_safe_github_error_keeps_status_and_policy_reason(self):
+        error=k.urllib.error.HTTPError('https://api.github.com/repos/apotet/my-gemini-mirror-site/pulls',403,'Forbidden',
+            {'X-GitHub-Request-Id':'ABCD:1234'},io.BytesIO(json.dumps({'message':'GitHub Actions is not permitted to create or approve pull requests.'}).encode()))
+        with patch.dict(os.environ,{'GH_TOKEN':'private-token'}),patch.object(k.urllib.request,'urlopen',side_effect=error),self.assertRaises(k.GitHubAPIError) as caught:
+            # Bypass the test's normal GitHub mock to exercise the actual HTTP adapter.
+            REAL_GITHUB('POST','/pulls',{'draft':True})
+        self.assertEqual(caught.exception.status,403)
+        self.assertEqual(caught.exception.reason,'actions_pr_creation_disabled')
+        self.assertNotIn('private-token',str(caught.exception.details()))
+        unknown=k.GitHubAPIError('POST','/pulls',403,'Bearer private-token')
+        self.assertNotIn('private-token',str(unknown.details()))
+
+    def test_github_adapter_preserves_creation_status_and_handles_204(self):
+        response=io.BytesIO(b'{"number": 999}')
+        response.status=201
+        with patch.dict(os.environ,{'GH_TOKEN':'private-token'}),patch.object(k.urllib.request,'urlopen',return_value=response):
+            self.assertEqual(REAL_GITHUB('POST','/pulls',{},with_status=True),(201,{'number':999}))
+        response=io.BytesIO(b'');response.status=204
+        with patch.dict(os.environ,{'GH_TOKEN':'private-token'}),patch.object(k.urllib.request,'urlopen',return_value=response):
+            self.assertIsNone(REAL_GITHUB('DELETE','/git/refs/heads/diagnostic'))
+
+    def test_disposable_creation_probe_never_duplicates_or_closes_361(self):
+        spec=importlib.util.spec_from_file_location('probe',ROOT/'.github/scripts/kimi_publication_probe.py')
+        probe=importlib.util.module_from_spec(spec);spec.loader.exec_module(probe);probe.k=k
+        branch='kimi/publication-smoke-123';path='docs/audits/kimi-publication-smoke-123.txt'
+        self.gh.side_effect=[{'object':{'sha':'source'}},{'tree':{'sha':'base'}},{'sha':'blob'},{'sha':'tree'},
+            {'sha':'commit'},{'ref':'new'}, {'total_commits':1,'files':[{'filename':path}]},
+            (201,{'number':999,'head':{'ref':branch},'draft':True,'state':'open','html_url':'https://github.com/example/999'}),
+            {'state':'closed'},None,{'draft':True,'state':'open','head':{'sha':'3bf2cfc010de1d95171b1a882a8cc581a219aa89'}}]
+        probe.create_smoke()
+        evidence=k.load('publication-probe.json')
+        self.assertEqual(evidence['model_calls'],0)
+        self.assertEqual(evidence['http_status'],201)
+        self.assertTrue(evidence['diagnostic_closed'] and evidence['diagnostic_branch_deleted'] and evidence['existing_361_unchanged'])
+        writes=[call.args[1] for call in self.gh.call_args_list if call.args[0] in ['PATCH','DELETE']]
+        self.assertEqual(writes,['/pulls/999','/git/refs/heads/'+branch])
+
+    def test_existing_draft_is_reused_without_write(self):
+        pr={'state':'open','draft':True,'merged_at':None,'head':{'sha':'commit','ref':'kimi/test','repo':{'full_name':'apotet/my-gemini-mirror-site'}},'base':{'ref':'main'},'html_url':'https://github.com/example/361'}
+        self.gh.side_effect=[[pr]]
+        self.assertEqual(k.ensure_draft_pr('kimi/test','commit','source',360,'changes'),pr)
+        self.assertEqual(self.gh.call_count,1)
+        self.assertEqual(self.gh.call_args.args[0],'GET')
+
+    def test_existing_pr_state_cannot_be_overwritten_or_readied(self):
+        pr={'state':'open','draft':False,'head':{'sha':'commit','ref':'kimi/test','repo':{'full_name':'apotet/my-gemini-mirror-site'}},'base':{'ref':'main'}}
+        self.gh.side_effect=[[pr]]
+        with self.assertRaises(ValueError):k.ensure_draft_pr('kimi/test','commit','source',360,'changes')
+        self.assertEqual(self.gh.call_count,1)
+        self.assertEqual(self.gh.call_args.args[0],'GET')
+
     def test_structure_gate_blocks_mutation_before_any_pr(self):
         self.prepare('edit')
         for text in [CANDIDATE.replace("id: 'fixture'","id: 'wrong'"),
@@ -269,7 +359,7 @@ class IssueAdapter(unittest.TestCase):
 
     def test_edit_success_creates_only_new_branch_and_draft_pr(self):
         self.ready_edit()
-        self.gh.side_effect=[{'object':{'sha':self.source}},{'tree':{'sha':'tree'}},{'sha':'blob'},{'sha':'newtree'},{'sha':'commit'},{'ref':'newbranch'},{'html_url':'https://github.com/example/pr'}]
+        self.gh.side_effect=[k.GitHubAPIError('GET','/git/ref/heads/branch',404,'Not Found'),{'object':{'sha':self.source}},{'tree':{'sha':'tree'}},{'sha':'blob'},{'sha':'newtree'},{'sha':'commit'},{'ref':'newbranch'},[],{'html_url':'https://github.com/example/pr'}]
         k.deliver_edit()
         tree_call=next(c for c in self.gh.call_args_list if c.args[1]=='/git/trees')
         self.assertEqual([t['path'] for t in tree_call.args[2]['tree']],[TARGET])
@@ -277,10 +367,32 @@ class IssueAdapter(unittest.TestCase):
         self.assertEqual(ref,'refs/heads/kimi/agent-run-issue-99-123')
         self.assertTrue(self.gh.call_args.args[2]['draft']);self.assertEqual(self.gh.call_args.args[2]['base'],'main')
 
-    def test_stale_main_or_tampered_candidate_no_pr(self):
-        self.ready_edit();self.gh.side_effect=[{'object':{'sha':'moved'}}]
+    def test_metadata_recovery_reuses_verified_branch_without_paid_call_or_writes(self):
+        self.ready_edit()
+        content=(k.OUT/'candidates'/TARGET).read_text().encode()
+        blob=k.hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+        branch='kimi/agent-run-issue-99-123'
+        pr={'state':'open','draft':True,'merged_at':None,'html_url':'https://github.com/example/361',
+            'head':{'sha':'commit','ref':branch,'repo':{'full_name':'apotet/my-gemini-mirror-site'}},'base':{'ref':'main'}}
+        self.gh.side_effect=[{'object':{'sha':'commit'}},{'parents':[{'sha':self.source}],'tree':{'sha':'tree'}},
+            {'total_commits':1,'files':[{'filename':TARGET,'status':'modified'}]},
+            {'truncated':False,'tree':[{'path':TARGET,'mode':'100644','type':'blob','sha':blob}]},[pr]]
+        with patch.dict(os.environ,{'GITHUB_RUN_ATTEMPT':'2'}):k.deliver_edit()
+        self.assertTrue(all(call.args[0]=='GET' for call in self.gh.call_args_list))
+        self.assertEqual(k.load('pull-request.json')['sha'],'commit')
+        with patch.dict(os.environ,{'GITHUB_RUN_ATTEMPT':'2'}),self.assertRaises(ValueError):k.run()
+
+    def test_existing_publication_branch_with_extra_files_is_rejected(self):
+        self.ready_edit()
+        self.gh.side_effect=[{'object':{'sha':'commit'}},{'parents':[{'sha':self.source}],'tree':{'sha':'tree'}},
+            {'total_commits':1,'files':[{'filename':TARGET,'status':'modified'},{'filename':'other','status':'added'}]}]
         with self.assertRaises(ValueError):k.deliver_edit()
-        self.assertEqual(self.gh.call_count,1)
+        self.assertTrue(all(call.args[0]=='GET' for call in self.gh.call_args_list))
+
+    def test_stale_main_or_tampered_candidate_no_pr(self):
+        self.ready_edit();self.gh.side_effect=[k.GitHubAPIError('GET','/git/ref/heads/branch',404,'Not Found'),{'object':{'sha':'moved'}}]
+        with self.assertRaises(ValueError):k.deliver_edit()
+        self.assertEqual(self.gh.call_count,2)
         self.gh.reset_mock();(k.OUT/'candidates'/TARGET).write_text('tampered')
         with self.assertRaises(ValueError):k.deliver_edit()
         self.gh.assert_not_called()

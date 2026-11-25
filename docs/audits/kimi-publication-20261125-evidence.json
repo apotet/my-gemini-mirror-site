@@ -1,0 +1,24 @@
+{
+  "originalRun": 45524251479,
+  "originalPublisherFailure": "HTTPError at POST /pulls",
+  "diagnosticRun": 45525824257,
+  "httpStatus": 403,
+  "reason": "actions_pr_creation_disabled",
+  "message": "GitHub Actions is not permitted to create or approve pull requests.",
+  "requestId": "EC41:3A6F64:107C3CC:348C96F:6B063969",
+  "diagnosticArtifact": 14982890563,
+  "diagnosticArtifactSHA256": "438809afde64b3b7084afc058eb17bae51f4be5e7605621acac4663462e6d9c3",
+  "recoveryRun": 45526607379,
+  "existingDraftPR": 361,
+  "existingHeadSHA": "3bf2cfc010de1d95171b1a882a8cc581a219aa89",
+  "modelCalls": 0,
+  "recoveryWriteCalls": 0,
+  "settingChanged": false,
+  "settingBlocker": "Owner administration required; token GET actions/permissions/workflow=403; cloud browser signed out",
+  "costRangeFor360": {
+    "min": 0.0510458,
+    "max": 0.051458,
+    "beforeTax": true,
+    "exactCost": null
+  }
+}

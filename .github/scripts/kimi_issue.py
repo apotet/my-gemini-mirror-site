@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import urllib.error
 from decimal import Decimal
 
 from validate_inputs import validate_path
@@ -49,15 +50,44 @@ def git(*args):
     return command('git', *args).stdout.strip()
 
 
-def github(method, endpoint, data=None):
+class GitHubAPIError(RuntimeError):
+    """Safe diagnostics: never retain request headers or arbitrary remote bodies."""
+    def __init__(self, method, endpoint, status, message, request_id=None):
+        self.method, self.endpoint, self.status = method, endpoint.split('?',1)[0], status
+        known = {
+            'GitHub Actions is not permitted to create or approve pull requests.': 'actions_pr_creation_disabled',
+            'Resource not accessible by integration': 'integration_permission_denied',
+            'Validation Failed': 'validation_failed',
+            'Not Found': 'not_found',
+        }
+        message = message if isinstance(message,str) else None
+        self.reason = known.get(message, 'github_api_error')
+        self.message = message if message in known else 'GitHub API rejected request (remote details omitted)'
+        self.request_id = request_id if request_id and re.fullmatch(r'[A-Za-z0-9:-]{1,128}',request_id) else None
+        super().__init__(f'{self.method} {self.endpoint}: HTTP {status} ({self.reason})')
+
+    def details(self):
+        return {'method':self.method,'endpoint':self.endpoint,'http_status':self.status,
+                'reason':self.reason,'message':self.message,'request_id':self.request_id}
+
+
+def github(method, endpoint, data=None, *, with_status=False):
     request = urllib.request.Request('https://api.github.com/repos/apotet/my-gemini-mirror-site'+endpoint,
         method=method, data=None if data is None else json.dumps(data).encode(),
         headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json', 'Content-Type':'application/json'})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            result = None if response.status==204 else json.load(response)
+            return (response.status,result) if with_status else result
+    except urllib.error.HTTPError as exc:
+        try:
+            message = json.loads(exc.read(4096)).get('message')
+        except (ValueError, AttributeError):
+            message = None
+        raise GitHubAPIError(method,endpoint,exc.code,message,(exc.headers or {}).get('X-GitHub-Request-Id')) from None
 
 
-def event():
+def event(allow_metadata_retry=False):
     e = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     issue = e['issue']
     if (e.get('action') != 'opened' or issue.get('pull_request') or
@@ -66,7 +96,7 @@ def event():
         os.environ.get('GITHUB_ACTOR') != 'apotet' or
         os.environ.get('GITHUB_REPOSITORY') != 'apotet/my-gemini-mirror-site' or
         os.environ.get('GITHUB_REF') != 'refs/heads/main' or
-        os.environ.get('GITHUB_RUN_ATTEMPT') != '1' or not issue['title'].startswith('[KIMI] ')):
+        (os.environ.get('GITHUB_RUN_ATTEMPT') != '1' and not (allow_metadata_retry and os.environ.get('GITHUB_RUN_ATTEMPT','').isdecimal() and int(os.environ['GITHUB_RUN_ATTEMPT']) >= 1)) or not issue['title'].startswith('[KIMI] ')):
         raise ValueError('Unauthorized event or repeat run')
     return issue
 
@@ -213,33 +243,84 @@ def run():
             (OUT/'sse.log').write_bytes(data)
 
 
+def usage_cost(usage, headers):
+    """Bound all missing cache read/write/TTL counts; never default missing reads to 0."""
+    if not isinstance(usage,dict):
+        return {}
+    inp, output = usage.get('prompt_tokens'), usage.get('completion_tokens')
+    valid = lambda n: type(n) is int and n >= 0
+    if not all(valid(n) for n in [inp,output]):
+        return {}
+    broad = (Decimal(inp)*4+Decimal(output)*10)/1000000
+    result = {'usage_cost_upper_bound_usd':float(broad), 'cost_usd':None}
+    details = usage.get('prompt_tokens_details') or {}
+    if not isinstance(details,dict):
+        return {**result,'cost_basis':'invalid cache details; exact cost unavailable'}
+    cached, written = details.get('cached_tokens'), details.get('cache_write_tokens')
+    w5, w1 = headers.get('msh-usage-cache-write-tokens-5m'), headers.get('msh-usage-cache-write-tokens-1h')
+    if any(n is not None and not valid(n) for n in [cached,written,w5,w1]):
+        return {**result,'cost_basis':'invalid cache counters; exact cost unavailable'}
+    if written is None and w5 is not None and w1 is not None:
+        written = w5+w1
+    if written is not None:
+        if written > inp or (cached is not None and cached+written > inp):
+            return {**result,'cost_basis':'inconsistent cache counters; exact cost unavailable'}
+        if w5 is not None and w1 is None:
+            w1 = written-w5
+        if w1 is not None and w5 is None:
+            w5 = written-w1
+        if written == 0:
+            w5 = 0 if w5 is None else w5
+            w1 = 0 if w1 is None else w1
+        if any(n is not None and n < 0 for n in [w5,w1]) or (w5 is not None and w1 is not None and w5+w1 != written):
+            return {**result,'cost_basis':'inconsistent cache TTL counters; exact cost unavailable'}
+        remainder = inp-written
+        if w5 is not None and w1 is not None:
+            write_min = write_max = Decimal(w5)*2+Decimal(w1)*4
+        else:
+            write_min, write_max = Decimal(written)*2, Decimal(written)*4
+        if cached is None:
+            read_min, read_max = Decimal(remainder)*Decimal('.2'), Decimal(remainder)*2
+        else:
+            read_min = read_max = Decimal(cached)*Decimal('.2')+Decimal(remainder-cached)*2
+    elif cached is not None:
+        if cached > inp:
+            return {**result,'cost_basis':'inconsistent cache counters; exact cost unavailable'}
+        write_min, write_max = Decimal(inp-cached)*2, Decimal(inp-cached)*4
+        read_min = read_max = Decimal(cached)*Decimal('.2')
+    else:
+        write_min, write_max = Decimal(0), Decimal(0)
+        read_min, read_max = Decimal(inp)*Decimal('.2'), Decimal(inp)*4
+    minimum = (write_min+read_min+Decimal(output)*10)/1000000
+    maximum = (write_max+read_max+Decimal(output)*10)/1000000
+    result['cost_range_usd'] = {'min':float(minimum),'max':float(maximum),'before_tax':True}
+    result['cost_basis'] = 'published rates; missing cache counters bounded, not assumed zero'
+    # Even a collapsed interval is displayed as a range when cached_tokens is absent.
+    if cached is not None and written is not None and w5 is not None and w1 is not None:
+        result.update(cost_usd=float(minimum), cost_basis='complete usage/cache TTL breakdown; published rates, before tax',
+                      cache_write_5m_tokens=w5, cache_write_1h_tokens=w1)
+    return result
+
+
+def cost_summary(account):
+    if account.get('cost_usd') is not None:
+        return f"Расчёт по полному usage: ${account['cost_usd']:.8f} до налогов."
+    interval = account.get('cost_range_usd')
+    if interval:
+        return f"Расчётный диапазон стоимости: ${interval['min']:.8f}–${interval['max']:.8f} до налогов. Точная сумма не подтверждена."
+    return 'Стоимость неизвестна: полного usage нет. Это не нулевое списание.'
+
+
 def accounting():
     account = load('accounting.json')
     if not (OUT/'meta.json').exists():
         return
     usage = load('meta.json').get('usage')
-    account['cost_usd'] = None
-    account['usage'] = usage
-    account['status'] = 'response received; protocol/verification may still fail'
-    if isinstance(usage,dict):
-        inp, output = usage.get('prompt_tokens'), usage.get('completion_tokens')
-        if all(type(n) is int and n >= 0 for n in [inp,output]):
-            account['usage_cost_upper_bound_usd'] = float((Decimal(inp)*4+Decimal(output)*10)/1000000)
-            account['cost_basis'] = 'conservative usage upper bound; exact cache TTL breakdown unavailable'
-            details = usage.get('prompt_tokens_details') or {}
-            cached, written = details.get('cached_tokens'), details.get('cache_write_tokens')
-            headers = load('billing-headers.json') if (OUT/'billing-headers.json').exists() else {}
-            w5 = headers.get('msh-usage-cache-write-tokens-5m')
-            w1 = headers.get('msh-usage-cache-write-tokens-1h')
-            if all(type(n) is int and n >= 0 for n in [cached,written]) and cached+written <= inp:
-                if written == 0:
-                    w5, w1 = 0, 0
-                if all(type(n) is int and n >= 0 for n in [w5,w1]) and w5+w1 == written:
-                    # Read/write/miss counts partition total input (official API contract).
-                    cost = (Decimal(inp-cached-written)*2 + Decimal(cached)*Decimal('.2') + Decimal(w5)*2 + Decimal(w1)*4 + Decimal(output)*10)/1000000
-                    account['cost_usd'] = float(cost)
-                    account['cost_basis'] = 'returned usage and 5m/1h billing headers; published rates, before tax'
-                    account['cache_write_5m_tokens'], account['cache_write_1h_tokens'] = w5, w1
+    for field in ['cost_usd','cost_range_usd','usage_cost_upper_bound_usd','cache_write_5m_tokens','cache_write_1h_tokens']:
+        account.pop(field,None)
+    account.update(cost_usd=None,usage=usage,status='response received; protocol/verification may still fail')
+    headers = load('billing-headers.json') if (OUT/'billing-headers.json').exists() else {}
+    account.update(usage_cost(usage,headers))
     save('accounting.json',account)
 
 
@@ -296,9 +377,56 @@ def verify():
         f.write('edit_ready=true\n')
 
 
+def ensure_draft_pr(branch, commit, source, issue_number, changes):
+    """Idempotent metadata publication: never duplicate, update or ready an existing PR."""
+    from urllib.parse import urlencode
+    query = urlencode({'state':'all','head':'apotet:'+branch,'base':'main','per_page':100})
+    existing = github('GET','/pulls?'+query)
+    if existing:
+        if len(existing)!=1:
+            raise ValueError('Ambiguous existing PR; do not publish')
+        pr = existing[0]
+        if (pr['state']!='open' or not pr['draft'] or pr.get('merged_at') or
+            pr['head']['sha']!=commit or pr['head']['ref']!=branch or pr['base']['ref']!='main' or
+            pr['head']['repo']['full_name']!='apotet/my-gemini-mirror-site'):
+            raise ValueError('Existing PR state/head changed; do not alter it')
+        return pr
+    return github('POST','/pulls',{'title':f'Kimi: Issue #{issue_number}','head':branch,'base':'main','draft':True,
+        'body':f'Audit trail: #{issue_number}. Source `{source}`. SSE, usage, AST and compilation gates passed.\n\n'+changes[:15000]})
+
+
+def verified_branch(branch, source, targets):
+    """Recover only an immutable, direct child with exactly the verified blobs/modes."""
+    try:
+        ref = github('GET','/git/ref/heads/'+branch)
+    except GitHubAPIError as exc:
+        if exc.status==404:
+            return None
+        raise
+    commit = ref['object']['sha']
+    obj = github('GET','/git/commits/'+commit)
+    if [p['sha'] for p in obj['parents']] != [source]:
+        raise ValueError('Existing publication branch has unexpected parent')
+    comparison = github('GET',f'/compare/{source}...{commit}')
+    files = comparison.get('files',[])
+    if comparison.get('total_commits')!=1 or len(files)!=len(targets) or {f['filename'] for f in files}!=set(targets) or any(f['status']!='modified' for f in files):
+        raise ValueError('Existing publication branch has unexpected changes')
+    tree = github('GET','/git/trees/'+obj['tree']['sha']+'?recursive=1')
+    if tree.get('truncated'):
+        raise ValueError('Incomplete publication tree')
+    entries = {entry['path']:entry for entry in tree['tree']}
+    for target in targets:
+        content = (OUT/'candidates'/target).read_text().encode('utf-8')
+        blob = hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+        entry = entries.get(target,{})
+        if entry.get('mode')!='100644' or entry.get('type')!='blob' or entry.get('sha')!=blob:
+            raise ValueError('Existing publication branch differs from verified candidate')
+    return commit
+
+
 def deliver_edit():
-    # Separate fresh job: no model-generated code is executed with a write token.
-    issue = event()
+    # Metadata-only retries may recover verified artifacts; run()/claim() still reject retries.
+    issue = event(allow_metadata_retry=True)
     state = state_for(issue)
     task = state['task']
     ready = load('edit-ready.json')
@@ -308,25 +436,28 @@ def deliver_edit():
         if sha((OUT/'candidates'/target).read_text()) != ready['candidates'][target]:
             raise ValueError('Candidate changed after verification')
     structures(task)  # independent AST recheck in the clean checkout
-    main = github('GET','/git/ref/heads/main')['object']['sha']
-    if main != state['sourceSHA']:
-        raise ValueError('main moved; do not publish stale edit or retry model')
-    tree = github('GET','/git/commits/'+main)['tree']['sha']
-    entries = []
-    for target in task['target_files']:
-        blob = github('POST','/git/blobs',{'content':(OUT/'candidates'/target).read_text(),'encoding':'utf-8'})['sha']
-        entries.append({'path':target,'mode':'100644','type':'blob','sha':blob})
-    new_tree = github('POST','/git/trees',{'base_tree':tree,'tree':entries})['sha']
-    commit = github('POST','/git/commits',{'message':f"Kimi Issue #{issue['number']}: verified edit",'tree':new_tree,'parents':[main]})['sha']
     branch = f"kimi/agent-run-issue-{issue['number']}-{os.environ['GITHUB_RUN_ID']}"
-    github('POST','/git/refs',{'ref':'refs/heads/'+branch,'sha':commit})
-    pr = github('POST','/pulls',{'title':f"Kimi: Issue #{issue['number']}",'head':branch,'base':'main','draft':True,
-        'body':f"Audit trail: #{issue['number']}. Source `{main}`. SSE, usage, AST and compilation gates passed.\n\n"+(OUT/'changes.md').read_text()[:15000]})
+    main = state['sourceSHA']
+    commit = verified_branch(branch,main,task['target_files'])
+    if commit is None:
+        main = github('GET','/git/ref/heads/main')['object']['sha']
+        if main != state['sourceSHA']:
+            raise ValueError('main moved; do not publish stale edit or retry model')
+        tree = github('GET','/git/commits/'+main)['tree']['sha']
+        entries = []
+        for target in task['target_files']:
+            blob = github('POST','/git/blobs',{'content':(OUT/'candidates'/target).read_text(),'encoding':'utf-8'})['sha']
+            entries.append({'path':target,'mode':'100644','type':'blob','sha':blob})
+        new_tree = github('POST','/git/trees',{'base_tree':tree,'tree':entries})['sha']
+        commit = github('POST','/git/commits',{'message':f"Kimi Issue #{issue['number']}: verified edit",'tree':new_tree,'parents':[main]})['sha']
+        github('POST','/git/refs',{'ref':'refs/heads/'+branch,'sha':commit})
+    save('publication.json',{'issue':issue['number'],'sourceSHA':main,'candidateSHA':commit,'branch':branch})
+    pr = ensure_draft_pr(branch,commit,main,issue['number'],(OUT/'changes.md').read_text())
     save('pull-request.json',{'url':pr['html_url'],'sha':commit,'branch':branch})
 
 
 def publish():
-    issue = event()
+    issue = event(allow_metadata_retry=True)
     account = load('accounting.json') if (OUT/'accounting.json').exists() else {'api_calls':1 if os.environ.get('PAID_STATUS') == 'success' else (0 if os.environ.get('PAID_STATUS') == 'skipped' else None), 'cost_usd':None}
     run_url = 'https://github.com/apotet/my-gemini-mirror-site/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact = os.environ.get('ARTIFACT_URL') or run_url+'#artifacts'
@@ -334,7 +465,16 @@ def publish():
     pr = load('pull-request.json')['url'] if (OUT/'pull-request.json').exists() else 'не создан (audit-only или проверки/публикация не прошли)'
     # This is a display excerpt only; full report is always in artifacts.
     excerpt = report if len(report)<22000 else report[:22000]+'\n\nОтрывок; полный результат в артефакте.'
-    body = f"## Химик — {os.environ.get('WORK_STATUS','unknown')}\n\n{excerpt}\n\nDraft PR: {pr}\n\n[Артефакты]({artifact}) · [Run]({run_url})\n\nUsage/стоимость: `{json.dumps(account,ensure_ascii=False)}`\n\ncost_usd вычисляется только при полной детализации usage/cache TTL; иначе null. usage_cost_upper_bound_usd — консервативная верхняя оценка, не фактическое списание. Повторов нет."
+    diagnostics = []
+    for path in sorted(OUT.glob('failure-*.json')):
+        failure = json.loads(path.read_text())
+        if failure.get('github'):
+            error = failure['github']
+            diagnostics.append(f"{error['method']} {error['endpoint']}: HTTP {error['http_status']} — {error['message']}")
+    failure_note = '\n'.join(diagnostics)
+    if any('GitHub Actions is not permitted' in d for d in diagnostics):
+        failure_note += '\nНужно разрешение Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. Модель повторно не вызывать.'
+    body = f"## Химик — {os.environ.get('WORK_STATUS','unknown')}\n\n{excerpt}\n\nDraft PR: {pr}\n\n{failure_note}\n\n{cost_summary(account)}\n\n[Артефакты]({artifact}) · [Run]({run_url})\n\nUsage/стоимость: `{json.dumps(account,ensure_ascii=False)}`\n\ncost_usd вычисляется только при полной детализации usage/cache TTL; иначе null. cost_range_usd — расчётный диапазон; usage_cost_upper_bound_usd — общая консервативная граница. Это не подтверждение списания. Повторов нет."
     github('POST',f"/issues/{issue['number']}/comments",{'body':body})
     save('summary.md',body)
 
@@ -345,6 +485,9 @@ if __name__=='__main__':
         {'prepare':prepare,'claim':claim,'run':run,'verify':verify,'deliver-edit':deliver_edit,'publish':publish}[phase]()
     except Exception as exc:
         # Do not print provider content, candidate text, request headers or secrets.
-        save('failure-'+phase+'.json',{'phase':phase,'error_type':type(exc).__name__})
+        save('failure-'+phase+'.json',{'phase':phase,'error_type':type(exc).__name__,
+            **({'github':exc.details()} if isinstance(exc,GitHubAPIError) else {})})
         print('Kimi phase failed:',phase,type(exc).__name__,'no retry')
+        if isinstance(exc,GitHubAPIError):
+            print(json.dumps(exc.details(),ensure_ascii=False))
         sys.exit(1)

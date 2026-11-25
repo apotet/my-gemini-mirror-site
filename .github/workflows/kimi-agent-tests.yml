@@ -1,11 +1,19 @@
 name: Kimi offline tests
 on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [diagnose, reuse, create]
+        default: diagnose
+        description: 'Zero-model: policy probe, existing Draft reuse, or disposable docs-only Draft create/close'
   pull_request:
     paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', '.github/workflows/kimi-issue.yml', 'tests/**']
 permissions:
   contents: read
 jobs:
   offline:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,3 +25,30 @@ jobs:
       - run: python3 tests/test_agent_tools.py
       - run: python3 tests/test_agent_security.py
       - run: python3 tests/test_kimi_issue.py
+
+  publication-diagnostic:
+    if: >-
+      github.event_name == 'workflow_dispatch' && github.actor == 'apotet' &&
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.ref == 'refs/heads/fix/kimi-pr-publication'
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Diagnose PR publication policy using existing verified Draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROBE_MODE: ${{ inputs.mode }}
+        run: python3 .github/scripts/kimi_publication_probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kimi-publication-diagnostic
+          path: out/publication-probe.json
+          retention-days: 30
