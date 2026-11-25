@@ -88,3 +88,17 @@ test('missing, interrupted and incomplete output is never published as completed
     assert.match(body, /Archive: run-link/);
   }
 });
+
+test('audit target defaults to main and accepts only complete pinned metadata', () => {
+  const {auditTarget} = require('../scripts/opencode_control.cjs');
+  const main = 'a'.repeat(40), sha = 'b'.repeat(40);
+  const pin = 'Audit-SHA: ' + sha;
+  const source = 'Audit-Source: docs/batch-01.json';
+  assert.deepEqual(auditTarget('Normal audit', main), {sha: main, source: ''});
+  assert.deepEqual(auditTarget(pin + '\n' + source, main), {sha, source: 'docs/batch-01.json'});
+  for (const body of [pin, source, pin + '\n' + pin + '\n' + source,
+    'pinned SHA ' + sha, 'Audit-SHA: main\n' + source, pin + '; id\n' + source,
+    pin + '\nAudit-Source: ../escape.json']) {
+    assert.throws(() => auditTarget(body, main), /Audit-SHA/);
+  }
+});
