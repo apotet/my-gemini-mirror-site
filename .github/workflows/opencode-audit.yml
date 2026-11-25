@@ -109,7 +109,7 @@ jobs:
           npm install --global opencode-ai@1.19.6
           test "$(opencode --version)" = '1.19.6'
           opencode run --help > /dev/null
-          opencode models "$PROVIDER" > "$RUNNER_TEMP/opencode-models.txt"
+          ZHIPU_API_KEY=opencode-catalog-placeholder opencode models "$PROVIDER" > "$RUNNER_TEMP/opencode-models.txt"
           grep -Fx "$PROVIDER/$MODEL" "$RUNNER_TEMP/opencode-models.txt"
       - name: Single paid audit via official OpenCode
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.paid && (inputs.provider == 'zai' || inputs.ci_terms_confirmed) }}
