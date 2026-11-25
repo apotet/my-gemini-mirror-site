@@ -1,264 +1,43 @@
-# =============================================================================
-# Kimi Agent (universal) — GitHub Actions
-#
-# Универсальный механизм: задание и целевые файлы передаются при запуске
-# (workflow_dispatch). Этот workflow ничего не знает про конкретный урок —
-# task-файл несёт специфику (см. .github/agent-tasks/poe-injectors-fix.md
-# как образец пилотного задания).
-#
-# Параметры API Kimi K3/K3.1 (подтверждены официальной документацией,
-# https://platform.kimi.ai/docs/guide/kimi-k3-1-pro-quickstart и разделы
-# Thinking Models / Troubleshooting / Streaming на docs.platform.moonshot.ai):
-#   - reasoning ВСЕГДА включён; параметр "thinking" НЕ отправлять;
-#   - reasoning_effort: "low" | "high" | "max" (default max) — здесь "high";
-#   - reasoning-trace и ответ делят бюджет max_completion_tokens
-#     (default 131072); finish_reason "length" = бюджет исчерпан;
-#   - stream: true — обязателен для длинных вызовов (не-стриминг рискует
-#     504 на 900-й секунде шлюза).
-# Ровно ОДИН платный запрос за запуск, без автоматических повторов.
-#
-# Контур безопасности: baseline tsc ДО API; парсер протокола (отказ при
-# finish_reason != "stop", отсутствии [DONE]/usage, битых чанках, данных
-# после [DONE], идентичном кандидате); извлечение файлов строго по целевым
-# путям; AST-проверка структуры (привязка id/вариантов/иллюстраций к
-# объектам, согласованные правки разрешены); проверки выбираются входом
-# verification; коммит и Draft PR — только после всех ворот.
-# =============================================================================
-
 name: Kimi Agent
-
 on:
   workflow_dispatch:
     inputs:
+      spec:
+        description: 'Optional full v2 JSON task or {"resume":{...}}; overrides legacy fields'
+        type: string
+        default: ''
       mode:
-        description: 'audit-only or edit'
         type: choice
         options: [audit-only, edit]
         default: audit-only
       task_file:
-        description: 'Путь к task-файлу относительно корня репозитория'
-        required: true
+        type: string
         default: '.github/agent-tasks/poe-injectors-fix.md'
       target_files:
-        description: 'Целевые файлы (относительные пути, по одному в строке)'
-        required: true
+        type: string
         default: 'src/data/lessons/l1-poe-injectors-splitters.ts'
       verification:
-        description: 'Профиль проверок'
-        required: true
         type: choice
-        options:
-          - tsc
-          - structure
-          - poe-full
-        default: 'poe-full'
-      create_pr:
-        description: 'Создать ветку и Draft PR с результатом'
-        required: true
-        type: boolean
-        default: false
-      branch_name:
-        description: 'Имя ветки (пусто = kimi/agent-run-<run_number>)'
-        required: false
-        default: ''
+        options: [structure, poe-full]
+        default: structure
       max_tokens:
-        description: 'max_completion_tokens (бюджет reasoning + ответ)'
-        required: true
-        default: '16384'
-
+        description: 'Optional coordinator choice; blank = full model-native maximum'
+        type: string
+        default: ''
+      max_calls:
+        description: 'Finite call grant for this activation; exhausted tasks checkpoint, never loop forever'
+        type: string
+        default: '8'
 permissions:
   contents: write
+  issues: write
   pull-requests: write
-
-concurrency:
-  group: kimi-agent-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  MODE: ${{ inputs.mode }}
-  TARGET_FILES: ${{ inputs.target_files }}
-  MAX_TOKENS: ${{ inputs.max_tokens }}
-  MODEL: kimi-k3.1-pro
-  EFFORT: high
-  API_TIMEOUT: '600'
-  TASK_FILE: ${{ inputs.task_file }}
-  VERIFICATION: ${{ inputs.verification }}
-  BRANCH: ${{ inputs.branch_name != '' && inputs.branch_name || format('kimi/agent-run-{0}', github.run_number) }}
-
+  actions: read
 jobs:
-  agent:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          persist-credentials: true   # нужно для push ветки агента
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Установить зависимости (без скриптов из репозитория)
-        run: npm ci --no-audit --no-fund --ignore-scripts
-
-      - name: Установить typescript@5.9.3 для AST-проверки (репо пинует ts7 с native API)
-        run: npm install --ignore-scripts --no-save --no-audit --no-fund typescript@5.9.3
-
-      - name: Baseline компиляции ДО обращения к API
-        run: npx tsc --noEmit
-
-      - name: Разобрать входные параметры
-        id: io
-        run: |
-          set -euo pipefail
-          mkdir -p out
-          python3 .github/scripts/validate_inputs.py
-          printf '%s' "$TARGET_FILES" | sed 's/\r$//' | sed '/^$/d' > out/targets.txt
-          mapfile -t TARGETS < out/targets.txt
-          [ "${#TARGETS[@]}" -ge 1 ] || { echo '::error::target_files пуст'; exit 1; }
-          [ -f "$TASK_FILE" ] || { echo "::error::task_file не найден: $TASK_FILE"; exit 1; }
-          for t in "${TARGETS[@]}"; do
-            [ -f "$t" ] || { echo "::error::целевой файл не найден: $t"; exit 1; }
-            mkdir -p "out/originals/$(dirname "$t")"
-            cp "$t" "out/originals/$t"
-          done
-          printf '%s\n' "${TARGETS[@]}"
-
-      - name: Собрать payload
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          python3 .github/scripts/build_payload.py \
-            "$MODEL" "$EFFORT" "$MAX_TOKENS" \
-            .github/agent/system-prompt.md "$TASK_FILE" out/payload.json "${TARGETS[@]}"
-
-      - name: ЕДИНСТВЕННЫЙ платный вызов API (stream, без повторов)
-        env:
-          MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
-        run: |
-          set -euo pipefail
-          if [ -z "$MOONSHOT_API_KEY" ]; then
-            echo '::error::Секрет MOONSHOT_API_KEY не задан (Settings -> Secrets -> Actions).'
-            exit 1
-          fi
-          HTTP=$(curl -sS -N -o out/sse.log -w "%{http_code}" \
-            --max-time "$API_TIMEOUT" \
-            https://api.moonshot.ai/v1/chat/completions \
-            -H "Authorization: Bearer $MOONSHOT_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d @out/payload.json)
-          if [ "$HTTP" != "200" ]; then
-            echo "::error::API вернул HTTP $HTTP"
-            # Do not print provider error bodies or credentials.
-            exit 1
-          fi
-          echo "HTTP 200, sse_bytes=$(wc -c < out/sse.log)"
-
-      - name: Протокольный разбор ответа
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          python3 .github/scripts/parse_sse.py out/sse.log out "${TARGETS[0]}"
-
-      - name: Извлечь кандидатов по целевым путям
-        if: inputs.mode == 'edit'
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          python3 .github/scripts/extract_candidates.py out/response.txt out "${TARGETS[@]}"
-
-      - name: Diff оригинал/кандидат (до применения и компиляции)
-        if: inputs.mode == 'edit'
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          for t in "${TARGETS[@]}"; do
-            safe=$(echo "$t" | tr '/.' '__')
-            set +e
-            diff -u "out/originals/$t" "out/candidates/$t" > "out/diff-$safe.patch"
-            d=$?
-            set -e
-            if [ "$d" -gt 1 ]; then echo "::error::diff ошибка ($d) для $t"; exit 1; fi
-          done
-          ls -1 out/diff-*.patch
-
-      - name: AST-проверка структуры
-        if: ${{ inputs.mode == 'edit' && inputs.verification != 'tsc' }}
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          for t in "${TARGETS[@]}"; do
-            node .github/scripts/structure_check.mjs \
-              "out/originals/$t" "out/candidates/$t" "out/structure-$(echo "$t" | tr '/.' '__').txt"
-          done
-
-      - name: Применить кандидатов
-        if: inputs.mode == 'edit'
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          for t in "${TARGETS[@]}"; do
-            cp "out/candidates/$t" "$t"
-          done
-
-      - name: Компиляция после применения
-        if: inputs.mode == 'edit'
-        run: |
-          mv out "$RUNNER_TEMP/kimi-output"
-          trap 'mv "$RUNNER_TEMP/kimi-output" out' EXIT
-          npx tsc --noEmit
-
-      - name: Регрессионный тест урока PoE (пилотный профиль)
-        if: ${{ inputs.mode == 'edit' && inputs.verification == 'poe-full' }}
-        run: node scripts/poe-injectors-lesson.test.mjs
-
-      - name: Ветка, коммит, Draft PR
-        if: ${{ inputs.mode == 'edit' && inputs.create_pr && success() }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          mapfile -t TARGETS < out/targets.txt
-          git config user.name "kimi-agent"
-          git config user.email "kimi-agent@users.noreply.github.com"
-          git checkout -b "$BRANCH"
-          git add "${TARGETS[@]}"
-          git diff --cached --quiet && { echo '::warning::Кандидат идентичен оригиналу — пропуск коммита.'; exit 0; }
-          git commit -m "Kimi Agent: $TASK_FILE"
-          git push -u origin "$BRANCH"
-          {
-            echo "Автоматическое задание Kimi Agent."
-            echo
-            echo "Task: \`$TASK_FILE\`"
-            echo "Verification: \`$VERIFICATION\`"
-            echo
-            echo '## CHANGES'
-            cat out/changes.md
-          } > out/pr-body.md
-          gh pr create --draft --title "Kimi Agent: $TASK_FILE" --body-file out/pr-body.md
-
-      - name: Verify audit did not change tracked files
-        if: inputs.mode == 'audit-only'
-        run: git diff --exit-code -- src
-
-      - name: Артефакты (всегда)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kimi-agent-run-${{ github.run_number }}
-          path: |
-            out/payload.json
-            out/sse.log
-            out/report.md
-            out/response.txt
-            out/changes.md
-            out/meta.json
-            out/checks.txt
-            out/candidates-report.txt
-            out/targets.txt
-            out/diff-*.patch
-            out/structure-*.txt
-            out/originals/
-            out/candidates/
+  task:
+    if: github.actor == 'apotet' && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    uses: ./.github/workflows/agent-task.yml
+    with:
+      provider: kimi
+    secrets:
+      PROVIDER_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
