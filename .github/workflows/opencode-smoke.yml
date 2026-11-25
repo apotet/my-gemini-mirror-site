@@ -42,3 +42,40 @@ jobs:
           python3 scripts/opencode_audit.py --model glm-5.4 --output "$RUNNER_TEMP/dry-54"
           python3 scripts/opencode_audit.py --model glm-5.3 --output "$RUNNER_TEMP/dry-53"
           python3 scripts/opencode_audit.py --provider zai --model glm-5.3 --output "$RUNNER_TEMP/dry-api53"
+      - name: Checkout main for audit dry-run
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: audit-main
+          persist-credentials: false
+      - name: Checkout pinned source for audit dry-run
+        uses: actions/checkout@v4
+        with:
+          ref: 491dfd894f229239eb54011f5970fd3b5b45263e
+          path: audit-pin
+          persist-credentials: false
+      - name: Validate main and pinned source, reject invalid targets without model calls
+        env:
+          MAIN_SHA: ${{ github.event.pull_request.base.sha }}
+          PIN_SHA: 491dfd894f229239eb54011f5970fd3b5b45263e
+          SOURCE: docs/audits/applied-l3-20261124/batch-01-source.json
+        run: |
+          runner=scripts/opencode_audit.py
+          python3 "$runner" --repo audit-main --expected-sha "$MAIN_SHA" --output "$RUNNER_TEMP/audit-main"
+          python3 "$runner" --repo audit-pin --expected-sha "$PIN_SHA" --source "$SOURCE" --output "$RUNNER_TEMP/audit-pin"
+          mkdir "$RUNNER_TEMP/no-model"
+          printf '#!/bin/sh\ntouch "$(dirname "$0")/called"\nexit 99\n' > "$RUNNER_TEMP/no-model/opencode"
+          chmod +x "$RUNNER_TEMP/no-model/opencode"
+          export PATH="$RUNNER_TEMP/no-model:$PATH"
+          export ZHIPU_API_KEY=non-secret-test-placeholder
+          for sha in '' invalid 0000000000000000000000000000000000000000; do
+            if python3 "$runner" --paid --repo audit-pin --expected-sha "$sha" --source "$SOURCE"; then
+              echo "Invalid audit target accepted"
+              exit 1
+            fi
+          done
+          if python3 "$runner" --paid --repo audit-pin --expected-sha "$PIN_SHA" --source missing.json; then
+            echo "Missing audit source accepted"
+            exit 1
+          fi
+          test ! -e "$RUNNER_TEMP/no-model/called"

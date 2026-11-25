@@ -41,6 +41,20 @@ function resolveRequest(context, inputs = {}, attempt = 1, triggeringActor = con
   return request;
 }
 
+function auditTarget(body, mainSha) {
+  const values = name => (body || '').split(/\r?\n/)
+    .filter(line => new RegExp('^\\s*' + name + '\\b', 'i').test(line));
+  const shas = values('Audit-SHA'), sources = values('Audit-Source');
+  if (!shas.length && !sources.length) {
+    if (/\bpinned\s+SHA\b/i.test(body || '')) throw new Error('Use explicit Audit-SHA and Audit-Source metadata');
+    return {sha: mainSha, source: ''};
+  }
+  const sha = shas.length === 1 && /^Audit-SHA: ([a-f0-9]{40})$/.exec(shas[0]);
+  const source = sources.length === 1 && /^Audit-Source: ((?:[\w-]+\/)*[\w.-]+\.json)$/.exec(sources[0]);
+  if (!sha || !source) throw new Error('Invalid or missing Audit-SHA / Audit-Source metadata');
+  return {sha: sha[1], source: source[1]};
+}
+
 async function reserveAttempt(github, params, paid, runUrl) {
   if (!paid) return;
   const comments = await github.paginate(github.rest.issues.listComments, params);
@@ -67,4 +81,4 @@ async function publishAuditResult(github, params, result, usage, artifactUrl, ru
     `Archive: ${archive}\nRun: ${runUrl}\nCompletion is model-declared, not independent validation. Incomplete/failed/interrupted results must not be treated as a completed audit. No automatic retry.`;
   await github.rest.issues.createComment({...params, body});
 }
-module.exports = {resolveRequest, reserveAttempt, publishAuditResult};
+module.exports = {resolveRequest, auditTarget, reserveAttempt, publishAuditResult};

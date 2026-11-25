@@ -5,12 +5,8 @@ on:
       provider:
         description: Native OpenCode provider
         type: choice
-        options: [zai-coding-plan, zai]
+        options: [zai-coding-plan]
         default: zai-coding-plan
-      api_budget_risk_accepted:
-        description: I accept spending may exceed $0.20 target and $1 planning budget; no guaranteed cap
-        type: boolean
-        default: false
       model:
         type: choice
         options: [glm-5.4, glm-5.3]
@@ -48,8 +44,7 @@ jobs:
         !github.event.issue.pull_request && startsWith(github.event.issue.title, '[OPENCODE] ') &&
         (github.event_name == 'issues' ||
          (github.event_name == 'issue_comment' && github.event.comment.user.login == 'apotet' &&
-          (github.event.comment.body == '/opencode run zai glm-5.3 accept-budget-risk' ||
-           github.event.comment.body == '/opencode run zai-coding-plan glm-5.3 confirm-ci-terms' ||
+          (github.event.comment.body == '/opencode run zai-coding-plan glm-5.3 confirm-ci-terms' ||
            github.event.comment.body == '/opencode run zai-coding-plan glm-5.4 confirm-ci-terms')))))
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -59,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
       - name: Validate task and reserve paid attempt
         uses: actions/github-script@v7
@@ -70,7 +65,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const {resolveRequest, reserveAttempt} = require('./scripts/opencode_control.cjs');
+            const {resolveRequest, auditTarget, reserveAttempt} = require('./scripts/opencode_control.cjs');
             const request = resolveRequest(context, JSON.parse(process.env.INPUTS_JSON || '{}'),
               Number(process.env.GITHUB_RUN_ATTEMPT), process.env.TRIGGERING_ACTOR);
             if (!request) { core.setOutput('authorized', false); return; }
@@ -80,6 +75,10 @@ jobs:
             if (task.pull_request || task.user.login !== 'apotet') throw new Error('Owner Issue required');
             if (context.eventName !== 'workflow_dispatch' && !task.title.startsWith('[OPENCODE] '))
               throw new Error('Owner [OPENCODE] Issue required');
+            if (request.provider !== 'zai-coding-plan') throw new Error('Coding Plan required');
+            const target = auditTarget(task.body, context.sha);
+            core.setOutput('sha', target.sha);
+            core.setOutput('source', target.source);
             await reserveAttempt(github, {owner, repo, issue_number}, request.paid,
               `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`);
             for (const [key, value] of Object.entries(request)) core.setOutput(key, value);
@@ -92,14 +91,28 @@ jobs:
               + JSON.stringify({title: task.title, body: task.body}) + contextText;
             if (Buffer.byteLength(prompt) > 90000) throw new Error('Task context too large');
             fs.writeFileSync('opencode-prompt.txt', prompt);
-      - name: Offline dry-run (no installation or credential)
-        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'false' }}
-        run: python3 scripts/opencode_audit.py --provider "$PROVIDER" --model "$MODEL"
+      - name: Checkout audit target from this repository
+        if: steps.prepare.outputs.authorized == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ steps.prepare.outputs.sha }}
+          path: audit-target
+          persist-credentials: false
+      - name: Verify checkout and run credential-free preflight
+        id: preflight
+        if: steps.prepare.outputs.authorized == 'true'
+        run: |
+          python3 scripts/opencode_audit.py --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" --output "$RUNNER_TEMP/opencode-preflight"
+          if [ "$AUDIT_LIVE" = false ]; then cp -r "$RUNNER_TEMP/opencode-preflight" opencode-report; fi
         env:
+          AUDIT_SHA: ${{ steps.prepare.outputs.sha }}
+          AUDIT_SOURCE: ${{ steps.prepare.outputs.source }}
+          AUDIT_LIVE: ${{ steps.prepare.outputs.paid }}
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
       - name: Install official pinned CLI (no credential)
-        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'true' }}
+        if: ${{ steps.preflight.outcome == 'success' && steps.prepare.outputs.paid == 'true' }}
         env:
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
@@ -110,16 +123,15 @@ jobs:
           ZHIPU_API_KEY=opencode-catalog-placeholder opencode models "$PROVIDER" --refresh > "$RUNNER_TEMP/opencode-models.txt"
           grep -Fx "$PROVIDER/$MODEL" "$RUNNER_TEMP/opencode-models.txt"
       - name: Single paid audit via official OpenCode
-        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'true' }}
+        if: ${{ steps.preflight.outcome == 'success' && steps.prepare.outputs.paid == 'true' }}
         env:
-          API_BUDGET_RISK: ${{ steps.prepare.outputs.risk }}
-          ZHIPU_API_KEY: ${{ secrets[steps.prepare.outputs.provider == 'zai' && 'ZAI_API_KEY' || 'ZAI_CODING_API_KEY'] }}
+          AUDIT_SHA: ${{ steps.prepare.outputs.sha }}
+          AUDIT_SOURCE: ${{ steps.prepare.outputs.source }}
+          ZHIPU_API_KEY: ${{ secrets.ZAI_CODING_API_KEY }}
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
         run: |
-          args=()
-          if [ "$API_BUDGET_RISK" = true ]; then args+=(--accept-api-budget-risk); fi
-          python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" "${args[@]}"
+          python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE"
       - name: Publish audit artifact
         id: archive
         if: always()
