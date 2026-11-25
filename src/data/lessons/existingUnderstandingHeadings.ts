@@ -390,4 +390,24 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
       "professional": "Проверка после обжима: не ограничивайся Link Up"
     }
   },
+
+
+  { lessonId: 'l2-lacp-etherchannel', questionIds: ['eth-lacp'], anchorId: 'lacp-modes-actor-key',
+    afterHeading: { plain: 'Режимы LACP: Active, Passive и опасность статического On', professional: 'Механика LACP (IEEE 802.1AX): System ID, Key и LACPDU' } },
+  { lessonId: 'l2-lldp-neighbors', questionIds: ['review-lldp-7'], anchorId: 'lldp-port-id-mgmt-address',
+    afterHeading: { plain: 'Как читать запись LLDP: Port ID, Port Description и Management Address', professional: 'Разбор TLV на примере Port ID (locally assigned), Port Description и Management Address' } },
+  { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['l4-new-03'], anchorId: 'mtu-tcp-options-1448',
+    afterHeading: { plain: 'Фактические опции TCP и IPv4: почему данных бывает меньше объявленного MSS', professional: 'Точный расчёт полезной нагрузки с фактическими IPv4/TCP options (RFC 6691)' } },
+  { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-02'], anchorId: 'mtu-ipv4-tcp-options-1444',
+    afterHeading: { plain: 'MTU и MSS: размер «коробки» и размер «груза»', professional: 'Типовой оверхед инкапсуляции и реальный MTU в туннелях' } },
+  { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['ts-pack1-15'], anchorId: 'mtu-local-pmtu-cache',
+    afterHeading: { plain: 'Локальный кэш PMTU: какое ограничение срабатывает ещё до выхода кадра', professional: 'Локальный route/PMTU cache стека и порядок срабатывания ограничений' } },
+  { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-04'], anchorId: 'mtu-ipv6-ptb-transit',
+    afterHeading: { plain: 'Транзитный IPv6 и ICMPv6 Packet Too Big (PTB)', professional: 'PMTUD (RFC 1191 / 8201), транзитный IPv6 Packet Too Big и почему нельзя резать весь ICMP' } },
+  { lessonId: 'l2-ptp-time-sync', questionIds: ['review-ptp-16'], anchorId: 'ptp-accuracy-shift-budget',
+    afterHeading: { plain: 'Как проверять бюджет точности за смену: единицы (мкс/мс), максимум и free-run', professional: 'Оценка пригодности по бюджету ошибки за смену (HW/SW, мс→мкс, holdover)' } },
+  { lessonId: 'l2-ptp-time-sync', questionIds: ['review-ptp-18'], anchorId: 'ptp-1step-e2e-tc',
+    afterHeading: { plain: 'Пример 1-step E2E Transparent Clock: как складывается Correction Field', professional: '1-step E2E Transparent Clock: суммирование correctionField и отличие от BC и 2-step' } },
+  { lessonId: 'l3-acl-filtering', questionIds: ['gap-pack1-03'], anchorId: 'acl-first-match-xy-implicit-deny',
+    afterHeading: { plain: 'Невидимая ловушка в классическом ACL: implicit deny any', professional: 'Точный разбор first-match и implicit deny на примере source-only ACL (пакеты X и Y)' } },
 ];
