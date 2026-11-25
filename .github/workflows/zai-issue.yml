@@ -22,6 +22,13 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned TypeScript Compiler API
+        run: npm ci --ignore-scripts --prefix scripts/zai-runtime
+      - name: Offline resolver regression gates
+        run: node scripts/zai-lesson-resolver.test.mjs
       - name: Validate, collect current source and claim Issue
         id: prepare
         env:

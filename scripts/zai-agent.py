@@ -1,4 +1,4 @@
-"""Bounded, single-shot read-only Z.ai Issue worker; standard library only."""
+"""Bounded, single-shot read-only Z.ai Issue worker; Python standard library + pinned Node TypeScript AST helper."""
 import json
 import os
 from pathlib import Path
@@ -72,90 +72,22 @@ def safe_source(path):
     return p
 
 
+def lesson_definition(selector):
+    helper = Path(__file__).resolve().with_name('zai-lesson-resolver.mjs')
+    result = subprocess.run(['node', str(helper), selector], capture_output=True, text=True, check=False)
+    if result.returncode:
+        raise ValueError('Lesson AST resolver failed: ' + result.stderr.strip())
+    return json.loads(result.stdout)
+
+
 def resolve_lesson(selector):
-    """Resolve a lesson by exact id (case-insensitive) to a unique definition.
-    Structural scan: skips strings, template literals and comments before
-    matching braces. Requires both `id` and `title` as direct properties
-    of the same object literal. No deduplication — multiple definitions error.
-    Returns (path, extracted_object_text, id).
-    """
-    selector = selector.casefold()
-    candidates = []
-    for p in sorted(Path('src/data/lessons').glob('*.ts')):
-        text = p.read_text(encoding='utf-8')
-        # Build a mask that is space where strings/comments are, original elsewhere
-        mask = list(text)
-        i = 0
-        n = len(text)
-        while i < n:
-            if text.startswith('//', i):
-                j = text.find('\n', i)
-                if j == -1:
-                    j = n
-                for k in range(i, j):
-                    mask[k] = ' '
-                i = j
-            elif text.startswith('/*', i):
-                j = text.find('*/', i + 2)
-                if j == -1:
-                    j = n
-                else:
-                    j += 2
-                for k in range(i, j):
-                    mask[k] = ' '
-                i = j
-            elif text[i] in '"\'`':
-                q = text[i]
-                j = i + 1
-                while j < n:
-                    if text[j] == '\\':
-                        j += 2
-                        continue
-                    if text[j] == q:
-                        j += 1
-                        break
-                    j += 1
-                for k in range(i, j):
-                    mask[k] = ' '
-                i = j
-            else:
-                i += 1
-        masked = ''.join(mask)
-        # Find id: "..." occurrences in original text
-        for m in re.finditer(r'(?:"id"|\'id\'|id)\s*:\s*["\']([^"\']+)["\']', text):
-            lid = m.group(1)
-            if lid.casefold() != selector:
-                continue
-            # Walk left in masked text to the opening brace of this object
-            start_pos = masked.rfind('{', 0, m.start())
-            if start_pos == -1:
-                continue
-            depth = 0
-            end_pos = start_pos
-            for k in range(start_pos, len(masked)):
-                c = masked[k]
-                if c == '{':
-                    depth += 1
-                elif c == '}':
-                    depth -= 1
-                    if depth == 0:
-                        end_pos = k + 1
-                        break
-            if end_pos <= start_pos:
-                continue
-            obj = text[start_pos:end_pos]
-            # Verify id and title are properties of this object (not nested)
-            # Simple check: both appear before any nested object of significant size
-            if (re.search(r'(?:"id"|\'id\'|id)\s*:\s*["\']' + re.escape(lid) + r'["\']', obj) and
-                re.search(r'(?:"title"|\'title\'|title)\s*:', obj)):
-                candidates.append((p, obj, lid))
-    if len(candidates) != 1:
-        raise ValueError(f'Lesson selector must resolve exactly one definition, got {len(candidates)}')
-    return candidates[0]
+    lesson = lesson_definition(selector)
+    return Path(lesson['path']), lesson['content'], lesson['id']
 
 
 def pack(task):
-    path, lesson_text, lesson_id = resolve_lesson(task['lesson'])
+    definition = lesson_definition(task['lesson'])
+    path, lesson_text, lesson_id = Path(definition['path']), definition['content'], definition['id']
     # Pre-check: selector resolved uniquely (already enforced)
     paths = [path, Path('docs/LEARNING_CONTENT_STANDARD.md'), Path('docs/DEVELOPMENT_WORKFLOW.md')]
     paths += [safe_source(x) for x in task.get('files', [])]
@@ -167,7 +99,7 @@ def pack(task):
     files = []
     # Full content of standards and explicit files
     for p in dict.fromkeys(paths):
-        if p == path:
+        if p == path and str(p) not in task.get('files', []):
             # Only the resolved lesson object, not the whole multi-lesson file
             files.append({'path': str(p), 'coverage': 'resolved lesson object only', 'content': lesson_text})
         else:
@@ -182,17 +114,10 @@ def pack(task):
                 indexes.update(range(max(0, i-15), min(len(lines), i+16)))
         files.append({'path': ref, 'coverage': 'excerpts only; other content UNVERIFIED',
                       'content': '\n'.join(f'{i+1}: {lines[i]}' for i in sorted(indexes))})
-    # Extract relatedQuestionIds from the resolved object
-    qid_match = re.search(r'["\']?relatedQuestionIds["\']?\s*:\s*\[([^\]]*)\]', lesson_text, re.DOTALL)
-    question_ids = set()
-    if qid_match:
-        question_ids = set(re.findall(r'["\']([^"\']+)["\']', qid_match.group(1)))
+    question_ids = set(definition['questionIds'])
     questions = json.loads(Path('src/data/questions.json').read_text(encoding='utf-8'))
     if isinstance(questions, list):
-        title_m = re.search(r'(?:"title"|\'title\'|title)\s*:\s*["\']([^"\']+)', lesson_text)
-        acronym = None
-        if title_m:
-            acronym = re.match(r'[A-Z]{2,8}(?=[: /])', title_m.group(1))
+        acronym = re.match(r'[A-Z]{2,8}(?=[: /])', definition['title'])
         selected = [q for q in questions if q.get('id') in question_ids or lesson_id in json.dumps(q)
                     or (acronym and re.search(r'\b' + acronym.group(0) + r'\b', json.dumps(q, ensure_ascii=False)))]
         files.append({'path': 'src/data/questions.json', 'coverage': 'selected full question objects only',
