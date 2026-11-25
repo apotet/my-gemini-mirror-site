@@ -23,6 +23,8 @@
 
 ## Последние решения
 
+- #384: подготовлен отдельный OpenCode CLI 1.19.6 workflow (Draft), по умолчанию offline dry-run; первый этап audit-only. Платный smoke не запускался. CI-допустимость подписки требует подтверждения владельца; инструкция `docs/OPENCODE_CODING_PLAN.md`. Существующие агенты не изменены.
+
 - 25.11.2026: Gemini recovery (#378, SHA 9f2349cd). До 4 попыток на явные 503/429, backoff+jitter, Retry-After, после двух 503 на Hydrogen переход на Flash. Smoke #380: 4×503, генерации нет.
 
 - #377 устранён: [PR #381](https://github.com/apotet/my-gemini-mirror-site/pull/381) merged `8cf3ece3035c490890d0f8766fd536edf4be46b4`. 54 runtime-регрессии, Gemini/resolver, Docker CI и Fast PR gate PASS. По уже выданному разрешению запущен ZAI L3-01: [Issue #382](https://github.com/apotet/my-gemini-mirror-site/issues/382), [Run 45557155832](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45557155832), исходное задание #376. Durable checkpoint проверен: source `491dfd894f229239eb54011f5970fd3b5b45263e`, trusted main `184f0d62a3370053d70af68e0bc615023d8f5c36`, audit-only, первая попытка reserved. Итог отчёта/usage ожидается в Issue; это не повторный запуск. Ветка Геннадия и #352 не изменялись.

@@ -1,3 +1,7 @@
+## 25.11.2026 — #384: минимальный OpenCode Coding Plan (Draft)
+
+Отдельный workflow: owner-only [OPENCODE] Issue → dry-run; ручной запуск с моделью и Issue. Платный audit требует двух явных подтверждений владельца, main, первой попытки и durable single-use отметки в Issue. Один workflow одновременно; повтор/uncertain не возобновляется. CLI 1.19.6, zai-coding-plan/glm-5.4 или glm-5.3, секрет передаётся только OpenCode как ZHIPU_API_KEY. Все инструменты модели запрещены; контекст передаётся текстом. Отчёт в artifact. Существующие агенты, merge/deploy не затронуты. Offline dry-run и регрессии проверены; реальная установка CLI заблокирована сетью среды, не считается проверенной. Платного smoke не было. Подробности: `docs/OPENCODE_CODING_PLAN.md`.
+
 ## 25.11.2026 — #377 устранён, согласованный ZAI L3-01 запущен
 
 [PR #381](https://github.com/apotet/my-gemini-mirror-site/pull/381) merged:
