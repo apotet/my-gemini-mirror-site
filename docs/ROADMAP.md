@@ -1,3 +1,24 @@
+## 25.11.2026 — PR #365 принят и слит в main
+
+Независимая приёмка пройдена. По прямому разрешению владельца PR #365
+переведён из Draft в Ready и выполнен merge.
+Merge commit: `ca8a88fb6eda6a1af1db65c4d7ec671bcee3b49d`.
+Принятый head: `50a7bdc11bd3423a548c36ae2c5003bfe32f8a07`.
+
+- [Runtime CI 45554453147 — SUCCESS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453147):
+  49/49 runtime, 11/11 Gemini offline/mock, 12/12 resolver; реестр 90/90,
+  полный пакет #356 с 7/7 вопросами, реальные Docker isolation и
+  `npm ci → typecheck → build → questions` — PASS.
+- [Fast PR gate 45554453255 — SUCCESS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453255)
+  на том же принятом head.
+- Общая инфраструктура ZAI/Kimi теперь в main. STATE обновлён.
+  Gemini #369/#371 сохранён; его edit/publisher не включается этим merge.
+- PR #361 остаётся Draft. Учебные материалы и ветки Геннадия не изменялись.
+- Платных API-вызовов в этой операции **0**, расходы **$0**.
+  Новые платные запуски пока не разрешены; deploy вручную не запускался.
+
+Ниже сохранён журнал этапов до приёмки; прежние отметки Draft относятся к истории.
+
 ## 25.11.2026 — PR #365: исправления независимой приёмки и синхронизация main
 
 Исправлены только [замечания 7153787056](https://github.com/apotet/my-gemini-mirror-site/pull/365#issuecomment-7153787056),
