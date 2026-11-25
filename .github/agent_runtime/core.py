@@ -8,6 +8,8 @@ from decimal import Decimal
 from urllib.parse import urlencode
 from . import policy, providers
 
+MANDATORY_CONTEXT=('docs/STATE.md','docs/LEARNING_CONTENT_STANDARD.md','docs/DEVELOPMENT_WORKFLOW.md')
+
 MARKER='<!-- netops-agent:v2 -->'
 LEGACY_MARKERS=('<!-- zai-agent:claimed:v1 -->','<!-- kimi-agent:claimed:v1 -->')
 SYSTEM='''You are the NetOps engineering agent. The coordinator sets the task and write scope.
@@ -74,12 +76,14 @@ def source_manifest(repo):
 
 
 def context(repo,names):
-    selected=[]
+    selected=[];seen=set()
     for name in names:
         policy.path(name,directory=name.endswith('/'))
         matches=[n for n in repo.entries if n.startswith(name)] if name.endswith('/') else [name]
         if not matches:raise ValueError('Context directory is empty/missing')
         for target in matches:
+            if target in seen:continue
+            seen.add(target)
             policy.path(target)
             data=repo.read(target)
             item={'path':target,'sha256':policy.digest(data)}
@@ -106,7 +110,7 @@ def context_message(task,items,extra=None):
 
 def initial(task,repo,provider,key,issue=None):
     files=source_manifest(repo)
-    names=list(task['context_files'])
+    names=list(dict.fromkeys([*MANDATORY_CONTEXT,*task['context_files']]))
     # New targets need no invented original; represent their absence explicitly.
     missing=[n for n in names if not n.endswith('/') and n not in repo.entries]
     for name in missing:
@@ -229,6 +233,7 @@ def totals(state):
 def publish_candidate(api,ledger,state):
     if state['status']!='ready_for_review' or not state.get('validations') or not state['validations'][-1]['passed']:
         raise ValueError('Mandatory validation not passed')
+    policy.check_overlay(state)
     branch=f'agents/work/{state["provider"]}-{state["key"]}'
     previous=state.get('published_head')
     remote=api.ref(branch)

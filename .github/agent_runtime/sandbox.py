@@ -32,6 +32,7 @@ def check_lock(work):
 
 
 def validate(repo, state, tools, runner=subprocess.run):
+    policy.check_overlay(state)
     logs=[]
     with tempfile.TemporaryDirectory(prefix='agent-checks-') as temp:
         work=Path(temp)

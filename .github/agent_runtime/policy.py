@@ -6,7 +6,9 @@ import re
 
 ROOTS = ('src/','public/','assets/','docs/','tests/','scripts/')
 CONFIG = {'package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','index.dev.html','README.md'}
-CONTROL = ('scripts/zai','scripts/agent','scripts/telegram-notify.py','tests/test_agent_runtime')
+CONTROL = ('scripts/zai','scripts/agent','scripts/gemini','scripts/telegram-notify.py','tests/test_agent_runtime',
+           'docs/AGENT_RUNTIME.md','docs/KIMI_ISSUE_AGENT.md','docs/ZAI_ISSUE_AGENT.md','docs/GEMINI_ISSUE_AGENT.md',
+           'docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md')
 SECRET_NAMES = {'.env','.npmrc','.pypirc','.netrc','credentials','id_rsa','id_ed25519','authorized_keys'}
 
 
@@ -40,6 +42,18 @@ def safe_text(text):
     return text
 
 
+def safe_bytes(data):
+    # Inspect the assembled bytes, regardless of transport encoding or chunk cuts.
+    # Replacement decoding preserves binary files and still detects ASCII credentials.
+    safe_text(data.decode('utf-8',errors='replace'))
+
+
+def check_overlay(state):
+    for name,encoded in state['overlay'].items():
+        scoped(name,state['task']['write_paths'])
+        if encoded is not None:safe_bytes(base64.b64decode(encoded,validate=True))
+
+
 def digest(data): return hashlib.sha256(data).hexdigest()
 
 
@@ -63,13 +77,13 @@ def apply_files(state, files):
         encoding = item.get('encoding','utf-8')
         if encoding not in ('utf-8','base64') or not isinstance(item.get('content'),str): raise ValueError('Invalid file content')
         data = item['content'].encode() if encoding=='utf-8' else base64.b64decode(item['content'],validate=True)
-        if encoding=='utf-8': safe_text(item['content'])
         if action=='append':
             if target not in incomplete or previous is None: raise ValueError('Append requires a checkpointed partial file')
             before=base64.b64decode(previous)
             if item.get('expected_sha256')!=digest(before): raise ValueError('Append checkpoint hash mismatch')
             data=before+data
         elif action!='write': raise ValueError('Unknown file action')
+        safe_bytes(data)
         complete=item.get('complete',True)
         if type(complete) is not bool: raise ValueError('complete must be boolean')
         overlay[target]=base64.b64encode(data).decode()

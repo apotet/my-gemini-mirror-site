@@ -1,3 +1,5 @@
+> Контекст: читать `docs/STATE.md` первым; полный `docs/ROADMAP.md` — только по необходимости. Обязательные стандарты передаются явно.
+
 # Заяц — ZAI Agent v2
 
 Единый runtime и формат: [AGENT_RUNTIME.md](AGENT_RUNTIME.md).

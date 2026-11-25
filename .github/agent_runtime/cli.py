@@ -1,4 +1,5 @@
 """Trusted orchestration. No model-controlled host commands, checkout or endpoints."""
+import base64
 import copy
 import hashlib
 import json

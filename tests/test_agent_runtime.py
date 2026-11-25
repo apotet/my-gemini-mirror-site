@@ -71,7 +71,9 @@ class Runtime(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name);old=os.getcwd();os.chdir(self.root);self.addCleanup(os.chdir,old)
         fixtures={'src/a.ts':'export const x = 1;\n','src/data/questions.json':'[]','src/data/lessons/index.ts':'export const lessons = [];\n',
-                  'docs/standard.md':'Full standard','package.json':'{}','package-lock.json':'{"packages":{}}',
+                  'docs/standard.md':'Full standard','docs/STATE.md':'Current state',
+                  'docs/LEARNING_CONTENT_STANDARD.md':'Full mandatory learning standard',
+                  'docs/DEVELOPMENT_WORKFLOW.md':'Full mandatory workflow standard','package.json':'{}','package-lock.json':'{"packages":{}}',
                   '.env':'TOP SECRET','.github/workflows/deploy.yml':'secret control plane','public/image.png':b'\x89PNG\0data'}
         for name,data in fixtures.items():
             p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data.encode() if isinstance(data,str) else data)
@@ -105,6 +107,76 @@ class Runtime(unittest.TestCase):
         cli.run_loop('kimi',self.api,infer=infer,validator=validator)
         return seen
 
+    def test_mandatory_standards_for_explicit_files_and_new_lessons(self):
+        for provider in ['kimi','zai']:
+            tasks=[core.normalize({'task':'Audit explicit source','files':['src/a.ts','docs/']},provider),
+                   core.normalize({'task':'Create a lesson','mode':'edit','target_files':['src/data/lessons/new.ts']},provider)]
+            for task in tasks:
+                with self.subTest(provider=provider,task=task['task']):
+                    state=core.initial(task,self.repo,provider,'issue-9',9)
+                    files=json.loads(state['messages'][-1]['content'])['files']
+                    names=[f['path'] for f in files]
+                    self.assertEqual(len(names),len(set(names)))
+                    self.assertEqual(names[0],'docs/STATE.md')
+                    for name in core.MANDATORY_CONTEXT:
+                        self.assertEqual(next(f['content'] for f in files if f['path']==name),self.repo.read(name).decode())
+                    self.assertNotIn('docs/ROADMAP.md',names)
+    def test_missing_mandatory_standard_blocks_before_claim(self):
+        self.repo.entries.pop('docs/LEARNING_CONTENT_STANDARD.md')
+        with patch.object(cli,'source_repo',return_value=self.repo),self.assertRaises(ValueError):self.prepare()
+        self.assertFalse(self.api.refs);self.assertFalse(self.api.notes)
+    def test_partial_sse_transport_preserves_uncertain_checkpoint_without_repeat(self):
+        self.prepare();raw=b'data: {"choices":[{"delta":{"content":"partial response"}}]}\n'
+        original_run=subprocess.run;attempts=[]
+        def transport(argv,**kwargs):
+            if argv[0]!='curl':return original_run(argv,**kwargs)
+            saved=self.state_after();self.assertEqual(saved['calls'][-1]['status'],'reserved')
+            attempts.append(argv);Path(argv[argv.index('--output')+1]).write_bytes(raw)
+            Path(argv[argv.index('--dump-header')+1]).write_text('HTTP/2 200\n')
+            return subprocess.CompletedProcess(argv,28,'200','timeout after partial stream')
+        with patch.object(providers.subprocess,'run',side_effect=transport):
+            cli.run_loop('kimi',self.api,infer=providers.infer)
+            cli.run_loop('kimi',self.api,infer=providers.infer)
+        state=self.state_after();self.assertEqual(len(attempts),1)
+        self.assertEqual(state['status'],'uncertain');self.assertEqual(len(state['calls']),1)
+        self.assertEqual(state['calls'][0]['problem'],'ValueError')
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load();ledger.materialize(state,self.out)
+        pieces=state['calls'][0]['partial_artifacts']
+        self.assertEqual(b''.join((self.out/'ledger-artifacts'/p).read_bytes() for p in pieces),raw)
+        with self.assertRaises(ValueError):core.continue_task(state,ledger.head,ledger.head,'new',1)
+    def test_base64_text_and_assembled_chunks_cannot_bypass_credential_guard(self):
+        secret='ghp_'+('abc123'*6)
+        for encoding in ['utf-8','base64']:
+            with self.subTest(encoding=encoding):
+                state=self.state()
+                encoded=secret if encoding=='utf-8' else base64.b64encode(secret.encode()).decode()
+                with self.assertRaises(ValueError):policy.apply_files(state,[{'path':'src/new.ts','encoding':encoding,'content':encoded}])
+                self.assertNotIn('src/new.ts',state['overlay'])
+                prefix,suffix=secret[:20],secret[20:]
+                policy.apply_files(state,[{'path':'src/new.ts','content':prefix,'complete':False}])
+                encoded=suffix if encoding=='utf-8' else base64.b64encode(suffix.encode()).decode()
+                with self.assertRaises(ValueError):policy.apply_files(state,[{'path':'src/new.ts','action':'append','encoding':encoding,
+                    'content':encoded,'complete':True,'expected_sha256':policy.digest(prefix.encode())}])
+                self.assertEqual(base64.b64decode(state['overlay']['src/new.ts']),prefix.encode())
+                self.assertIn('src/new.ts',state['incomplete_files'])
+    def test_unsafe_checkpoint_rejected_before_validation_or_publication(self):
+        state=self.state();state['overlay']['src/a.ts']=base64.b64encode(('ghp_'+('abc123'*6)).encode()).decode()
+        with patch.object(sandbox.subprocess,'run') as run:
+            with self.assertRaises(ValueError):sandbox.validate(self.repo,state,self.root/'tools')
+            run.assert_not_called()
+        state.update(status='ready_for_review',validations=[{'passed':True,'logs':[]}])
+        with self.assertRaises(ValueError):core.publish_candidate(self.api,Ledger(self.api,'kimi','issue-9'),state)
+        self.assertFalse(self.api.calls)
+    def test_gemini_and_agent_instructions_protected_under_broad_scopes(self):
+        task=self.task(write_paths=['scripts/','docs/'])
+        protected=['scripts/gemini-issue-agent.py','scripts/gemini-issue-agent.test.py','scripts/gemini-list-models.py',
+                   'scripts/gemini-l3-issue.py','docs/AGENT_RUNTIME.md','docs/GEMINI_ISSUE_AGENT.md','docs/KIMI_ISSUE_AGENT.md',
+                   'docs/ZAI_ISSUE_AGENT.md','docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md']
+        for name in protected:
+            with self.subTest(name=name):
+                policy.path(name) # readable, never writable
+                with self.assertRaises(ValueError):policy.apply_files(self.state(write_paths=task['write_paths']),[{'path':name,'content':'rewrite'}])
+
     def test_native_limits_and_no_budget_ceiling(self):
         t=self.task(task='x'*200000,max_output_tokens=1048576)
         self.assertEqual(providers.payload(t,[{'role':'user','content':'x'*3000000}])['max_completion_tokens'],1048576)
@@ -117,8 +189,9 @@ class Runtime(unittest.TestCase):
     def test_full_context_not_excerpts(self):
         state=self.state(context_files=['src/a.ts','docs/standard.md'])
         content=json.loads(state['messages'][-1]['content'])
-        self.assertEqual(content['files'][0]['content'],self.repo.read('src/a.ts').decode())
-        self.assertEqual(content['files'][1]['content'],'Full standard')
+        files={f['path']:f['content'] for f in content['files']}
+        self.assertEqual(files['src/a.ts'],self.repo.read('src/a.ts').decode())
+        self.assertEqual(files['docs/standard.md'],'Full standard')
     def test_native_images_and_text_only_visibility(self):
         k=self.state(context_files=['public/image.png'])
         self.assertEqual(k['messages'][-1]['content'][1]['type'],'image_url')

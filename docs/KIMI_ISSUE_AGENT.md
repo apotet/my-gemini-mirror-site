@@ -1,3 +1,5 @@
+> Контекст: читать `docs/STATE.md` первым; полный `docs/ROADMAP.md` — только по необходимости. Обязательные стандарты передаются явно.
+
 # Химик — Kimi Agent v2
 
 Единый runtime: [AGENT_RUNTIME.md](AGENT_RUNTIME.md).

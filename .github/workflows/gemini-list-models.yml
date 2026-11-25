@@ -1,0 +1,23 @@
+name: Gemini list models (diagnostic)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  list:
+    if: github.repository == 'apotet/my-gemini-mirror-site' && github.actor == 'apotet'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: List models (no generation)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/gemini-list-models.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemini-models
+          path: gemini-models.json
+          retention-days: 7

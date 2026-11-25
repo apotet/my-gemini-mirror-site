@@ -25,6 +25,7 @@ jobs:
           node-version: '22'
       - run: npm ci --ignore-scripts --prefix scripts/zai-runtime
       - run: python3 tests/test_agent_runtime.py
+      - run: python3 scripts/gemini-issue-agent.test.py
       - run: node scripts/zai-lesson-resolver.test.mjs
   sandbox-smoke:
     runs-on: ubuntu-latest

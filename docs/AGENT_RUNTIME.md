@@ -7,6 +7,20 @@ ZAI, Kimi и ручной Kimi используют `.github/workflows/agent-tas
 `.github/agent_runtime/`. Ветки Геннадия и Gemini workflow не изменены. Для будущего
 Gemini добавляется адаптер транспорта/usage в providers.py, а не новый жизненный цикл.
 
+## Обязательный контекст и управляющие файлы
+
+Каждая новая задача получает `docs/STATE.md` первой, полные
+`docs/LEARNING_CONTENT_STANDARD.md` и `docs/DEVELOPMENT_WORKFLOW.md`, независимо
+от explicit files или lesson resolver. Пересекающиеся файлы/каталоги передаются
+без дублей; отсутствие стандарта блокирует подготовку до claim. Полный ROADMAP
+не добавляется автоматически. Gemini #369/#371 сохранён отдельным audit-only
+Interactions API агентом; его edit/publisher этим PR не активируется.
+
+`scripts/gemini*`, инструкции агентов в docs, STATE и обязательные стандарты
+доступны для чтения, защищены от записи даже при broad scripts/docs scope.
+Base64 и чанки не обходят проверку содержимого: проверяются собранные байты,
+а также весь overlay перед validation/publication, включая старые checkpoints.
+
 ## Задание
 
 Создать от `apotet` Issue с префиксом `[ZAI] ` или `[KIMI] ` и JSON body:
