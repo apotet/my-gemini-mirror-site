@@ -33,6 +33,10 @@ jobs:
           opencode run --help > /dev/null
           ZHIPU_API_KEY=opencode-catalog-placeholder opencode models zai > "$RUNNER_TEMP/zai-models.txt"
           grep -Fx "zai/glm-5.3" "$RUNNER_TEMP/zai-models.txt"
+      - name: Verify refreshed Coding Plan catalog (no model request)
+        run: |
+          ZHIPU_API_KEY=opencode-catalog-placeholder opencode models zai-coding-plan --refresh > "$RUNNER_TEMP/zai-coding-plan-models.txt"
+          grep -Fx "zai-coding-plan/glm-5.4" "$RUNNER_TEMP/zai-coding-plan-models.txt"
       - name: Dry-run both model configurations (no CLI invocation)
         run: |
           python3 scripts/opencode_audit.py --model glm-5.4 --output "$RUNNER_TEMP/dry-54"
