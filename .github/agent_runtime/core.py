@@ -3,6 +3,7 @@ import base64
 import copy
 import hashlib
 import json
+import re
 import time
 from decimal import Decimal
 from urllib.parse import urlencode
@@ -39,13 +40,15 @@ def strict_json(text):
 
 def normalize(raw,provider):
     if not isinstance(raw,dict):raise ValueError('Task must be a JSON object')
-    allowed={'task','mode','model','files','context_files','target_files','write_paths','checks','max_calls','max_output_tokens','reasoning_effort','lesson'}
+    allowed={'task','mode','model','files','context_files','target_files','write_paths','checks','max_calls','max_output_tokens','reasoning_effort','lesson','source_sha'}
     if set(raw)-allowed:raise ValueError('Unknown task fields; no branch/credential/endpoint/budget overrides')
     task={'mode':'audit-only','model':providers.DEFAULT[provider],'max_calls':8,'reasoning_effort':'high','checks':[],**raw}
     if task['model'] not in providers.MODELS or providers.MODELS[task['model']].provider!=provider:
         raise ValueError('Model/provider mismatch')
     if task['mode'] not in ('audit-only','edit') or not isinstance(task.get('task'),str) or not task['task'].strip():
         raise ValueError('Task and supported mode required')
+    if 'source_sha' in task and (task['mode']!='audit-only' or not isinstance(task['source_sha'],str) or not re.fullmatch('[a-f0-9]{40}',task['source_sha'])):
+        raise ValueError('source_sha requires audit-only and an immutable full commit SHA')
     if type(task['max_calls']) is not int or task['max_calls']<1:raise ValueError('Finite positive coordinator call grant required')
     if task['reasoning_effort'] not in ('low','high','max'):raise ValueError('Unknown reasoning effort')
     task['write_paths']=task.get('write_paths',task.get('target_files',[]) if task['mode']=='edit' else [])
@@ -75,17 +78,20 @@ def source_manifest(repo):
     return sorted(files)
 
 
-def context(repo,names):
+def context(repo,names,trusted_repo=None):
     selected=[];seen=set()
     for name in names:
         policy.path(name,directory=name.endswith('/'))
         matches=[n for n in repo.entries if n.startswith(name)] if name.endswith('/') else [name]
+        if trusted_repo:
+            matches=list(dict.fromkeys([*matches,*[p for p in MANDATORY_CONTEXT if p==name or name.endswith('/') and p.startswith(name)]]))
         if not matches:raise ValueError('Context directory is empty/missing')
         for target in matches:
             if target in seen:continue
             seen.add(target)
             policy.path(target)
-            data=repo.read(target)
+            source=trusted_repo if trusted_repo and target in MANDATORY_CONTEXT else repo
+            data=source.read(target)
             item={'path':target,'sha256':policy.digest(data)}
             try:item.update(encoding='utf-8',content=policy.safe_text(data.decode('utf-8')))
             except UnicodeDecodeError:item.update(encoding='base64',content=base64.b64encode(data).decode())
@@ -108,18 +114,19 @@ def context_message(task,items,extra=None):
     return {'role':'user','content':text}
 
 
-def initial(task,repo,provider,key,issue=None):
+def initial(task,repo,provider,key,issue=None,trusted_repo=None):
+    trusted_repo=trusted_repo or repo
     files=source_manifest(repo)
     names=list(dict.fromkeys([*MANDATORY_CONTEXT,*task['context_files']]))
     # New targets need no invented original; represent their absence explicitly.
-    missing=[n for n in names if not n.endswith('/') and n not in repo.entries]
+    missing=[n for n in names if not n.endswith('/') and n not in (trusted_repo.entries if n in MANDATORY_CONTEXT else repo.entries)]
     for name in missing:
         if name not in task.get('target_files',[]):raise ValueError('Explicit context file missing')
-    items=context(repo,[n for n in names if n not in missing])
+    items=context(repo,[n for n in names if n not in missing],trusted_repo)
     state={'kind':'netops-agent-v2','version':2,'provider':provider,'key':key,'issue':issue,'task':task,
-           'sourceSHA':repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'status':'working','remaining_calls':task['max_calls'],
+           'sourceSHA':repo.source,'trustedSHA':trusted_repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'status':'working','remaining_calls':task['max_calls'],
            'calls':[],'overlay':{},'incomplete_files':[],'pending_text':'','reports':[],'summaries':[],
-           'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps({'task':task,'sourceSHA':repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'new_targets':missing},ensure_ascii=False)},
+           'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps({'task':task,'sourceSHA':repo.source,'trustedSHA':trusted_repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'new_targets':missing},ensure_ascii=False)},
                        context_message(task,items)],'consumed_grants':[],'published_head':None,'independent_acceptance':'pending'}
     return state
 
@@ -147,7 +154,7 @@ def answered(state,response):
     state['status']='processing_response'
 
 
-def process(state,repo,validator):
+def process(state,repo,validator,trusted_repo=None):
     """Pure candidate state transition plus an isolated validation callback."""
     call=state['calls'][-1]
     if call['status']!='answered' or call.get('processed'):raise ValueError('Response is not pending')
@@ -170,7 +177,7 @@ def process(state,repo,validator):
     state['pending_text']='';call['processed']=True
     if len(state['calls'])>1 and state['calls'][-2].get('response',{}).get('content')==response['content'] and envelope['status']=='continue':
         state['status']='paused_no_progress';return
-    ctx=context(repo,reads) if reads else []
+    ctx=context(repo,reads,trusted_repo) if reads else []
     hashes={p:None if value is None else policy.digest(base64.b64decode(value)) for p,value in state['overlay'].items()}
     if envelope['status']=='complete' and not reads:
         if state['incomplete_files']:raise ValueError('Cannot complete with unfinished file chunks')

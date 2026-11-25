@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import time
+import tempfile
 from . import core, policy, providers, sandbox
 from .storage import GitHub, Ledger, Repository, REPOSITORY, APIError
 
@@ -53,6 +54,19 @@ def source_repo(source):
     return Repository('.',source)
 
 
+def resolve_lesson(repo,selector):
+    # Only the trusted main parser executes. The source commit contributes blobs,
+    # never its scripts, configuration, node_modules or checkout hooks.
+    parser=str(Path('scripts/zai-lesson-resolver.mjs').resolve())
+    with tempfile.TemporaryDirectory(prefix='agent-lesson-source-') as temp:
+        for name in repo.entries:
+            if re.fullmatch(r'src/data/lessons/[^/]+\.ts',name) or name=='src/data/expertCases177.ts':
+                target=Path(temp)/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(repo.read(name))
+        result=subprocess.run(['node',parser,selector],cwd=temp,capture_output=True,text=True,check=True,
+            env={'PATH':os.environ.get('PATH',os.defpath)})
+        return json.loads(result.stdout)
+
+
 def manual_task(event,provider,repo):
     inputs=event.get('inputs',{})
     if inputs.get('spec'):return core.strict_json(inputs['spec'])
@@ -86,7 +100,8 @@ def owned_pr(api,state):
 def prepare(provider,api=None):
     api=api or GitHub()
     event,issue=authorize(provider)
-    repo=source_repo(os.environ['GITHUB_SHA'])
+    trusted_repo=source_repo(os.environ['GITHUB_SHA'])
+    repo=trusted_repo
     action='work';resume=None
     if os.environ['GITHUB_EVENT_NAME']=='issue_comment':
         match=re.fullmatch(r'/agent (continue|validate|publish)\s+(\{.*\})\s*',event['comment']['body'],re.S)
@@ -102,11 +117,19 @@ def prepare(provider,api=None):
         else:
             task=core.normalize(raw,provider)
             policy.safe_text(task['task'])
+            if task.get('source_sha'):
+                # Fixed repository API scope proves membership before any durable claim.
+                if api.request('GET','/commits/'+task['source_sha'])['sha']!=task['source_sha']:
+                    raise ValueError('Source commit did not resolve exactly in this repository')
+                repo=source_repo(task['source_sha'])
             if task.get('lesson'):
                 # Keep the proven Compiler API resolver, but include the FULL source file.
-                resolved=subprocess.run(['node','scripts/zai-lesson-resolver.mjs',task['lesson']],capture_output=True,text=True,check=True,
-                    env={'PATH':os.environ.get('PATH',os.defpath)})
-                definition=json.loads(resolved.stdout)
+                if task.get('source_sha'):
+                    definition=resolve_lesson(repo,task['lesson'])
+                else:
+                    resolved=subprocess.run(['node','scripts/zai-lesson-resolver.mjs',task['lesson']],capture_output=True,text=True,check=True,
+                        env={'PATH':os.environ.get('PATH',os.defpath)})
+                    definition=json.loads(resolved.stdout)
                 task['context_files']=list(dict.fromkeys([definition['path'],*task['context_files'],
                     'docs/LEARNING_CONTENT_STANDARD.md','docs/DEVELOPMENT_WORKFLOW.md','src/data/questions.json']))
             key='issue-'+str(issue['number']) if issue else 'manual-'+hashlib.sha256((repo.source+json.dumps(task,sort_keys=True,ensure_ascii=False)).encode()).hexdigest()[:24]
@@ -117,7 +140,7 @@ def prepare(provider,api=None):
         if issue:
             if any(any(marker in c.get('body','') for marker in (core.MARKER,*core.LEGACY_MARKERS)) for c in api.comments(issue['number'])):
                 raise ValueError('Existing durable/legacy claim; never start another paid task implicitly')
-        state=core.initial(task,repo,provider,key,issue['number'] if issue else None)
+        state=core.initial(task,repo,provider,key,issue['number'] if issue else None,trusted_repo)
         plan={'provider':provider,'key':key,'action':action,'sourceSHA':repo.source}
         state['active_run']=os.environ['GITHUB_RUN_ID']
         persist(ledger,state,plan) # atomic create precedes claim comment and every model call
@@ -167,6 +190,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
     if plan['action']!='work':raise ValueError('This activation cannot call a model')
     if not os.environ.get('PROVIDER_API_KEY'):raise ValueError('Missing provider credential; no attempt made')
     repo=source_repo(state['sourceSHA'])
+    trusted_repo=source_repo(state.get('trustedSHA',state['sourceSHA']))
     validator=validator or (lambda r,s:sandbox.validate(r,s,Path.cwd()/'node_modules'))
     deadline=clock()+21000 # GitHub 6h job limit minus artifact/report reserve, not a token/budget cap
     try:
@@ -174,7 +198,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             pending=state['calls'] and state['calls'][-1]['status']=='answered' and not state['calls'][-1].get('processed')
             if pending:
                 updated=copy.deepcopy(state)
-                try:core.process(updated,repo,validator)
+                try:core.process(updated,repo,validator,trusted_repo)
                 except Exception as exc:
                     # Save full response/overlay. No speculative repeat of a paid request.
                     updated['status']='paused_response_or_validation'
@@ -246,6 +270,7 @@ def report(provider,api=None):
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
     body=f'''## {provider.upper()} — {state['status']}
 Task `{state['key']}`, source `{state['sourceSHA']}`.
+Trusted standards `{state.get('trustedSHA',state['sourceSHA'])}`.
 Checkpoint `{plan['head']}`; remaining authorized calls: {state['remaining_calls']}.
 Phase failures: {json.dumps(failures,ensure_ascii=False)}.
 Independent owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.

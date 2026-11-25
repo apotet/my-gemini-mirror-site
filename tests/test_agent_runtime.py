@@ -46,6 +46,10 @@ class FakeAPI:
             name=endpoint.removeprefix('/git/refs/heads/')
             if data['force'] or self.refs[name] not in [p['sha'] for p in self.commits[data['sha']]['parents']]:raise APIError(422,method,endpoint)
             self.refs[name]=data['sha'];return data
+        if method=='GET' and endpoint.startswith('/commits/'):
+            sha=endpoint.rsplit('/',1)[1]
+            if sha not in self.commits:raise APIError(404,method,endpoint)
+            return {'sha':sha}
         if method=='GET' and endpoint.startswith('/git/commits/'):return self.commits[endpoint.rsplit('/',1)[1]]
         if method=='GET' and endpoint.startswith('/git/trees/'):return {'tree':self.trees[endpoint.rsplit('/',1)[1]]}
         if method=='GET' and endpoint.startswith('/git/blobs/'):return {'content':base64.b64encode(self.blobs[endpoint.rsplit('/',1)[1]]).decode()}
@@ -176,6 +180,69 @@ class Runtime(unittest.TestCase):
             with self.subTest(name=name):
                 policy.path(name) # readable, never writable
                 with self.assertRaises(ValueError):policy.apply_files(self.state(write_paths=task['write_paths']),[{'path':name,'content':'rewrite'}])
+
+    def source_snapshot(self):
+        for name,text in {'src/a.ts':'export const x = 377;\n','docs/LEARNING_CONTENT_STANDARD.md':'UNTRUSTED learning',
+                          'docs/DEVELOPMENT_WORKFLOW.md':'UNTRUSTED workflow','docs/STATE.md':'UNTRUSTED state',
+                          'scripts/never-execute.py':'raise RuntimeError("source code must never execute")'}.items():
+            p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text)
+        subprocess.run(['git','add','.'],check=True,capture_output=True)
+        subprocess.run(['git','-c','user.name=test','-c','user.email=test@example.invalid','commit','-qm','source snapshot'],check=True,capture_output=True)
+        sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+        subprocess.run(['git','checkout','-q',self.source],check=True,capture_output=True)
+        self.api.commits[sha]={'tree':{'sha':'source-tree'},'parents':[{'sha':self.source}]}
+        return sha
+    def test_source_sha_is_audit_only_and_immutable(self):
+        for mode,sha in [('edit','a'*40),('audit-only','main'),('audit-only','../x'),('audit-only','https://example/x'),
+                         ('audit-only','abc123'),('audit-only',None),('audit-only','A'*40)]:
+            with self.subTest(mode=mode,sha=sha),self.assertRaises(ValueError):
+                self.task(mode=mode,write_paths=[] if mode=='audit-only' else ['src/'],source_sha=sha)
+        self.assertEqual(self.task(mode='audit-only',write_paths=[],source_sha='a'*40)['source_sha'],'a'*40)
+    def test_audit_pinned_snapshot_uses_trusted_main_standards_without_checkout(self):
+        sha=self.source_snapshot()
+        self.event['issue']['body']=json.dumps({'task':'Audit source','mode':'audit-only','source_sha':sha,'files':['src/a.ts','docs/']})
+        self.write_event();self.prepare();state=self.state_after()
+        self.assertEqual(state['sourceSHA'],sha);self.assertEqual(state['trustedSHA'],self.source)
+        self.assertEqual(json.loads(state['messages'][1]['content'])['trustedSHA'],self.source)
+        files={f['path']:f['content'] for f in json.loads(state['messages'][-1]['content'])['files']}
+        self.assertEqual(files['src/a.ts'],'export const x = 377;\n')
+        for name in core.MANDATORY_CONTEXT:self.assertEqual(files[name],self.repo.read(name).decode())
+        self.assertEqual(subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),self.source)
+        self.assertFalse((self.root/'scripts/never-execute.py').exists())
+        self.loop([response({'status':'continue','read_files':['docs/DEVELOPMENT_WORKFLOW.md']}),
+                   response({'status':'complete','report':'audit done'})])
+        state=self.state_after();self.assertEqual(state['status'],'completed');self.assertEqual(state['overlay'],{})
+        self.assertIn('Full mandatory workflow standard',state['messages'][-2]['content'])
+        self.assertNotIn('UNTRUSTED workflow',state['messages'][-2]['content'])
+        cli.publish('kimi',self.api);self.assertFalse(self.api.prs)
+        self.assertFalse(any(c[1]=='/git/refs' and c[2]['ref'].startswith('refs/heads/agents/work/') for c in self.api.calls))
+    def test_unknown_source_commit_blocks_before_claim(self):
+        self.event['issue']['body']=json.dumps({'task':'Audit','mode':'audit-only','source_sha':'a'*40})
+        self.write_event()
+        with self.assertRaises(APIError):self.prepare()
+        self.assertFalse(self.api.refs);self.assertFalse(self.api.notes)
+    def test_source_commit_membership_checked_before_local_read(self):
+        self.event['issue']['body']=json.dumps({'task':'Audit','mode':'audit-only','source_sha':'a'*40})
+        self.write_event();original=self.api.request
+        def request(method,endpoint,data=None):
+            if endpoint.startswith('/commits/'):return {'sha':'b'*40}
+            return original(method,endpoint,data)
+        with patch.object(self.api,'request',side_effect=request),self.assertRaises(ValueError):self.prepare()
+        self.assertFalse(self.api.refs)
+    def test_later_audit_reads_retain_original_pins_after_main_changes(self):
+        sha=self.source_snapshot()
+        self.event['issue']['body']=json.dumps({'task':'Audit','mode':'audit-only','source_sha':sha,'max_calls':1})
+        self.write_event();self.prepare();self.loop([response({'status':'continue','read_files':['src/a.ts']})])
+        state=self.state_after();self.assertEqual(state['status'],'paused')
+        self.assertEqual(state['sourceSHA'],sha);self.assertEqual(state['trustedSHA'],self.source)
+        self.event['issue']['body']='{"task":"changed issue must not replace source"}'
+        self.event['action']='created';self.event['comment']={'id':377,'body':'/agent continue '+json.dumps({'checkpoint':self.api.ref('agents/state/kimi-issue-9'),'calls':1}),
+            'user':{'login':'apotet','type':'User'}}
+        self.write_event()
+        with patch.dict(os.environ,{'GITHUB_EVENT_NAME':'issue_comment','GITHUB_SHA':'c'*40}),patch.object(cli,'source_repo',return_value=self.repo):self.prepare()
+        with patch.dict(os.environ,{'GITHUB_EVENT_NAME':'issue_comment'}):
+            self.loop([response({'status':'complete','report':'done'})])
+        self.assertEqual(self.state_after()['sourceSHA'],sha);self.assertEqual(self.state_after()['trustedSHA'],self.source)
 
     def test_native_limits_and_no_budget_ceiling(self):
         t=self.task(task='x'*200000,max_output_tokens=1048576)

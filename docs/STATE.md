@@ -22,6 +22,8 @@
 
 ## Последние решения
 
+- #377: точечная поддержка `source_sha` для audit-only, стандарты/исполняемый код из main, данные из immutable source commit. 54 offline-регрессии локально PASS; CI/merge — в отдельном PR. После merge владелец уже разрешил ZAI-аудит L3-01 (#376) на `491dfd894f229239eb54011f5970fd3b5b45263e`; повторное разрешение не требуется. Ветка Геннадия и #352 только читаются, без изменений.
+
 - 25.11.2026: независимая приёмка #365 пройдена; по прямому разрешению владельца PR выведен из Draft и слит. Merge `ca8a88fb6eda6a1af1db65c4d7ec671bcee3b49d`, принятый head `50a7bdc11bd3423a548c36ae2c5003bfe32f8a07`. [Runtime CI](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453147) и [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453255) — SUCCESS: 49/49 runtime, 11/11 Gemini, 12/12 resolver, полный Docker pipeline. Платные вызовы не запускались и пока не разрешены. #361 остаётся Draft; ветка Геннадия не затронута.
 
 - 25.11.2026: #365 финализирован по [замечаниям приёмки](https://github.com/apotet/my-gemini-mirror-site/pull/365#issuecomment-7153787056): partial SSE сохраняется durable без повтора; STATE/стандарты передаются всем новым задачам без дублей; decoded/assembled content проверяется до validation/publication; control plane Gemini и инструкции защищены от broad scope. На коде `89001e755fa8e8ede6d46445a14c4f450124feae` CI PASS: 49/49 runtime, 11/11 Gemini, 12/12 resolver, Docker isolation и полный sandbox pipeline; [Fast PR gate PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554268526). На этапе исправлений платных вызовов 0; последующее разрешённое слияние зафиксировано выше.
