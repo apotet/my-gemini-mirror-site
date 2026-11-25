@@ -464,7 +464,7 @@ for(const [id,trapMustMatch] of [
 }
 const httpLesson=m.getLesson('l7-http-status-basics');
 const httpPro=m.getLessonBlocksWithSections(httpLesson,'professional').find(b=>b.anchorId==='in-depth-existing-l7-05')?.body??'';
-assert.match(httpPro,/Статус HTTP 404 Not Found означает/,'HTTP 404 pro is Russian-language instruction');
+assert.match(httpPro,/404 Not Found означает отсутствие текущего представления ресурса/,'HTTP 404 pro is Russian-language instruction');
 assert.match(httpPro,/410 Gone/,'404 vs 410 meaning retained');
 assert.doesNotMatch(httpPro,/404 Not Found conveys|Do not infer a server-wide failure/,'No untranslated original pro section');
 const ednsPlain=m.getLessonBlocksWithSections(m.getLesson('l7-dns'),'plain').find(b=>b.anchorId==='edns-size-is-not-pmtu')?.body??'';
