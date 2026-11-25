@@ -35,3 +35,10 @@ jobs:
         run: docker build -t netops-agent-checks:local .github/agent_runtime
       - name: Real sandbox isolation smoke (no model, no GitHub write token)
         run: python3 tests/agent_sandbox_smoke.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reviewed host toolchain (no candidate lifecycle hooks)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Full isolated baseline checks (no model transport)
+        run: python3 tests/agent_sandbox_integration.py
