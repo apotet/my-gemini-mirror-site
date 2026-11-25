@@ -67,3 +67,59 @@ class AuditTests(unittest.TestCase):
                     audit.main()
                 self.assertEqual(run.call_count, 1)
                 self.assertIn('uncertain', (Path(tmp) / 'report.md').read_text())
+
+    def test_api_models_and_dry_run(self):
+        cfg = audit.config('glm-5.3', 'zai')
+        self.assertEqual(cfg['model'], 'zai/glm-5.3')
+        self.assertEqual(cfg['agent']['audit']['steps'], 3)
+        self.assertEqual(cfg['enabled_providers'], ['zai'])
+        with self.assertRaises(ValueError):
+            audit.config('glm-5.4', 'zai')
+        with tempfile.TemporaryDirectory() as tmp, patch.object(sys, 'argv', ['audit', '--provider', 'zai', '--model', 'glm-5.3', '--output', tmp]), patch.object(audit.subprocess, 'run', side_effect=AssertionError('CLI invoked')), patch.dict(os.environ, {}, clear=True):
+            audit.main()
+
+    def test_api_budget_risk_acceptance_before_credential_or_cli(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(sys, 'argv', ['audit', '--paid', '--provider', 'zai', '--model', 'glm-5.3', '--output', tmp]), patch.object(audit.subprocess, 'run', side_effect=AssertionError('CLI invoked')), patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, 'budget'):
+                audit.main()
+
+    def test_accounting_step_deltas_without_duplicate_message(self):
+        part = {'cost': 0.11, 'tokens': {'input': 100, 'output': 20, 'reasoning': 5, 'cache': {'read': 10, 'write': 0}}}
+        events = '\n'.join(json.dumps(e) for e in [
+            {'type': 'step_finish', 'part': part},
+            {'type': 'text', 'part': part},
+            {'type': 'step_finish', 'part': part}])
+        usage = audit.accounting(events, 'zai')
+        self.assertEqual(usage['tokens']['input'], 200)
+        self.assertEqual(usage['tokens']['cache_read'], 20)
+        self.assertAlmostEqual(usage['opencode_cost_usd'], 0.22)
+        self.assertTrue(usage['target_exceeded'])
+        self.assertFalse(usage['budget_exceeded'])
+        self.assertFalse(usage['budget_is_hard_cap'])
+        self.assertIsNone(audit.accounting(events, 'zai-coding-plan')['opencode_cost_usd'])
+
+    def test_absent_usage_is_unknown(self):
+        for events in ('', 'not-json', '{"type":"step_finish","part":{}}'):
+            usage = audit.accounting(events, 'zai')
+            self.assertIsNone(usage['tokens'])
+            self.assertIsNone(usage['opencode_cost_usd'])
+
+    def test_api_runner_selects_native_agent_and_reports_cost(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / 'repo'
+            repo.mkdir()
+            (repo / '.git').mkdir()
+            prompt = Path(tmp) / 'prompt.txt'
+            prompt.write_text('audit')
+            event = json.dumps({'type': 'step_finish', 'part': {'cost': 0.08, 'tokens': {'input': 100, 'output': 20, 'reasoning': 0, 'cache': {'read': 0, 'write': 0}}}})
+            def cli(command, **kw):
+                self.assertIn('zai/glm-5.3', command)
+                self.assertEqual(command[command.index('--agent') + 1], 'audit')
+                cfg = json.loads(Path(kw['env']['OPENCODE_CONFIG']).read_text())
+                self.assertEqual(cfg['enabled_providers'], ['zai'])
+                return subprocess.CompletedProcess(command, 0, event, '')
+            with patch.object(sys, 'argv', ['audit', '--paid', '--accept-api-budget-risk', '--provider', 'zai', '--model', 'glm-5.3', '--repo', str(repo), '--prompt', str(prompt), '--output', tmp]), patch.dict(os.environ, {'ZHIPU_API_KEY': 'test-secret'}), patch.object(audit.subprocess, 'run', side_effect=cli) as run:
+                audit.main()
+                self.assertEqual(run.call_count, 1)
+                usage = json.loads((Path(tmp) / 'usage.json').read_text())
+                self.assertEqual(usage['opencode_cost_usd'], 0.08)
