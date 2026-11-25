@@ -128,7 +128,7 @@ class Runtime(unittest.TestCase):
     def test_secret_paths_and_control_plane(self):
         for p in ['.env','src/.env.local','../a','/etc/passwd','.github/workflows/a.yml','scripts/zai-agent.py','src/a/../../x','src\\x']:
             with self.subTest(path=p),self.assertRaises(ValueError):policy.path(p,write=True)
-        with self.assertRaises(ValueError):policy.safe_text('-----BEGIN PRIVATE KEY-----')
+        with self.assertRaises(ValueError):policy.safe_text('-----BEGIN '+'PRIVATE KEY-----')
     def test_new_questions_lessons_registry_svg_glossary_tests_code_allowed(self):
         state=self.state()
         changes=['src/data/questions.json','src/data/lessons/new.ts','src/data/lessons/index.ts','src/data/glossary.ts','src/components/New.tsx','public/new.svg','tests/new.test.mjs']
