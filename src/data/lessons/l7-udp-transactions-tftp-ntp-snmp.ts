@@ -46,6 +46,8 @@ export const LESSON_L7_UDP_TRANSACTIONS: Lesson = {
   "professional": {
     "summary": "RFC 1350 TFTP TID/ERROR5, RFC 5905 NTP mode/ports/LI, RFC 3416 SNMP Get/GetNext/GetBulk и привязка Request/Response к UDP endpoints.",
     "terms": [
+      "non-repeaters",
+      "max-repetitions",
       "UDP",
       "TFTP",
       "NTP",
@@ -91,3 +93,4 @@ export const LESSON_L7_UDP_TRANSACTIONS: Lesson = {
     "RFC 3416 — SNMPv2 operations"
   ]
 };
+

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="650" viewBox="0 0 600 650" role="img" aria-labelledby="title desc">
+<title id="title">DHCP relay: четыре направления</title>
+<desc id="desc">Клиентская подсеть 192.0.2.0/24. Relay 192.0.2.1. Сервер 198.51.100.10 в другой подсети. Клиент к relay UDP 68 к 67; relay к серверу 67 к 67; сервер к relay 67 к 67; relay к клиенту 67 к 68.</desc>
+<rect width="600" height="650" rx="18" fill="#f0f9ff"/>
+<g font-family="sans-serif" fill="#0c4a6e">
+<text x="28" y="44" font-size="26" font-weight="bold">Обычный DHCPv4 relay</text>
+<text x="28" y="82" font-size="22">Клиент: подсеть 192.0.2.0/24</text>
+<text x="28" y="116" font-size="22">Relay: 192.0.2.1 (giaddr)</text>
+<text x="28" y="150" font-size="22">Сервер: 198.51.100.10</text>
+<g font-size="25" font-weight="bold">
+<text x="28" y="222">1. Клиент → relay</text>
+<text x="58" y="260">UDP 68 → 67</text>
+<text x="28" y="330">2. Relay → сервер</text>
+<text x="58" y="368">UDP 67 → 67</text>
+<text x="28" y="438">3. Сервер → relay</text>
+<text x="58" y="476">UDP 67 → 67</text>
+<text x="28" y="546">4. Relay → клиент</text>
+<text x="58" y="584">UDP 67 → 68</text>
+</g></g>
+<g stroke="#0891b2" stroke-width="3"><path d="M28 282H570"/><path d="M28 390H570"/><path d="M28 498H570"/></g>
+</svg>

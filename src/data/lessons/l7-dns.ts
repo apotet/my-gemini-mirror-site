@@ -95,6 +95,7 @@ export const LESSON_L7_DNS: Lesson = {
   "professional": {
     "summary": "Записи адресов и алиасы, работа резолвера, UDP и TCP на порту 53, кэширование и последовательность проверки ошибок разрешения имён.",
     "terms": [
+      "Transaction ID",
       "TC",
       "EDNS",
       "AXFR",
@@ -157,3 +158,4 @@ export const LESSON_L7_DNS: Lesson = {
     "sourceCommit": "665957ac39b366519dadb5eea21db752521491af"
   }
 };
+
