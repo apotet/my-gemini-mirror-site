@@ -23,6 +23,8 @@
 
 ## Последние решения
 
+- OpenCode: подготовлен отдельный PR для штатного `zai` (GLM-5.3, существующая ссылка на `ZAI_API_KEY`) наряду с Coding Plan. Токены/оценка стоимости в artifact и Job Summary; бюджет первого API теста $1, цель $0.20. Standard API GLM-5.4 ещё недоступна по документации. Provider-side hard cap отдельного Standard key не подтверждён; платный тест не запускался.
+
 - #384: подготовлен отдельный OpenCode CLI 1.19.6 workflow (Draft), по умолчанию offline dry-run; первый этап audit-only с самостоятельным чтением/поиском в checkout репозитория; [CI smoke реальной установки/версии без модели PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45567465538). Платный smoke не запускался. CI-допустимость подписки требует подтверждения владельца; инструкция `docs/OPENCODE_CODING_PLAN.md`. Существующие агенты не изменены.
 
 - 25.11.2026: Gemini recovery (#378, SHA 9f2349cd). До 4 попыток на явные 503/429, backoff+jitter, Retry-After, после двух 503 на Hydrogen переход на Flash. Smoke #380: 4×503, генерации нет.

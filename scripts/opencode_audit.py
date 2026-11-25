@@ -8,16 +8,19 @@ import tempfile
 
 VERSION = '1.19.6'
 MODELS = ('glm-5.4', 'glm-5.3')
+PROVIDERS = ('zai-coding-plan', 'zai')
+BUDGET_USD = 1.0
+TARGET_USD = 0.20
 
 
-def config(model):
-    if model not in MODELS:
+def config(model, provider=PROVIDERS[0]):
+    if provider not in PROVIDERS or model not in MODELS or (provider == 'zai' and model != 'glm-5.3'):
         raise ValueError('Unsupported model')
-    return {
+    cfg = {
         '$schema': 'https://opencode.ai/config.json',
-        'model': f'zai-coding-plan/{model}',
-        'small_model': f'zai-coding-plan/{model}',
-        'enabled_providers': ['zai-coding-plan'],
+        'model': f'{provider}/{model}',
+        'small_model': f'{provider}/{model}',
+        'enabled_providers': [provider],
         'share': 'disabled', 'autoupdate': False,
         'permission': {
             '*': 'deny',
@@ -27,11 +30,66 @@ def config(model):
         },
         'snapshot': False,
     }
+    if provider == 'zai':
+        # Native OpenCode agent controls, not a billing guarantee.
+        cfg['agent'] = {'audit': {'mode': 'primary', 'steps': 3}}
+    return cfg
+
+
+def accounting(stdout, provider):
+    steps = []
+    malformed = False
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except (ValueError, TypeError):
+            malformed = True
+            continue
+        if not isinstance(event, dict):
+            malformed = True
+            continue
+        if event.get('type') == 'step_finish':
+            part = event.get('part', {})
+            steps.append(part if isinstance(part, dict) else {})
+    # step_finish contains per-step deltas; do not add text/message snapshots again.
+    tokens = None
+    cost = None
+    if steps and all(isinstance(s.get('tokens'), dict) and
+                     all(isinstance(s['tokens'].get(k), (int, float)) for k in ('input', 'output', 'reasoning')) and
+                     isinstance(s['tokens'].get('cache'), dict)
+                     for s in steps):
+        tokens = {k: sum(s['tokens'].get(k, 0) for s in steps)
+                  for k in ('input', 'output', 'reasoning')}
+        tokens['cache_read'] = sum(s['tokens'].get('cache', {}).get('read', 0) for s in steps)
+        tokens['cache_write'] = sum(s['tokens'].get('cache', {}).get('write', 0) for s in steps)
+    if steps and all(isinstance(s.get('cost'), (float, int)) for s in steps):
+        cost = sum(s['cost'] for s in steps)
+    return {'provider': provider, 'steps': len(steps), 'tokens': tokens,
+            'opencode_cost_usd': cost if provider == 'zai' else None,
+            'budget_usd': BUDGET_USD if provider == 'zai' else None,
+            'target_usd': TARGET_USD if provider == 'zai' else None,
+            'target_exceeded': cost > TARGET_USD if provider == 'zai' and cost is not None else None,
+            'budget_exceeded': cost > BUDGET_USD if provider == 'zai' and cost is not None else None,
+            'malformed_events': malformed,
+            'billing_note': 'OpenCode estimate; reconcile provider bill. Missing/partial usage is unknown, never zero. Coding Plan uses quota.'}
+
+
+def save_accounting(out, report, stdout, provider):
+    usage = accounting(stdout, provider)
+    (out / 'usage.json').write_text(json.dumps(usage, indent=2) + '\n')
+    summary = '\n## Usage and cost\n\n```json\n' + json.dumps(usage, indent=2) + '\n```\n'
+    report.write_text(report.read_text() + summary)
+    # Only the numeric/structured accounting summary is sent to the Actions summary.
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+            f.write(summary)
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
+    p.add_argument('--provider', choices=PROVIDERS, default=PROVIDERS[0])
+    p.add_argument('--api-budget-confirmed', action='store_true')
     p.add_argument('--paid', action='store_true')
     p.add_argument('--repo', default='.', help='Working repository checkout')
     p.add_argument('--prompt', default='opencode-prompt.txt')
@@ -39,13 +97,15 @@ def main():
     args = p.parse_args()
     out = Path(args.output).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    cfg = config(args.model)
+    cfg = config(args.model, args.provider)
     (out / 'config.json').write_text(json.dumps(cfg, indent=2) + '\n')
     report = out / 'report.md'
     report.write_text(f'# OpenCode audit\n\nCLI: {VERSION}\nModel: {cfg["model"]}\n'
                       f'Mode: {"paid; outcome pending" if args.paid else "dry-run; no CLI, secret or model access"}\n')
     if not args.paid:
         return
+    if args.provider == 'zai' and not args.api_budget_confirmed:
+        raise RuntimeError('Owner must confirm provider-side $1 budget before paid API use')
     key = os.environ.get('ZHIPU_API_KEY')
     if not key:
         raise RuntimeError('Missing OpenCode credential')
@@ -54,6 +114,8 @@ def main():
     if not (repo / ".git").exists():
         raise RuntimeError("Repository checkout required")
     prompt = Path(args.prompt).read_text()
+    if args.provider == 'zai':
+        prompt += '\nFirst API test: budget $1, aim below $0.20. Keep scope narrow, read only relevant files, return a concise audit. Do not assume these instructions enforce a dollar cap.'
     with tempfile.TemporaryDirectory(prefix='opencode-audit-') as temp:
         root = Path(temp)
         (root / 'opencode.json').write_text(json.dumps(cfg))
@@ -65,16 +127,24 @@ def main():
                    OPENCODE_PERMISSION=json.dumps(cfg['permission']))
         try:
             result = subprocess.run(['opencode', 'run', '--model', cfg['model'],
-                                     '--format', 'json', prompt], cwd=str(repo), env=env,
+                                     '--format', 'json',
+                                     *(['--agent', 'audit'] if args.provider == 'zai' else []), prompt], cwd=str(repo), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))
             report.write_text(report.read_text() + f'\nCLI exit: {result.returncode}. '
-                              'No automatic retry. See events.jsonl; usage is subscription usage, not a $0 claim.\n')
+                              'No automatic retry. See events.jsonl and usage.json; OpenCode cost is an estimate, not the provider bill.\n')
+            save_accounting(out, report, result.stdout.replace(key, '[REDACTED]'), args.provider)
             if result.returncode:
                 raise RuntimeError('OpenCode failed; inspect artifact, do not retry automatically')
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as exc:
             report.write_text(report.read_text() + '\nTimeout: outcome uncertain. Do not retry.\n')
+            partial = exc.stdout or ''
+            if isinstance(partial, bytes):
+                partial = partial.decode(errors='replace')
+            partial = partial.replace(key, '[REDACTED]')
+            (out / 'events.jsonl').write_text(partial)
+            save_accounting(out, report, partial, args.provider)
             raise RuntimeError('OpenCode timeout; outcome uncertain') from None
 
 
