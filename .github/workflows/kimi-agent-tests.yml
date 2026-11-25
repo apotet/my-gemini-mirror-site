@@ -1,5 +1,6 @@
 name: Agent runtime offline tests
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - '.github/agent_runtime/**'
