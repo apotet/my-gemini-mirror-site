@@ -10,8 +10,8 @@ import urllib.request
 
 OUT = Path('gemini-issue-output')
 MARKER = '<!-- gemini-issue-agent:claimed:v1 -->'
-MODEL = 'gemini-2.5-pro'
-ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
+MODEL = 'gemini-4-hydrogen'
+ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions'
 # Technical bound from Gemini API docs for generateContent maxOutputTokens on 2.5 Pro.
 # Truncation (finishReason=MAX_TOKENS) is treated as incomplete, not success.
 MAX_OUTPUT_TOKENS = 65536
@@ -144,11 +144,11 @@ def run():
     for f in snapshot.get('files', []):
         content = Path(f).read_text(encoding='utf-8', errors='replace')
         parts.append({'text': f'\n\n--- FILE: {f} ---\n{content}'})
-    payload = {
-        'contents': [{'role': 'user', 'parts': parts}],
-        'generationConfig': {'temperature': 0.2, 'maxOutputTokens': MAX_OUTPUT_TOKENS},
-    }
-    url = ENDPOINT.format(model=snapshot['model'])
+    # Interactions API: generateContent returned HTTP 404 (run 45548274570).
+    # Model confirmed available via models.list (run 45548868207).
+    user_text = ''.join(part['text'] for part in parts)
+    payload = {'model': snapshot['model'], 'input': user_text}
+    url = ENDPOINT
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
@@ -161,20 +161,30 @@ def run():
         with opener.open(req, timeout=180) as resp:
             data = json.loads(resp.read().decode())
         accounting['status'] = 'response received'
-        if 'usageMetadata' in data:
-            accounting['usage'] = data['usageMetadata']
-        candidates = data.get('candidates') or []
-        if not candidates:
+        accounting['raw_keys'] = list(data.keys())
+        usage = data.get('usageMetadata') or data.get('usage')
+        if usage:
+            accounting['usage'] = usage
+        text_out = (data.get('output_text') or '').strip()
+        if not text_out:
+            outs = data.get('outputs') or data.get('output') or []
+            if isinstance(outs, dict):
+                outs = [outs]
+            chunks = []
+            for o in outs:
+                if isinstance(o, dict):
+                    chunks.append(o.get('text') or o.get('output_text') or '')
+                elif isinstance(o, str):
+                    chunks.append(o)
+            text_out = ''.join(chunks).strip()
+        istatus = (data.get('status') or '').upper()
+        accounting['interactionStatus'] = istatus or None
+        save('report.md', text_out or '(empty)')
+        if text_out and istatus in ('', 'COMPLETED', 'COMPLETE', 'STOP'):
+            accounting['status'] = 'complete'
+        else:
             accounting['status'] = 'incomplete'
-            raise RuntimeError('No candidates')
-        finish = candidates[0].get('finishReason')
-        accounting['finishReason'] = finish
-        text = ''.join(p.get('text', '') for p in candidates[0].get('content', {}).get('parts', []) if not p.get('thought'))
-        save('report.md', text or '(empty)')
-        if finish != 'STOP' or not text.strip():
-            accounting['status'] = 'incomplete'
-            raise RuntimeError(f'Incomplete response: finishReason={finish}')
-        accounting['status'] = 'complete'
+            raise RuntimeError(f'Incomplete response: status={istatus!r} text_len={len(text_out)}')
     except Exception as exc:
         accounting['errorType'] = type(exc).__name__
         accounting['error'] = str(exc).replace(key, '[REDACTED]')[:800]
