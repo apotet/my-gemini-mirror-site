@@ -193,7 +193,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>{lesson.difficulty}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
+          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
@@ -246,7 +246,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
-              <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
+              <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
             <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
               <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} glossaryScope={glossaryScope} />{b.pinout === 't568' && <EthernetPinout />}</div>
