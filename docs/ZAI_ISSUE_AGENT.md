@@ -1,3 +1,5 @@
+> Контекст: читать `docs/STATE.md` первым. Полный `docs/ROADMAP.md` — только по необходимости. Обязательные стандарты и контур безопасности ниже сохраняются.
+
 # Заяц: ZAI Agent через GitHub Issue
 
 После установки workflow на default branch ChatGPT создаёт Issue через GitHub API,
