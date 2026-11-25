@@ -326,6 +326,112 @@ def test_run_http_error():
     with_temp(run)
     print('PASS HTTP error accounting')
 
+
+def _ok_resp(text='ok report', usage=None):
+    resp = MagicMock()
+    body = {
+        'object': 'interaction',
+        'status': 'completed',
+        'model': 'gemini-4-hydrogen',
+        'steps': [{'type': 'model_output', 'content': [{'type': 'text', 'text': text}]}],
+        'usage': usage or {'total_tokens': 15},
+    }
+    resp.read.return_value = json.dumps(body).encode()
+    resp.__enter__ = lambda s: s
+    resp.__exit__ = lambda *a: None
+    return resp
+
+def _http(code, retry_after=None):
+    import urllib.error
+    headers = {}
+    if retry_after is not None:
+        headers['Retry-After'] = str(retry_after)
+    err = urllib.error.HTTPError('http://x', code, 'no', headers, None)
+    err.read = lambda n=4000: b'{"error":{"code":"service_unavailable"}}'
+    return err
+
+def test_retry_503_then_success():
+    agent = load()
+    def run(td):
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
+        calls = {'n': 0}
+        def open_side(req, timeout=None):
+            calls['n'] += 1
+            if calls['n'] < 2:
+                raise _http(503)
+            return _ok_resp()
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo, \
+             patch.object(agent.time, 'sleep') as sl:
+            bo.return_value.open.side_effect = open_side
+            agent.run()
+            assert sl.called
+        acc = json.loads((agent.OUT / 'accounting.json').read_text())
+        assert acc['status'] == 'complete'
+        assert acc['api_calls'] == 2
+        assert len(acc['attempts']) == 2
+    with_temp(run)
+    print('PASS 503 then success stops')
+
+def test_two_503_hydrogen_switches_to_flash():
+    agent = load()
+    def run(td):
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
+        seen = []
+        def open_side(req, timeout=None):
+            body = json.loads(req.data.decode())
+            seen.append(body['model'])
+            if len(seen) < 3:
+                raise _http(503, retry_after=1)
+            return _ok_resp()
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo, \
+             patch.object(agent.time, 'sleep'):
+            bo.return_value.open.side_effect = open_side
+            agent.run()
+        assert seen[0] == 'gemini-4-hydrogen'
+        assert seen[1] == 'gemini-4-hydrogen'
+        assert seen[2] == 'gemini-3.8-flash'
+        acc = json.loads((agent.OUT / 'accounting.json').read_text())
+        assert acc['status'] == 'complete'
+        assert acc['model'] == 'gemini-3.8-flash'
+    with_temp(run)
+    print('PASS two hydrogen 503 then flash')
+
+def test_uncertain_timeout_no_retry():
+    agent = load()
+    def run(td):
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo, \
+             patch.object(agent.time, 'sleep') as sl:
+            bo.return_value.open.side_effect = TimeoutError('timed out')
+            try:
+                agent.run()
+                raise AssertionError('should fail')
+            except TimeoutError:
+                pass
+            assert not sl.called
+        acc = json.loads((agent.OUT / 'accounting.json').read_text())
+        assert acc['api_calls'] == 1
+    with_temp(run)
+    print('PASS uncertain timeout not retried')
+
+def test_retry_after_honored():
+    agent = load()
+    assert agent.backoff_seconds(1, 30) >= 30
+    assert agent.backoff_seconds(1, None) <= agent.BACKOFF_CAP
+    print('PASS Retry-After honored in backoff')
+
 def test_missing_key():
     agent = load()
     def run(td):
@@ -355,5 +461,9 @@ if __name__ == '__main__':
     test_redirect_handler()
     test_publish()
     test_run_http_error()
+    test_retry_503_then_success()
+    test_two_503_hydrogen_switches_to_flash()
+    test_uncertain_timeout_no_retry()
+    test_retry_after_honored()
     test_missing_key()
     print('\nAll offline/mock tests passed')
