@@ -109,6 +109,49 @@ def test_prepare_claim_on_second_page():
     with_temp(run)
     print('PASS claim detected via real pagination (gh mocked)')
 
+
+def test_prepare_flash_allowed():
+    agent = load()
+    def run(td):
+        (td / 'docs').mkdir()
+        (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
+        (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
+        agent.OUT = td / 'out'
+        event = make_event(json.dumps({'task': 'audit', 'model': 'gemini-3.8-flash'}))
+        (td / 'e.json').write_text(json.dumps(event))
+        env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
+               'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
+        with patch.dict(os.environ, env), \
+             patch.object(agent, 'git', return_value='abc'), \
+             patch.object(agent, 'tracked_files', return_value=set()), \
+             patch.object(agent, 'api_pages', return_value=[]), \
+             patch.object(agent, 'gh'):
+            agent.prepare()
+            snap = json.loads((agent.OUT / 'snapshot.json').read_text())
+            assert snap['model'] == 'gemini-3.8-flash'
+    with_temp(run)
+    print('PASS flash selectable')
+
+def test_prepare_unknown_model_rejected():
+    agent = load()
+    def run(td):
+        (td / 'docs').mkdir()
+        (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
+        (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
+        agent.OUT = td / 'out'
+        event = make_event(json.dumps({'task': 'audit', 'model': 'gemini-unknown'}))
+        (td / 'e.json').write_text(json.dumps(event))
+        env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
+               'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
+        with patch.dict(os.environ, env):
+            try:
+                agent.prepare()
+                raise AssertionError('should fail')
+            except ValueError as e:
+                assert 'Model must be one of' in str(e)
+    with_temp(run)
+    print('PASS unknown model rejected')
+
 def test_prepare_edit_disabled():
     agent = load()
     def run(td):
@@ -303,6 +346,8 @@ if __name__ == '__main__':
     test_prepare_success()
     test_prepare_missing_standard()
     test_prepare_claim_on_second_page()
+    test_prepare_flash_allowed()
+    test_prepare_unknown_model_rejected()
     test_prepare_edit_disabled()
     test_run_success()
     test_run_empty()
