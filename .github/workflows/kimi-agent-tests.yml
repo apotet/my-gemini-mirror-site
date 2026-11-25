@@ -1,7 +1,7 @@
 name: Kimi offline tests
 on:
   pull_request:
-    paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', 'tests/**']
+    paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', '.github/workflows/kimi-issue.yml', 'tests/**']
 permissions:
   contents: read
 jobs:
@@ -16,3 +16,4 @@ jobs:
       - run: python3 tests/test_offline.py
       - run: python3 tests/test_agent_tools.py
       - run: python3 tests/test_agent_security.py
+      - run: python3 tests/test_kimi_issue.py

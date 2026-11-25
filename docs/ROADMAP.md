@@ -1,3 +1,37 @@
+## 25.11.2026 — Химик: Issue trigger [KIMI] (Draft, ожидает независимой приёмки)
+
+В ветке `feat/kimi-issue-trigger` реализован `.github/workflows/kimi-issue.yml`:
+owner-only (`apotet` author/sender/actor), только issues opened, JSON `task` +
+`target_files`, режимы audit-only/edit, существующий `MOONSHOT_API_KEY`.
+Переиспользованы payload/SSE/extraction/AST инструменты ручного Kimi Agent.
+Ручной `kimi-agent.yml` и инфраструктура Зайца не изменены.
+
+До claim: строгие параметры/пути (1–4 flat lessons, без symlinks), полный вход,
+лимиты контекста/стоимости и baseline typecheck. Затем durable claim с пагинацией,
+один streaming POST, no redirect/retry, локальный spent-attempt и запрет rerun.
+Edit: только текстовые литералы; полный AST guard запрещает внедрение кода/смену ID,
+shared AST + компиляция + выбранная регрессия обязательны. Только после ворот —
+отдельный чистый job, новая `kimi/agent-run-issue-*` ветка и Draft PR.
+Main/параллельные ветки агент не перезаписывает; при изменившемся main — отказ.
+Итог, usage, стоимость/явная верхняя оценка и артефакты публикуются в Issue.
+
+Финансовый потолок **$0.25/Issue**. Модель `kimi-k3.1-pro`, high; вход до **39000
+UTF-8 bytes**, framing 2048, output до **8192** (reasoning + ответ); консервативный
+максимум **$0.246112**. Тарифы проверены 25.11.2026: input $2, cache read $0.20,
+write 5m $2 / 1h $4, output $10 за 1M; preflight считает весь input по $4 с учётом
+кеш-записи, а не игнорирует её. При неизвестной cache/TTL детализации точная
+стоимость не выдумывается. Большие задания отклоняются без усечения.
+Источники и формат: [KIMI_ISSUE_AGENT.md](KIMI_ISSUE_AGENT.md).
+
+Офлайн: **24/24** новых теста, shared Kimi **25/25**, tools **17/17**, security PASS;
+в том числе в изолированном окружении без root node_modules, как Kimi offline CI.
+Проверяются полномочия, пути, бюджеты, пагинация claim, повторы, SSE/usage, ошибки
+компиляции/AST, подмена кандидата, stale main, ограничение создаваемой ветки и Draft PR.
+Платных вызовов **0**. Учебные материалы и ветка Геннадия не изменялись.
+Реализация не merged, deploy и боевые `[KIMI]` Issue до приёмки не запускались.
+
+---
+
 ## 25.11.2026 — ZAI resolver опубликован; аудит PoE #358 завершён
 
 [PR #357](https://github.com/apotet/my-gemini-mirror-site/pull/357) прошёл независимую

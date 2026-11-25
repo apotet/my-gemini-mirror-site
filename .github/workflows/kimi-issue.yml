@@ -1,0 +1,115 @@
+name: Kimi Agent from GitHub Issue
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: read
+concurrency:
+  group: kimi-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  worker:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.issue.user.login == 'apotet' && github.actor == 'apotet' &&
+      github.event.sender.type == 'User' && startsWith(github.event.issue.title, '[KIMI] ') &&
+      !github.event.issue.pull_request && github.run_attempt == 1
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      edit_ready: ${{ steps.verify.outputs.edit_ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate owner, task, paths and budget without claim
+        id: prepare
+        run: python3 .github/scripts/kimi_issue.py prepare
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm install --ignore-scripts --no-save --no-audit --no-fund typescript@5.9.3
+      - name: Baseline typecheck before claim and paid call
+        # out/originals contains full TS sources; exclude them from tsc's glob.
+        run: |
+          mv out "$RUNNER_TEMP/kimi-output"
+          trap 'mv "$RUNNER_TEMP/kimi-output" out' EXIT
+          npx --no-install tsc --noEmit
+      - name: Durable claim, reject any existing claim
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/kimi_issue.py claim
+      - name: One bounded Kimi request, no redirects or retries
+        id: paid
+        env:
+          MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+        run: python3 .github/scripts/kimi_issue.py run
+      - name: Protocol, accounting, exact targets, AST, typecheck and regressions
+        id: verify
+        run: python3 .github/scripts/kimi_issue.py verify
+      - uses: actions/upload-artifact@v4
+        id: artifact
+        if: always()
+        with:
+          name: kimi-issue-${{ github.event.issue.number }}
+          path: out/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Publish audit or failure result
+        if: always() && (steps.verify.outputs.edit_ready != 'true' || failure() || cancelled())
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+          WORK_STATUS: ${{ job.status }}
+          PAID_STATUS: ${{ steps.paid.outcome }}
+        run: python3 .github/scripts/kimi_issue.py publish
+
+  publish-edit:
+    needs: worker
+    if: needs.worker.result == 'success' && needs.worker.outputs.edit_ready == 'true'
+    # Fresh checkout: model-generated modules never execute with a write token.
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: kimi-issue-${{ github.event.issue.number }}
+          path: out/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm install --ignore-scripts --no-save --no-audit --no-fund typescript@5.9.3
+      - name: Recheck AST and publish only verified targets to a new branch and Draft PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/kimi_issue.py deliver-edit
+      - uses: actions/upload-artifact@v4
+        id: artifact
+        if: always()
+        with:
+          name: kimi-issue-result-${{ github.event.issue.number }}
+          path: out/
+          retention-days: 30
+      - name: Publish final Issue result, including PR failures
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+          WORK_STATUS: ${{ job.status }}
+          PAID_STATUS: success
+        run: python3 .github/scripts/kimi_issue.py publish
