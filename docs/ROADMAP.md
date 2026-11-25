@@ -1,3 +1,13 @@
+## 25.11.2026 — Gemini: Interactions API после 404 (#371)
+
+Условная приёмка PASS. Merge commit `1a12583eac4ca5a050079e06a7b1c85e6ee62f54`.
+generateContent вернул HTTP 404 (run 45548274570); причина неизвестна — официальный обзор
+говорит, что generateContent остаётся поддерживаемым, body ошибки не был захвачен.
+Агент переведён на документированный REST `POST /v1beta/interactions`, `store: false`,
+модель `gemini-4-hydrogen` (есть у ключа, официальный пример). Платный тест Grok не запускал.
+
+---
+
 ## 25.11.2026 — Gemini [GEMINI] Issue агент смержен (#369)
 
 Независимая приёмка PASS. Merge commit `da89b639fe0c4be2a9c36ee5877b074ed9535769`.
