@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory() as tmp:
 if(process.getuid()===0)throw Error('root');
 if(process.env.GH_TOKEN||process.env.PROVIDER_API_KEY||process.env.MOONSHOT_API_KEY)throw Error('credential exposed');
 if(fs.existsSync('/var/run/docker.sock'))throw Error('host socket exposed');
-try{fs.writeFileSync('/tools/escape','x');throw Error('toolchain writable')}catch(e){if(e.message==='toolchain writable')throw e;}
+try{fs.writeFileSync('/tools/node_modules/escape','x');throw Error('toolchain writable')}catch(e){if(e.message==='toolchain writable')throw e;}
 try{fs.writeFileSync('/host-escape','x');throw Error('root writable')}catch(e){if(e.message==='root writable')throw e;}
 console.log(JSON.stringify({nonroot:true,secrets:false,docker_socket:false,tools_readonly:true,root_readonly:true}));'''
     (work/'probe.cjs').write_text(script)

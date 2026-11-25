@@ -16,7 +16,7 @@ def docker_args(work, tools, command, network='none'):
             '--security-opt','no-new-privileges','--pids-limit','256','--memory','4g','--cpus','2',
             '--user',str(os.getuid() or 1000)+':'+str(os.getgid() or 1000),'--tmpfs','/tmp:rw,nosuid,nodev,size=512m',
             '--mount',f'type=bind,src={work},dst=/work',
-            '--mount',f'type=bind,src={tools},dst=/tools,readonly',
+            '--mount',f'type=bind,src={tools},dst=/tools/node_modules,readonly',
             '--workdir','/work','--env','CI=true','--env','npm_config_cache=/tmp/npm',
             '--env','npm_config_registry=https://registry.npmjs.org','--env','npm_config_ignore_scripts=true',IMAGE,*command]
 
@@ -58,8 +58,8 @@ def validate(repo, state, tools, runner=subprocess.run):
         runner(['git','diff','--check'],cwd=work,env=clean_env,check=True,capture_output=True,text=True)
         check_lock(work)
         commands=[('dependencies',['npm','ci','--ignore-scripts','--no-audit','--no-fund'],'bridge'),
-                  ('typecheck',['node','/tools/typescript/bin/tsc','--noEmit'],'none'),
-                  ('build',['node','/tools/vite/bin/vite.js','build','--configLoader','runner'],'none'),
+                  ('typecheck',['node','/tools/node_modules/typescript/bin/tsc','--noEmit'],'none'),
+                  ('build',['node','/tools/node_modules/vite/bin/vite.js','build','--configLoader','runner'],'none'),
                   ('questions',['node','scripts/validate-questions.mjs'],'none')]
         for name in state['task'].get('checks',[]):
             policy.path(name)

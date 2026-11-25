@@ -268,6 +268,7 @@ class Runtime(unittest.TestCase):
         with self.assertRaises(ValueError):core.publish_candidate(self.api,Ledger(self.api,'kimi','issue-9'),state)
     def test_docker_boundary_has_no_credentials_network_or_host_control_mount(self):
         args=sandbox.docker_args('/private/work','/trusted/tools',['node','tests/new.test.mjs'])
+        self.assertIn('type=bind,src=/trusted/tools,dst=/tools/node_modules,readonly',args)
         self.assertEqual(args[args.index('--network')+1],'none');self.assertIn('--read-only',args)
         self.assertIn('ALL',args);self.assertNotIn('0:0',args)
         rendered=' '.join(args)
