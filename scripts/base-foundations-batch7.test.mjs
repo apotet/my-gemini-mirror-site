@@ -111,16 +111,15 @@ for(const id of ids){
  assert.equal(l.id,lessonId,id+' exact topic lesson');
  assert.ok(l.relatedQuestionIds.includes(id),id+' reverse lesson link');
  assert.ok(l.blocks.length>=4,id+' substantial plain blocks');
- if(l.professional?.blocks) assert.ok(l.professional.blocks.length>=4,id+' professional blocks when present');
+ if(l.id!=='l1-copper-fault-poe') assert.ok(l.professional?.blocks?.length>=4,id+' required professional blocks');
 }
 for(const lessonId of ['l4-directory-remote-industrial-ports','l2-hsr-redundancy','l1-poe-screen-reading','l7-http-status-basics']){
  const id=ids.find(x=>expected[x][2]===lessonId),l=getLessonForQuestion(id);
  assert.equal(l.id,lessonId);
- const mainPlain = l.blocks.filter(x => !x.heading.startsWith('Дальше:') && !x.heading.startsWith('Дополнительно:'));
+ const mainPlain = l.blocks;
  assert.ok(mainPlain.length>=4 && mainPlain.every(x=>x.body.length>200),l.id+' substantial plain');
- const proMin = l.id==='l1-poe-screen-reading' ? 250 : 300;
- const mainPro = l.professional.blocks.filter(x => !x.heading.startsWith('Дальше:') && !x.heading.startsWith('Дополнительно:'));
- assert.ok(mainPro.every(x=>x.body.length>proMin),l.id+' substantial professional (accepted length)');
+ const mainPro = l.professional.blocks;
+ assert.ok(mainPro.length>=4 && mainPro.every(x=>x.body.length>(l.id==='l1-poe-screen-reading' && x.heading==='Кейс: камера перезагружается при включении ИК' ? 250 : 300)),l.id+' substantial professional; exact PoE case exception');
  for(const term of new Set([...l.terms,...l.professional.terms])){
    assert.ok(GLOSSARY[term]?.description?.length>40 && GLOSSARY[term]?.relatesTo?.length>20,l.id+' glossary '+term);
  }
