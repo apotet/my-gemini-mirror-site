@@ -71,13 +71,14 @@ class GitHubAPIError(RuntimeError):
                 'reason':self.reason,'message':self.message,'request_id':self.request_id}
 
 
-def github(method, endpoint, data=None):
+def github(method, endpoint, data=None, *, with_status=False):
     request = urllib.request.Request('https://api.github.com/repos/apotet/my-gemini-mirror-site'+endpoint,
         method=method, data=None if data is None else json.dumps(data).encode(),
         headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json', 'Content-Type':'application/json'})
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
-            return json.load(response)
+            result = None if response.status==204 else json.load(response)
+            return (response.status,result) if with_status else result
     except urllib.error.HTTPError as exc:
         try:
             message = json.loads(exc.read(4096)).get('message')

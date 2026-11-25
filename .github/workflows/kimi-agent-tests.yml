@@ -4,9 +4,9 @@ on:
     inputs:
       mode:
         type: choice
-        options: [diagnose, reuse]
+        options: [diagnose, reuse, create]
         default: diagnose
-        description: 'Zero-model PR policy probe or read-only reuse of verified Draft #361'
+        description: 'Zero-model: policy probe, existing Draft reuse, or disposable docs-only Draft create/close'
   pull_request:
     paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', '.github/workflows/kimi-issue.yml', 'tests/**']
 permissions:
@@ -32,7 +32,7 @@ jobs:
       github.repository == 'apotet/my-gemini-mirror-site' &&
       github.ref == 'refs/heads/fix/kimi-pr-publication'
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     runs-on: ubuntu-latest
     timeout-minutes: 3

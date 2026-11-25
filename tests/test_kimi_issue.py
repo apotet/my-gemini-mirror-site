@@ -271,6 +271,31 @@ class IssueAdapter(unittest.TestCase):
         unknown=k.GitHubAPIError('POST','/pulls',403,'Bearer private-token')
         self.assertNotIn('private-token',str(unknown.details()))
 
+    def test_github_adapter_preserves_creation_status_and_handles_204(self):
+        response=io.BytesIO(b'{"number": 999}')
+        response.status=201
+        with patch.dict(os.environ,{'GH_TOKEN':'private-token'}),patch.object(k.urllib.request,'urlopen',return_value=response):
+            self.assertEqual(REAL_GITHUB('POST','/pulls',{},with_status=True),(201,{'number':999}))
+        response=io.BytesIO(b'');response.status=204
+        with patch.dict(os.environ,{'GH_TOKEN':'private-token'}),patch.object(k.urllib.request,'urlopen',return_value=response):
+            self.assertIsNone(REAL_GITHUB('DELETE','/git/refs/heads/diagnostic'))
+
+    def test_disposable_creation_probe_never_duplicates_or_closes_361(self):
+        spec=importlib.util.spec_from_file_location('probe',ROOT/'.github/scripts/kimi_publication_probe.py')
+        probe=importlib.util.module_from_spec(spec);spec.loader.exec_module(probe);probe.k=k
+        branch='kimi/publication-smoke-123';path='docs/audits/kimi-publication-smoke-123.txt'
+        self.gh.side_effect=[{'object':{'sha':'source'}},{'tree':{'sha':'base'}},{'sha':'blob'},{'sha':'tree'},
+            {'sha':'commit'},{'ref':'new'}, {'total_commits':1,'files':[{'filename':path}]},
+            (201,{'number':999,'head':{'ref':branch},'draft':True,'state':'open','html_url':'https://github.com/example/999'}),
+            {'state':'closed'},None,{'draft':True,'state':'open','head':{'sha':'3bf2cfc010de1d95171b1a882a8cc581a219aa89'}}]
+        probe.create_smoke()
+        evidence=k.load('publication-probe.json')
+        self.assertEqual(evidence['model_calls'],0)
+        self.assertEqual(evidence['http_status'],201)
+        self.assertTrue(evidence['diagnostic_closed'] and evidence['diagnostic_branch_deleted'] and evidence['existing_361_unchanged'])
+        writes=[call.args[1] for call in self.gh.call_args_list if call.args[0] in ['PATCH','DELETE']]
+        self.assertEqual(writes,['/pulls/999','/git/refs/heads/'+branch])
+
     def test_existing_draft_is_reused_without_write(self):
         pr={'state':'open','draft':True,'merged_at':None,'head':{'sha':'commit','ref':'kimi/test','repo':{'full_name':'apotet/my-gemini-mirror-site'}},'base':{'ref':'main'},'html_url':'https://github.com/example/361'}
         self.gh.side_effect=[[pr]]
