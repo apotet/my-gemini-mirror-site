@@ -21,6 +21,18 @@ def main():
     if (pr['state'] != 'open' or not pr['draft'] or pr['head']['ref'] != branch or
         pr['head']['sha'] != '3bf2cfc010de1d95171b1a882a8cc581a219aa89' or pr['base']['ref'] != 'main'):
         raise ValueError('Verified Draft PR changed; do not probe')
+    mode = os.environ.get('PROBE_MODE','diagnose')
+    if mode == 'reuse':
+        existing = k.ensure_draft_pr(branch,pr['head']['sha'],'bd92795f7a49f488cccc2bbea5a4b2570c471fb5',360,'')
+        if existing['number'] != 361:
+            raise ValueError('Unexpected existing Draft')
+        evidence = {'model_calls':0,'existing_pr_reused':361,'head_sha':existing['head']['sha'],
+                    'draft':existing['draft'],'write_calls':0}
+        k.save('publication-probe.json',evidence)
+        print(json.dumps(evidence))
+        return
+    if mode != 'diagnose':
+        raise ValueError('Unknown diagnostic mode')
     try:
         result = k.github('POST','/pulls',{'title':'Kimi publication diagnostic (duplicate expected)',
             'head':branch,'base':'main','draft':True,'body':'Zero-model publication diagnostic. Existing Draft PR #361 must stay unchanged.'})

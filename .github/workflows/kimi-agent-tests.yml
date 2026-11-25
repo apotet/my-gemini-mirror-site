@@ -1,6 +1,12 @@
 name: Kimi offline tests
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [diagnose, reuse]
+        default: diagnose
+        description: 'Zero-model PR policy probe or read-only reuse of verified Draft #361'
   pull_request:
     paths: ['.github/scripts/**', '.github/agent/**', '.github/agent-tasks/**', '.github/workflows/kimi-agent*', '.github/workflows/kimi-issue.yml', 'tests/**']
 permissions:
@@ -38,6 +44,7 @@ jobs:
       - name: Diagnose PR publication policy using existing verified Draft
         env:
           GH_TOKEN: ${{ github.token }}
+          PROBE_MODE: ${{ inputs.mode }}
         run: python3 .github/scripts/kimi_publication_probe.py
       - uses: actions/upload-artifact@v4
         if: always()
