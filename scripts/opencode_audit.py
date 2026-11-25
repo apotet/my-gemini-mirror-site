@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -137,6 +138,29 @@ def save_result(out, report, result):
                       + '\n' + result['reason'] + '\n\n' + result['summary'] + '\n')
 
 
+def verify_checkout(repo, expected_sha, source):
+    if not re.fullmatch(r'[0-9a-f]{40}', expected_sha):
+        raise RuntimeError('Invalid audit SHA')
+    if not (repo / '.git').is_dir():
+        raise RuntimeError('Audit checkout missing')
+    head = subprocess.check_output(['git', 'rev-parse', '--verify', 'HEAD'],
+                                   cwd=repo, text=True).strip()
+    if head != expected_sha or not (repo / '.git' / 'HEAD').read_text().startswith(head + '\n'):
+        raise RuntimeError('Audit checkout must be detached at the requested SHA')
+    if source:
+        if not re.fullmatch(r'(?:[\w-]+/)*[\w.-]+\.json', source, re.ASCII):
+            raise RuntimeError('Invalid audit source path')
+        path = repo / source
+        if path.resolve() != path or not path.is_file():
+            raise RuntimeError('Required audit source missing or symlinked')
+        entry = subprocess.check_output(['git', 'ls-tree', head, '--', source],
+                                        cwd=repo, text=True)
+        if not entry.startswith(('100644 blob ', '100755 blob ')):
+            raise RuntimeError('Required audit source is not a tracked regular file')
+        json.loads(path.read_text(encoding='utf-8'))
+    print(f'Verified detached audit HEAD: {head}; source: {source or "(default checkout)"}')
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
@@ -146,7 +170,12 @@ def main():
     p.add_argument('--repo', default='.', help='Working repository checkout')
     p.add_argument('--prompt', default='opencode-prompt.txt')
     p.add_argument('--output', default='opencode-report')
+    p.add_argument('--expected-sha')
+    p.add_argument('--source', default='')
     args = p.parse_args()
+    repo = Path(args.repo).resolve()
+    if args.expected_sha is not None or args.source:
+        verify_checkout(repo, args.expected_sha or '', args.source)
     out = Path(args.output).resolve()
     out.mkdir(parents=True, exist_ok=True)
     cfg = config(args.model, args.provider)
@@ -164,7 +193,6 @@ def main():
     if not key:
         raise RuntimeError('Missing OpenCode credential')
     # Run native read/search tools in the checkout; isolate credentials and CLI state.
-    repo = Path(args.repo).resolve()
     if not (repo / ".git").exists():
         raise RuntimeError("Repository checkout required")
     prompt = Path(args.prompt).read_text()
@@ -172,6 +200,15 @@ def main():
         prompt += '\nFirst API test: planning budget $1 (not a guaranteed cap), aim below $0.20. Keep scope narrow, read only relevant files, return a concise audit. Do not assume these instructions enforce a dollar cap.'
     with tempfile.TemporaryDirectory(prefix='opencode-audit-') as temp:
         root = Path(temp)
+        workdir = repo
+        if args.expected_sha:
+            # Start outside the audited project so its CLI config and plugins are never loaded.
+            workdir = root / 'workspace'
+            workdir.mkdir()
+            cfg['permission']['external_directory'] = {str(repo / '**'): 'allow'}
+            prompt = (f'Audit checkout at {repo} (HEAD {args.expected_sha}). '
+                      'Use absolute paths under this directory for all repository reads. '
+                      + (f'Start with {repo / args.source}. ' if args.source else '') + prompt)
         (root / 'opencode.json').write_text(json.dumps(cfg))
         env = {k: os.environ[k] for k in ('PATH', 'LANG') if k in os.environ}
         env.update(HOME=temp, XDG_CONFIG_HOME=f'{temp}/config',
@@ -180,9 +217,9 @@ def main():
                    OPENCODE_CONFIG=str(root / 'opencode.json'),
                    OPENCODE_PERMISSION=json.dumps(cfg['permission']))
         try:
-            result = subprocess.run(['opencode', 'run', '--model', cfg['model'],
+            result = subprocess.run(['opencode', 'run', '--pure', '--model', cfg['model'],
                                      '--format', 'json',
-                                     '--agent', 'audit', prompt], cwd=str(repo), env=env,
+                                     '--agent', 'audit', prompt], cwd=str(workdir), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))
