@@ -3,15 +3,23 @@
 Edit mode is disabled until integration with the unified runtime (#365)."""
 import json
 import os
+import random
+import time
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 
 OUT = Path('gemini-issue-output')
 MARKER = '<!-- gemini-issue-agent:claimed:v1 -->'
 MODEL = 'gemini-4-hydrogen'  # default / alternative
 ALLOWED_MODELS = {'gemini-4-hydrogen', 'gemini-3.8-flash'}
+FLASH = 'gemini-3.8-flash'
+MAX_ATTEMPTS = 4
+BACKOFF_BASE = 2.0
+BACKOFF_CAP = 60.0
 ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions'
 
 def git(*args):
@@ -117,12 +125,51 @@ def prepare():
     snapshot = {'sha': sha, 'model': model, 'mode': mode, 'files': files, 'task_len': len(task['task'])}
     save('task.json', task)
     save('snapshot.json', snapshot)
-    gh('api', base + '/comments', '-f', f'body={MARKER}\nГеннадий принял задание. Один запрос, без повторов. SHA {sha}.')
+    gh('api', base + '/comments', '-f', f'body={MARKER}\nГеннадий принял задание. Явные 503/429 — до 4 попыток с backoff; после двух 503 на Hydrogen переход на Flash. SHA {sha}.')
     print('claimed', issue, sha)
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         raise urllib.error.HTTPError(req.full_url, code, f'Redirect forbidden: {msg}', headers, fp)
+
+def retry_after_seconds(exc):
+    """Parse Retry-After (delta-seconds or HTTP-date). None if absent."""
+    headers = getattr(exc, 'headers', None)
+    if not headers:
+        return None
+    raw = headers.get('Retry-After')
+    if not raw:
+        return None
+    raw = raw.strip()
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        pass
+    try:
+        dt = parsedate_to_datetime(raw)
+        return max(0.0, dt.timestamp() - time.time())
+    except Exception:
+        return None
+
+def backoff_seconds(attempt, retry_after):
+    """Exponential backoff with jitter, honoring Retry-After, capped."""
+    exp = min(BACKOFF_CAP, BACKOFF_BASE * (2 ** max(0, attempt - 1)))
+    jitter = random.uniform(0, 1)
+    delay = exp + jitter
+    if retry_after is not None:
+        delay = max(delay, retry_after)
+    return min(BACKOFF_CAP, delay)
+
+def parse_interaction(data):
+    istatus = (data.get('status') or '').lower()
+    texts = []
+    for step in data.get('steps') or []:
+        if not isinstance(step, dict) or step.get('type') != 'model_output':
+            continue
+        for part in step.get('content') or []:
+            if isinstance(part, dict) and part.get('type') == 'text' and part.get('text'):
+                texts.append(part['text'])
+    return istatus, ''.join(texts).strip()
 
 def run():
     key = os.environ.get('GEMINI_API_KEY', '')
@@ -130,7 +177,6 @@ def run():
         raise RuntimeError('GEMINI_API_KEY not set')
     task = json.loads((OUT / 'task.json').read_text())
     snapshot = json.loads((OUT / 'snapshot.json').read_text())
-    # Mandatory standards passed explicitly
     standards = []
     for std in ('docs/LEARNING_CONTENT_STANDARD.md', 'docs/DEVELOPMENT_WORKFLOW.md'):
         if Path(std).is_file():
@@ -142,60 +188,86 @@ def run():
     for f in snapshot.get('files', []):
         content = Path(f).read_text(encoding='utf-8', errors='replace')
         parts.append({'text': f'\n\n--- FILE: {f} ---\n{content}'})
-    # Interactions API: generateContent returned HTTP 404 (run 45548274570).
-    # Model confirmed available via models.list (run 45548868207).
     user_text = ''.join(part['text'] for part in parts)
-    payload = {'model': snapshot['model'], 'input': user_text, 'store': False}
-    url = ENDPOINT
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode(),
-        headers={'Content-Type': 'application/json', 'x-goog-api-key': key},
-        method='POST',
-    )
+    model = snapshot['model']
+    hydrogen_503 = 0
+    attempts = []
+    accounting = {'api_calls': 0, 'model': model, 'status': 'calling', 'attempts': attempts}
     opener = urllib.request.build_opener(NoRedirect)
-    accounting = {'api_calls': 1, 'model': snapshot['model'], 'status': 'calling'}
-    try:
-        with opener.open(req, timeout=180) as resp:
-            data = json.loads(resp.read().decode())
-        accounting['status'] = 'response received'
-        accounting['raw_keys'] = list(data.keys())
-        if 'usage' in data:
-            accounting['usage'] = data['usage']
-        istatus = (data.get('status') or '').lower()
-        accounting['interactionStatus'] = istatus or None
-        # Documented REST schema: steps[].content[].text for model_output. Not SDK output_text.
-        texts = []
-        for step in data.get('steps') or []:
-            if not isinstance(step, dict) or step.get('type') != 'model_output':
-                continue
-            for part in step.get('content') or []:
-                if isinstance(part, dict) and part.get('type') == 'text' and part.get('text'):
-                    texts.append(part['text'])
-        text_out = ''.join(texts).strip()
-        save('report.md', text_out or '(empty)')
-        if istatus == 'completed' and text_out:
-            accounting['status'] = 'complete'
-        else:
+    last_exc = None
+    for n in range(1, MAX_ATTEMPTS + 1):
+        if model == 'gemini-4-hydrogen' and hydrogen_503 >= 2:
+            model = FLASH
+        payload = {'model': model, 'input': user_text, 'store': False}
+        req = urllib.request.Request(
+            ENDPOINT,
+            data=json.dumps(payload).encode(),
+            headers={'Content-Type': 'application/json', 'x-goog-api-key': key},
+            method='POST',
+        )
+        accounting['api_calls'] = n
+        accounting['model'] = model
+        record = {'n': n, 'model': model}
+        try:
+            with opener.open(req, timeout=180) as resp:
+                data = json.loads(resp.read().decode())
+            record['http'] = 200
+            attempts.append(record)
+            accounting['status'] = 'response received'
+            accounting['raw_keys'] = list(data.keys())
+            if 'usage' in data:
+                accounting['usage'] = data['usage']
+            istatus, text_out = parse_interaction(data)
+            accounting['interactionStatus'] = istatus or None
+            save('report.md', text_out or '(empty)')
+            if istatus == 'completed' and text_out:
+                accounting['status'] = 'complete'
+                save('accounting.json', accounting)
+                return
+            # Incomplete / empty is an uncertain generation result: do not retry.
             accounting['status'] = 'incomplete'
             raise RuntimeError(f'Incomplete response: status={istatus!r} text_len={len(text_out)}')
-    except Exception as exc:
-        accounting['errorType'] = type(exc).__name__
-        accounting['error'] = str(exc).replace(key, '[REDACTED]')[:800]
-        if hasattr(exc, 'code'):
-            accounting['httpStatus'] = exc.code
-        if hasattr(exc, 'read'):
-            try:
-                body = exc.read(4000).decode(errors='replace')
-                body = body.replace(key, '[REDACTED]')
-                accounting['httpErrorBody'] = body[:2000]
-            except Exception:
-                pass
-        if accounting.get('status') == 'calling':
-            accounting['status'] = 'error'
-        raise
-    finally:
-        save('accounting.json', accounting)
+        except urllib.error.HTTPError as exc:
+            last_exc = exc
+            code = exc.code
+            record['http'] = code
+            body = ''
+            if hasattr(exc, 'read'):
+                try:
+                    body = exc.read(4000).decode(errors='replace').replace(key, '[REDACTED]')
+                except Exception:
+                    body = ''
+            record['error'] = str(exc).replace(key, '[REDACTED]')[:200]
+            attempts.append(record)
+            accounting['httpStatus'] = code
+            accounting['httpErrorBody'] = body[:2000]
+            accounting['errorType'] = type(exc).__name__
+            accounting['error'] = record['error']
+            retryable = code in (503, 429)
+            if code == 503 and model == 'gemini-4-hydrogen':
+                hydrogen_503 += 1
+            if not retryable or n == MAX_ATTEMPTS:
+                accounting['status'] = 'error'
+                save('accounting.json', accounting)
+                raise
+            delay = backoff_seconds(n, retry_after_seconds(exc))
+            record['sleep'] = round(delay, 2)
+            time.sleep(delay)
+        except Exception as exc:
+            # Timeout, connection error, incomplete body: uncertain. Do not retry.
+            last_exc = exc
+            record['error'] = str(exc).replace(key, '[REDACTED]')[:200]
+            attempts.append(record)
+            accounting['errorType'] = type(exc).__name__
+            accounting['error'] = record['error']
+            accounting['status'] = 'incomplete' if isinstance(exc, RuntimeError) else 'error'
+            save('accounting.json', accounting)
+            raise
+    accounting['status'] = 'error'
+    save('accounting.json', accounting)
+    if last_exc:
+        raise last_exc
+    raise RuntimeError('Gemini request failed')
 
 def publish():
     repo = os.environ['GITHUB_REPOSITORY']
