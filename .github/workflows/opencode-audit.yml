@@ -29,6 +29,8 @@ on:
         default: false
   issues:
     types: [opened]
+  issue_comment:
+    types: [created]
 permissions:
   contents: read
 concurrency:
@@ -40,10 +42,15 @@ jobs:
       github.repository == 'apotet/my-gemini-mirror-site' &&
       github.actor == 'apotet' && github.triggering_actor == 'apotet' &&
       github.run_attempt == 1 &&
-      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issues' && github.event.sender.type == 'User' &&
-        github.event.issue.user.login == 'apotet' && !github.event.issue.pull_request &&
-        startsWith(github.event.issue.title, '[OPENCODE] ')))
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.sender.type == 'User' && github.event.issue.user.login == 'apotet' &&
+        !github.event.issue.pull_request && startsWith(github.event.issue.title, '[OPENCODE] ') &&
+        (github.event_name == 'issues' ||
+         (github.event_name == 'issue_comment' && github.event.comment.user.login == 'apotet' &&
+          (github.event.comment.body == '/opencode run zai glm-5.3 accept-budget-risk' ||
+           github.event.comment.body == '/opencode run zai-coding-plan glm-5.3 confirm-ci-terms' ||
+           github.event.comment.body == '/opencode run zai-coding-plan glm-5.4 confirm-ci-terms')))))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -56,36 +63,27 @@ jobs:
           persist-credentials: false
       - name: Validate task and reserve paid attempt
         uses: actions/github-script@v7
+        id: prepare
         env:
-          TASK_ISSUE: ${{ inputs.issue || github.event.issue.number }}
-          PAID: ${{ github.event_name == 'workflow_dispatch' && inputs.paid || false }}
-          TERMS: ${{ inputs.ci_terms_confirmed || false }}
-          PROVIDER: ${{ inputs.provider || 'zai-coding-plan' }}
-          MODEL: ${{ inputs.model || 'glm-5.4' }}
-          API_BUDGET_RISK: ${{ inputs.api_budget_risk_accepted || false }}
+          INPUTS_JSON: ${{ toJSON(inputs) }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
         with:
           script: |
             const fs = require('fs');
-            const number = process.env.TASK_ISSUE;
-            if (!/^[1-9][0-9]*$/.test(number)) throw new Error('Invalid Issue number');
-            const issue_number = Number(number);
+            const {resolveRequest, reserveAttempt} = require('./scripts/opencode_control.cjs');
+            const request = resolveRequest(context, JSON.parse(process.env.INPUTS_JSON || '{}'),
+              Number(process.env.GITHUB_RUN_ATTEMPT), process.env.TRIGGERING_ACTOR);
+            if (!request) { core.setOutput('authorized', false); return; }
+            const issue_number = Number(request.issue);
             const {owner, repo} = context.repo;
             const {data: task} = await github.rest.issues.get({owner, repo, issue_number});
             if (task.pull_request || task.user.login !== 'apotet') throw new Error('Owner Issue required');
-            const paid = process.env.PAID === 'true';
-            const provider = process.env.PROVIDER;
-            if (!['zai', 'zai-coding-plan'].includes(provider)) throw new Error('Invalid provider');
-            if (provider === 'zai' && process.env.MODEL !== 'glm-5.3') throw new Error('Standard API currently supports only GLM-5.3');
-            if (paid && provider === 'zai' && process.env.API_BUDGET_RISK !== 'true') throw new Error('Owner must accept risk of exceeding $0.20 target and $1 planning budget');
-            if (paid && provider === 'zai-coding-plan' && process.env.TERMS !== 'true') throw new Error('CI terms confirmation required');
-            const marker = '<!-- opencode-paid-attempt-v1 -->';
-            if (paid) {
-              const comments = await github.paginate(github.rest.issues.listComments, {owner, repo, issue_number});
-              if (comments.some(c => c.user.type === 'Bot' && c.body.includes(marker)))
-                throw new Error('Paid attempt already reserved; uncertain/failure is never retried');
-              await github.rest.issues.createComment({owner, repo, issue_number,
-                body: `${marker}\nOpenCode paid audit reserved by apotet. No retry, merge or deploy. Run: ${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`});
-            }
+            if (context.eventName !== 'workflow_dispatch' && !task.title.startsWith('[OPENCODE] '))
+              throw new Error('Owner [OPENCODE] Issue required');
+            await reserveAttempt(github, {owner, repo, issue_number}, request.paid,
+              `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`);
+            for (const [key, value] of Object.entries(request)) core.setOutput(key, value);
+            core.setOutput('authorized', true);
             const files = ['docs/STATE.md', 'docs/LEARNING_CONTENT_STANDARD.md', 'docs/DEVELOPMENT_WORKFLOW.md'];
             const contextText = files.map(p => `\nFILE ${p}\n${fs.readFileSync(p, 'utf8')}`).join('\n');
             const prompt = 'Audit only. Read files, search and inspect the repository with native read/glob/grep/list tools. Do not edit, execute shell commands, delegate, merge or deploy. '
@@ -95,16 +93,16 @@ jobs:
             if (Buffer.byteLength(prompt) > 90000) throw new Error('Task context too large');
             fs.writeFileSync('opencode-prompt.txt', prompt);
       - name: Offline dry-run (no installation or credential)
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.paid }}
+        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'false' }}
         run: python3 scripts/opencode_audit.py --provider "$PROVIDER" --model "$MODEL"
         env:
-          MODEL: ${{ inputs.model || 'glm-5.4' }}
-          PROVIDER: ${{ inputs.provider || 'zai-coding-plan' }}
+          MODEL: ${{ steps.prepare.outputs.model }}
+          PROVIDER: ${{ steps.prepare.outputs.provider }}
       - name: Install official pinned CLI (no credential)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.paid && (inputs.provider == 'zai' || inputs.ci_terms_confirmed) }}
+        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'true' }}
         env:
-          MODEL: ${{ inputs.model }}
-          PROVIDER: ${{ inputs.provider }}
+          MODEL: ${{ steps.prepare.outputs.model }}
+          PROVIDER: ${{ steps.prepare.outputs.provider }}
         run: |
           npm install --global opencode-ai@1.19.6
           test "$(opencode --version)" = '1.19.6'
@@ -112,12 +110,12 @@ jobs:
           ZHIPU_API_KEY=opencode-catalog-placeholder opencode models "$PROVIDER" > "$RUNNER_TEMP/opencode-models.txt"
           grep -Fx "$PROVIDER/$MODEL" "$RUNNER_TEMP/opencode-models.txt"
       - name: Single paid audit via official OpenCode
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.paid && (inputs.provider == 'zai' || inputs.ci_terms_confirmed) }}
+        if: ${{ steps.prepare.outputs.authorized == 'true' && steps.prepare.outputs.paid == 'true' }}
         env:
-          API_BUDGET_RISK: ${{ inputs.api_budget_risk_accepted || false }}
-          ZHIPU_API_KEY: ${{ secrets[inputs.provider == 'zai' && 'ZAI_API_KEY' || 'ZAI_CODING_API_KEY'] }}
-          MODEL: ${{ inputs.model }}
-          PROVIDER: ${{ inputs.provider }}
+          API_BUDGET_RISK: ${{ steps.prepare.outputs.risk }}
+          ZHIPU_API_KEY: ${{ secrets[steps.prepare.outputs.provider == 'zai' && 'ZAI_API_KEY' || 'ZAI_CODING_API_KEY'] }}
+          MODEL: ${{ steps.prepare.outputs.model }}
+          PROVIDER: ${{ steps.prepare.outputs.provider }}
         run: |
           args=()
           if [ "$API_BUDGET_RISK" = true ]; then args+=(--accept-api-budget-risk); fi

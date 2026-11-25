@@ -1,3 +1,7 @@
+## 25.11.2026 — #389: OpenCode запускается точной командой владельца
+
+Добавлен issue_comment.created с allowlist трёх точных команд API/Coding Plan и проверками actor/автора apotet, owner [OPENCODE] Issue, не PR, trusted main. Текст комментария не исполняется как shell. Сохранены workflow_dispatch, прежняя single-use durable отметка, concurrency и запрет rerun/повторной оплаты. steps=3 применяются к обоим native провайдерам; secrets/accounting/audit-only сохранены. Бесплатные регрессии проверяют owner/unauthorized/malformed/duplicate/dry-run без модели. Платный smoke и тест #388 не запускались. После успешного CI слияние разрешено владельцем в задаче #389.
+
 ## 25.11.2026 — OpenCode: обычный Z.AI API наряду с Coding Plan
 
 Подготовлены native provider zai/glm-5.3 и выбор существующего ZAI_API_KEY, без удаления Coding Plan, нового брокера или прямого API клиента. Подтверждена ссылка на имя секрета в zai-issue.yml; значение/наличие через Settings не читалось. GLM-5.4 пока только Coding Plan по официальной странице. Добавлены step_finish accounting в artifact/Job Summary, unknown при отсутствующем учёте, budget $1/target $0.20, native agent steps=3 и явное согласие владельца с риском превышения цели $0.20 и планового бюджета $1 перед будущим API запуском; обязательное подтверждение provider-side hard cap снято. Публичная документация не подтверждает Standard API key hard cap; клиентские параметры не выдаются за денежную гарантию. Проверки только offline/CI smoke без модели. Платный тест не запускался. Подробности: docs/OPENCODE_CODING_PLAN.md.
