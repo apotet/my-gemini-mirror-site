@@ -7,8 +7,8 @@ on:
         type: choice
         options: [zai-coding-plan, zai]
         default: zai-coding-plan
-      api_budget_confirmed:
-        description: Owner verified provider-side $1 ceiling for first API test (target $0.20)
+      api_budget_risk_accepted:
+        description: I accept spending may exceed $0.20 target and $1 planning budget; no guaranteed cap
         type: boolean
         default: false
       model:
@@ -62,7 +62,7 @@ jobs:
           TERMS: ${{ inputs.ci_terms_confirmed || false }}
           PROVIDER: ${{ inputs.provider || 'zai-coding-plan' }}
           MODEL: ${{ inputs.model || 'glm-5.4' }}
-          API_BUDGET: ${{ inputs.api_budget_confirmed || false }}
+          API_BUDGET_RISK: ${{ inputs.api_budget_risk_accepted || false }}
         with:
           script: |
             const fs = require('fs');
@@ -76,7 +76,7 @@ jobs:
             const provider = process.env.PROVIDER;
             if (!['zai', 'zai-coding-plan'].includes(provider)) throw new Error('Invalid provider');
             if (provider === 'zai' && process.env.MODEL !== 'glm-5.3') throw new Error('Standard API currently supports only GLM-5.3');
-            if (paid && provider === 'zai' && process.env.API_BUDGET !== 'true') throw new Error('Confirm provider-side $1 ceiling first');
+            if (paid && provider === 'zai' && process.env.API_BUDGET_RISK !== 'true') throw new Error('Owner must accept risk of exceeding $0.20 target and $1 planning budget');
             if (paid && provider === 'zai-coding-plan' && process.env.TERMS !== 'true') throw new Error('CI terms confirmation required');
             const marker = '<!-- opencode-paid-attempt-v1 -->';
             if (paid) {
@@ -114,13 +114,13 @@ jobs:
       - name: Single paid audit via official OpenCode
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.paid && (inputs.provider == 'zai' || inputs.ci_terms_confirmed) }}
         env:
-          API_BUDGET: ${{ inputs.api_budget_confirmed || false }}
+          API_BUDGET_RISK: ${{ inputs.api_budget_risk_accepted || false }}
           ZHIPU_API_KEY: ${{ secrets[inputs.provider == 'zai' && 'ZAI_API_KEY' || 'ZAI_CODING_API_KEY'] }}
           MODEL: ${{ inputs.model }}
           PROVIDER: ${{ inputs.provider }}
         run: |
           args=()
-          if [ "$API_BUDGET" = true ]; then args+=(--api-budget-confirmed); fi
+          if [ "$API_BUDGET_RISK" = true ]; then args+=(--accept-api-budget-risk); fi
           python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" "${args[@]}"
       - name: Publish audit artifact
         if: always()

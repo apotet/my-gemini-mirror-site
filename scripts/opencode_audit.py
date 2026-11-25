@@ -67,6 +67,7 @@ def accounting(stdout, provider):
     return {'provider': provider, 'steps': len(steps), 'tokens': tokens,
             'opencode_cost_usd': cost if provider == 'zai' else None,
             'budget_usd': BUDGET_USD if provider == 'zai' else None,
+            'budget_is_hard_cap': False,
             'target_usd': TARGET_USD if provider == 'zai' else None,
             'target_exceeded': cost > TARGET_USD if provider == 'zai' and cost is not None else None,
             'budget_exceeded': cost > BUDGET_USD if provider == 'zai' and cost is not None else None,
@@ -89,7 +90,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
     p.add_argument('--provider', choices=PROVIDERS, default=PROVIDERS[0])
-    p.add_argument('--api-budget-confirmed', action='store_true')
+    p.add_argument('--accept-api-budget-risk', action='store_true')
     p.add_argument('--paid', action='store_true')
     p.add_argument('--repo', default='.', help='Working repository checkout')
     p.add_argument('--prompt', default='opencode-prompt.txt')
@@ -104,8 +105,8 @@ def main():
                       f'Mode: {"paid; outcome pending" if args.paid else "dry-run; no CLI, secret or model access"}\n')
     if not args.paid:
         return
-    if args.provider == 'zai' and not args.api_budget_confirmed:
-        raise RuntimeError('Owner must confirm provider-side $1 budget before paid API use')
+    if args.provider == 'zai' and not args.accept_api_budget_risk:
+        raise RuntimeError('Owner must accept API budget overrun risk; $1 is not a guaranteed cap')
     key = os.environ.get('ZHIPU_API_KEY')
     if not key:
         raise RuntimeError('Missing OpenCode credential')
@@ -115,7 +116,7 @@ def main():
         raise RuntimeError("Repository checkout required")
     prompt = Path(args.prompt).read_text()
     if args.provider == 'zai':
-        prompt += '\nFirst API test: budget $1, aim below $0.20. Keep scope narrow, read only relevant files, return a concise audit. Do not assume these instructions enforce a dollar cap.'
+        prompt += '\nFirst API test: planning budget $1 (not a guaranteed cap), aim below $0.20. Keep scope narrow, read only relevant files, return a concise audit. Do not assume these instructions enforce a dollar cap.'
     with tempfile.TemporaryDirectory(prefix='opencode-audit-') as temp:
         root = Path(temp)
         (root / 'opencode.json').write_text(json.dumps(cfg))

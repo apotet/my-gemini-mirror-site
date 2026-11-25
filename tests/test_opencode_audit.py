@@ -71,13 +71,14 @@ class AuditTests(unittest.TestCase):
     def test_api_models_and_dry_run(self):
         cfg = audit.config('glm-5.3', 'zai')
         self.assertEqual(cfg['model'], 'zai/glm-5.3')
+        self.assertEqual(cfg['agent']['audit']['steps'], 3)
         self.assertEqual(cfg['enabled_providers'], ['zai'])
         with self.assertRaises(ValueError):
             audit.config('glm-5.4', 'zai')
         with tempfile.TemporaryDirectory() as tmp, patch.object(sys, 'argv', ['audit', '--provider', 'zai', '--model', 'glm-5.3', '--output', tmp]), patch.object(audit.subprocess, 'run', side_effect=AssertionError('CLI invoked')), patch.dict(os.environ, {}, clear=True):
             audit.main()
 
-    def test_api_budget_confirmation_before_credential_or_cli(self):
+    def test_api_budget_risk_acceptance_before_credential_or_cli(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(sys, 'argv', ['audit', '--paid', '--provider', 'zai', '--model', 'glm-5.3', '--output', tmp]), patch.object(audit.subprocess, 'run', side_effect=AssertionError('CLI invoked')), patch.dict(os.environ, {}, clear=True):
             with self.assertRaisesRegex(RuntimeError, 'budget'):
                 audit.main()
@@ -94,6 +95,7 @@ class AuditTests(unittest.TestCase):
         self.assertAlmostEqual(usage['opencode_cost_usd'], 0.22)
         self.assertTrue(usage['target_exceeded'])
         self.assertFalse(usage['budget_exceeded'])
+        self.assertFalse(usage['budget_is_hard_cap'])
         self.assertIsNone(audit.accounting(events, 'zai-coding-plan')['opencode_cost_usd'])
 
     def test_absent_usage_is_unknown(self):
@@ -116,7 +118,7 @@ class AuditTests(unittest.TestCase):
                 cfg = json.loads(Path(kw['env']['OPENCODE_CONFIG']).read_text())
                 self.assertEqual(cfg['enabled_providers'], ['zai'])
                 return subprocess.CompletedProcess(command, 0, event, '')
-            with patch.object(sys, 'argv', ['audit', '--paid', '--api-budget-confirmed', '--provider', 'zai', '--model', 'glm-5.3', '--repo', str(repo), '--prompt', str(prompt), '--output', tmp]), patch.dict(os.environ, {'ZHIPU_API_KEY': 'test-secret'}), patch.object(audit.subprocess, 'run', side_effect=cli) as run:
+            with patch.object(sys, 'argv', ['audit', '--paid', '--accept-api-budget-risk', '--provider', 'zai', '--model', 'glm-5.3', '--repo', str(repo), '--prompt', str(prompt), '--output', tmp]), patch.dict(os.environ, {'ZHIPU_API_KEY': 'test-secret'}), patch.object(audit.subprocess, 'run', side_effect=cli) as run:
                 audit.main()
                 self.assertEqual(run.call_count, 1)
                 usage = json.loads((Path(tmp) / 'usage.json').read_text())
