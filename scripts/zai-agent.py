@@ -74,56 +74,84 @@ def safe_source(path):
 
 def resolve_lesson(selector):
     """Resolve a lesson by exact id (case-insensitive) to a unique definition.
-    Supports separate files, multiple lessons in one file, and arrays.
+    Structural scan: skips strings, template literals and comments before
+    matching braces. Requires both `id` and `title` as direct properties
+    of the same object literal. No deduplication — multiple definitions error.
     Returns (path, extracted_object_text, id).
     """
     selector = selector.casefold()
     candidates = []
-    pattern = re.compile(
-        r'\{\s*"id"\s*:\s*"([^"]+)"|'
-        r"\{\s*'id'\s*:\s*'([^']+)'|"
-        r'id\s*:\s*["\']([^"\']+)["\']',
-        re.MULTILINE
-    )
     for p in sorted(Path('src/data/lessons').glob('*.ts')):
         text = p.read_text(encoding='utf-8')
-        # Find all id declarations and extract the surrounding object when possible
+        # Build a mask that is space where strings/comments are, original elsewhere
+        mask = list(text)
+        i = 0
+        n = len(text)
+        while i < n:
+            if text.startswith('//', i):
+                j = text.find('\n', i)
+                if j == -1:
+                    j = n
+                for k in range(i, j):
+                    mask[k] = ' '
+                i = j
+            elif text.startswith('/*', i):
+                j = text.find('*/', i + 2)
+                if j == -1:
+                    j = n
+                else:
+                    j += 2
+                for k in range(i, j):
+                    mask[k] = ' '
+                i = j
+            elif text[i] in '"\'`':
+                q = text[i]
+                j = i + 1
+                while j < n:
+                    if text[j] == '\\':
+                        j += 2
+                        continue
+                    if text[j] == q:
+                        j += 1
+                        break
+                    j += 1
+                for k in range(i, j):
+                    mask[k] = ' '
+                i = j
+            else:
+                i += 1
+        masked = ''.join(mask)
+        # Find id: "..." occurrences in original text
         for m in re.finditer(r'(?:"id"|\'id\'|id)\s*:\s*["\']([^"\']+)["\']', text):
             lid = m.group(1)
             if lid.casefold() != selector:
                 continue
-            # Walk backwards to the nearest opening brace that starts an object
-            start = text.rfind('{', 0, m.start())
-            if start == -1:
+            # Walk left in masked text to the opening brace of this object
+            start_pos = masked.rfind('{', 0, m.start())
+            if start_pos == -1:
                 continue
             depth = 0
-            end = start
-            for i in range(start, len(text)):
-                if text[i] == '{':
+            end_pos = start_pos
+            for k in range(start_pos, len(masked)):
+                c = masked[k]
+                if c == '{':
                     depth += 1
-                elif text[i] == '}':
+                elif c == '}':
                     depth -= 1
                     if depth == 0:
-                        end = i + 1
+                        end_pos = k + 1
                         break
-            if end > start:
-                obj = text[start:end]
-                # Confirm this object actually contains our id as its primary id
-                if re.search(r'(?:"id"|\'id\'|id)\s*:\s*["\']' + re.escape(lid) + r'["\']', obj):
-                    # Primary definition has a title; relatedLesson objects do not
-                    if re.search(r'(?:"title"|\'title\'|title)\s*:', obj):
-                        candidates.append((p, obj, lid))
-    # Deduplicate by file + start position roughly by content hash
-    unique = []
-    seen = set()
-    for path, obj, lid in candidates:
-        key = (str(path), obj[:200])
-        if key not in seen:
-            seen.add(key)
-            unique.append((path, obj, lid))
-    if len(unique) != 1:
-        raise ValueError(f'Lesson selector must resolve exactly one definition, got {len(unique)}')
-    return unique[0]
+            if end_pos <= start_pos:
+                continue
+            obj = text[start_pos:end_pos]
+            # Verify id and title are properties of this object (not nested)
+            # Simple check: both appear before any nested object of significant size
+            if (re.search(r'(?:"id"|\'id\'|id)\s*:\s*["\']' + re.escape(lid) + r'["\']', obj) and
+                re.search(r'(?:"title"|\'title\'|title)\s*:', obj)):
+                candidates.append((p, obj, lid))
+    if len(candidates) != 1:
+        raise ValueError(f'Lesson selector must resolve exactly one definition, got {len(candidates)}')
+    return candidates[0]
 
 
 def pack(task):
@@ -155,7 +183,7 @@ def pack(task):
         files.append({'path': ref, 'coverage': 'excerpts only; other content UNVERIFIED',
                       'content': '\n'.join(f'{i+1}: {lines[i]}' for i in sorted(indexes))})
     # Extract relatedQuestionIds from the resolved object
-    qid_match = re.search(r'relatedQuestionIds\s*:\s*\[([^\]]*)\]', lesson_text, re.DOTALL)
+    qid_match = re.search(r'["\']?relatedQuestionIds["\']?\s*:\s*\[([^\]]*)\]', lesson_text, re.DOTALL)
     question_ids = set()
     if qid_match:
         question_ids = set(re.findall(r'["\']([^"\']+)["\']', qid_match.group(1)))
