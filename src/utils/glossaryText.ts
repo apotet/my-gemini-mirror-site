@@ -4,7 +4,7 @@ const terms = Object.keys(GLOSSARY_TOOLTIPS).sort((a, b) => b.length - a.length)
 const canonical = new Map(terms.map(term => [term.toLowerCase(), term]));
 // Generic English fields (Used, Class, Type...) mean something else in non-PoE lessons.
 // Render their PoE-specific tooltips only when an explicit PoE lesson scope is set.
-const POE_ONLY_TERMS = new Set(["DC/DC","Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","Переключение A/B","A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
+const POE_ONLY_TERMS = new Set(["Requested Class","Received Class","Unloaded Voltage","TruePower","TruePower Power","TruePower Voltage","PSE Type 1/2","Positive","Negative","DC/DC","Available","Used","Remaining","Allocated","Utilized","Measured","Class","PoE+","LLDP Power-via-MDI","Alt A/B","Переключение A/B","A/B","detection","classification","link up","полярность","ток пуска","read-only","Type"]);
 const POE_FORMULA_ONLY_TERMS = new Set(["ΔU", "I", "R", "I²", "Pпотерь"]);
 const IPV6_ONLY_TERMS = new Set(["A=1", "A=0", "L=1", "L=0", "A/L"]);
 
