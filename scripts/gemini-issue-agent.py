@@ -50,11 +50,19 @@ def is_safe_file(path_str, tracked):
         return False
     if path_str not in tracked:
         return False
-    if p.is_symlink():
+    try:
+        resolved = p.resolve()
+        checkout = Path('.').resolve()
+        resolved.relative_to(checkout)
+    except (ValueError, OSError):
         return False
-    # exclude service / secret-like
+    if p.is_symlink() or resolved.is_symlink():
+        return False
+    parts_lower = [x.lower() for x in p.parts]
+    if any(x.startswith('.') or x in ('node_modules', '__pycache__', '.git') for x in parts_lower):
+        return False
     name = p.name.lower()
-    if name.startswith('.') or name.endswith(('.pem', '.key', '.env')):
+    if name.endswith(('.pem', '.key', '.env')):
         return False
     return p.is_file()
 
@@ -97,6 +105,10 @@ def prepare():
     for f in files:
         if not isinstance(f, str) or not is_safe_file(f, tracked):
             raise ValueError(f'Unsafe or untracked file: {f}')
+    # Mandatory standards must exist before claim
+    for std in ('docs/LEARNING_CONTENT_STANDARD.md', 'docs/DEVELOPMENT_WORKFLOW.md'):
+        if not Path(std).is_file():
+            raise ValueError(f'Mandatory standard missing: {std}')
     # Claim across all comment pages
     issue = event['issue']['number']
     base = f'repos/{repo}/issues/{issue}'
@@ -149,6 +161,8 @@ def run():
         with opener.open(req, timeout=180) as resp:
             data = json.loads(resp.read().decode())
         accounting['status'] = 'response received'
+        if 'usageMetadata' in data:
+            accounting['usage'] = data['usageMetadata']
         candidates = data.get('candidates') or []
         if not candidates:
             accounting['status'] = 'incomplete'
@@ -156,13 +170,10 @@ def run():
         finish = candidates[0].get('finishReason')
         accounting['finishReason'] = finish
         text = ''.join(p.get('text', '') for p in candidates[0].get('content', {}).get('parts', []) if not p.get('thought'))
-        if finish == 'MAX_TOKENS' or not text.strip():
+        save('report.md', text or '(empty)')
+        if finish != 'STOP' or not text.strip():
             accounting['status'] = 'incomplete'
-            save('report.md', text or '(empty)')
             raise RuntimeError(f'Incomplete response: finishReason={finish}')
-        save('report.md', text)
-        if 'usageMetadata' in data:
-            accounting['usage'] = data['usageMetadata']
         accounting['status'] = 'complete'
     except Exception as exc:
         accounting['errorType'] = type(exc).__name__
