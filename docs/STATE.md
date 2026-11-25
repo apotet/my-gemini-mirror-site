@@ -23,6 +23,8 @@
 
 ## Последние решения
 
+- #391: OpenCode обоих провайдеров без искусственного steps=3, прежние timeout/read-only/owner commands/claim/no-retry сохранены. result.json и Issue-итог различают completed/incomplete/failed/interrupted, учитывают usage и ссылаются на архив. Платные вызовы при разработке не выполнялись; следующий тест — отдельный Issue по l1-poe-screen-reading, #388 не повторять.
+
 - #389: точный owner comment `/opencode run zai glm-5.3 accept-budget-risk` и Coding Plan команды `confirm-ci-terms` в [OPENCODE] Issue. Trusted main, single-use claim/concurrency и запрет повторов сохранены; steps=3 у обоих провайдеров. Платный тест #388 не запускался.
 
 - OpenCode: подготовлен отдельный PR для штатного `zai` (GLM-5.3, существующая ссылка на `ZAI_API_KEY`) наряду с Coding Plan. Токены/оценка стоимости в artifact и Job Summary; бюджет первого API теста $1, цель $0.20. Standard API GLM-5.4 ещё недоступна по документации. Provider-side hard cap не подтверждён и не требуется: для будущего API запуска нужно явное согласие владельца с риском превышения цели $0.20 и планового бюджета $1. Steps=3, учёт и запрет повторов сохранены; платный тест не запускался.
