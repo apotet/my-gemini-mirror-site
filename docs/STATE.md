@@ -1,7 +1,7 @@
 # NetOps — компактная карта состояния
 
-**Проверенный код main (merge #365):** `ca8a88fb6eda6a1af1db65c4d7ec671bcee3b49d`
-После этого merge обновлены только STATE/ROADMAP; актуальный HEAD main сверять в GitHub.
+**Состояние main перед этой записью:** `184f0d62a3370053d70af68e0bc615023d8f5c36`
+Включает #365, Gemini recovery #378 и audit source SHA #381. Актуальный HEAD сверять в GitHub.
 **Дата фиксации:** 2026-11-25
 **Источник истины по истории решений:** `docs/ROADMAP.md` (полный журнал).
 Эта карта — оперативный снимок. Полный ROADMAP читать только при необходимости.
@@ -17,6 +17,7 @@
 | [#364](https://github.com/apotet/my-gemini-mirror-site/issues/364) | Аудит расхода токенов | Отчёт опубликован |
 | [#361](https://github.com/apotet/my-gemini-mirror-site/pull/361) | Kimi edit: порядок проверки PoE под нагрузкой | Draft, ожидает приёмки владельцем |
 | [#365](https://github.com/apotet/my-gemini-mirror-site/pull/365) | Unified ZAI/Kimi tasks | Смержен после независимой приёмки; merge `ca8a88f`, [CI PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453147) |
+| [#376](https://github.com/apotet/my-gemini-mirror-site/issues/376) / [#382](https://github.com/apotet/my-gemini-mirror-site/issues/382) | Независимый аудит L3-01 Зайцем | Запущен, audit-only; отчёт/usage ожидаются в run 45557155832 |
 | [#352](https://github.com/apotet/my-gemini-mirror-site/pull/352) | L3 инвентаризация | Ветка Геннадия, не трогать |
 | [#358](https://github.com/apotet/my-gemini-mirror-site/issues/358) / [#356](https://github.com/apotet/my-gemini-mirror-site/issues/356) | ZAI аудит PoE на приборе | Выполнены, отчёты есть |
 
@@ -24,7 +25,7 @@
 
 - 25.11.2026: Gemini recovery (#378, SHA 9f2349cd). До 4 попыток на явные 503/429, backoff+jitter, Retry-After, после двух 503 на Hydrogen переход на Flash. Smoke #380: 4×503, генерации нет.
 
-- #377: точечная поддержка `source_sha` для audit-only, стандарты/исполняемый код из main, данные из immutable source commit. 54 offline-регрессии локально PASS; CI/merge — в отдельном PR. После merge владелец уже разрешил ZAI-аудит L3-01 (#376) на `491dfd894f229239eb54011f5970fd3b5b45263e`; повторное разрешение не требуется. Ветка Геннадия и #352 только читаются, без изменений.
+- #377 устранён: [PR #381](https://github.com/apotet/my-gemini-mirror-site/pull/381) merged `8cf3ece3035c490890d0f8766fd536edf4be46b4`. 54 runtime-регрессии, Gemini/resolver, Docker CI и Fast PR gate PASS. По уже выданному разрешению запущен ZAI L3-01: [Issue #382](https://github.com/apotet/my-gemini-mirror-site/issues/382), [Run 45557155832](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45557155832), исходное задание #376. Durable checkpoint проверен: source `491dfd894f229239eb54011f5970fd3b5b45263e`, trusted main `184f0d62a3370053d70af68e0bc615023d8f5c36`, audit-only, первая попытка reserved. Итог отчёта/usage ожидается в Issue; это не повторный запуск. Ветка Геннадия и #352 не изменялись.
 
 - 25.11.2026: независимая приёмка #365 пройдена; по прямому разрешению владельца PR выведен из Draft и слит. Merge `ca8a88fb6eda6a1af1db65c4d7ec671bcee3b49d`, принятый head `50a7bdc11bd3423a548c36ae2c5003bfe32f8a07`. [Runtime CI](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453147) и [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554453255) — SUCCESS: 49/49 runtime, 11/11 Gemini, 12/12 resolver, полный Docker pipeline. Платные вызовы не запускались и пока не разрешены. #361 остаётся Draft; ветка Геннадия не затронута.
 

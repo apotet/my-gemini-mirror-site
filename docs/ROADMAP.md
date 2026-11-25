@@ -1,3 +1,33 @@
+## 25.11.2026 — #377 устранён, согласованный ZAI L3-01 запущен
+
+[PR #381](https://github.com/apotet/my-gemini-mirror-site/pull/381) merged:
+`8cf3ece3035c490890d0f8766fd536edf4be46b4`, принятый head
+`1fd55f92764ec442107d2c83b701058b0b325311`.
+[Runtime CI 45556720221](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45556720221)
+и [Fast PR gate 45556720165](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45556720165)
+— SUCCESS: 54 runtime-регрессии, Gemini/resolver и полный Docker pipeline.
+Изменение ограничено audit-only source SHA; edit/publisher и чужие ветки не менялись.
+
+По прямому, уже выданному разрешению владельца запущен аудит #376:
+[trigger Issue #382](https://github.com/apotet/my-gemini-mirror-site/issues/382),
+[Run 45557155832](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45557155832).
+Фактический durable checkpoint подтверждает `sourceSHA=491dfd894f229239eb54011f5970fd3b5b45263e`,
+`trustedSHA=184f0d62a3370053d70af68e0bc615023d8f5c36`, audit-only и первую reserved попытку.
+Повторный run не создавался. В grant этой задачи максимум 3 последовательных шага,
+без транспортных retry; uncertain не повторяется автоматически.
+
+Контекст: 28 полных вопросов исторического batch-01-source.json и 17 полных файлов,
+включая все 8 изменённых src/public файлов на актуальном source SHA. Остальные
+src/public между snapshot пакета и целевым SHA неизменны по Git diff; это явно
+сообщено модели, старые findings не выдаются за текущую приёмку. Mandatory standards
+взяты из доверенного main. Офлайн-подготовленный размер messages: 2 739 214 UTF-8 байт
+(на main 8cf3ece; фактический trusted snapshot закреплён выше).
+
+Статус на момент записи: аудит выполняется, итоговый отчёт/usage/стоимость ещё
+не получены и не считаются нулевыми. Ссылки на результат — в trigger Issue и исходном #376.
+Платных вызовов при разработке исправления: 0. Аудит запущен только после merge.
+Ветка Геннадия, учебные материалы и #352 не изменены; merge/deploy учебных правок нет.
+
 ## 25.11.2026 — Gemini: восстановление после 503/429 (#378)
 
 Merge commit `9f2349cd1482ff7a3dd301a0168d9de1c58c5fa4`.
