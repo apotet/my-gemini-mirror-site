@@ -1,3 +1,9 @@
+## 25.11.2026 — Заяц: Coding Plan smoke #414 подтверждён
+
+[Issue #414](https://github.com/apotet/my-gemini-mirror-site/issues/414), [run 45633970628](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45633970628): completed, фактический ответ по tsconfig.json через zai-coding-plan/glm-5.4. Usage: input 9295, output 32, reasoning 440, cache_read 8768, cache_write 0; фактическое списание кредитов и баланс не сверены. Отдельный dry-run 45633956699 не обращался к модели. Владелец подтвердил CI; отдельного ответа поддержки нет. Рабочий маршрут: owner [OPENCODE] Issue и комментарий `/opencode run zai-coding-plan glm-5.4 confirm-ci-terms`. Обычный API и автоматические повторы запрещены. Заяц назначен на независимый аудит вопросов «Применение»; первая партия 10 после завершения работы с Ромкой. До этого новых запусков нет. Инфраструктуру не менять.
+
+---
+
 ## 25.11.2026 — PoE на приборе: схема полей и фото тестера
 
 В урок `l1-poe-screen-reading` добавлены открытая схема полей экрана и фото LinkRunner G2. Явно разобран пример Requested 4 / Received 0 как несовпадение класса, а не обрыв. Ключи и соседние уроки не менялись.
