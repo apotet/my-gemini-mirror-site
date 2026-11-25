@@ -10,14 +10,14 @@
 ```json
 {
   "task": "Проведи инженерный аудит урока. Укажи цитаты и приоритеты.",
-  "model": "gemini-2.5-pro",
+  "model": "gemini-4-hydrogen",
   "mode": "audit-only",
   "files": ["src/data/lessons/l1-poe-budget.ts"]
 }
 ```
 
 - `task` обязателен (строка 1–12000 символов).
-- `model` по умолчанию и единственно разрешённый: `gemini-2.5-pro`. Актуальность по официальной документации: https://ai.google.dev/gemini-api/docs/models/gemini (проверено без платного вызова; модель присутствует в списке).
+- `model` по умолчанию и единственно разрешённый: `gemini-4-hydrogen`. Актуальность по официальной документации: https://ai.google.dev/gemini-api/docs/models/gemini (проверено без платного вызова; модель присутствует в списке).
 - `mode`: только `audit-only`. Режим `edit` **отключён** до интеграции с единым runtime (#365). Полноценное редактирование и Draft publisher не реализованы в этом агенте и не дублируются.
 - `files`: до 8 путей. Только отслеживаемые git-файлы внутри checkout, без symlink и служебных файлов.
 
@@ -25,12 +25,12 @@
 
 - Только `issues: opened`, автор/sender/actor = `apotet`, `run_attempt == 1`.
 - Durable claim `<!-- gemini-issue-agent:claimed:v1 -->` до любого платного вызова. Проверка по **всем страницам** комментариев.
-- Один `generateContent` без retry. Redirects запрещены.
+- Один вызов Interactions API без retry. Redirects запрещены.
 - Ключ передаётся заголовком `x-goog-api-key`, не в URL.
-- Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent`.
+- Endpoint: `POST https://generativelanguage.googleapis.com/v1beta/interactions` (Interactions API, documented REST).
 - Секрет `GEMINI_API_KEY` только в paid step. Значение не читается и не логируется.
 - Workflow не имеет `contents: write`. Автоматический merge/deploy отсутствует.
-- `maxOutputTokens` установлен в технический предел API (65536). `finishReason=MAX_TOKENS` или пустой ответ трактуются как неполный результат, не успех.
+- Успех только при `status=completed` и непустом тексте из документированного REST-пути `steps[].content[].text`. Иное — incomplete. `usage` сохраняется.
 - Обязательные стандарты NetOps передаются в контекст явно. STATE — как оперативный снимок.
 
 ## Диагностика предыдущей интеграции

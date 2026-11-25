@@ -135,14 +135,17 @@ def test_run_success():
         agent.OUT = td / 'out'
         agent.OUT.mkdir()
         (agent.OUT / 'task.json').write_text('{"task":"audit"}')
-        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
         (td / 'docs').mkdir()
         (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('std')
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('wf')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'candidates': [{'finishReason': 'STOP', 'content': {'parts': [{'text': 'ok report'}]}}],
-            'usageMetadata': {'promptTokenCount': 10, 'candidatesTokenCount': 5}
+            'object': 'interaction',
+            'status': 'completed',
+            'model': 'gemini-4-hydrogen',
+            'steps': [{'type': 'model_output', 'content': [{'type': 'text', 'text': 'ok report'}]}],
+            'usage': {'total_tokens': 15}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -150,9 +153,14 @@ def test_run_success():
              patch.object(agent.urllib.request, 'build_opener') as bo:
             bo.return_value.open.return_value = resp
             agent.run()
+            sent = json.loads(bo.return_value.open.call_args[0][0].data.decode())
+            assert sent['model'] == 'gemini-4-hydrogen'
+            assert sent.get('store') is False
+            assert 'input' in sent and 'contents' not in sent
         acc = json.loads((agent.OUT / 'accounting.json').read_text())
         assert acc['status'] == 'complete'
-        assert acc['usage']['promptTokenCount'] == 10
+        assert acc['usage']['total_tokens'] == 15
+        assert acc['interactionStatus'] == 'completed'
         assert (agent.OUT / 'report.md').read_text() == 'ok report'
     with_temp(run)
     print('PASS run success with usage')
@@ -163,14 +171,15 @@ def test_run_empty():
         agent.OUT = td / 'out'
         agent.OUT.mkdir()
         (agent.OUT / 'task.json').write_text('{"task":"x"}')
-        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
         (td / 'docs').mkdir()
         (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'candidates': [{'finishReason': 'STOP', 'content': {'parts': [{'text': '  '}]}}],
-            'usageMetadata': {'promptTokenCount': 1}
+            'status': 'completed',
+            'steps': [{'type': 'model_output', 'content': [{'type': 'text', 'text': '  '}]}],
+            'usage': {'total_tokens': 1}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -194,14 +203,15 @@ def test_run_truncated_usage_saved():
         agent.OUT = td / 'out'
         agent.OUT.mkdir()
         (agent.OUT / 'task.json').write_text('{"task":"x"}')
-        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
         (td / 'docs').mkdir()
         (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'candidates': [{'finishReason': 'MAX_TOKENS', 'content': {'parts': [{'text': 'partial'}]}}],
-            'usageMetadata': {'promptTokenCount': 99}
+            'status': 'incomplete',
+            'steps': [],
+            'usage': {'total_tokens': 99}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -215,7 +225,7 @@ def test_run_truncated_usage_saved():
                 pass
         acc = json.loads((agent.OUT / 'accounting.json').read_text())
         assert acc['status'] == 'incomplete'
-        assert acc['usage']['promptTokenCount'] == 99
+        assert acc['usage']['total_tokens'] == 99
     with_temp(run)
     print('PASS truncated incomplete, usage saved before check')
 
@@ -253,7 +263,7 @@ def test_run_http_error():
         agent.OUT = td / 'out'
         agent.OUT.mkdir()
         (agent.OUT / 'task.json').write_text('{"task":"x"}')
-        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
         (td / 'docs').mkdir()
         (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
@@ -279,7 +289,7 @@ def test_missing_key():
         agent.OUT = td / 'out'
         agent.OUT.mkdir()
         (agent.OUT / 'task.json').write_text('{"task":"x"}')
-        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
         with patch.dict(os.environ, {'GEMINI_API_KEY': ''}):
             try:
                 agent.run()
