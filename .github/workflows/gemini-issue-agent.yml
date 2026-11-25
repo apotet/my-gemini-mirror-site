@@ -1,0 +1,48 @@
+name: Gemini Agent from GitHub Issue
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: gemini-issue-agent-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  agent:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.event.issue.user.login == 'apotet' && github.actor == 'apotet' &&
+      github.event.sender.type == 'User' && startsWith(github.event.issue.title, '[GEMINI] ') &&
+      !github.event.issue.pull_request && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Offline routing and claim gates
+        run: python3 scripts/gemini-issue-agent.test.py
+      - name: Validate, snapshot and claim Issue
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/gemini-issue-agent.py prepare
+      - name: One bounded Gemini request without retries
+        id: agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/gemini-issue-agent.py run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gemini-issue-${{ github.event.issue.number }}
+          path: gemini-issue-output/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Publish result to Issue
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/gemini-issue-agent.py publish
