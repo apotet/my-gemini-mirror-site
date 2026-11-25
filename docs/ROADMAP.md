@@ -17,10 +17,15 @@ workflow, скрипты и документация) сохранён без и
 - Broad scripts/docs scopes не разрешают менять scripts/gemini* и управляющие
   инструкции/стандарты агентов. Добавлены негативные регрессии.
 
-Локальная регрессия: **49/49 runtime**, **11/11 Gemini offline/mock**. Полный
-[CI на итоговом head PR #365](https://github.com/apotet/my-gemini-mirror-site/pull/365/checks)
-включает эти регрессии, Compiler API resolver и реальный Docker-конвейер
-`npm ci → typecheck → build → questions`. PR остаётся Draft; merge выполняет владелец.
+Проверенный код: `89001e755fa8e8ede6d46445a14c4f450124feae`.
+[Run 45554268528 — SUCCESS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554268528):
+**49/49 runtime**, **11/11 Gemini offline/mock**, **12/12 Compiler API resolver**,
+реестр **90/90**, полный пакет #356 (7/7 вопросов); реальные Docker isolation и
+`npm ci → typecheck → build → questions` — PASS.
+[Fast PR gate 45554268526 — SUCCESS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45554268526).
+Конфликты устранены, GitHub `mergeable=true`; готов к merge по техническим проверкам.
+Итоговый head с этой записью проверяется в [CI PR #365](https://github.com/apotet/my-gemini-mirror-site/pull/365/checks).
+PR остаётся Draft; merge выполняет владелец.
 STATE обновлён. Учебные материалы и ветки Геннадия не менялись.
 Платных вызовов **0**, расходы **$0**, merge/deploy не выполнялись.
 
