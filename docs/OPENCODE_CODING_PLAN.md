@@ -83,8 +83,6 @@ python3 scripts/opencode_audit.py --model glm-5.3
 CLI не нужен для этих проверок. Для машины с заранее скачанным npm cache:
 `npm install --offline --global opencode-ai@1.19.6`, затем `opencode --version`
 и `opencode run --help` — без credentials и model calls.
-В среде разработки этой задачи сеть к GitHub/npm недоступна и CLI в кеше нет:
-реальная установка и выполнение CLI **не проверены**. Проверены генерация
-конфигурации, dry-run, ограничения workflow и runner через mocks.
+В локальной среде сеть к GitHub/npm недоступна и CLI в кеше нет. Реальная установка\nCLI 1.19.6, версия, run --help, четыре offline-теста и обе dry-run конфигурации\nпрошли в [CI smoke 45567465538](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45567465538)\nна коде `017ff30152139fa89759046a04ffa90d468ae38b`, без секрета и модели.
 Платный smoke намеренно не запускался. Первый настоящий запуск требует проверки
 версии и наличия выбранной модели до передачи ключа.

@@ -23,7 +23,7 @@
 
 ## Последние решения
 
-- #384: подготовлен отдельный OpenCode CLI 1.19.6 workflow (Draft), по умолчанию offline dry-run; первый этап audit-only с самостоятельным чтением/поиском в checkout репозитория; добавлен CI smoke реальной установки/версии без модели. Платный smoke не запускался. CI-допустимость подписки требует подтверждения владельца; инструкция `docs/OPENCODE_CODING_PLAN.md`. Существующие агенты не изменены.
+- #384: подготовлен отдельный OpenCode CLI 1.19.6 workflow (Draft), по умолчанию offline dry-run; первый этап audit-only с самостоятельным чтением/поиском в checkout репозитория; [CI smoke реальной установки/версии без модели PASS](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45567465538). Платный smoke не запускался. CI-допустимость подписки требует подтверждения владельца; инструкция `docs/OPENCODE_CODING_PLAN.md`. Существующие агенты не изменены.
 
 - 25.11.2026: Gemini recovery (#378, SHA 9f2349cd). До 4 попыток на явные 503/429, backoff+jitter, Retry-After, после двух 503 на Hydrogen переход на Flash. Smoke #380: 4×503, генерации нет.
 
