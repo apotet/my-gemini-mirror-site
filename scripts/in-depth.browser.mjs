@@ -67,7 +67,9 @@ try {
       // rests on this term, hover() alone need not emit a new pointerenter.
       // Start outside the content so this check always exercises a real entry.
       if(!mobile) await page.mouse.move(0,0);
-      await term.scrollIntoViewIfNeeded();
+      // A minimally visible inline term can remain under the fixed mobile
+      // navigation or at the viewport edge. Center it before the real gesture.
+      await term.evaluate(element=>element.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
       // scrollIntoView can return before the resulting scroll event is delivered.
       // GlossaryText closes on that event; wait for actual geometry to settle
       // before entering, rather than opening during an unfinished scroll.
