@@ -113,12 +113,36 @@ for(const id of ids){
  assert.ok(l.blocks.length>=4,id+' substantial plain blocks');
  if(l.id!=='l1-copper-fault-poe') assert.ok(l.professional?.blocks?.length>=4,id+' required professional blocks');
 }
+// Accepted HTTP lesson contains navigation cards and an introduction to supplemental topics.
+// Exclude only these exact blocks from the main-explanation length contract;
+// assert their presence, destinations and content separately rather than skipping arbitrary short blocks.
+const httpAuxiliary = [
+ ['Дальше: DNS', 'l7-dns'],
+ ['Дальше: HTTPS и TLS', 'tls-sni'],
+ ['Дальше: HTTP и частичная загрузка', 'l7-services'],
+ ['Дополнительно: кэш, методы и соединения', null],
+];
+function substantiveBlocks(lesson, blocks, mode){
+ if(lesson.id!=='l7-http-status-basics') return blocks;
+ const headings=httpAuxiliary.map(([heading])=>heading);
+ assert.deepEqual(blocks.filter(b=>headings.includes(b.heading)).map(b=>b.heading),headings,
+  mode+' exact HTTP auxiliary blocks, no duplicate/missing exceptions');
+ for(const [heading,target] of httpAuxiliary){
+  const block=blocks.find(b=>b.heading===heading);
+  assert.equal(block.relatedLesson?.id??null,target,mode+' exact HTTP link: '+heading);
+  assert.ok(block.body.length>(target?50:200),mode+' substantive HTTP auxiliary text: '+heading);
+  if(!target) for(const concept of ['304','PUT','HTTP/1.1'])
+   assert.ok(block.body.includes(concept),mode+' supplemental-topic introduction retains '+concept);
+ }
+ return blocks.filter(b=>!headings.includes(b.heading));
+}
 for(const lessonId of ['l4-directory-remote-industrial-ports','l2-hsr-redundancy','l1-poe-screen-reading','l7-http-status-basics']){
  const id=ids.find(x=>expected[x][2]===lessonId),l=getLessonForQuestion(id);
  assert.equal(l.id,lessonId);
- const mainPlain = l.blocks;
+ const mainPlain = substantiveBlocks(l,l.blocks,'plain');
  assert.ok(mainPlain.length>=4 && mainPlain.every(x=>x.body.length>200),l.id+' substantial plain');
- const mainPro = l.professional.blocks;
+ if(l.id==='l1-poe-screen-reading') assert.equal(l.professional.blocks.filter(b=>b.heading==='Кейс: камера перезагружается при включении ИК').length,1,'exactly one accepted PoE case exception');
+ const mainPro = substantiveBlocks(l,l.professional.blocks,'professional');
  assert.ok(mainPro.length>=4 && mainPro.every(x=>x.body.length>(l.id==='l1-poe-screen-reading' && x.heading==='Кейс: камера перезагружается при включении ИК' ? 250 : 300)),l.id+' substantial professional; exact PoE case exception');
  for(const term of new Set([...l.terms,...l.professional.terms])){
    assert.ok(GLOSSARY[term]?.description?.length>40 && GLOSSARY[term]?.relatesTo?.length>20,l.id+' glossary '+term);
