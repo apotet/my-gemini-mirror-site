@@ -399,7 +399,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['l4-new-03'], anchorId: 'mtu-tcp-options-1448',
     afterHeading: { plain: 'Фактические опции TCP и IPv4: почему данных бывает меньше объявленного MSS', professional: 'Точный расчёт полезной нагрузки с фактическими IPv4/TCP options (RFC 6691)' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-02'], anchorId: 'mtu-ipv4-tcp-options-1444',
-    afterHeading: { plain: 'MTU и MSS: размер «коробки» и размер «груза»', professional: 'Типовой оверхед инкапсуляции и реальный MTU в туннелях' } },
+    afterHeading: { plain: 'Пример: IPv4 24 байта и TCP 32 байта — 1444 байта данных', professional: 'Расчёт gap-pack2-02: IPv4 options и TCP options — 1444 байта' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['ts-pack1-15'], anchorId: 'mtu-local-pmtu-cache',
     afterHeading: { plain: 'Локальный кэш PMTU: какое ограничение срабатывает ещё до выхода кадра', professional: 'Локальный route/PMTU cache стека и порядок срабатывания ограничений' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-04'], anchorId: 'mtu-ipv6-ptb-transit',
@@ -409,5 +409,5 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   { lessonId: 'l2-ptp-time-sync', questionIds: ['review-ptp-18'], anchorId: 'ptp-1step-e2e-tc',
     afterHeading: { plain: 'Пример 1-step E2E Transparent Clock: как складывается Correction Field', professional: '1-step E2E Transparent Clock: суммирование correctionField и отличие от BC и 2-step' } },
   { lessonId: 'l3-acl-filtering', questionIds: ['gap-pack1-03'], anchorId: 'acl-first-match-xy-implicit-deny',
-    afterHeading: { plain: 'Невидимая ловушка в классическом ACL: implicit deny any', professional: 'Точный разбор first-match и implicit deny на примере source-only ACL (пакеты X и Y)' } },
+    afterHeading: { plain: 'Пример: пакет X разрешён первым правилом, Y попадает под implicit deny', professional: 'Точный разбор first-match и implicit deny на примере source-only ACL (пакеты X и Y)' } },
 ];

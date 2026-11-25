@@ -851,7 +851,7 @@ export const GROUP3_TERMS: Record<string, InDepthTermPatch> = {
     "russian": "Граничные часы PTP",
     "description": "Часы PTP с несколькими портами: синхронизируются от выбранного вышестоящего источника и формируют собственный обмен для нижестоящих получателей.",
     "relatesTo": "Отличие от прозрачной пересылки PTP-сообщений.",
-    "lessonId": "l7-monitoring-snmp-syslog",
+    "lessonId": "l2-ptp-time-sync",
     "abbreviation": false
   },
   "transparent clock": {
@@ -859,7 +859,7 @@ export const GROUP3_TERMS: Record<string, InDepthTermPatch> = {
     "russian": "Прозрачные часы PTP",
     "description": "Устройство PTP, учитывающее время пребывания/прохождения при пересылке сообщений. Это другая функция, чем синхронизация собственных boundary clock с последующей выдачей времени.",
     "relatesTo": "Сравнение ролей промежуточных PTP-устройств.",
-    "lessonId": "l7-monitoring-snmp-syslog",
+    "lessonId": "l2-ptp-time-sync",
     "abbreviation": false
   },
   "grandmaster": {
@@ -867,7 +867,7 @@ export const GROUP3_TERMS: Record<string, InDepthTermPatch> = {
     "russian": "Выбранный главный источник времени PTP",
     "description": "Выбранный источник времени PTP в соответствующем домене и профиле. Участники могут следовать ему через граничные часы, а не обязательно напрямую.",
     "relatesTo": "Иерархия источников и получателей времени.",
-    "lessonId": "l7-monitoring-snmp-syslog",
+    "lessonId": "l2-ptp-time-sync",
     "abbreviation": false
   },
   "reflectance": {

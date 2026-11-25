@@ -23,6 +23,8 @@ jobs:
         run: npm run build
       - name: Core quiz logic regression
         run: npm run test:logic
+      - name: L3 batch 1 exact anchors and glossary overlays
+        run: node scripts/l3-batch1-integration.test.mjs
       - name: Question and lesson navigation regression
         run: npm run test:review-navigation
       - name: PoE animated SVG layout regression
@@ -209,6 +211,9 @@ jobs:
       - name: Base level lessons complete (220 L1 plus screenshot regressions)
         run: node scripts/foundation-lessons.test.mjs
 
+      - name: L3 batch 1 exact anchors and glossary overlays
+        run: node scripts/l3-batch1-integration.test.mjs
+
       - name: Question-to-paragraph lesson anchors (both reading modes)
         run: node scripts/lesson-section-links.test.mjs
 
@@ -225,6 +230,7 @@ jobs:
           node scripts/explanations.browser.mjs
           node scripts/review-materials.browser.mjs
           node scripts/base-level.browser.mjs
+          node scripts/l3-batch1-integration.browser.mjs
 
       - name: Upload coverage artifact
         if: always()
