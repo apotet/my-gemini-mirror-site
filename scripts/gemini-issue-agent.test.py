@@ -141,9 +141,11 @@ def test_run_success():
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('wf')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'output_text': 'ok report',
+            'object': 'interaction',
             'status': 'completed',
-            'usage': {'promptTokenCount': 10}
+            'model': 'gemini-4-hydrogen',
+            'steps': [{'type': 'model_output', 'content': [{'type': 'text', 'text': 'ok report'}]}],
+            'usage': {'total_tokens': 15}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -151,9 +153,13 @@ def test_run_success():
              patch.object(agent.urllib.request, 'build_opener') as bo:
             bo.return_value.open.return_value = resp
             agent.run()
+            sent = json.loads(bo.return_value.open.call_args[0][0].data.decode())
+            assert sent['model'] == 'gemini-4-hydrogen'
+            assert 'input' in sent and 'contents' not in sent
         acc = json.loads((agent.OUT / 'accounting.json').read_text())
         assert acc['status'] == 'complete'
-        assert acc['usage']['promptTokenCount'] == 10
+        assert acc['usage']['total_tokens'] == 15
+        assert acc['interactionStatus'] == 'completed'
         assert (agent.OUT / 'report.md').read_text() == 'ok report'
     with_temp(run)
     print('PASS run success with usage')
@@ -170,9 +176,9 @@ def test_run_empty():
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'output_text': '  ',
             'status': 'completed',
-            'usage': {'promptTokenCount': 1}
+            'steps': [{'type': 'model_output', 'content': [{'type': 'text', 'text': '  '}]}],
+            'usage': {'total_tokens': 1}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -202,9 +208,9 @@ def test_run_truncated_usage_saved():
         (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
         resp = MagicMock()
         resp.read.return_value = json.dumps({
-            'output_text': '',
             'status': 'incomplete',
-            'usage': {'promptTokenCount': 99}
+            'steps': [],
+            'usage': {'total_tokens': 99}
         }).encode()
         resp.__enter__ = lambda s: s
         resp.__exit__ = lambda *a: None
@@ -218,7 +224,7 @@ def test_run_truncated_usage_saved():
                 pass
         acc = json.loads((agent.OUT / 'accounting.json').read_text())
         assert acc['status'] == 'incomplete'
-        assert acc['usage']['promptTokenCount'] == 99
+        assert acc['usage']['total_tokens'] == 99
     with_temp(run)
     print('PASS truncated incomplete, usage saved before check')
 

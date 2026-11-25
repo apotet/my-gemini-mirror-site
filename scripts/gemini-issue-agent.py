@@ -12,9 +12,6 @@ OUT = Path('gemini-issue-output')
 MARKER = '<!-- gemini-issue-agent:claimed:v1 -->'
 MODEL = 'gemini-4-hydrogen'
 ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions'
-# Technical bound from Gemini API docs for generateContent maxOutputTokens on 2.5 Pro.
-# Truncation (finishReason=MAX_TOKENS) is treated as incomplete, not success.
-MAX_OUTPUT_TOKENS = 65536
 
 def git(*args):
     return subprocess.check_output(['git', *args], text=True).strip()
@@ -162,25 +159,21 @@ def run():
             data = json.loads(resp.read().decode())
         accounting['status'] = 'response received'
         accounting['raw_keys'] = list(data.keys())
-        usage = data.get('usageMetadata') or data.get('usage')
-        if usage:
-            accounting['usage'] = usage
-        text_out = (data.get('output_text') or '').strip()
-        if not text_out:
-            outs = data.get('outputs') or data.get('output') or []
-            if isinstance(outs, dict):
-                outs = [outs]
-            chunks = []
-            for o in outs:
-                if isinstance(o, dict):
-                    chunks.append(o.get('text') or o.get('output_text') or '')
-                elif isinstance(o, str):
-                    chunks.append(o)
-            text_out = ''.join(chunks).strip()
-        istatus = (data.get('status') or '').upper()
+        if 'usage' in data:
+            accounting['usage'] = data['usage']
+        istatus = (data.get('status') or '').lower()
         accounting['interactionStatus'] = istatus or None
+        # Documented REST schema: steps[].content[].text for model_output. Not SDK output_text.
+        texts = []
+        for step in data.get('steps') or []:
+            if not isinstance(step, dict) or step.get('type') != 'model_output':
+                continue
+            for part in step.get('content') or []:
+                if isinstance(part, dict) and part.get('type') == 'text' and part.get('text'):
+                    texts.append(part['text'])
+        text_out = ''.join(texts).strip()
         save('report.md', text_out or '(empty)')
-        if text_out and istatus in ('', 'COMPLETED', 'COMPLETE', 'STOP'):
+        if istatus == 'completed' and text_out:
             accounting['status'] = 'complete'
         else:
             accounting['status'] = 'incomplete'
@@ -190,6 +183,13 @@ def run():
         accounting['error'] = str(exc).replace(key, '[REDACTED]')[:800]
         if hasattr(exc, 'code'):
             accounting['httpStatus'] = exc.code
+        if hasattr(exc, 'read'):
+            try:
+                body = exc.read(4000).decode(errors='replace')
+                body = body.replace(key, '[REDACTED]')
+                accounting['httpErrorBody'] = body[:2000]
+            except Exception:
+                pass
         if accounting.get('status') == 'calling':
             accounting['status'] = 'error'
         raise

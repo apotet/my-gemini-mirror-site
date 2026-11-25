@@ -27,10 +27,10 @@
 - Durable claim `<!-- gemini-issue-agent:claimed:v1 -->` до любого платного вызова. Проверка по **всем страницам** комментариев.
 - Один вызов Interactions API без retry. Redirects запрещены.
 - Ключ передаётся заголовком `x-goog-api-key`, не в URL.
-- Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent`.
+- Endpoint: `POST https://generativelanguage.googleapis.com/v1beta/interactions` (Interactions API, documented REST).
 - Секрет `GEMINI_API_KEY` только в paid step. Значение не читается и не логируется.
 - Workflow не имеет `contents: write`. Автоматический merge/deploy отсутствует.
-- `maxOutputTokens` установлен в технический предел API (65536). `finishReason=MAX_TOKENS` или пустой ответ трактуются как неполный результат, не успех.
+- Успех только при `status=completed` и непустом тексте из документированного REST-пути `steps[].content[].text`. Иное — incomplete. `usage` сохраняется.
 - Обязательные стандарты NetOps передаются в контекст явно. STATE — как оперативный снимок.
 
 ## Диагностика предыдущей интеграции
