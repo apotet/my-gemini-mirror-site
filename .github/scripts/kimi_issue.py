@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import urllib.error
 from decimal import Decimal
 
 from validate_inputs import validate_path
@@ -49,12 +50,39 @@ def git(*args):
     return command('git', *args).stdout.strip()
 
 
+class GitHubAPIError(RuntimeError):
+    """Safe diagnostics: never retain request headers or arbitrary remote bodies."""
+    def __init__(self, method, endpoint, status, message, request_id=None):
+        self.method, self.endpoint, self.status = method, endpoint.split('?',1)[0], status
+        known = {
+            'GitHub Actions is not permitted to create or approve pull requests.': 'actions_pr_creation_disabled',
+            'Resource not accessible by integration': 'integration_permission_denied',
+            'Validation Failed': 'validation_failed',
+            'Not Found': 'not_found',
+        }
+        self.reason = known.get(message, 'github_api_error')
+        self.message = message if message in known else 'GitHub API rejected request (remote details omitted)'
+        self.request_id = request_id if request_id and re.fullmatch(r'[A-Za-z0-9:-]{1,128}',request_id) else None
+        super().__init__(f'{self.method} {self.endpoint}: HTTP {status} ({self.reason})')
+
+    def details(self):
+        return {'method':self.method,'endpoint':self.endpoint,'http_status':self.status,
+                'reason':self.reason,'message':self.message,'request_id':self.request_id}
+
+
 def github(method, endpoint, data=None):
     request = urllib.request.Request('https://api.github.com/repos/apotet/my-gemini-mirror-site'+endpoint,
         method=method, data=None if data is None else json.dumps(data).encode(),
         headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json', 'Content-Type':'application/json'})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        try:
+            message = json.loads(exc.read(4096)).get('message')
+        except (ValueError, AttributeError):
+            message = None
+        raise GitHubAPIError(method,endpoint,exc.code,message,exc.headers.get('X-GitHub-Request-Id')) from None
 
 
 def event():
@@ -345,6 +373,7 @@ if __name__=='__main__':
         {'prepare':prepare,'claim':claim,'run':run,'verify':verify,'deliver-edit':deliver_edit,'publish':publish}[phase]()
     except Exception as exc:
         # Do not print provider content, candidate text, request headers or secrets.
-        save('failure-'+phase+'.json',{'phase':phase,'error_type':type(exc).__name__})
+        save('failure-'+phase+'.json',{'phase':phase,'error_type':type(exc).__name__,
+            **({'github':exc.details()} if isinstance(exc,GitHubAPIError) else {})})
         print('Kimi phase failed:',phase,type(exc).__name__,'no retry')
         sys.exit(1)
