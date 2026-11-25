@@ -86,21 +86,28 @@ def test_prepare_claim_on_second_page():
         (td / 'e.json').write_text(json.dumps(event))
         env = {'GITHUB_REPOSITORY': 'apotet/my-gemini-mirror-site', 'GITHUB_RUN_ATTEMPT': '1',
                'GITHUB_EVENT_PATH': str(td / 'e.json'), 'GITHUB_RUN_ID': '1'}
-        # Simulate pagination: first page full, second has marker
-        pages = [[{'body': 'x'}] * 100, [{'body': agent.MARKER}]]
-        def fake_pages(path):
-            return pages[0] + pages[1]
+        # Mock gh so real api_pages pagination runs: page 1 full, page 2 has marker
+        calls = {'n': 0}
+        def fake_gh(*args):
+            calls['n'] += 1
+            if 'comments' in args[-1] and 'page=' in args[-1]:
+                if args[-1].endswith('page=1'):
+                    return json.dumps([{'body': 'noise'}] * 100)
+                if args[-1].endswith('page=2'):
+                    return json.dumps([{'body': agent.MARKER}])
+            return '[]'
         with patch.dict(os.environ, env), \
              patch.object(agent, 'git', return_value='x'), \
              patch.object(agent, 'tracked_files', return_value=set()), \
-             patch.object(agent, 'api_pages', side_effect=fake_pages):
+             patch.object(agent, 'gh', side_effect=fake_gh):
             try:
                 agent.prepare()
                 raise AssertionError('should fail')
             except ValueError as e:
                 assert 'already claimed' in str(e)
+            assert calls['n'] >= 2
     with_temp(run)
-    print('PASS claim detected on later page')
+    print('PASS claim detected via real pagination (gh mocked)')
 
 def test_prepare_edit_disabled():
     agent = load()
@@ -214,20 +221,14 @@ def test_run_truncated_usage_saved():
 
 def test_redirect_handler():
     agent = load()
-    # Instantiate the handler logic by calling run path that builds opener
-    # Direct unit: the class raises on redirect
-    import urllib.request
-    class NoRedirect(urllib.request.HTTPRedirectHandler):
-        def redirect_request(self, req, fp, code, msg, headers, newurl):
-            raise urllib.error.HTTPError(req.full_url, code, f'Redirect forbidden: {msg}', headers, fp)
-    h = NoRedirect()
+    h = agent.NoRedirect()
     try:
         h.redirect_request(MagicMock(full_url='http://x'), None, 302, 'Found', {}, 'http://y')
         raise AssertionError('should raise')
-    except urllib.error.HTTPError as e:
-        assert e.code == 302
+    except Exception as e:
+        assert getattr(e, 'code', None) == 302
         assert 'Redirect forbidden' in str(e)
-    print('PASS redirect handler raises')
+    print('PASS real NoRedirect handler raises')
 
 def test_publish():
     agent = load()
@@ -245,6 +246,32 @@ def test_publish():
             assert gh.call_count >= 2
     with_temp(run)
     print('PASS publish posts comments')
+
+def test_run_http_error():
+    agent = load()
+    def run(td):
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"x"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-2.5-pro","files":[]}')
+        (td / 'docs').mkdir()
+        (td / 'docs' / 'LEARNING_CONTENT_STANDARD.md').write_text('s')
+        (td / 'docs' / 'DEVELOPMENT_WORKFLOW.md').write_text('w')
+        import urllib.error
+        err = urllib.error.HTTPError('http://x', 400, 'bad', {}, None)
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'k'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo:
+            bo.return_value.open.side_effect = err
+            try:
+                agent.run()
+                raise AssertionError('should fail')
+            except Exception:
+                pass
+        acc = json.loads((agent.OUT / 'accounting.json').read_text())
+        assert acc['status'] == 'error'
+        assert acc.get('httpStatus') == 400
+    with_temp(run)
+    print('PASS HTTP error accounting')
 
 def test_missing_key():
     agent = load()
@@ -272,5 +299,6 @@ if __name__ == '__main__':
     test_run_truncated_usage_saved()
     test_redirect_handler()
     test_publish()
+    test_run_http_error()
     test_missing_key()
     print('\nAll offline/mock tests passed')

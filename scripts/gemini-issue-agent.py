@@ -122,6 +122,10 @@ def prepare():
     gh('api', base + '/comments', '-f', f'body={MARKER}\nГеннадий принял задание. Один запрос, без повторов. SHA {sha}.')
     print('claimed', issue, sha)
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, f'Redirect forbidden: {msg}', headers, fp)
+
 def run():
     key = os.environ.get('GEMINI_API_KEY', '')
     if not key:
@@ -151,10 +155,6 @@ def run():
         headers={'Content-Type': 'application/json', 'x-goog-api-key': key},
         method='POST',
     )
-    # Forbid redirects
-    class NoRedirect(urllib.request.HTTPRedirectHandler):
-        def redirect_request(self, req, fp, code, msg, headers, newurl):
-            raise urllib.error.HTTPError(req.full_url, code, f'Redirect forbidden: {msg}', headers, fp)
     opener = urllib.request.build_opener(NoRedirect)
     accounting = {'api_calls': 1, 'model': snapshot['model'], 'status': 'calling'}
     try:
