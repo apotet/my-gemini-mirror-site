@@ -83,7 +83,7 @@ def github(method, endpoint, data=None):
             message = json.loads(exc.read(4096)).get('message')
         except (ValueError, AttributeError):
             message = None
-        raise GitHubAPIError(method,endpoint,exc.code,message,exc.headers.get('X-GitHub-Request-Id')) from None
+        raise GitHubAPIError(method,endpoint,exc.code,message,(exc.headers or {}).get('X-GitHub-Request-Id')) from None
 
 
 def event(allow_metadata_retry=False):
@@ -473,7 +473,7 @@ def publish():
     failure_note = '\n'.join(diagnostics)
     if any('GitHub Actions is not permitted' in d for d in diagnostics):
         failure_note += '\nНужно разрешение Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. Модель повторно не вызывать.'
-    body = f"## Химик — {os.environ.get('WORK_STATUS','unknown')}\n\n{excerpt}\n\nDraft PR: {pr}\n\n{failure_note}\n\n{cost_summary(account)}\n\n[Артефакты]({artifact}) · [Run]({run_url})\n\nUsage/стоимость: `{json.dumps(account,ensure_ascii=False)}`\n\ncost_usd вычисляется только при полной детализации usage/cache TTL; иначе null. usage_cost_upper_bound_usd — консервативная верхняя оценка, не фактическое списание. Повторов нет."
+    body = f"## Химик — {os.environ.get('WORK_STATUS','unknown')}\n\n{excerpt}\n\nDraft PR: {pr}\n\n{failure_note}\n\n{cost_summary(account)}\n\n[Артефакты]({artifact}) · [Run]({run_url})\n\nUsage/стоимость: `{json.dumps(account,ensure_ascii=False)}`\n\ncost_usd вычисляется только при полной детализации usage/cache TTL; иначе null. cost_range_usd — расчётный диапазон; usage_cost_upper_bound_usd — общая консервативная граница. Это не подтверждение списания. Повторов нет."
     github('POST',f"/issues/{issue['number']}/comments",{'body':body})
     save('summary.md',body)
 
@@ -487,4 +487,6 @@ if __name__=='__main__':
         save('failure-'+phase+'.json',{'phase':phase,'error_type':type(exc).__name__,
             **({'github':exc.details()} if isinstance(exc,GitHubAPIError) else {})})
         print('Kimi phase failed:',phase,type(exc).__name__,'no retry')
+        if isinstance(exc,GitHubAPIError):
+            print(json.dumps(exc.details(),ensure_ascii=False))
         sys.exit(1)

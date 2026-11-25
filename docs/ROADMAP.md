@@ -1,3 +1,53 @@
+## 25.11.2026 — Kimi PR publication: точная причина и исправление без модели
+
+Точная причина HTTPError в publisher Run 45524251479 подтверждена воспроизведением
+того же `POST /pulls` с `GITHUB_TOKEN` на уже проверенной ветке #361:
+**HTTP 403 — “GitHub Actions is not permitted to create or approve pull requests.”**
+[Диагностический Run 45525824257](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45525824257)
+SUCCESS, **model_calls=0**; request ID `EC41:3A6F64:107C3CC:348C96F:6B063969`.
+Запрещает настройка репозитория **Settings → Actions → General → Workflow permissions →
+Allow GitHub Actions to create and approve pull requests**. Одного
+`pull-requests: write` в workflow недостаточно. Read-only API настроек возвращает
+403 текущему токену; облачный браузер не авторизован. Настройка **не изменена**,
+владельцу запрошено её включение. Не объявлять будущую автоматическую публикацию
+разблокированной до подтверждения настройки и нулевой модельной проверки.
+
+В `fix/kimi-pr-publication` подготовлено исправление:
+- GitHub HTTP status, метод/endpoint, request ID и безопасная известная причина
+  сохраняются в диагностике и публикуются в Issue без токенов и произвольного body.
+- Publisher сохраняет checkpoint до создания PR. При восстановлении использует
+  существующую ветку только после проверки родителя, полного списка изменённых
+  путей, blob-хешей и режима 100644. Ref не перезаписывается.
+- Существующий OPEN/Draft PR с тем же repo/head SHA/base повторно используется
+  без POST/PATCH, дублей и перевода в Ready. Закрытый, merged, Ready или изменённый
+  PR не перезаписывается. Повтор только metadata-публикации отделён от платного
+  worker: `run()`/`claim()` и workflow worker по-прежнему запрещают rerun.
+- При отсутствующем `cached_tokens` выводится **расчётный диапазон** и
+  `cost_usd=null`, не предполагается cache read=0. Отсутствующие write/TTL также
+  ограничиваются диапазоном; некорректные/противоречивые счётчики не дают точную сумму.
+  Для #360: **$0.0510458–$0.051458 до налогов**; исходный accounting сохранён.
+
+[Zero-model recovery Run 45526607379](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45526607379)
+SUCCESS: `existing_pr_reused=361`, `model_calls=0`, `write_calls=0`. Дополнительная
+локальная проверка через пять GET GitHub сверила полное соответствие существующей
+ветки проверенным blob-хешам; PR #361 остался OPEN/Draft, SHA
+`3bf2cfc010de1d95171b1a882a8cc581a219aa89`, mergedAt=null.
+
+Проверки исправления: **35/35 offline PASS**, typecheck/Python compile/YAML/diff check
+PASS. Среди регрессий — политика 403, защита diagnostics от утечки токена,
+идемпотентный PR, восстановление ветки без записей, отказ при лишних файлах,
+запрет второго paid run, диапазоны cache/TTL и реальные usage #360.
+Durable claim, потолок **$0.25**, вход **39000** байт и output **8192** сохранены;
+новых обращений к Kimi **0**. Инфраструктура Зайца, учебная ветка #361 и ветка
+Геннадия не изменялись. #361 остаётся до окончательной приёмки владельцем.
+
+[Подтверждение диагностики и проверки](audits/kimi-publication-20261125-evidence.json).
+Исправление подготовлено для review; в main не применено. Разрешение GitHub
+включить должен владелец с административным доступом; токены/PAT в репозиторий
+не добавлялись и политика доступа не обходилась.
+
+---
+
 ## 25.11.2026 — Kimi Issue Agent: проверка #359 и первый edit-тест #360
 
 Перед merge [PR #359](https://github.com/apotet/my-gemini-mirror-site/pull/359)
