@@ -1,5 +1,5 @@
-/** Issue edit mode is text-only. Compare complete ASTs, including code outside
- * the lesson object, before any candidate is compiled or imported by a test.
+/** Issue edits may change approved text literals only. Compare the complete
+ * canonical AST print, preserving operator/flag fields that forEachChild omits.
  * Manual Kimi structural permissions are intentionally unchanged.
  */
 import ts from 'typescript';
@@ -8,19 +8,23 @@ const textFields = new Set(['body', 'summary', 'title', 'label', 'explanation', 
 function skeleton(path) {
   const sf = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
   if (sf.parseDiagnostics.length) throw new Error('Invalid candidate TypeScript');
-  function visit(node) {
-    const parent = node.parent;
-    if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
-        parent && ts.isPropertyAssignment(parent) && parent.initializer === node &&
-        textFields.has(parent.name.text)) return ['editable-text'];
-    const children = [];
-    ts.forEachChild(node, child => { children.push(visit(child)); });
-    // Leaf token text preserves IDs, imports, expressions, operators and literals.
-    return [node.kind, children.length ? children : node.getText(sf)];
+  const transformed = ts.transform(sf, [context => {
+    function visit(node) {
+      const parent = node.parent;
+      if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
+          parent && ts.isPropertyAssignment(parent) && parent.initializer === node &&
+          textFields.has(parent.name.text)) return ts.factory.createStringLiteral('__KIMI_EDITABLE_TEXT__');
+      return ts.visitEachChild(node, visit, context);
+    }
+    return root => ts.visitNode(root, visit);
+  }]);
+  try {
+    return ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed }).printFile(transformed.transformed[0]);
+  } finally {
+    transformed.dispose();
   }
-  return visit(sf);
 }
-if (JSON.stringify(skeleton(process.argv[2])) !== JSON.stringify(skeleton(process.argv[3]))) {
+if (skeleton(process.argv[2]) !== skeleton(process.argv[3])) {
   console.error('Issue edit may change text literals only; executable code/structure/IDs changed');
   process.exitCode = 1;
 }

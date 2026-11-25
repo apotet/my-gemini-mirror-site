@@ -231,6 +231,23 @@ class IssueAdapter(unittest.TestCase):
                 with self.assertRaises(subprocess.CalledProcessError):k.verify()
                 self.assertEqual(Path(TARGET).read_text(),ORIGINAL);self.gh.assert_not_called()
 
+    def test_full_ast_guard_preserves_operator_flags(self):
+        original = self.root/'guard-original.ts'
+        candidate = self.root/'guard-candidate.ts'
+        for before,after in [
+            ("const x = -1;", "const x = +1;"),
+            ("const x = ~1;", "const x = -1;"),
+            ("let x = 1; x++;", "let x = 1; x--;"),
+            ("import type { X } from './x';", "import { X } from './x';"),
+        ]:
+            original.write_text(before+ORIGINAL)
+            candidate.write_text(after+CANDIDATE)
+            with self.subTest(before=before),self.assertRaises(subprocess.CalledProcessError):
+                k.command('node',str(k.SCRIPTS/'kimi_issue_text_guard.mjs'),str(original),str(candidate))
+        original.write_text("const x = -1;"+ORIGINAL)
+        candidate.write_text("const x = -1;"+CANDIDATE)
+        k.command('node',str(k.SCRIPTS/'kimi_issue_text_guard.mjs'),str(original),str(candidate))
+
     def test_edit_compilation_failure_blocks_publication(self):
         self.prepare('edit');self.edit_response()
         original_command=k.command

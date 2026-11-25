@@ -10,6 +10,7 @@ owner-only (`apotet` author/sender/actor), только issues opened, JSON `tas
 лимиты контекста/стоимости и baseline typecheck. Затем durable claim с пагинацией,
 один streaming POST, no redirect/retry, локальный spent-attempt и запрет rerun.
 Edit: только текстовые литералы; полный AST guard запрещает внедрение кода/смену ID,
+включая унарные операторы и import type flags (дополнительная проверка перед merge),
 shared AST + компиляция + выбранная регрессия обязательны. Только после ворот —
 отдельный чистый job, новая `kimi/agent-run-issue-*` ветка и Draft PR.
 Main/параллельные ветки агент не перезаписывает; при изменившемся main — отказ.
@@ -23,7 +24,7 @@ write 5m $2 / 1h $4, output $10 за 1M; preflight считает весь input
 стоимость не выдумывается. Большие задания отклоняются без усечения.
 Источники и формат: [KIMI_ISSUE_AGENT.md](KIMI_ISSUE_AGENT.md).
 
-Офлайн: **24/24** новых теста, shared Kimi **25/25**, tools **17/17**, security PASS;
+Офлайн: **25/25** новых тестов, shared Kimi **25/25**, tools **17/17**, security PASS;
 в том числе в изолированном окружении без root node_modules, как Kimi offline CI.
 Проверяются полномочия, пути, бюджеты, пагинация claim, повторы, SSE/usage, ошибки
 компиляции/AST, подмена кандидата, stale main, ограничение создаваемой ветки и Draft PR.
