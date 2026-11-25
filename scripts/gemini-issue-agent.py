@@ -10,7 +10,8 @@ import urllib.request
 
 OUT = Path('gemini-issue-output')
 MARKER = '<!-- gemini-issue-agent:claimed:v1 -->'
-MODEL = 'gemini-4-hydrogen'
+MODEL = 'gemini-4-hydrogen'  # default / alternative
+ALLOWED_MODELS = {'gemini-4-hydrogen', 'gemini-3.8-flash'}
 ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions'
 
 def git(*args):
@@ -88,8 +89,8 @@ def prepare():
     if 'task' not in task or not isinstance(task['task'], str) or not (1 <= len(task['task']) <= 12000):
         raise ValueError('task must be a string 1..12000 chars')
     model = task.get('model', MODEL)
-    if model != MODEL:
-        raise ValueError(f'Only {MODEL} is allowed')
+    if model not in ALLOWED_MODELS:
+        raise ValueError(f'Model must be one of {sorted(ALLOWED_MODELS)}')
     mode = task.get('mode', 'audit-only')
     if mode == 'edit':
         raise ValueError('edit mode is disabled until integration with unified runtime (#365); use audit-only')
