@@ -1,0 +1,59 @@
+{
+  "infrastructurePR": 362,
+  "mergeSHA": "e2ee3c14afd748a7ab52b95a7bff2a2b95f34c54",
+  "reviewedHeadSHA": "96f756e5e1f30f4a16f9d889dfcfa07635e91b50",
+  "permissionEnabledByOwner": true,
+  "newKimiCalls": 0,
+  "newKimiCostUsd": 0,
+  "creation": {
+    "run": 45537940995,
+    "artifactID": 14987936334,
+    "artifactSHA256": "2b22ae8677cf00232f17f7cf9c7ca2831a5e92d4ae299490724f3b75a755a15e",
+    "model_calls": 0,
+    "branch": "kimi/publication-smoke-45537940995",
+    "source_sha": "c5a2d4decb0250e58bf77dc68de6f274f6162d99",
+    "commit_sha": "8c25212a0bda8710f5885e88d8475984d1dd1955",
+    "fixture": "docs/audits/kimi-publication-smoke-45537940995.txt",
+    "http_status": 201,
+    "draft_created": true,
+    "pr_number": 363,
+    "pr_url": "https://github.com/apotet/my-gemini-mirror-site/pull/363",
+    "diagnostic_closed": true,
+    "diagnostic_branch_deleted": true,
+    "existing_361_unchanged": true
+  },
+  "duplicateRejection": {
+    "run": 45537714027,
+    "model_calls": 0,
+    "existing_pr": 361,
+    "existing_head_sha": "3bf2cfc010de1d95171b1a882a8cc581a219aa89",
+    "method": "POST",
+    "endpoint": "/pulls",
+    "http_status": 422,
+    "reason": "validation_failed",
+    "message": "Validation Failed",
+    "request_id": "CC31:17E3F0:1673951:47A3116:6B0650E3"
+  },
+  "reuse": {
+    "run": 45537718356,
+    "model_calls": 0,
+    "existing_pr_reused": 361,
+    "head_sha": "3bf2cfc010de1d95171b1a882a8cc581a219aa89",
+    "draft": true,
+    "write_calls": 0
+  },
+  "ci": {
+    "kimiOffline": 45537953709,
+    "fastGate": 45537953710,
+    "fastGateAfterReady": 45538169056,
+    "adapterTestsPassed": 37
+  },
+  "lessonPR": {
+    "number": 361,
+    "state": "OPEN",
+    "draft": true,
+    "merged": false,
+    "sha": "3bf2cfc010de1d95171b1a882a8cc581a219aa89",
+    "duplicatePRs": 0
+  }
+}

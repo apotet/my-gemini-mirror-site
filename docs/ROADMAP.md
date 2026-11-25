@@ -1,3 +1,45 @@
+## 25.11.2026 — Kimi: разрешение подтверждено, PR #362 merged
+
+Владелец включил **Allow GitHub Actions to create and approve pull requests**.
+Разрешение проверено реальными запросами с `GITHUB_TOKEN`, без обращения к Kimi:
+
+- [Run **45537940995**](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45537940995)
+  **SUCCESS, HTTP 201**: автоматически создан служебный **Draft PR #363** с одним
+  диагностическим текстовым файлом в docs, без учебных материалов. После проверки
+  он **автоматически закрыт**, тестовая ветка `kimi/publication-smoke-45537940995`
+  удалена. PR #361 не дублировался и не изменялся.
+- [Run **45537714027**](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45537714027)
+  **SUCCESS, HTTP 422** для запроса уже существующей пары head/base #361:
+  прежнего отказа политики HTTP 403 больше нет; новый PR не создан.
+- [Run **45537718356**](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45537718356)
+  **SUCCESS**: существующий Draft #361 найден и повторно использован,
+  `write_calls=0`. Во всех трёх проверках **model_calls=0**.
+
+На head `96f756e5e1f30f4a16f9d889dfcfa07635e91b50` прошли **37/37** офлайн-тестов
+адаптера (включая проверку реального HTTP status/204 и очистки временного Draft),
+прежние shared Kimi 25/25, tools 17/17 и security. Реальный
+[Kimi offline CI 45537953709](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45537953709)
+и [Fast PR gate 45537953710](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45537953710)
+— **SUCCESS**. После перевода Ready повторный
+[Fast PR gate 45538169056](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45538169056)
+также **SUCCESS**. [PR #362](https://github.com/apotet/my-gemini-mirror-site/pull/362)
+**merged**, SHA **`e2ee3c14afd748a7ab52b95a7bff2a2b95f34c54`**.
+Исправление publisher и расчёт диапазона стоимости теперь опубликованы в main.
+
+[PR #361](https://github.com/apotet/my-gemini-mirror-site/pull/361) оставлен
+**OPEN / Draft / mergedAt=null**, исходный head
+`3bf2cfc010de1d95171b1a882a8cc581a219aa89`. Для этой пары head/base существует ровно
+один PR — #361. Изменения урока **не слиты**; ожидается окончательная приёмка владельцем.
+Новых платных запросов к Kimi **0**, дополнительных расходов Kimi **$0**.
+Durable claim, финансовый потолок **$0.25** и запрет повторных платных вызовов
+сохранены. Инфраструктура Зайца и ветка Геннадия не изменялись.
+
+[Фактические результаты и данные артефакта](audits/kimi-publication-confirmed-20261125.json).
+Служебный [Draft #363](https://github.com/apotet/my-gemini-mirror-site/pull/363) — только
+закрытое свидетельство положительной проверки публикации, не предложение изменить урок.
+
+---
+
 ## 25.11.2026 — Kimi PR publication: точная причина и исправление без модели
 
 Точная причина HTTPError в publisher Run 45524251479 подтверждена воспроизведением
