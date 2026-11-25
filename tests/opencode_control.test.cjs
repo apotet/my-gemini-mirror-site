@@ -62,3 +62,29 @@ test('durable reservation prevents duplicate comment or dispatch, including unce
   await assert.rejects(reserveAttempt(github, params, true, 'duplicate-run'), /already reserved/);
   assert.equal(writes, 1);
 });
+
+test('Issue result publication includes safe summary and usage with archive, not raw fields', async () => {
+  const {publishAuditResult} = require('../scripts/opencode_control.cjs');
+  const comments = [];
+  const github = {rest: {issues: {async createComment(c) { comments.push(c); }}}};
+  await publishAuditResult(github, {owner: 'apotet', repo: 'my-gemini-mirror-site', issue_number: 388},
+    {status: 'completed', summary: 'Findings with file:line evidence.', final_response: 'RAW_NOT_FOR_ISSUE'},
+    {provider: 'zai', tokens: {input: 100, output: 20}, opencode_cost_usd: 0.08,
+      budget_usd: 1, target_usd: 0.20, env: 'SECRET_NOT_FOR_ISSUE'},
+    'https://github.com/owner/repo/actions/runs/1/artifacts/2', 'https://github.com/owner/repo/actions/runs/1');
+  assert.match(comments[0].body, /completed/);
+  assert.match(comments[0].body, /Findings with file:line/);
+  assert.match(comments[0].body, /0.08/);
+  assert.match(comments[0].body, /artifacts\/2/);
+  assert.doesNotMatch(comments[0].body, /RAW_NOT_FOR_ISSUE|SECRET_NOT_FOR_ISSUE/);
+});
+test('missing, interrupted and incomplete output is never published as completed', async () => {
+  const {publishAuditResult} = require('../scripts/opencode_control.cjs');
+  for (const result of [null, {status: 'interrupted', summary: 'Partial'}, {status: 'incomplete', summary: 'Missing scope'}]) {
+    let body;
+    await publishAuditResult({rest: {issues: {async createComment(c) {body = c.body;}}}}, {}, result, null, '', 'run-link');
+    assert.doesNotMatch(body, /outcome: \*\*completed\*\*/);
+    assert.match(body, /"tokens": null/);
+    assert.match(body, /Archive: run-link/);
+  }
+});

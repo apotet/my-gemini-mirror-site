@@ -49,4 +49,22 @@ async function reserveAttempt(github, params, paid, runUrl) {
   await github.rest.issues.createComment({...params,
     body: `${MARKER}\nOpenCode paid audit reserved by apotet. No retry, merge or deploy. Run: ${runUrl}`});
 }
-module.exports = {resolveRequest, reserveAttempt};
+async function publishAuditResult(github, params, result, usage, artifactUrl, runUrl) {
+  const statuses = new Set(['completed', 'incomplete', 'interrupted', 'failed', 'dry_run']);
+  const status = statuses.has(result?.status) ? result.status : 'incomplete';
+  const summary = typeof result?.summary === 'string' ? result.summary.slice(0, 4000) : 'No audit result available; not a completed audit.';
+  // The runner redacts the loaded key before writing result/usage. No stderr, prompt,
+  // environment, config or raw event archive is copied into the Issue comment.
+  const numbers = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
+  const tokens = usage?.tokens;
+  const safeUsage = {provider: ['zai', 'zai-coding-plan'].includes(usage?.provider) ? usage.provider : 'unknown',
+    tokens: tokens ? Object.fromEntries(['input', 'output', 'reasoning', 'cache_read', 'cache_write'].map(k => [k, numbers(tokens[k])])) : null,
+    opencode_cost_usd: numbers(usage?.opencode_cost_usd),
+    budget_usd: numbers(usage?.budget_usd), target_usd: numbers(usage?.target_usd), budget_is_hard_cap: false};
+  const archive = /^https:\/\/github\.com\//.test(artifactUrl || '') ? artifactUrl : runUrl;
+  const body = `OpenCode audit outcome: **${status}**\n\n${summary}\n\nUsage (OpenCode estimate; missing/partial usage unknown; reconcile provider bill; $1 is not a hard cap):\n\n` +
+    '```json\n' + JSON.stringify(safeUsage, null, 2) + '\n```\n\n' +
+    `Archive: ${archive}\nRun: ${runUrl}\nCompletion is model-declared, not independent validation. Incomplete/failed/interrupted results must not be treated as a completed audit. No automatic retry.`;
+  await github.rest.issues.createComment({...params, body});
+}
+module.exports = {resolveRequest, reserveAttempt, publishAuditResult};

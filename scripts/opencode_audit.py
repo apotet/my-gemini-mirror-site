@@ -30,8 +30,8 @@ def config(model, provider=PROVIDERS[0]):
         },
         'snapshot': False,
     }
-    # Native OpenCode agent controls for both providers, not a billing guarantee.
-    cfg['agent'] = {'audit': {'mode': 'primary', 'steps': 3}}
+    # No artificial step limit for either provider; existing timeout still applies.
+    cfg['agent'] = {'audit': {'mode': 'primary'}}
     return cfg
 
 
@@ -85,6 +85,58 @@ def save_accounting(out, report, stdout, provider):
             f.write(summary)
 
 
+def audit_result(stdout, returncode=0, timed_out=False):
+    texts = []
+    finish = None
+    error = False
+    malformed = False
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+            if not isinstance(event, dict):
+                raise ValueError('Non-object event')
+        except (ValueError, TypeError):
+            malformed = True
+            continue
+        part = event.get('part', {})
+        if not isinstance(part, dict):
+            malformed = True
+            continue
+        if event.get('type') == 'step_start':
+            texts = []
+            finish = None
+        elif event.get('type') == 'text' and isinstance(part.get('text'), str):
+            texts.append(part['text'])
+        elif event.get('type') == 'step_finish':
+            finish = part.get('reason')
+        elif event.get('type') == 'error':
+            error = True
+    final = '\n'.join(texts).strip()
+    lines = final.splitlines()
+    declaration = lines[-1].strip() if lines else ''
+    has_marker = declaration in ('AUDIT_STATUS: COMPLETE', 'AUDIT_STATUS: INCOMPLETE')
+    summary = '\n'.join(lines[:-1]).strip() if has_marker else final
+    if timed_out:
+        status, reason = 'interrupted', 'timeout; outcome uncertain; no retry'
+    elif returncode or error:
+        status, reason = 'failed', 'CLI failure or error event; no retry'
+    elif (finish == 'stop' and summary and declaration == 'AUDIT_STATUS: COMPLETE' and not malformed):
+        status, reason = 'completed', 'Normal final answer; model declares requested scope complete'
+    else:
+        status, reason = 'incomplete', 'Missing final stop/text/COMPLETE declaration, malformed events, or model reports incomplete scope'
+    return {'status': status, 'reason': reason, 'finish_reason': finish,
+            'summary': summary[:4000] or 'No final audit response available.',
+            'summary_truncated': len(summary) > 4000,
+            'final_response': final,
+            'completion_note': 'Completion is model-declared, not independent validation of findings.'}
+
+
+def save_result(out, report, result):
+    (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+    report.write_text(report.read_text() + '\n## Audit outcome: ' + result['status']
+                      + '\n' + result['reason'] + '\n\n' + result['summary'] + '\n')
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
@@ -102,6 +154,8 @@ def main():
     report = out / 'report.md'
     report.write_text(f'# OpenCode audit\n\nCLI: {VERSION}\nModel: {cfg["model"]}\n'
                       f'Mode: {"paid; outcome pending" if args.paid else "dry-run; no CLI, secret or model access"}\n')
+    save_result(out, report, {'status': 'incomplete' if args.paid else 'dry_run',
+                             'reason': 'Model not started', 'summary': 'No model response; no completed audit.'})
     if not args.paid:
         return
     if args.provider == 'zai' and not args.accept_api_budget_risk:
@@ -134,9 +188,12 @@ def main():
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))
             report.write_text(report.read_text() + f'\nCLI exit: {result.returncode}. '
                               'No automatic retry. See events.jsonl and usage.json; OpenCode cost is an estimate, not the provider bill.\n')
-            save_accounting(out, report, result.stdout.replace(key, '[REDACTED]'), args.provider)
-            if result.returncode:
-                raise RuntimeError('OpenCode failed; inspect artifact, do not retry automatically')
+            safe_stdout = result.stdout.replace(key, '[REDACTED]')
+            save_accounting(out, report, safe_stdout, args.provider)
+            outcome = audit_result(safe_stdout, result.returncode)
+            save_result(out, report, outcome)
+            if outcome['status'] != 'completed':
+                raise RuntimeError('OpenCode audit failed or incomplete; inspect artifact, do not retry automatically')
         except subprocess.TimeoutExpired as exc:
             report.write_text(report.read_text() + '\nTimeout: outcome uncertain. Do not retry.\n')
             partial = exc.stdout or ''
@@ -145,6 +202,7 @@ def main():
             partial = partial.replace(key, '[REDACTED]')
             (out / 'events.jsonl').write_text(partial)
             save_accounting(out, report, partial, args.provider)
+            save_result(out, report, audit_result(partial, timed_out=True))
             raise RuntimeError('OpenCode timeout; outcome uncertain') from None
 
 
