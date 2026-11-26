@@ -221,7 +221,9 @@ job публикация best-effort; durable claim по-прежнему не �
   `public/lesson-images/**`; bash, task, webfetch, внешние каталоги запрещены.
 - `scripts/opencode_author_check.py` проверяет итоговый diff: только add/modify обычных
   файлов в разрешённых путях, до 40 файлов и 400 КБ. `.github/`, `scripts/`, package-файлы
-  и удаления отклоняются. Затем `npm run lint` и `npm run build`.
+  и удаления отклоняются. До этого проверяются успешный exit, корректные события,
+  финальный `stop` и декларация модели `DEV_STATUS: COMPLETE`; timeout, ошибки и
+  незавершённый ответ блокируют публикацию. Затем `npm run lint` и `npm run build`.
 - Job `publish` без ключа модели применяет патч, пушит `zai/issue-N-RUN` и открывает
   Draft PR; merge/deploy нет. Для PR нужна настройка «Allow GitHub Actions to create
   pull requests»; без неё ветка пушится, а Issue получает пояснение.

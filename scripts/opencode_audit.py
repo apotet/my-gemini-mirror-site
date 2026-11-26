@@ -137,7 +137,7 @@ def packet_results(answer, expected_ids):
     return rows
 
 
-def audit_result(stdout, returncode=0, timed_out=False, expected_ids=None):
+def audit_result(stdout, returncode=0, timed_out=False, expected_ids=None, status_prefix='AUDIT_STATUS'):
     texts = []
     finish = None
     error = False
@@ -167,7 +167,7 @@ def audit_result(stdout, returncode=0, timed_out=False, expected_ids=None):
     display = final.strip()
     lines = display.splitlines()
     declaration = lines[-1].strip() if lines else ''
-    has_marker = declaration in ('AUDIT_STATUS: COMPLETE', 'AUDIT_STATUS: INCOMPLETE')
+    has_marker = declaration in (f'{status_prefix}: COMPLETE', f'{status_prefix}: INCOMPLETE')
     summary = '\n'.join(lines[:-1]).strip() if has_marker else display
     rows = packet_results(final, expected_ids) if expected_ids is not None else None
     if timed_out:
@@ -183,7 +183,7 @@ def audit_result(stdout, returncode=0, timed_out=False, expected_ids=None):
             )
         else:
             status, reason = 'incomplete', 'Expected a normal stop and a complete structured report for all requested IDs'
-    elif (finish == 'stop' and summary and declaration == 'AUDIT_STATUS: COMPLETE' and not malformed):
+    elif (finish == 'stop' and summary and declaration == f'{status_prefix}: COMPLETE' and not malformed):
         status, reason = 'completed', 'Normal final answer; model declares requested scope complete'
     else:
         status, reason = 'incomplete', 'Missing final stop/text/COMPLETE declaration, malformed events, or model reports incomplete scope'

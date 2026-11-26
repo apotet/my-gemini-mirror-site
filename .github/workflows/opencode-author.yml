@@ -87,6 +87,7 @@ jobs:
             timeout 1500 opencode run --pure --log-level ERROR --model zai-coding-plan/glm-5.4 --format json \
             < ../opencode-prompt.txt > ../opencode-report/events.jsonl 2> ../opencode-report/stderr.log
           echo "exit=$?" > ../opencode-report/exit.txt
+            set -e
           # Never publish the credential in artifacts.
           python3 - <<'PY'
           import os, pathlib
@@ -95,29 +96,17 @@ jobs:
               t = p.read_text(errors='replace')
               if key and key in t: p.write_text(t.replace(key, '[REDACTED]'))
           PY
+      - name: Validate model completion
+        run: python3 work/scripts/opencode_author_result.py opencode-report
       - name: Validate changes and build patch
         id: validate
-        run: python3 scripts/opencode_author_check.py --repo work --patch opencode-report/changes.patch
+        run: python3 work/scripts/opencode_author_check.py --repo work --patch opencode-report/changes.patch
       - name: Apply lint and build to the proposed change (no secrets, no write token)
         run: |
           cd work
           npm ci --ignore-scripts
           npm run lint
           npm run build
-      - name: Final-answer summary
-        if: always()
-        run: |
-          python3 - <<'PY'
-          import json, pathlib
-          text = ''
-          try:
-              for line in pathlib.Path('opencode-report/events.jsonl').read_text().splitlines():
-                  try: ev = json.loads(line)
-                  except ValueError: continue
-                  if ev.get('type') == 'text': text = ev.get('part', {}).get('text', text)
-          except OSError: pass
-          pathlib.Path('opencode-report/summary.txt').write_text(text[:3500])
-          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
