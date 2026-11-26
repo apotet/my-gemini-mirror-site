@@ -238,10 +238,12 @@ def main():
                    ZHIPU_API_KEY=key, OPENCODE_DISABLE_AUTOUPDATE='true',
                    OPENCODE_CONFIG=str(root / 'opencode.json'),
                    OPENCODE_PERMISSION=json.dumps(cfg['permission']))
+        command = ['opencode', 'run', '--pure', '--model', cfg['model'],
+                   '--format', 'json', '--agent', 'audit']
+        if args.packet:
+            command.extend(['--title', 'Compact NetOps audit'])
         try:
-            result = subprocess.run(['opencode', 'run', '--pure', '--model', cfg['model'],
-                                     '--format', 'json',
-                                     '--agent', 'audit', prompt], cwd=str(workdir), env=env,
+            result = subprocess.run([*command, prompt], cwd=str(workdir), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))
