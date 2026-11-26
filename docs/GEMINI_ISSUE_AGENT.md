@@ -17,7 +17,7 @@
 ```
 
 - `task` обязателен (строка 1–12000 символов).
-- `model` по умолчанию: `gemini-4-hydrogen` (альтернатива). Разрешены также `gemini-3.8-flash` (резерв для аудита). Автоматического fallback нет — модель задаётся в Issue явно или берётся default. Актуальность по официальной документации: https://ai.google.dev/gemini-api/docs/models/gemini (проверено без платного вызова; модель присутствует в списке).
+- `model` по умолчанию: `gemini-4-hydrogen` (альтернатива). Разрешена также `gemini-3.8-flash` (резерв для аудита). После двух явных 503 на Hydrogen возможен автоматический переход на Flash. Актуальность моделей и доступа для ключа необходимо проверять отдельно.
 - `mode`: только `audit-only`. Режим `edit` **отключён** до интеграции с единым runtime (#365). Полноценное редактирование и Draft publisher не реализованы в этом агенте и не дублируются.
 - `files`: до 8 путей. Только отслеживаемые git-файлы внутри checkout, без symlink и служебных файлов.
 
@@ -25,7 +25,7 @@
 
 - Только `issues: opened`, автор/sender/actor = `apotet`, `run_attempt == 1`.
 - Durable claim `<!-- gemini-issue-agent:claimed:v1 -->` до любого платного вызова. Проверка по **всем страницам** комментариев.
-- Один вызов Interactions API без retry. Redirects запрещены.
+- До четырёх попыток Interactions API только при явных HTTP 503/429; таймауты и неполные ответы не повторяются. Redirects запрещены.
 - Ключ передаётся заголовком `x-goog-api-key`, не в URL.
 - Endpoint: `POST https://generativelanguage.googleapis.com/v1beta/interactions` (Interactions API, documented REST).
 - Секрет `GEMINI_API_KEY` только в paid step. Значение не читается и не логируется.

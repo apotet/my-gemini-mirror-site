@@ -272,6 +272,37 @@ def test_run_truncated_usage_saved():
     with_temp(run)
     print('PASS truncated incomplete, usage saved before check')
 
+def test_incomplete_response_records_one_attempt():
+    agent = load()
+    def run(td):
+        agent.OUT = td / 'out'
+        agent.OUT.mkdir()
+        (agent.OUT / 'task.json').write_text('{"task":"synthetic"}')
+        (agent.OUT / 'snapshot.json').write_text('{"model":"gemini-4-hydrogen","files":[]}')
+        resp = _ok_resp()
+        resp.read.return_value = json.dumps({
+            'status': 'incomplete', 'steps': [], 'usage': {'total_tokens': 1}
+        }).encode()
+        with patch.dict(os.environ, {'GEMINI_API_KEY': 'fake'}), \
+             patch.object(agent.urllib.request, 'build_opener') as bo, \
+             patch.object(agent.time, 'sleep') as sleep:
+            bo.return_value.open.return_value = resp
+            try:
+                agent.run()
+                raise AssertionError('incomplete response must fail')
+            except RuntimeError:
+                pass
+            assert bo.return_value.open.call_count == 1
+            sleep.assert_not_called()
+        acc = json.loads((agent.OUT / 'accounting.json').read_text())
+        assert acc['status'] == 'incomplete'
+        assert acc['api_calls'] == 1
+        assert len(acc['attempts']) == 1
+        assert acc['attempts'][0]['http'] == 200
+        assert acc['usage']['total_tokens'] == 1
+    with_temp(run)
+    print('PASS incomplete response records one attempt')
+
 def test_redirect_handler():
     agent = load()
     h = agent.NoRedirect()
@@ -458,6 +489,7 @@ if __name__ == '__main__':
     test_run_success()
     test_run_empty()
     test_run_truncated_usage_saved()
+    test_incomplete_response_records_one_attempt()
     test_redirect_handler()
     test_publish()
     test_run_http_error()
