@@ -89,10 +89,19 @@ jobs:
           from pathlib import Path
           source = os.environ['SOURCE']
           data = json.loads((Path('audit-pin') / source).read_text())
+          rows = {row['id']: row for row in data['questions']}
+          def project(qid):
+              row = rows[qid]
+              q = row['question']
+              deep = row.get('deepDive') or {}
+              return dict(id=qid, text=q['text'], options=q['answers'], correct_index=q['correct'],
+                          explanation=q.get('explanation'), plain=row.get('plain') or None,
+                          pro=row.get('pro') or None, practicalTip=deep.get('practicalTip') or None,
+                          commonTrap=deep.get('commonTrap') or None, lesson=row.get('lesson'))
           packet = {'checkout_sha': os.environ['PIN_SHA'], 'source': source,
                     'snapshot_source_sha': data['sourceSHA'],
-                    'questions': [{'id': qid} for qid in data['batch']['ids'][:10]]}
-          Path('test-packet.json').write_text(json.dumps(packet))
+                    'questions': [project(qid) for qid in data['batch']['ids'][12:]]}
+          Path('test-packet.json').write_text(json.dumps(packet, ensure_ascii=False))
           PY
           python3 scripts/opencode_audit.py --packet --repo audit-pin --expected-sha "$PIN_SHA" --source "$SOURCE" --prompt test-packet.json --output "$RUNNER_TEMP/packet"
           python3 - <<'PY'

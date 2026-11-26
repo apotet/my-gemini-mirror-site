@@ -161,6 +161,65 @@ def verify_checkout(repo, expected_sha, source):
     print(f'Verified detached audit HEAD: {head}; source: {source or "(default checkout)"}')
 
 
+PACKET_MAX_BYTES = 150_000
+
+
+def validate_packet(path, repo, expected_sha, source_path):
+    with path.open('rb') as stream:
+        raw = stream.read(PACKET_MAX_BYTES + 1)
+    if len(raw) > PACKET_MAX_BYTES:
+        raise RuntimeError('Audit packet too large')
+    packet_text = raw.decode('utf-8')
+    packet = json.loads(packet_text)
+    source = json.loads((repo / source_path).read_text(encoding='utf-8'))
+    if (packet['checkout_sha'] != expected_sha or packet['source'] != source_path
+            or packet['snapshot_source_sha'] != source['sourceSHA']):
+        raise RuntimeError('Audit packet does not match the pinned source')
+    questions = packet['questions']
+    if not isinstance(questions, list) or not 1 <= len(questions) <= 30:
+        raise RuntimeError('Audit packet must contain 1 to 30 questions')
+    ids = [question['id'] for question in questions]
+    if len(set(ids)) != len(ids):
+        raise RuntimeError('Duplicate question IDs in audit packet')
+    rows = {row['id']: row for row in source.get('rows', source.get('questions', []))}
+    allowed_ids = set(source['batch']['ids']) if 'batch' in source else rows.keys()
+    for item in questions:
+        qid = item['id']
+        if qid not in rows or qid not in allowed_ids:
+            raise RuntimeError(f'Question {qid!r} is outside the pinned registry')
+        row = rows[qid]
+        question = row['question']
+        deep = row.get('deepDive') or {}
+        options = 'options' if 'options' in item else 'answers'
+        key = question['correct']
+        indices = key if isinstance(key, list) else [key]
+        if not indices or any(type(i) is not int or not 0 <= i < len(question['answers']) for i in indices):
+            raise RuntimeError(f'Invalid answer key for {qid!r}')
+        expected = {
+            'text': question['text'], options: question['answers'], 'correct_index': key,
+            'explanation': question.get('explanation'), 'plain': row.get('plain') or None,
+            'pro': row.get('pro') or None, 'practicalTip': deep.get('practicalTip') or None,
+            'commonTrap': deep.get('commonTrap') or None,
+        }
+        optional = {'batch': row.get('batch'), 'has_individual_deep': deep.get('hasIndividualDeep')}
+        expected.update({field: value for field, value in optional.items() if field in item})
+        for field, value in expected.items():
+            if field not in item or type(item[field]) is not type(value) or item[field] != value:
+                raise RuntimeError(f'Missing or inconsistent {field} for {qid!r}')
+        lesson = row.get('lesson')
+        actual = item['lesson']
+        if lesson is None:
+            if actual is not None:
+                raise RuntimeError(f'Invented lesson for {qid!r}')
+        elif (not isinstance(actual, dict) or not {'id', 'link', 'anchor'} <= actual.keys()
+              or any(field not in lesson or value != lesson[field] for field, value in actual.items())):
+            raise RuntimeError(f'Missing or inconsistent lesson/anchor for {qid!r}')
+        if set(item) - expected.keys() - {'id', 'lesson'}:
+            raise RuntimeError(f'Unexpected audit fields for {qid!r}')
+    print(f'Validated compact audit packet: {len(ids)} questions, {len(raw)} bytes')
+    return packet_text
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
@@ -180,17 +239,7 @@ def main():
     if args.packet:
         if args.provider != 'zai-coding-plan' or not args.expected_sha or not args.source:
             raise RuntimeError('Packet mode requires Coding Plan and a pinned source')
-        packet_text = Path(args.prompt).read_text(encoding='utf-8')
-        if len(packet_text.encode('utf-8')) > 60000:
-            raise RuntimeError('Audit packet too large')
-        packet = json.loads(packet_text)
-        source = json.loads((repo / args.source).read_text(encoding='utf-8'))
-        ids = [question['id'] for question in packet['questions']]
-        if (packet['checkout_sha'] != args.expected_sha or packet['source'] != args.source
-                or packet['snapshot_source_sha'] != source['sourceSHA']
-                or len(ids) != 10 or len(set(ids)) != 10 or ids != source['batch']['ids'][:10]):
-            raise RuntimeError('Audit packet does not match the pinned batch')
-        print(f'Validated compact audit packet: {len(ids)} questions, {len(packet_text.encode("utf-8"))} bytes')
+        packet_text = validate_packet(Path(args.prompt), repo, args.expected_sha, args.source)
     out = Path(args.output).resolve()
     out.mkdir(parents=True, exist_ok=True)
     cfg = config(args.model, args.provider)
@@ -240,10 +289,14 @@ def main():
                    OPENCODE_PERMISSION=json.dumps(cfg['permission']))
         command = ['opencode', 'run', '--pure', '--model', cfg['model'],
                    '--format', 'json', '--agent', 'audit']
+        stdin = None
         if args.packet:
+            stdin = prompt
             command.extend(['--title', 'Compact NetOps audit'])
+        else:
+            command.append(prompt)
         try:
-            result = subprocess.run([*command, prompt], cwd=str(workdir), env=env,
+            result = subprocess.run(command, input=stdin, cwd=str(workdir), env=env,
                                     capture_output=True, text=True, timeout=600)
             # Never stream CLI diagnostics; redact before publishing the sole output.
             (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))

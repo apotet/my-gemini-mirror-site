@@ -182,3 +182,49 @@ class AuditTests(unittest.TestCase):
                 self.assertEqual(result['status'], 'interrupted')
                 self.assertNotIn('test-secret', json.dumps(result))
                 self.assertIsNone(json.loads((Path(tmp) / 'usage.json').read_text())['opencode_cost_usd'])
+
+    def test_packet_boundaries_and_registry_integrity(self):
+        import copy
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / 'inventory.json'
+            path = root / 'packet.json'
+            sha = 'a' * 40
+            rows = [
+                dict(id=str(i), question=dict(text='Question', answers=['A', 'B'], correct=1,
+                                             explanation='Explanation'),
+                     plain='Plain', pro=None, deepDive=dict(practicalTip='Tip', commonTrap='Trap'),
+                     lesson=None)
+                for i in range(31)
+            ]
+            source.write_text(json.dumps(dict(sourceSHA='b' * 40, rows=rows)))
+            entries = [
+                dict(id=row['id'], text='Question', options=['A', 'B'], correct_index=1,
+                     explanation='Explanation', plain='Plain', pro=None, practicalTip='Tip',
+                     commonTrap='Trap', lesson=None)
+                for row in rows
+            ]
+            packet = dict(checkout_sha=sha, source=source.name, snapshot_source_sha='b' * 40,
+                          questions=entries[-30:])
+            def validate(value, size=None):
+                raw = json.dumps(value).encode()
+                if size is not None:
+                    raw = raw.ljust(size, b' ')
+                path.write_bytes(raw)
+                return audit.validate_packet(path, root, sha, source.name)
+
+            self.assertEqual(len(json.loads(validate(packet, 150_000))['questions']), 30)
+            self.assertEqual(len(json.loads(validate(dict(packet, questions=entries[-1:])))['questions']), 1)
+            for bad in ([], entries, [entries[0], entries[0]], [dict(entries[0], id='missing')],
+                        [dict(entries[0], pro='Invented')], [dict(entries[0], correct_index=0)],
+                        [dict(entries[0], lesson={'id': 'invented'})]):
+                with self.assertRaises(RuntimeError):
+                    validate(dict(packet, questions=bad))
+            incomplete = copy.deepcopy(packet)
+            del incomplete['questions'][0]['commonTrap']
+            with self.assertRaisesRegex(RuntimeError, 'commonTrap'):
+                validate(incomplete)
+            with self.assertRaisesRegex(RuntimeError, 'pinned source'):
+                validate(dict(packet, snapshot_source_sha='c' * 40))
+            with self.assertRaisesRegex(RuntimeError, 'too large'):
+                validate(packet, 150_001)
