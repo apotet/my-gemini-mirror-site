@@ -26,5 +26,8 @@ assert.match(http.pro, /RFC 9112 §7\.1.*last-chunk.*trailer fields/);
 assert.match(http.pro, /«0» с CRLF.*«X-Trace: ok» с CRLF.*ещё один CRLF/);
 assert.doesNotMatch(http.pro, /\r/);
 assert.match(http.commonTrap, /концом всего сообщения.*пустая строка/);
-assert.equal(study.getLessonForQuestion('l7-new-05'), undefined, 'No invented lesson route');
+// Batch 3 now provides a real lesson; keep rejecting invented or misplaced routes.
+const httpLesson = study.getLessonForQuestion('l7-new-05');
+assert.equal(httpLesson?.id, 'l7-http-framing-ranges-etag');
+assert.equal(study.getLessonSectionForQuestion(httpLesson.id, 'l7-new-05'), 'http-chunked-trailers');
 console.log('PASS: existing TFTP and DNS findings resolved; distinct HTTP plain/pro and trap; all three keys unchanged');
