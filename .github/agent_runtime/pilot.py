@@ -4,8 +4,10 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 
 from . import core, policy, providers, sandbox
 from .storage import GitHub, Ledger, Repository, REPOSITORY
@@ -22,17 +24,46 @@ MAX_RESPONSE_BYTES = 65536
 MAX_OUTPUT_TOKENS = 2048
 
 
-def authorize():
+@dataclass(frozen=True)
+class Pilot:
+    key: str
+    target: str
+    prompt: str
+    model: str
+    branch: str
+    enabled: str
+    verified: str
+    confirmation: str
+
+
+FLASH = Pilot(KEY, TARGET, PROMPT, 'gemini-3.8-flash', 'gemini/synthetic-pilot',
+              'NETOPS_GEMINI_PILOT_ENABLED', 'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED',
+              'one-synthetic-request')
+HYDROGEN_TARGET = 'docs/hydrogen-dev-pilot.md'
+HYDROGEN = Pilot(
+    'manual-485944524f47454e50494c31', HYDROGEN_TARGET,
+    ('Fictional example: a small observatory has two imaginary switches, A and B. '
+     'Write a short Markdown note about checking their connection. Return ONLY a JSON object '
+     'with status "complete" and files containing exactly one write operation: '
+     '{"path":"docs/hydrogen-dev-pilot.md","content":"<Markdown>"}; no other fields.'),
+    'gemini-4-hydrogen', 'gemini/hydrogen-synthetic-pilot',
+    'NETOPS_HYDROGEN_PILOT_ENABLED', 'NETOPS_HYDROGEN_PROVIDER_VERIFIED',
+    'one-hydrogen-synthetic-request')
+
+
+def authorize(profile=FLASH):
+    if profile is not FLASH and profile is not HYDROGEN:
+        raise ValueError('Unknown pilot profile')
     if (os.environ.get('GITHUB_REPOSITORY') != REPOSITORY or
         os.environ.get('GITHUB_ACTOR') != 'apotet' or
         os.environ.get('GITHUB_REF') != 'refs/heads/main' or
         os.environ.get('GITHUB_RUN_ATTEMPT') != '1' or
         os.environ.get('GITHUB_EVENT_NAME') != 'workflow_dispatch' or
-        os.environ.get('NETOPS_GEMINI_PILOT_ENABLED') != 'true' or
-        os.environ.get('NETOPS_GEMINI_DEV_PROVIDER_VERIFIED') != 'true'):
+        os.environ.get(profile.enabled) != 'true' or
+        os.environ.get(profile.verified) != 'true'):
         raise ValueError('Pilot not authorized or provider terms not verified')
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
-    if event.get('inputs', {}).get('confirmation') != 'one-synthetic-request':
+    if event.get('inputs', {}).get('confirmation') != profile.confirmation:
         raise ValueError('Explicit pilot confirmation required')
 
 
@@ -45,11 +76,11 @@ def transport_timeout(signum, frame):
     raise TimeoutError('Pilot total request deadline exceeded')
 
 
-def transport(request):
-    authorize()
+def transport(request, profile=FLASH):
+    authorize(profile)
     expected = providers.payload(
-        {'model': 'gemini-3.8-flash', 'max_output_tokens': MAX_OUTPUT_TOKENS},
-        [{'role': 'user', 'content': PROMPT}])
+        {'model': profile.model, 'max_output_tokens': MAX_OUTPUT_TOKENS},
+        [{'role': 'user', 'content': profile.prompt}])
     if request != expected:
         raise ValueError('Pilot transport accepts only the fixed synthetic request')
     key = os.environ.get('PROVIDER_API_KEY', '')
@@ -58,7 +89,7 @@ def transport(request):
     data = providers.request_bytes(request)
     if len(data) > MAX_REQUEST_BYTES:
         raise ValueError('Pilot request exceeds byte limit')
-    req = urllib.request.Request(providers.MODELS['gemini-3.8-flash'].endpoint,
+    req = urllib.request.Request(providers.MODELS[profile.model].endpoint,
         data=data, headers={'Content-Type': 'application/json', 'x-goog-api-key': key},
         method='POST')
     if signal.getitimer(signal.ITIMER_REAL)[0]:
@@ -79,26 +110,28 @@ def transport(request):
     return result
 
 
-def run(api, repo, infer=transport, validator=None):
-    authorize()
+def run(api, repo, infer=None, validator=None, profile=FLASH):
+    authorize(profile)
     if not os.environ.get('PROVIDER_API_KEY'):
         raise ValueError('Provider credential unavailable')
-    if TARGET in repo.entries:
+    if profile.target in repo.entries:
         raise ValueError('Pilot target already exists')
-    ledger = Ledger(api, 'gemini', KEY)
+    ledger = Ledger(api, 'gemini', profile.key)
     if ledger.load() is not None:
         raise ValueError('Pilot already reserved; no repeat permitted')
-    task = core.normalize({'task': PROMPT, 'mode': 'edit', 'write_paths': [TARGET],
+    task = core.normalize({'task': profile.prompt, 'mode': 'edit',
+                           'model': profile.model, 'write_paths': [profile.target],
                            'max_calls': 1, 'max_total_calls': 1,
-                           'max_output_tokens': MAX_OUTPUT_TOKENS}, 'gemini')
-    messages = [{'role': 'user', 'content': PROMPT}]
+                           'max_output_tokens': MAX_OUTPUT_TOKENS}, 'gemini',
+                          allow_pilot_model=profile is HYDROGEN)
+    messages = [{'role': 'user', 'content': profile.prompt}]
     request = providers.payload(task, messages)
     request_bytes = providers.request_bytes(request)
     if len(request_bytes) > MAX_REQUEST_BYTES:
         raise ValueError('Pilot request exceeds byte limit')
     policy.safe_value(request)
     state = {'kind': 'netops-agent-v2', 'version': 2, 'provider': 'gemini',
-             'key': KEY, 'issue': None, 'task': task, 'sourceSHA': repo.source,
+             'key': profile.key, 'issue': None, 'task': task, 'sourceSHA': repo.source,
              'trustedSHA': repo.source, 'source_files': core.source_manifest(repo),
              'file_modes': {}, 'status': 'request_reserved', 'remaining_calls': 0,
              'calls': [{'id': 1, 'status': 'reserved', 'request_bytes': len(request_bytes),
@@ -106,10 +139,10 @@ def run(api, repo, infer=transport, validator=None):
              'messages': messages, 'overlay': {}, 'incomplete_files': [],
              'pending_text': '', 'reports': [], 'summaries': [], 'consumed_grants': [],
              'published_head': None, 'independent_acceptance': 'pending',
-             'work_branch': 'gemini/synthetic-pilot'}
+             'work_branch': profile.branch}
     ledger.save(state)
     try:
-        response = infer(request)
+        response = infer(request) if infer is not None else transport(request, profile)
         if response.get('finish_reason') != 'stop':
             raise ValueError('Pilot response incomplete')
         envelope = core.strict_json(response['content'])
@@ -119,7 +152,7 @@ def run(api, repo, infer=transport, validator=None):
             raise ValueError('Invalid pilot response')
         item = envelope['files'][0]
         if (not isinstance(item, dict) or set(item) != {'path', 'content'} or
-            item['path'] != TARGET or not isinstance(item['content'], str) or
+            item['path'] != profile.target or not isinstance(item['content'], str) or
             not item['content'].startswith('# ') or
             not 1 <= len(item['content'].encode('utf-8')) <= 4096):
             raise ValueError('Invalid pilot file')
@@ -143,19 +176,25 @@ def run(api, repo, infer=transport, validator=None):
 
 
 def main():
+    if sys.argv[1:] == []:
+        profile = FLASH
+    elif sys.argv[1:] == ['hydrogen']:
+        profile = HYDROGEN
+    else:
+        raise SystemExit('Unknown pilot profile')
     try:
-        authorize()
+        authorize(profile)
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
         if sha != os.environ.get('GITHUB_SHA'):
             raise ValueError('Checkout does not match workflow source')
-        state, head = run(GitHub(), Repository('.', sha))
+        state, head = run(GitHub(), Repository('.', sha), profile=profile)
         print(json.dumps({'source_sha': sha, 'checkpoint': head, 'status': state['status'],
                           'calls': len(state['calls']), 'usage': core.totals(state),
                           'pr_url': state['pr_url']}))
     except Exception as exc:
         print('Pilot failed:', type(exc).__name__)
         try:
-            ledger = Ledger(GitHub(), 'gemini', KEY)
+            ledger = Ledger(GitHub(), 'gemini', profile.key)
             state = ledger.load()
             if state is not None:
                 print(json.dumps({'checkpoint': ledger.head, 'status': state['status'],

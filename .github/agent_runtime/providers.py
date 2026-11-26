@@ -29,6 +29,8 @@ MODELS = {
     'kimi-k3.1-pro': Model('kimi','https://api.moonshot.ai/v1/chat/completions',1048576,1048576,'max_completion_tokens','2','10','.2',True),
     # Runtime output cap, not a claim about this model's native maximum.
     'gemini-3.8-flash': Model('gemini','https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',1048576,16384,'maxOutputTokens','0','0','0'),
+    # Conservative pilot limits, not claims about native limits or pricing.
+    'gemini-4-hydrogen': Model('gemini','https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent',4096,2048,'maxOutputTokens','0','0','0'),
 }
 DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro','gemini':'gemini-3.8-flash'}
 

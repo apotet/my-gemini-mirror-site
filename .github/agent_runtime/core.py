@@ -38,7 +38,7 @@ def strict_json(text):
     return json.loads(text,object_pairs_hook=pairs,parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
 
 
-def normalize(raw,provider):
+def normalize(raw,provider,allow_pilot_model=False):
     if not isinstance(raw,dict):raise ValueError('Task must be a JSON object')
     allowed={'task','mode','model','files','context_files','target_files','write_paths','checks','max_calls','max_total_calls','max_output_tokens','max_input_tokens','budget_usd','reasoning_effort','lesson','source_sha'}
     if set(raw)-allowed:raise ValueError('Unknown task fields; no branch/credential/endpoint/budget overrides')
@@ -71,6 +71,8 @@ def normalize(raw,provider):
         raise ValueError('Budget fields apply only to Kimi')
     if task['model'] not in providers.MODELS or providers.MODELS[task['model']].provider!=provider:
         raise ValueError('Model/provider mismatch')
+    if task['model']=='gemini-4-hydrogen' and not allow_pilot_model:
+        raise ValueError('Hydrogen is restricted to the synthetic pilot')
     if task['mode'] not in ('audit-only','edit') or not isinstance(task.get('task'),str) or not task['task'].strip():
         raise ValueError('Task and supported mode required')
     if 'source_sha' in task and (task['mode']!='audit-only' or not isinstance(task['source_sha'],str) or not re.fullmatch('[a-f0-9]{40}',task['source_sha'])):
