@@ -7,6 +7,17 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "PBR": {"description": "Policy-Based Routing — маршрутизация на основе политик (адреса источника, интерфейса, метки), в Linux реализуемая через базу правил RPDB (ip rule) и несколько таблиц маршрутизации.", "relatesTo": "Policy Routing, Linux, ip rule, ip route get", "lessonId": "l3-linux-policy-routing"},
+  "Policy Routing": {"description": "Выбор таблицы маршрутизации по правилам политики (например, по адресу отправителя `from`), где приоритет правила оценивается раньше длины маски в последующих таблицах.", "relatesTo": "PBR, Linux, RPDB", "lessonId": "l3-linux-policy-routing"},
+  "Port Isolation": {"description": "Ограничение прямой пересылки кадров между изолированными портами коммутатора при сохранении обмена с общим портом. Область действия уточняют по документации платформы.", "relatesTo": "Private VLAN, VLAN, ARP", "lessonId": "l2-port-isolation-pvlan"},
+  "Private VLAN": {"description": "Модель сегментации L2 внутри первичного VLAN: Isolated — только сопоставленные общие порты, Community — также своя группа, Promiscuous — доступ к клиентам сопоставленных вторичных VLAN.", "relatesTo": "Port Isolation, VLAN, L2", "lessonId": "l2-port-isolation-pvlan"},
+  "TCP Keepalive": { description: "Механизм TCP (RFC 9293), который после простоя зондирует соединение, если он включён. Один пропуск ответа не доказывает обрыв, а ответ TCP не подтверждает готовность приложения.", relatesTo: "TCP, RTO, диагностика простаивающего соединения", lessonId: "l4-tcp-options-keepalive" },
+  "Chunked": {"description": "Кодирование HTTP/1.1 по порциям. Каждую порцию предваряет её размер; конец тела обозначают нулевой порцией, затем завершающими полями, если они есть, и пустой строкой.", "relatesTo": "Границы сообщений HTTP/1.1.", "lessonId": "l7-http-framing-ranges-etag"},
+  "Trailer": {"description": "Завершающее поле HTTP, передаваемое после порций тела. В HTTP/1.1 с chunked завершающие поля идут после нулевой порции и перед финальной пустой строкой.", "relatesTo": "Формат ответа HTTP/1.1.", "lessonId": "l7-http-framing-ranges-etag"},
+  "CRLF": {"description": "Последовательность управляющих символов CR (возврат каретки) и LF (перевод строки). В обозначениях это \\r\\n.", "relatesTo": "Разделители строк HTTP/1.1, включая пустую строку после завершающих полей.", "lessonId": "l7-http-framing-ranges-etag"},
+  "Content-Range": {"description": "Поле HTTP, задающее включительные границы байтовой части представления и обычно его полный размер. Пример: bytes 2000-2999/6000.", "relatesTo": "Частичные ответы HTTP и проверка смещения при докачке.", "lessonId": "l7-http-framing-ranges-etag"},
+  "If-Match": {"description": "HTTP-предусловие: выполнить метод только при сильном совпадении текущего ETag с одной из указанных меток либо при наличии представления для *. Может защищать от потери чужих изменений.", "relatesTo": "Условные операции HTTP и ответ 412 при несовпадении.", "lessonId": "l7-http-framing-ranges-etag"},
+  "Display Filter": {"description": "Фильтр отображения Wireshark, который выбирает видимые записи по полям уже наблюдаемого трафика. Он не изменяет исходный файл и отличается от фильтра захвата.", "relatesTo": "Разбор разрешённых сетевых захватов.", "lessonId": "ts-wireshark-crc-diagnostics"},
   "DANP": {"description": "Узел с двойным подключением по PRP (Doubly Attached Node implementing PRP), который имеет два порта в независимых сетях LAN A и LAN B и самостоятельно отбрасывает дубликаты кадров.", "relatesTo": "PRP, LAN A/B, LRE, RedBox", "lessonId": "l2-prp-redundancy"},
   "RedBox": {"description": "Аппаратный прокси-узел PRP (Redundancy Box), позволяющий подключить обычные однопортовые устройства (Singly Attached Node) сразу к обеим независимым сетям LAN A и LAN B.", "relatesTo": "PRP, Singly Attached Node, DANP, IEC 62439-3", "lessonId": "l2-prp-redundancy"},
   "RCT": {"description": "6-байтный трейлер Redundancy Control Trailer в конце Ethernet-кадра PRP (SeqNr, LanId, LSDUsize, суффикс 0x88FB), по которому приёмник отбрасывает дубликаты.", "relatesTo": "PRP, Source MAC, Sequence Number", "lessonId": "l2-prp-redundancy"},
@@ -1783,6 +1794,17 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "PBR": ["Policy-Based Routing", "Маршрутизация на основе политик", true],
+  "Policy Routing": ["Linux Policy Routing (RPDB)", "Выбор таблицы маршрутизации по правилам ip rule", false],
+  "Port Isolation": ["L2 Port Isolation", "Изоляция клиентских портов на коммутаторе", false],
+  "Private VLAN": ["Private VLAN (RFC 5517)", "Частный VLAN с ролями Isolated/Community/Promiscuous", false],
+  "TCP Keepalive": ["TCP Keep-Alive (RFC 9293)", "Зондирование простаивающего TCP-соединения", false],
+  "Chunked": ["Chunked Transfer Coding", "Кодирование по порциям", false],
+  "Trailer": ["HTTP trailer field", "Завершающее поле HTTP", false],
+  "CRLF": ["Carriage Return + Line Feed", "Возврат каретки и перевод строки", true],
+  "Content-Range": ["Content-Range", "Диапазон передаваемого содержимого", false],
+  "If-Match": ["If-Match", "Условие совпадения метки", false],
+  "Display Filter": ["Display Filter", "Фильтр отображения", false],
   "DANP": ["Doubly Attached Node implementing PRP", "Узел с двойным подключением PRP", true],
   "RedBox": ["Redundancy Box", "Шлюз PRP для однопортовых устройств", false],
   "RCT": ["Redundancy Control Trailer", "Трейлер контроля резервирования PRP", true],
