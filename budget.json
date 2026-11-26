@@ -1,1 +1,1 @@
-{"day": "2026-11-26", "kind": "kimi-daily-budget-v1", "reservations": {"issue-451:1": {"held_micro": 237300, "status": "reserved"}}}
+{"day": "2026-11-26", "kind": "kimi-daily-budget-v1", "reservations": {"issue-451:1": {"actual_range_usd": {"max": 0.096082, "min": 0.0957778}, "held_micro": 96082, "status": "answered"}}}
