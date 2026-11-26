@@ -757,7 +757,7 @@ export const GROUP2_TERMS: Record<string, InDepthTermPatch> = {
     "abbreviation": true,
     "description": "Служебная единица обмена LACP для согласования агрегирования и параметров участников. Режим active инициирует обмен; passive отвечает партнёру, но passive/passive при обычном старте не даёт инициатора.",
     "relatesTo": "Динамическое согласование агрегата Ethernet.",
-    "lessonId": "l2-stp-guard-design"
+    "lessonId": "l2-lacp-etherchannel"
   },
   "MRM": {
     "english": "Media Redundancy Manager",
