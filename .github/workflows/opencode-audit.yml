@@ -83,6 +83,17 @@ jobs:
               `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`);
             for (const [key, value] of Object.entries(request)) core.setOutput(key, value);
             core.setOutput('authorized', true);
+            const packetMarker = '\nAudit-Packet:\n';
+            const packetIndex = (task.body || '').indexOf(packetMarker);
+            core.setOutput('packet', packetIndex >= 0);
+            if (packetIndex >= 0) {
+              if (!target.source) throw new Error('Audit packet requires a pinned source');
+              const packet = task.body.slice(packetIndex + packetMarker.length);
+              if (Buffer.byteLength(packet) > 60000) throw new Error('Audit packet too large');
+              JSON.parse(packet);
+              fs.writeFileSync('opencode-prompt.txt', packet);
+              return;
+            }
             const files = ['docs/STATE.md', 'docs/LEARNING_CONTENT_STANDARD.md', 'docs/DEVELOPMENT_WORKFLOW.md'];
             const contextText = files.map(p => `\nFILE ${p}\n${fs.readFileSync(p, 'utf8')}`).join('\n');
             const prompt = 'Audit only. Read files, search and inspect the repository with native read/glob/grep/list tools. Do not edit, execute shell commands, delegate, merge or deploy. '
@@ -103,10 +114,13 @@ jobs:
         id: preflight
         if: steps.prepare.outputs.authorized == 'true'
         run: |
-          python3 scripts/opencode_audit.py --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" --output "$RUNNER_TEMP/opencode-preflight"
+          args=()
+          if [ "$AUDIT_PACKET" = true ]; then args+=(--packet); fi
+          python3 scripts/opencode_audit.py --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" "${args[@]}" --output "$RUNNER_TEMP/opencode-preflight"
           if [ "$AUDIT_LIVE" = false ]; then cp -r "$RUNNER_TEMP/opencode-preflight" opencode-report; fi
         env:
           AUDIT_SHA: ${{ steps.prepare.outputs.sha }}
+          AUDIT_PACKET: ${{ steps.prepare.outputs.packet }}
           AUDIT_SOURCE: ${{ steps.prepare.outputs.source }}
           AUDIT_LIVE: ${{ steps.prepare.outputs.paid }}
           MODEL: ${{ steps.prepare.outputs.model }}
@@ -126,12 +140,15 @@ jobs:
         if: ${{ steps.preflight.outcome == 'success' && steps.prepare.outputs.paid == 'true' }}
         env:
           AUDIT_SHA: ${{ steps.prepare.outputs.sha }}
+          AUDIT_PACKET: ${{ steps.prepare.outputs.packet }}
           AUDIT_SOURCE: ${{ steps.prepare.outputs.source }}
           ZHIPU_API_KEY: ${{ secrets.ZAI_CODING_API_KEY }}
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
         run: |
-          python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE"
+          args=()
+          if [ "$AUDIT_PACKET" = true ]; then args+=(--packet); fi
+          python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" "${args[@]}"
       - name: Publish audit artifact
         id: archive
         if: always()

@@ -79,3 +79,26 @@ jobs:
             exit 1
           fi
           test ! -e "$RUNNER_TEMP/no-model/called"
+      - name: Validate compact packet and tool permissions without credentials
+        env:
+          PIN_SHA: 491dfd894f229239eb54011f5970fd3b5b45263e
+          SOURCE: docs/audits/applied-l3-20261124/batch-01-source.json
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          source = os.environ['SOURCE']
+          data = json.loads((Path('audit-pin') / source).read_text())
+          packet = {'checkout_sha': os.environ['PIN_SHA'], 'source': source,
+                    'snapshot_source_sha': data['sourceSHA'],
+                    'questions': [{'id': qid} for qid in data['batch']['ids'][:10]]}
+          Path('test-packet.json').write_text(json.dumps(packet))
+          PY
+          python3 scripts/opencode_audit.py --packet --repo audit-pin --expected-sha "$PIN_SHA" --source "$SOURCE" --prompt test-packet.json --output "$RUNNER_TEMP/packet"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          cfg = json.loads((Path(os.environ['RUNNER_TEMP']) / 'packet/config.json').read_text())
+          assert cfg['permission'] == {'*': 'deny'}
+          assert cfg['agent']['audit']['steps'] == 1
+          PY
