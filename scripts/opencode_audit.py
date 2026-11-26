@@ -12,8 +12,6 @@ MODELS = ('glm-5.4', 'glm-5.3')
 PROVIDERS = ('zai-coding-plan', 'zai')
 BUDGET_USD = 1.0
 TARGET_USD = 0.20
-GLM54_PACKET_OUTPUT_TOKENS = 32_000
-GLM54_PACKET_EFFORT = 'low'
 
 
 def config(model, provider=PROVIDERS[0]):
@@ -277,7 +275,6 @@ def main():
         packet_text = validate_packet(Path(args.prompt), repo, args.expected_sha, args.source)
         packet = json.loads(packet_text)
         expected_ids = [q['id'] for q in packet['questions']]
-    glm54_packet = args.packet and args.model == 'glm-5.4'
     out = Path(args.output).resolve()
     out.mkdir(parents=True, exist_ok=True)
     cfg = config(args.model, args.provider)
@@ -288,9 +285,6 @@ def main():
     report = out / 'report.md'
     report.write_text(f'# OpenCode audit\n\nCLI: {VERSION}\nModel: {cfg["model"]}\n'
                       f'Mode: {"paid; outcome pending" if args.paid else "dry-run; no CLI, secret or model access"}\n')
-    if glm54_packet:
-        with report.open('a') as f:
-            f.write(f'Requested generation cap: {GLM54_PACKET_OUTPUT_TOKENS}; reasoning effort: {GLM54_PACKET_EFFORT}\n')
     save_result(out, report, {'status': 'incomplete' if args.paid else 'dry_run',
                              'reason': 'Model not started', 'summary': 'No model response; no completed audit.'})
     if not args.paid:
@@ -344,9 +338,6 @@ def main():
         if args.packet:
             stdin = prompt
             command.extend(['--title', 'Compact NetOps audit'])
-            if glm54_packet:
-                env['OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX'] = str(GLM54_PACKET_OUTPUT_TOKENS)
-                command.extend(['--variant', GLM54_PACKET_EFFORT])
         else:
             command.append(prompt)
         try:
