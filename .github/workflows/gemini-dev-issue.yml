@@ -1,0 +1,25 @@
+name: Gemini developer from GitHub Issue
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+jobs:
+  task:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' && github.actor == 'apotet' &&
+      github.event.issue.user.login == 'apotet' && github.event.sender.type == 'User' &&
+      !github.event.issue.pull_request && startsWith(github.event.issue.title, '[GEMINI DEV] ') &&
+      github.run_attempt == 1 && github.event.comment.user.login == 'apotet' &&
+      (github.event.comment.body == '/agent start confirm-paid-api' ||
+       startsWith(github.event.comment.body, '/agent continue ') ||
+       startsWith(github.event.comment.body, '/agent validate ') ||
+       startsWith(github.event.comment.body, '/agent publish '))
+    uses: ./.github/workflows/agent-task.yml
+    with:
+      provider: gemini
+    secrets:
+      PROVIDER_API_KEY: ${{ secrets.GEMINI_API_KEY }}

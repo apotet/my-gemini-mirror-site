@@ -34,14 +34,15 @@ def authorize(provider):
     event=json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     kind=os.environ['GITHUB_EVENT_NAME']
     if kind=='workflow_dispatch':
+        if provider=='gemini':raise ValueError('Gemini developer requires an owner Issue command')
         if provider=='kimi' and str(event.get('inputs',{}).get('confirm_paid_api','')).lower()!='true':
             raise ValueError('Explicit owner paid API confirmation required')
         return event,None
     issue=event['issue'];sender=event['sender']
     if issue.get('pull_request') or issue['user']['login']!='apotet' or sender['login']!='apotet' or sender['type']!='User':
         raise ValueError('Unauthorized Issue event')
-    if not issue['title'].startswith('[KIMI] ' if provider=='kimi' else '[ZAI] '):raise ValueError('Provider prefix mismatch')
-    if kind=='issues' and event.get('action')=='opened' and provider!='kimi':return event,issue
+    if not issue['title'].startswith({'kimi':'[KIMI] ','zai':'[ZAI] ','gemini':'[GEMINI DEV] '}[provider]):raise ValueError('Provider prefix mismatch')
+    if kind=='issues' and event.get('action')=='opened' and provider=='zai':return event,issue
     if kind=='issue_comment' and event.get('action')=='created':
         comment=event['comment']
         if comment['user']['login']!='apotet' or comment['user']['type']!='User':raise ValueError('Only coordinator may continue')
@@ -105,9 +106,9 @@ def prepare(provider,api=None):
     trusted_repo=source_repo(os.environ['GITHUB_SHA'])
     repo=trusted_repo
     action='work';resume=None
-    is_kimi_start=(provider=='kimi' and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
-                   event['comment']['body']=='/agent start confirm-paid-api')
-    if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_kimi_start:
+    is_explicit_start=(provider in ('kimi','gemini') and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
+                       event['comment']['body']=='/agent start confirm-paid-api')
+    if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_explicit_start:
         match=re.fullmatch(r'/agent (continue|validate|publish)\s+(\{.*\})\s*',event['comment']['body'],re.S)
         if not match:raise ValueError('Expected /agent continue|validate|publish with structured JSON')
         action={'continue':'work','validate':'validate','publish':'publish'}[match[1]]

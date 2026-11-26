@@ -4,9 +4,9 @@
 Размер и сложность задания определяет координатор. Для Kimi действуют ограничения
 расчётного бюджета, числа вызовов и токенов из [KIMI_ISSUE_AGENT.md](KIMI_ISSUE_AGENT.md).
 Они не являются гарантированным денежным потолком; для ZAI прежний бюджетный режим не меняется.
-ZAI, Kimi и ручной Kimi используют `.github/workflows/agent-task.yml` и один runtime
-`.github/agent_runtime/`. Ветки Геннадия и Gemini workflow не изменены. Для будущего
-Gemini добавляется адаптер транспорта/usage в providers.py, а не новый жизненный цикл.
+ZAI, Kimi, ручной Kimi и отдельный Gemini-разработчик используют
+`.github/workflows/agent-task.yml` и один runtime `.github/agent_runtime/`.
+Существующие Gemini workflow и ветки не изменены.
 
 ## Обязательный контекст и управляющие файлы
 
@@ -162,7 +162,7 @@ cache/TTL. Неизвестная стоимость не считается н�
 для ZAI этот gate не применяется. Тарифы — данные адаптера; расходы и исходные counters доступны
 координатору. Проверки metadata и работа GitHub не выдаются за вызовы Kimi/ZAI.
 
-## Ручной Kimi и будущий Gemini
+## Ручной Kimi и Gemini-разработчик
 
 Сохранён workflow_dispatch «Kimi Agent». Старые task_file/target_files поддержаны;
 max_tokens по умолчанию пустой (для Kimi используется 16384). Поле `spec` принимает тот же JSON
@@ -170,10 +170,12 @@ max_tokens по умолчанию пустой (для Kimi используе�
 Идентичная случайная повторная ручная отправка на том же source SHA имеет тот же
 ключ и не тратит деньги снова. Для продолжения используется checkpoint, не rerun.
 
-Gemini пока **не подключён**: его текущие workflow и ветка Геннадия не менялись.
-Для добавления нужна реализация того же provider contract (payload, stream/response,
-usage/cost), модельные пределы и отдельное сопоставление секрета. Состояние, область
-записи, sandbox, checkpoint, продолжение и Draft publication остаются общими.
+Отдельный `[GEMINI DEV] ` использует Gemini API и существующий секрет
+`GEMINI_API_KEY`; предыдущий `[GEMINI] ` audit-only workflow остаётся отдельным.
+Новый маршрут запускается только после явного owner-комментария, использует общий
+checkpoint, sandbox и Draft publisher. Дневную квоту контролирует Google, а не
+runtime; тариф и возможность оплаты необходимо проверить владельцу. Подробности и
+ограничения: [GEMINI_DEV_AGENT.md](GEMINI_DEV_AGENT.md).
 
 Legacy v1 SSE/AST helper scripts сохраняются только для исторических тестов; активные
 Issue/manual entry points больше не запускают их ограниченные payload/paid loops.

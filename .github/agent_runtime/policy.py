@@ -7,7 +7,7 @@ import re
 ROOTS = ('src/','public/','assets/','docs/','tests/','scripts/')
 CONFIG = {'package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','index.dev.html','README.md'}
 CONTROL = ('scripts/zai','scripts/agent','scripts/gemini','scripts/telegram-notify.py','tests/test_agent_runtime',
-           'docs/AGENT_RUNTIME.md','docs/KIMI_ISSUE_AGENT.md','docs/ZAI_ISSUE_AGENT.md','docs/GEMINI_ISSUE_AGENT.md',
+           'docs/AGENT_RUNTIME.md','docs/KIMI_ISSUE_AGENT.md','docs/ZAI_ISSUE_AGENT.md','docs/GEMINI_ISSUE_AGENT.md','docs/GEMINI_DEV_AGENT.md',
            'docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md')
 SECRET_NAMES = {'.env','.npmrc','.pypirc','.netrc','credentials','id_rsa','id_ed25519','authorized_keys'}
 

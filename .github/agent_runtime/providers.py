@@ -25,8 +25,10 @@ MODELS = {
     'glm-5.3': Model('zai','https://api.z.ai/api/paas/v4/chat/completions',1048576,131072,'max_tokens','1.4','4.4','.26'),
     'glm-5.3-flash': Model('zai','https://api.z.ai/api/paas/v4/chat/completions',1048576,131072,'max_tokens','.15','.50','.03',True),
     'kimi-k3.1-pro': Model('kimi','https://api.moonshot.ai/v1/chat/completions',1048576,1048576,'max_completion_tokens','2','10','.2',True),
+    # Runtime output cap, not a claim about this model's native maximum.
+    'gemini-3.8-flash': Model('gemini','https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',1048576,16384,'maxOutputTokens','0','0','0'),
 }
-DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro'}
+DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro','gemini':'gemini-3.8-flash'}
 
 
 def payload(task, messages):
@@ -34,6 +36,12 @@ def payload(task, messages):
     output = task.get('max_output_tokens',model.output)
     if type(output) is not int or not 1 <= output <= model.output:
         raise ValueError('Output exceeds this model API limit')
+    if model.provider == 'gemini':
+        system=[m['content'] for m in messages if m['role']=='system']
+        history=[{'role':m['role'],'content':m['content']} for m in messages if m['role']!='system']
+        return {'systemInstruction':{'parts':[{'text':'\n'.join(system)}]},
+                'contents':[{'role':'user','parts':[{'text':json.dumps(history,ensure_ascii=False)}]}],
+                'generationConfig':{'maxOutputTokens':output}}
     result = {'model':task['model'],'messages':messages,model.output_parameter:output,
               'stream':True,'stream_options':{'include_usage':True},'reasoning_effort':task.get('reasoning_effort','high')}
     if model.provider == 'zai':
@@ -72,6 +80,34 @@ def parse_stream(text):
     return {'content':''.join(content),'reasoning_content':''.join(reasoning),'finish_reason':finish,'usage':usage,'chunks':chunks}
 
 
+def parse_gemini(text):
+    data=json.loads(text)
+    candidates=data.get('candidates')
+    if not isinstance(candidates,list) or len(candidates)!=1:
+        raise ValueError('Missing or ambiguous Gemini response')
+    candidate=candidates[0]
+    finish={'STOP':'stop','MAX_TOKENS':'length'}.get(candidate.get('finishReason'))
+    parts=candidate.get('content',{}).get('parts',[])
+    if not finish or not isinstance(parts,list):
+        raise ValueError('Incomplete or unsupported Gemini response')
+    visible=[];reasoning=[]
+    for part in parts:
+        if not isinstance(part,dict) or not isinstance(part.get('text'),str):
+            raise ValueError('Unsupported Gemini response part')
+        (reasoning if part.get('thought') else visible).append(part['text'])
+    if not visible:raise ValueError('Empty Gemini response')
+    raw_usage=data.get('usageMetadata') or {}
+    usage=None
+    if isinstance(raw_usage,dict):
+        inp=raw_usage.get('promptTokenCount')
+        output=raw_usage.get('candidatesTokenCount')
+        thoughts=raw_usage.get('thoughtsTokenCount',0)
+        if all(type(n) is int and n>=0 for n in (inp,output,thoughts)):
+            usage={'prompt_tokens':inp,'completion_tokens':output+thoughts,'provider_usage':raw_usage}
+    return {'content':''.join(visible),'reasoning_content':''.join(reasoning),
+            'finish_reason':finish,'usage':usage}
+
+
 def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
@@ -81,10 +117,12 @@ def infer(task, messages, output_dir, timeout):
     (output_dir/'request.json').write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
     raw, headers = output_dir/'response.sse', output_dir/'headers.tmp'
     try:
+        model=MODELS[task['model']]
+        auth=('x-goog-api-key: ' if model.provider=='gemini' else 'Authorization: Bearer ')+key
         result = subprocess.run(['curl','-q','--silent','--show-error','--no-buffer','--retry','0',
             '--max-time',str(timeout),'--proto','=https','--output',str(raw),'--dump-header',str(headers),
-            '--write-out','%{http_code}',MODELS[task['model']].endpoint,
-            '--header','Authorization: Bearer '+key,'--header','Content-Type: application/json',
+            '--write-out','%{http_code}',model.endpoint,
+            '--header',auth,'--header','Content-Type: application/json',
             '--data-binary','@'+str(output_dir/'request.json')],capture_output=True,text=True,timeout=timeout+15)
         status = result.stdout
     finally:
@@ -100,7 +138,7 @@ def infer(task, messages, output_dir, timeout):
     if result.returncode or status != '200':
         (output_dir/'transport.json').write_text(json.dumps({'returncode':result.returncode,'http_status':status}))
         raise ValueError('Transport failed; attempted request must not be silently repeated')
-    parsed = parse_stream(raw.read_text(encoding='utf-8'))
+    parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw.read_text(encoding='utf-8'))
     parsed['billing'] = billing
     parsed['raw'] = raw.read_text(encoding='utf-8')
     return parsed
@@ -108,6 +146,9 @@ def infer(task, messages, output_dir, timeout):
 
 def cost(model_name, usage, billing):
     model=MODELS[model_name]
+    if model.provider=='gemini':
+        known=isinstance(usage,dict) and all(type(usage.get(k)) is int and usage[k]>=0 for k in ('prompt_tokens','completion_tokens'))
+        return {'exact_usd':None,'range_usd':None,'usage_known':known}
     if not isinstance(usage,dict):return {'exact_usd':None,'range_usd':None,'usage_known':False}
     inp,out=usage.get('prompt_tokens'),usage.get('completion_tokens')
     valid=lambda n:type(n) is int and n>=0

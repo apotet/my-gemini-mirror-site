@@ -55,7 +55,7 @@ class GitHub:
 
 class Ledger:
     def __init__(self,api,provider,key):
-        if provider not in ('zai','kimi') or not re.fullmatch(r'(issue-[0-9]+|manual-[a-f0-9]{24})',key):
+        if provider not in ('zai','kimi','gemini') or not re.fullmatch(r'(issue-[0-9]+|manual-[a-f0-9]{24})',key):
             raise ValueError('Invalid task identity')
         self.api,self.provider,self.key=api,provider,key
         self.branch=f'agents/state/{provider}-{key}'

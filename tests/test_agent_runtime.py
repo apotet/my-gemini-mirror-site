@@ -175,7 +175,7 @@ class Runtime(unittest.TestCase):
     def test_gemini_and_agent_instructions_protected_under_broad_scopes(self):
         task=self.task(write_paths=['scripts/','docs/'])
         protected=['scripts/gemini-issue-agent.py','scripts/gemini-issue-agent.test.py','scripts/gemini-list-models.py',
-                   'scripts/gemini-l3-issue.py','docs/AGENT_RUNTIME.md','docs/GEMINI_ISSUE_AGENT.md','docs/KIMI_ISSUE_AGENT.md',
+                   'scripts/gemini-l3-issue.py','docs/AGENT_RUNTIME.md','docs/GEMINI_ISSUE_AGENT.md','docs/GEMINI_DEV_AGENT.md','docs/KIMI_ISSUE_AGENT.md',
                    'docs/ZAI_ISSUE_AGENT.md','docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md']
         for name in protected:
             with self.subTest(name=name):
@@ -255,6 +255,106 @@ class Runtime(unittest.TestCase):
         z=core.normalize({'task':'audit','model':'glm-5.3','max_output_tokens':131072},'zai')
         self.assertEqual(providers.payload(z,[])['max_tokens'],131072)
         with self.assertRaises(ValueError):self.task(max_output_tokens=65537)
+
+    def test_gemini_payload_and_response_preserve_full_history_and_usage(self):
+        task=core.normalize({'task':'Implement','mode':'edit','write_paths':['src/']},'gemini')
+        messages=[{'role':'system','content':'system instructions'},
+                  {'role':'user','content':'first message'},
+                  {'role':'assistant','content':'previous response','reasoning_content':'private reasoning'},
+                  {'role':'user','content':'continue'}]
+        payload=providers.payload(task,messages)
+        history=json.loads(payload['contents'][0]['parts'][0]['text'])
+        self.assertEqual([m['content'] for m in history],['first message','previous response','continue'])
+        self.assertEqual(payload['systemInstruction']['parts'][0]['text'],'system instructions')
+        self.assertEqual(payload['generationConfig']['maxOutputTokens'],16384)
+        self.assertNotIn('private reasoning',json.dumps(payload))
+        raw={'candidates':[{'finishReason':'MAX_TOKENS','content':{'parts':[
+            {'text':'reasoning','thought':True},{'text':'{"status":'}]}}],
+             'usageMetadata':{'promptTokenCount':100,'candidatesTokenCount':20,'thoughtsTokenCount':5}}
+        parsed=providers.parse_gemini(json.dumps(raw))
+        self.assertEqual((parsed['finish_reason'],parsed['content']),('length','{"status":'))
+        self.assertEqual(parsed['usage']['completion_tokens'],25)
+        self.assertIsNone(providers.cost(task['model'],parsed['usage'],{})['range_usd'])
+        raw['candidates'][0]['finishReason']='SAFETY'
+        with self.assertRaises(ValueError):providers.parse_gemini(json.dumps(raw))
+        with self.assertRaises(ValueError):core.normalize({'task':'x','max_output_tokens':16385},'gemini')
+
+    def test_gemini_explicit_start_continuation_and_draft(self):
+        self.event['issue']['title']='[GEMINI DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],'max_calls':1})
+        self.write_event()
+        with patch.dict(os.environ,{'GITHUB_EVENT_NAME':'issues'}),self.assertRaises(ValueError):
+            cli.prepare('gemini',self.api)
+        self.assertFalse(self.api.refs)
+        cli.prepare('gemini',self.api)
+        def partial(task,messages,out,timeout):
+            return response('{"status":','length')
+        cli.run_loop('gemini',self.api,infer=partial)
+        ledger=Ledger(self.api,'gemini','issue-9');state=ledger.load()
+        self.assertEqual(state['pending_text'],'{"status":')
+        self.assertEqual(core.work_branch(state),'gemini/issue-9')
+        self.event['comment']={'id':222,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1})}
+        self.write_event();cli.prepare('gemini',self.api)
+        def finish(task,messages,out,timeout):
+            return response('"complete","files":[{"path":"src/a.ts","content":"new"}]}')
+        cli.run_loop('gemini',self.api,infer=finish,validator=lambda r,s:{'passed':True,'logs':[]})
+        state=ledger.load()
+        self.assertEqual(state['status'],'ready_for_review')
+        core.publish_candidate(self.api,ledger,state)
+        self.assertEqual(state['status'],'published_draft')
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertEqual(self.api.prs[0]['head']['sha'],self.api.ref('gemini/issue-9'))
+
+    def test_gemini_zero_call_continuation_replaces_unused_grant(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        cli.prepare('gemini',self.api)
+        ledger=Ledger(self.api,'gemini','issue-9');ledger.load()
+        self.event['comment']={'id':223,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':0})}
+        self.write_event();cli.prepare('gemini',self.api)
+        cli.run_loop('gemini',self.api,infer=lambda *args: self.fail('unexpected API call'))
+        self.assertEqual(ledger.load()['calls'],[])
+
+    def test_gemini_quota_error_preserves_checkpoint_without_retry(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        cli.prepare('gemini',self.api)
+        original_run=subprocess.run;attempts=[]
+        def transport(argv,**kwargs):
+            if argv[0]!='curl':return original_run(argv,**kwargs)
+            saved=Ledger(self.api,'gemini','issue-9').load()
+            self.assertEqual(saved['calls'][-1]['status'],'reserved')
+            self.assertEqual(argv[argv.index('--retry')+1],'0')
+            self.assertIn('x-goog-api-key: fake-not-sent',argv)
+            attempts.append(argv)
+            Path(argv[argv.index('--output')+1]).write_text('{"error":"quota"}')
+            Path(argv[argv.index('--dump-header')+1]).write_text('HTTP/2 429\n')
+            return subprocess.CompletedProcess(argv,0,'429','')
+        with patch.object(providers.subprocess,'run',side_effect=transport):
+            cli.run_loop('gemini',self.api,infer=providers.infer)
+            cli.run_loop('gemini',self.api,infer=providers.infer)
+        state=Ledger(self.api,'gemini','issue-9').load()
+        self.assertEqual(len(attempts),1)
+        self.assertEqual(state['status'],'uncertain')
+        self.assertEqual(len(state['calls']),1)
+        with self.assertRaises(ValueError):core.continue_task(state,'head','head','fresh',1)
+
+    def test_gemini_successful_transport_parses_response(self):
+        task=core.normalize({'task':'audit'},'gemini')
+        raw={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"status":"complete"}'}]}}],
+             'usageMetadata':{'promptTokenCount':12,'candidatesTokenCount':5}}
+        def transport(argv,**kwargs):
+            self.assertEqual(argv[argv.index('--retry')+1],'0')
+            self.assertIn('x-goog-api-key: fake-not-sent',argv)
+            self.assertEqual(argv[argv.index('--write-out')+2],providers.MODELS[task['model']].endpoint)
+            Path(argv[argv.index('--output')+1]).write_text(json.dumps(raw))
+            Path(argv[argv.index('--dump-header')+1]).write_text('HTTP/2 200\n')
+            return subprocess.CompletedProcess(argv,0,'200','')
+        with patch.object(providers.subprocess,'run',side_effect=transport) as run:
+            answer=providers.infer(task,[{'role':'user','content':'hello'}],self.out,30)
+        self.assertEqual(run.call_count,1)
+        self.assertEqual(answer['finish_reason'],'stop')
+        self.assertEqual(answer['usage']['prompt_tokens'],12)
     def test_model_endpoint_is_not_task_controlled(self):
         for bad in [{'endpoint':'https://evil'},{'branch':'someone'},{'token':'secret'},{'model':'gemini-unknown'}]:
             with self.subTest(bad=bad),self.assertRaises(ValueError):self.task(**bad)
