@@ -1,5 +1,13 @@
 # NetOps — компактная карта состояния
 
+## Kimi — увеличение лимитов и продолжение checkpoint
+
+Подготовлены в отдельном PR увеличенные лимиты вызовов/токенов и явное изменение
+лимитов владельцем при продолжении сохранённого состояния. Расчётные бюджеты
+$0.75/задача по умолчанию и $2/сутки не изменены; они могут остановить работу и
+не гарантируют счёт провайдера. Изменения не активны до merge; дополнительных
+платных вызовов для этой работы не выполнялось.
+
 ## 26.11.2026 — Восстановление GLM-5.4 в OpenCode Coding Plan
 
 [PR #435](https://github.com/apotet/my-gemini-mirror-site/pull/435), staging SHA `60f19d89565eeace8f21c32360cc8223c0cfaa8f`. Один каталог моделей используется в preflight и в окружении аудита. Контрольный запуск [#436](https://github.com/apotet/my-gemini-mirror-site/issues/436) нашёл GLM-5.4 в изоляции, подтвердил одинаковый SHA-256 `57f04a386a1edfce09e83ae211f266e58ffc681ae36b28c9c8aa9962035be9c5` и завершил один шаг модели с `stop`. [GitHub Actions](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45745128925) · [Исходный артефакт](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45745128925/artifacts/15083530928).

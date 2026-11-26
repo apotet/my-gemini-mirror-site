@@ -76,7 +76,7 @@ def manual_task(event,provider,repo):
     if not re.fullmatch(r'\.github/agent-tasks/[A-Za-z0-9_-]+\.md',task_file):raise ValueError('Invalid manual task file')
     targets=[p for p in inputs.get('target_files','src/data/lessons/l1-poe-injectors-splitters.ts').splitlines() if p]
     task={'task':policy.safe_text(repo.read(task_file).decode()),'mode':inputs.get('mode','audit-only'),
-          'target_files':targets,'max_calls':int(inputs.get('max_calls','4' if provider=='kimi' else '8'))}
+          'target_files':targets,'max_calls':int(inputs.get('max_calls','8'))}
     if inputs.get('max_tokens'):task['max_output_tokens']=int(inputs['max_tokens'])
     if inputs.get('verification')=='poe-full':task['checks']=['scripts/poe-injectors-lesson.test.mjs']
     return task
@@ -151,7 +151,7 @@ def prepare(provider,api=None):
         if issue:
             api.request('POST',f'/issues/{issue["number"]}/comments',{'body':core.MARKER+f'\nTask `{provider}/{key}` claimed. Checkpoint `{ledger.head}`. Calls granted: {task["max_calls"]}. Explicit checkpoint continuation only; no merge/deploy.'})
     else:
-        if not isinstance(resume,dict) or set(resume)-{'checkpoint','calls','acknowledge_uncertain','reset_response','task_id','action','instruction'}:
+        if not isinstance(resume,dict) or set(resume)-{'checkpoint','calls','acknowledge_uncertain','reset_response','task_id','action','instruction','limits'}:
             raise ValueError('Invalid continuation fields')
         if state is None:raise ValueError('No v2 checkpoint; old paid tasks are not replayed')
         if state['issue']!=(issue['number'] if issue else None):raise ValueError('Task identity mismatch')
@@ -163,6 +163,10 @@ def prepare(provider,api=None):
         owned_pr(api,state)
         for flag in ('acknowledge_uncertain','reset_response'):
             if flag in resume and type(resume[flag]) is not bool:raise ValueError('Continuation acknowledgement must be boolean')
+        if 'limits' in resume:
+            if action!='work':raise ValueError('Limit changes require an owner continuation')
+            state=copy.deepcopy(state)
+            core.update_kimi_limits(state,resume['limits'],grant_id)
         if action=='work':
             core.continue_task(state,expected,ledger.head,grant_id,resume.get('calls',0),resume.get('acknowledge_uncertain',False),resume.get('reset_response',False))
         else:
