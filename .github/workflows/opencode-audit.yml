@@ -141,7 +141,8 @@ jobs:
           AUDIT_LIVE: ${{ steps.prepare.outputs.paid }}
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
-      - name: Install official pinned CLI (no credential)
+      - name: Install official pinned CLI and verify model catalog (no credential)
+        id: catalog
         if: ${{ steps.preflight.outcome == 'success' && steps.prepare.outputs.paid == 'true' }}
         env:
           MODEL: ${{ steps.prepare.outputs.model }}
@@ -150,8 +151,17 @@ jobs:
           npm install --global opencode-ai@1.19.6
           test "$(opencode --version)" = '1.19.6'
           opencode run --help > /dev/null
-          ZHIPU_API_KEY=opencode-catalog-placeholder opencode models "$PROVIDER" --refresh > "$RUNNER_TEMP/opencode-models.txt"
+          catalog="$RUNNER_TEMP/opencode-models.json"
+          curl --fail --silent --show-error --max-time 30 https://models.opencode.ai/api.json -o "$catalog"
+          chmod 444 "$catalog"
+          read -r digest _ < <(sha256sum "$catalog")
+          python3 -c 'from pathlib import Path; import sys; sys.path.insert(0, "scripts"); from opencode_audit import verify_catalog; verify_catalog(Path(sys.argv[1]), sys.argv[2], sys.argv[3])' "$catalog" "$digest" "$MODEL"
+          mkdir -p opencode-report
+          OPENCODE_MODELS_PATH="$catalog" OPENCODE_DISABLE_MODELS_FETCH=true ZHIPU_API_KEY=opencode-catalog-placeholder opencode models "$PROVIDER" --print-logs --log-level ERROR > "$RUNNER_TEMP/opencode-models.txt" 2> opencode-report/opencode-preflight.log
           grep -Fx "$PROVIDER/$MODEL" "$RUNNER_TEMP/opencode-models.txt"
+          test "$(sha256sum "$catalog" | cut -d ' ' -f 1)" = "$digest"
+          echo "Preflight catalog SHA-256: $digest"
+          echo "sha256=$digest" >> "$GITHUB_OUTPUT"
       - name: Single paid audit via official OpenCode
         if: ${{ steps.preflight.outcome == 'success' && steps.prepare.outputs.paid == 'true' }}
         env:
@@ -159,12 +169,13 @@ jobs:
           AUDIT_PACKET: ${{ steps.prepare.outputs.packet }}
           AUDIT_SOURCE: ${{ steps.prepare.outputs.source }}
           ZHIPU_API_KEY: ${{ secrets.ZAI_CODING_API_KEY }}
+          CATALOG_SHA256: ${{ steps.catalog.outputs.sha256 }}
           MODEL: ${{ steps.prepare.outputs.model }}
           PROVIDER: ${{ steps.prepare.outputs.provider }}
         run: |
           args=()
           if [ "$AUDIT_PACKET" = true ]; then args+=(--packet); fi
-          python3 scripts/opencode_audit.py --paid --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" "${args[@]}"
+          python3 scripts/opencode_audit.py --paid --catalog "$RUNNER_TEMP/opencode-models.json" --catalog-sha256 "$CATALOG_SHA256" --provider "$PROVIDER" --model "$MODEL" --repo audit-target --expected-sha "$AUDIT_SHA" --source "$AUDIT_SOURCE" "${args[@]}"
       - name: Publish audit artifact
         id: archive
         if: always()

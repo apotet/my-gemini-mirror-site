@@ -247,3 +247,54 @@ class AuditTests(unittest.TestCase):
         for invalid in (rows[:-1], list(reversed(rows)), [rows[1], *rows[1:]],
                         [dict(rows[0], reason=''), *rows[1:]]):
             self.assertEqual(result(json.dumps({'results': invalid}))['status'], 'incomplete')
+
+    def test_paid_runner_checks_catalog_in_same_environment_and_redacts_logs(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / '.git').mkdir()
+            catalog = root / 'models.json'
+            catalog.write_text(json.dumps({'zai-coding-plan': {
+                'api': 'https://api.z.ai/api/coding/paas/v4',
+                'npm': '@ai-sdk/openai-compatible', 'models': {'glm-5.4': {}},
+            }}))
+            digest = hashlib.sha256(catalog.read_bytes()).hexdigest()
+            prompt = root / 'prompt.txt'
+            prompt.write_text('fixture')
+            args = ['audit', '--paid', '--repo', tmp, '--prompt', str(prompt),
+                    '--output', tmp, '--catalog', str(catalog), '--catalog-sha256', digest]
+            calls = []
+            def cli(command, **kw):
+                calls.append((command, kw))
+                self.assertEqual(kw['env']['OPENCODE_MODELS_PATH'], str(catalog))
+                self.assertEqual(kw['env']['OPENCODE_DISABLE_MODELS_FETCH'], 'true')
+                if command[1] == 'models':
+                    self.assertNotEqual(kw['env']['ZHIPU_API_KEY'], 'fixture-key')
+                    return subprocess.CompletedProcess(command, 0, 'zai-coding-plan/glm-5.4\n', '')
+                self.assertIn('--print-logs', command)
+                self.assertEqual(kw['env']['ZHIPU_API_KEY'], 'fixture-key')
+                self.assertEqual(kw['cwd'], calls[0][1]['cwd'])
+                return subprocess.CompletedProcess(command, 1, '', 'failure fixture-key Bearer other-secret')
+            with patch.object(sys, 'argv', args), patch.dict(os.environ, {'ZHIPU_API_KEY': 'fixture-key'}):
+                with patch.object(audit.subprocess, 'run', side_effect=cli):
+                    with self.assertRaisesRegex(RuntimeError, 'audit failed'):
+                        audit.main()
+                self.assertEqual(len(calls), 2)
+                self.assertEqual(json.loads((root / 'catalog.json').read_text())['sha256'], digest)
+                diagnostics = (root / 'opencode-stderr.log').read_text()
+                self.assertIn('failure [REDACTED]', diagnostics)
+                self.assertNotIn('fixture-key', diagnostics)
+                self.assertNotIn('other-secret', diagnostics)
+
+                with patch.object(audit.subprocess, 'run',
+                                  return_value=subprocess.CompletedProcess([], 0, 'zai-coding-plan/glm-5.3', '')) as run:
+                    with self.assertRaisesRegex(RuntimeError, 'unavailable'):
+                        audit.main()
+                    self.assertEqual(run.call_count, 1)
+                    self.assertEqual(run.call_args.args[0][1], 'models')
+
+                catalog.write_text(catalog.read_text() + ' ')
+                with patch.object(audit.subprocess, 'run') as run:
+                    with self.assertRaisesRegex(RuntimeError, 'SHA-256 mismatch'):
+                        audit.main()
+                    run.assert_not_called()
