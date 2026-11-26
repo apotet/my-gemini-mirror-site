@@ -1,6 +1,10 @@
 ## 26.11.2026 — Заяц-автор: workflow Draft PR из GLM-5.4
 
-Новый `opencode-author.yml` (Draft PR, ждёт приёмки владельца). GLM-5.4 через Coding Plan правит `src/`, `docs/`, `public/lesson-images/` в изолированной копии без shell; diff проверяется `scripts/opencode_author_check.py`, затем lint/build; отдельный job без ключа модели открывает Draft PR. Одна попытка на Issue, merge/deploy нет, `opencode-audit.yml` не изменён. Реальный запуск модели не выполнялся.
+Workflow `opencode-author.yml` влит в main через PR #446. GLM-5.4 через Coding Plan работает в отдельном checkout с запретом shell средствами OpenCode; разрешённые пути и diff ограничены, затем предусмотрены lint/build и отдельный job публикации Draft PR без ключа модели. Одна попытка на Issue; merge/deploy не выполняются, `opencode-audit.yml` не изменён.
+
+Первый запуск [#447](https://github.com/apotet/my-gemini-mirror-site/issues/447) завершился ошибкой workflow: путь к валидатору был неверным. Ответ и правки модели восстановлены из артефакта в Draft PR [#449](https://github.com/apotet/my-gemini-mirror-site/pull/449); содержание и отображение требуют проверки, приёмка и merge не выполнены. Исправление пути и блокировка публикации при незавершённом ответе подготовлены в PR [#448](https://github.com/apotet/my-gemini-mirror-site/pull/448), на момент записи не влитом. Повторного вызова модели не было.
+
+Аудит вопросов [#445](https://github.com/apotet/my-gemini-mirror-site/issues/445) прерван без финального ответа; завершённым его считать нельзя. Отдельный отчёт [#441](https://github.com/apotet/my-gemini-mirror-site/issues/441) заявляет 9 PASS и 1 FIX (`l4-07`); исправление требует отдельной проверки. По [#437](https://github.com/apotet/my-gemini-mirror-site/issues/437) проверенная часть второй пятёрки PASS, браузер 1440/375 остаётся UNVERIFIED. Приёмка третьей пятёрки [#443](https://github.com/apotet/my-gemini-mirror-site/issues/443) ранее заблокирована доступом к архиву; в [#444](https://github.com/apotet/my-gemini-mirror-site/issues/444) позднее опубликована ссылка на ZIP в GitHub, но это не означает завершённой приёмки.
 
 ## 26.11.2026 — Восстановление GLM-5.4 в OpenCode Coding Plan
 
