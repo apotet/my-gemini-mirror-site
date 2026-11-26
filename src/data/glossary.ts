@@ -7,6 +7,18 @@ export interface GlossaryEntry {
 
 /** Shared term dictionary; lesson IDs refer only to existing catalog entries. */
 export const GLOSSARY: Record<string, GlossaryEntry> = {
+  "DANP": {"description": "Узел с двойным подключением по PRP (Doubly Attached Node implementing PRP), который имеет два порта в независимых сетях LAN A и LAN B и самостоятельно отбрасывает дубликаты кадров.", "relatesTo": "PRP, LAN A/B, LRE, RedBox", "lessonId": "l2-prp-redundancy"},
+  "RedBox": {"description": "Аппаратный прокси-узел PRP (Redundancy Box), позволяющий подключить обычные однопортовые устройства (Singly Attached Node) сразу к обеим независимым сетям LAN A и LAN B.", "relatesTo": "PRP, Singly Attached Node, DANP, IEC 62439-3", "lessonId": "l2-prp-redundancy"},
+  "RCT": {"description": "6-байтный трейлер Redundancy Control Trailer в конце Ethernet-кадра PRP (SeqNr, LanId, LSDUsize, суффикс 0x88FB), по которому приёмник отбрасывает дубликаты.", "relatesTo": "PRP, Source MAC, Sequence Number", "lessonId": "l2-prp-redundancy"},
+  "TLS 1.3": {"description": "Актуальная версия протокола защищённого транспорта (RFC 8446) с 1-RTT рукопожатием и шифрованием сертификата сервера; полные (EC)DHE-рукопожатия обеспечивают прямую секретность (PFS), тогда как PSK-only и 0-RTT требуют отдельного рассмотрения.", "relatesTo": "HTTPS, Handshake, ALPN, SNI, CertificateVerify", "lessonId": "l7-tls-handshake-alpn"},
+  "ALPN": {"description": "Расширение TLS (Application-Layer Protocol Negotiation, RFC 7301), согласующее прикладной протокол (например, h2 или http/1.1) прямо во время рукопожатия без лишних RTT.", "relatesTo": "TLS 1.3, HTTP/2, ClientHello", "lessonId": "l7-tls-handshake-alpn"},
+  "CertificateVerify": {"description": "Сообщение TLS 1.3 handshake с цифровой подписью транскрипта закрытым ключом сервера, доказывающее реальное владение ключом предъявленного сертификата.", "relatesTo": "TLS 1.3, Certificate, Finished", "lessonId": "l7-tls-handshake-alpn"},
+  "VXLAN": {"description": "Протокол сетевой виртуализации (RFC 7348), инкапсулирующий L2 Ethernet-кадры в UDP-пакеты (порт 4789) поверх L3-фабрики для создания до 16,7 млн изолированных сегментов.", "relatesTo": "VTEP, VNI, Overlay, Underlay", "lessonId": "l3-tunnels-gre-vxlan"},
+  "VTEP": {"description": "Граничный узел туннеля VXLAN (VXLAN Tunnel Endpoint), выполняющий инкапсуляцию и декапсуляцию L2-кадров арендаторов в UDP/IP-пакеты.", "relatesTo": "VXLAN, VNI, Underlay", "lessonId": "l3-tunnels-gre-vxlan"},
+  "VNI": {"description": "24-битный идентификатор виртуального L2-сегмента VXLAN (VXLAN Network Identifier), позволяющий изолировать арендаторов даже при совпадении их внутренних MAC и IP.", "relatesTo": "VXLAN, VTEP, VLAN", "lessonId": "l3-tunnels-gre-vxlan"},
+  "ProxyJump": {"description": "Режим OpenSSH (-J), пропускающий сквозное зашифрованное SSH-соединение A↔B через бастион (jump) без копирования ключа и без включения Agent Forwarding.", "relatesTo": "SSH, Agent Forwarding, direct-tcpip", "lessonId": "l7-ssh-tunneling-proxyjump"},
+  "Agent Forwarding": {"description": "Пересылка сокета локального ssh-agent на удалённый сервер (-A); при доступном агенте и разрешающей политике root/UID на промежуточном узле может подписывать запросы через SSH_AUTH_SOCK (без кражи самого файла ключа), поэтому для бастионов предпочтителен ProxyJump.", "relatesTo": "SSH, ProxyJump, ssh-agent", "lessonId": "l7-ssh-tunneling-proxyjump"},
+  "Local Port Forwarding": {"description": "Локальный проброс порта SSH (-L): клиент слушает локальный порт на ПК и передаёт трафик по SSH-каналу, а DNS-разрешение цели и исходящее TCP-соединение к ней открывает удалённый SSH-сервер (jump).", "relatesTo": "SSH, direct-tcpip, ProxyJump", "lessonId": "l7-ssh-tunneling-proxyjump"},
   "Requested Class": { description: "Класс, выбранный в настройках PoE-теста.", relatesTo: "Чтение показаний PoE-тестера LinkRunner.", lessonId: "l1-poe-screen-reading" },
   "Received Class": { description: "Класс, подтверждённый источником PSE при тестировании.", relatesTo: "Чтение показаний PoE-тестера LinkRunner.", lessonId: "l1-poe-screen-reading" },
   "Unloaded Voltage": { description: "Напряжение PoE без нагрузки; не подтверждает достаточную мощность под нагрузкой.", relatesTo: "Чтение показаний PoE-тестера LinkRunner.", lessonId: "l1-poe-screen-reading" },
@@ -1771,6 +1783,18 @@ export interface GlossaryTooltip {
 // Term → English name, Russian translation, abbreviation, optional new definition.
 // Aliases keep their own expansion while sharing the existing tag card.
 const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
+  "DANP": ["Doubly Attached Node implementing PRP", "Узел с двойным подключением PRP", true],
+  "RedBox": ["Redundancy Box", "Шлюз PRP для однопортовых устройств", false],
+  "RCT": ["Redundancy Control Trailer", "Трейлер контроля резервирования PRP", true],
+  "TLS 1.3": ["Transport Layer Security 1.3", "Протокол защиты транспортного уровня 1.3", true],
+  "ALPN": ["Application-Layer Protocol Negotiation", "Согласование прикладного протокола в TLS", true],
+  "CertificateVerify": ["TLS CertificateVerify Message", "Подпись транскрипта приватным ключом сервера", false],
+  "VXLAN": ["Virtual eXtensible Local Area Network", "Виртуальная расширяемая локальная сеть L2-over-L3", true],
+  "VTEP": ["VXLAN Tunnel Endpoint", "Граничная точка туннеля VXLAN", true],
+  "VNI": ["VXLAN Network Identifier", "24-битный идентификатор сегмента VXLAN", true],
+  "ProxyJump": ["OpenSSH ProxyJump (-J)", "Сквозное подключение SSH через бастион", false],
+  "Agent Forwarding": ["SSH Agent Forwarding (-A)", "Пересылка сокета агента аутентификации SSH", false],
+  "Local Port Forwarding": ["SSH Local Port Forwarding (-L)", "Локальный проброс порта через SSH-туннель", false],
   "Location": ["HTTP Location", "Адрес назначения перенаправления", false],
   "Cache-Control": ["HTTP Cache-Control", "Правила кэширования HTTP", false],
   "GET": ["HTTP GET", "Получение представления ресурса", false],
