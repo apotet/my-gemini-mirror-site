@@ -63,7 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m agent_runtime.cli publish
-      - name: Export full raw history from durable checkpoint blobs
+      - name: Export checked history from durable checkpoint blobs
         if: always() && steps.prepare.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}

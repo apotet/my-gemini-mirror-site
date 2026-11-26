@@ -57,7 +57,10 @@ class FakeAPI:
         if method=='GET' and endpoint.startswith('/pulls?'):return copy.deepcopy(self.prs)
         if method=='GET' and endpoint.startswith('/pulls/'):return copy.deepcopy(next(p for p in self.prs if str(p['number'])==endpoint.rsplit('/',1)[1]))
         if method=='POST' and endpoint=='/pulls':
-            p={'number':len(self.prs)+1,'draft':data['draft'],'state':'open','html_url':'https://example/pr/1','head':{'sha':self.refs[data['head']]}}
+            repo={'full_name':'apotet/my-gemini-mirror-site'}
+            p={'number':len(self.prs)+1,'draft':data['draft'],'state':'open','html_url':'https://example/pr/1',
+               'head':{'sha':self.refs[data['head']],'ref':data['head'],'repo':repo},
+               'base':{'ref':'main','repo':repo}}
             self.prs.append(p);return copy.deepcopy(p)
         if method=='POST' and '/comments' in endpoint:
             note={**data,'id':len(self.notes)+1};self.notes.append(note);return note
@@ -67,7 +70,7 @@ class FakeAPI:
 def response(envelope,finish='stop'):
     text=envelope if isinstance(envelope,str) else json.dumps(envelope,ensure_ascii=False)
     return {'content':text,'reasoning_content':'retained reasoning','finish_reason':finish,
-            'usage':{'prompt_tokens':1000,'completion_tokens':200,'prompt_tokens_details':{'cached_tokens':0,'cache_write_tokens':0}},'billing':{},'raw':'SSE data retained'}
+            'usage':{'prompt_tokens':1000,'completion_tokens':200,'prompt_tokens_details':{'cached_tokens':0,'cache_write_tokens':0}},'billing':{}}
 
 
 class Runtime(unittest.TestCase):
@@ -130,8 +133,8 @@ class Runtime(unittest.TestCase):
         self.repo.entries.pop('docs/LEARNING_CONTENT_STANDARD.md')
         with patch.object(cli,'source_repo',return_value=self.repo),self.assertRaises(ValueError):self.prepare()
         self.assertFalse(self.api.refs);self.assertFalse(self.api.notes)
-    def test_partial_sse_transport_preserves_uncertain_checkpoint_without_repeat(self):
-        self.prepare();raw=b'data: {"choices":[{"delta":{"content":"partial response"}}]}\n'
+    def test_partial_sse_transport_discards_unverified_bytes_without_repeat(self):
+        self.prepare();raw=b'data: {"choices":[{"delta":{"content":"fake-not-sent"}}]}\n'
         original_run=subprocess.run;attempts=[]
         def transport(argv,**kwargs):
             if argv[0]!='curl':return original_run(argv,**kwargs)
@@ -146,8 +149,8 @@ class Runtime(unittest.TestCase):
         self.assertEqual(state['status'],'uncertain');self.assertEqual(len(state['calls']),1)
         self.assertEqual(state['calls'][0]['problem'],'ValueError')
         ledger=Ledger(self.api,'kimi','issue-9');ledger.load();ledger.materialize(state,self.out)
-        pieces=state['calls'][0]['partial_artifacts']
-        self.assertEqual(b''.join((self.out/'ledger-artifacts'/p).read_bytes() for p in pieces),raw)
+        self.assertNotIn('partial_artifacts',state['calls'][0])
+        self.assertNotIn(raw,b''.join(self.api.blobs.values()))
         with self.assertRaises(ValueError):core.continue_task(state,ledger.head,ledger.head,'new',1)
     def test_base64_text_and_assembled_chunks_cannot_bypass_credential_guard(self):
         secret='ghp_'+('abc123'*6)
@@ -292,13 +295,14 @@ class Runtime(unittest.TestCase):
             return response('{"status":','length')
         cli.run_loop('gemini',self.api,infer=partial)
         ledger=Ledger(self.api,'gemini','issue-9');state=ledger.load()
-        self.assertEqual(state['pending_text'],'{"status":')
+        self.assertEqual(state['status'],'uncertain')
+        self.assertEqual(state['pending_text'],'')
         self.assertEqual(core.work_branch(state),'gemini/issue-9')
         self.event['comment']={'id':222,'user':{'login':'apotet','type':'User'},
-            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1})}
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,'acknowledge_uncertain':True})}
         self.write_event();cli.prepare('gemini',self.api)
         def finish(task,messages,out,timeout):
-            return response('"complete","files":[{"path":"src/a.ts","content":"new"}]}')
+            return response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})
         cli.run_loop('gemini',self.api,infer=finish,validator=lambda r,s:{'passed':True,'logs':[]})
         state=ledger.load()
         self.assertEqual(state['status'],'ready_for_review')
@@ -341,8 +345,8 @@ class Runtime(unittest.TestCase):
         self.assertEqual(state['calls'][0]['http_status'],429)
         ledger=Ledger(self.api,'gemini','issue-9')
         ledger.materialize(state,self.out)
-        saved_body=self.out/'ledger-artifacts'/state['calls'][0]['partial_artifacts'][0]
-        self.assertEqual(saved_body.read_text(),'{"error":"quota"}')
+        self.assertNotIn('partial_artifacts',state['calls'][0])
+        self.assertNotIn(b'{"error":"quota"}',b''.join(self.api.blobs.values()))
         self.assertIsNone(core.totals(state)['exact_cost_usd'])
         cli.report('gemini',self.api)
         self.assertIn('Gemini HTTP 429 (quota or rate limit). No automatic retry.',self.api.notes[-1]['body'])
@@ -426,6 +430,91 @@ class Runtime(unittest.TestCase):
             policy.apply_files(state,[{'path':'src/a.ts','encoding':'base64',
                                        'content':base64.b64encode(key.encode()).decode()}])
         self.assertFalse(state['overlay'])
+
+    def test_binary_context_is_checked_before_encoding_for_all_providers(self):
+        secret='ghp_'+('abc123'*6)
+        read=self.repo.read
+        with patch.object(self.repo,'read',side_effect=lambda name:
+                          b'\xffA'+secret.encode()+b'Z\x80' if name=='public/image.png' else read(name)):
+            for provider in ('kimi','gemini'):
+                task=core.normalize({'task':'Inspect image','context_files':['public/image.png']},provider)
+                with self.subTest(provider=provider),self.assertRaises(ValueError):
+                    core.initial(task,self.repo,provider,'issue-9',9)
+        self.assertFalse(self.api.refs)
+
+    def test_unsafe_responses_are_discarded_before_checkpoint_and_artifact(self):
+        secret='ghp_'+('abc123'*6)
+        answers=[
+            response({'status':'complete','report':secret}),
+            {**response({'status':'complete','report':'ok'}),'reasoning_content':secret},
+            response({'status':'complete','files':[{'path':'src/a.ts','encoding':'base64',
+                     'content':base64.b64encode(secret.encode()).decode()}]}),
+            response('{"status":"complete","report":"\\u0067hp_'+('abc123'*6)+'"}'),
+            response({'status':'complete','report':'fake-not-sent'}),
+            response({'status':'complete','report':base64.b64encode(b'fake-not-sent').decode()}),
+            response('{"status":"complete","report":"\\u0067hp_'+('abc123'*6)+'","report":"ok"}'),
+        ]
+        for answer in answers:
+            with self.subTest(answer_type=answers.index(answer)):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                self.prepare()
+                def infer(task,messages,out,timeout):
+                    (out/'response.sse').write_text(secret)
+                    return answer
+                cli.run_loop('kimi',self.api,infer=infer)
+                state=self.state_after()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertNotIn('response',state['calls'][-1])
+                self.assertNotIn(secret.encode(),b''.join(self.api.blobs.values()))
+                for path in self.out.rglob('*'):
+                    if path.is_file():self.assertNotIn(secret.encode(),path.read_bytes())
+
+    def test_streamed_split_secret_is_rejected_before_sidecar_or_export(self):
+        secret='ghp_'+('abc123'*6)
+        full=json.dumps({'status':'complete','report':secret})
+        split=full.index(secret)+12
+        chunks=[{'choices':[{'delta':{'content':part},'finish_reason':finish}]}
+                for part,finish in ((full[:split],None),(full[split:],'stop'))]
+        raw=''.join('data: '+json.dumps(chunk)+'\n\n' for chunk in chunks)+'data: [DONE]\n'
+        self.prepare()
+        original_run=subprocess.run
+        def transport(argv,**kwargs):
+            if argv[0]!='curl':return original_run(argv,**kwargs)
+            Path(argv[argv.index('--output')+1]).write_text(raw)
+            return subprocess.CompletedProcess(argv,0,'200','')
+        with patch.object(providers.subprocess,'run',side_effect=transport):
+            cli.run_loop('kimi',self.api,infer=providers.infer)
+        state=self.state_after()
+        self.assertEqual(state['status'],'uncertain')
+        self.assertNotIn('response',state['calls'][0])
+        self.assertNotIn(secret.encode(),b''.join(self.api.blobs.values()))
+        self.assertFalse((self.out/'ledger-artifacts').exists())
+
+    def test_ledger_rejects_sensitive_state_before_creating_any_blob(self):
+        state=self.state()
+        state['overlay']['src/a.ts']=base64.b64encode(('ghp_'+('abc123'*6)).encode()).decode()
+        with self.assertRaises(ValueError):Ledger(self.api,'kimi','issue-9').save(state)
+        self.assertFalse(self.api.blobs)
+        self.assertFalse(self.api.refs)
+
+    def test_gemini_pilot_caps_attempts_and_tokens_across_continuations(self):
+        task=core.normalize({'task':'pilot','max_calls':1,'max_total_calls':1,'max_output_tokens':2048},'gemini')
+        self.assertEqual(providers.payload(task,[])['generationConfig']['maxOutputTokens'],2048)
+        state=core.initial(task,self.repo,'gemini','issue-9',9)
+        core.reserve(state)
+        with self.assertRaises(ValueError):
+            core.continue_task(state,'head','head','grant',1,acknowledge_uncertain=True)
+        state['remaining_calls']=1
+        state['calls'][-1]['status']='uncertain_acknowledged'
+        with self.assertRaises(ValueError):core.reserve(state)
+        for fields in ({'max_total_calls':9},{'max_total_calls':1,'max_calls':2},
+                       {'max_output_tokens':16385},{'max_total_calls':True}):
+            with self.subTest(fields=fields),self.assertRaises(ValueError):
+                core.normalize({'task':'pilot',**fields},'gemini')
+        state['task'].pop('max_total_calls')
+        with self.assertRaises(ValueError):core.reserve(state)
 
     def test_gemini_dev_workflow_is_owner_only_and_never_merges(self):
         text=(ROOT/'.github/workflows/gemini-dev-issue.yml').read_text()
@@ -527,13 +616,14 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],'max_calls':1});self.write_event();self.prepare()
         self.loop([response({'status':'continue','report':'plan retained'})])
         state=self.state_after();self.assertEqual(state['status'],'paused');self.assertEqual(state['reports'],['plan retained'])
-    def test_incomplete_output_is_saved_then_continued_without_truncation(self):
+    def test_incomplete_output_is_discarded_and_stops(self):
         self.prepare();full=json.dumps({'status':'complete','files':[{'path':'src/a.ts','content':'FULL NEW SOURCE'}]})
         self.loop([response(full[:30],'length'),response(full[30:])])
-        state=self.state_after();self.assertEqual(state['status'],'ready_for_review')
-        self.assertEqual(state['calls'][0]['response']['content']+state['calls'][1]['response']['content'],full)
+        state=self.state_after();self.assertEqual(state['status'],'uncertain')
+        self.assertEqual(len(state['calls']),1)
+        self.assertNotIn('response',state['calls'][0])
 
-    def test_owner_can_extend_pilot_limits_and_resume_saved_partial_response(self):
+    def test_owner_can_extend_kimi_limits_after_discarded_partial_response(self):
         self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],
                                                 'max_calls':1,'max_total_calls':1,'budget_usd':'0.25',
                                                 'max_output_tokens':5120})
@@ -542,25 +632,26 @@ class Runtime(unittest.TestCase):
         full=json.dumps({'status':'complete','files':[{'path':'src/a.ts','content':'FULL NEW SOURCE'}]})
         self.loop([response(full[:30],'length')])
         before=self.state_after()
-        self.assertEqual(before['status'],'paused')
-        self.assertEqual(before['pending_text'],full[:30])
+        self.assertEqual(before['status'],'uncertain')
+        self.assertEqual(before['pending_text'],'')
         ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
         self.event['comment']={'id':789,'user':{'login':'apotet','type':'User'},
-            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,'acknowledge_uncertain':True,
                   'limits':{'max_total_calls':2,'max_output_tokens':16384,'budget_usd':'0.75'}})}
         self.write_event()
         self.prepare()
         resumed=self.state_after()
-        self.assertEqual(resumed['pending_text'],full[:30])
+        self.assertEqual(resumed['pending_text'],'')
         self.assertEqual(resumed['task']['max_total_calls'],2)
         self.assertEqual(resumed['task']['budget_usd'],'0.75')
         self.assertEqual(resumed['limit_changes'][-1]['grant_id'],'789')
-        seen=self.loop([response(full[30:])])
+        seen=self.loop([response(full)])
         self.assertEqual(len(seen),1)
         self.assertEqual(seen[0][0]['max_output_tokens'],16384)
         after=self.state_after()
         self.assertEqual(after['status'],'ready_for_review')
-        self.assertEqual(after['calls'][0]['response']['content']+after['calls'][1]['response']['content'],full)
+        self.assertNotIn('response',after['calls'][0])
+        self.assertEqual(after['calls'][1]['response']['content'],full)
 
     def test_continuation_limit_updates_require_owner_and_valid_checkpoint(self):
         self.prepare()
@@ -749,10 +840,10 @@ class Runtime(unittest.TestCase):
         core.reserve(state)
         with self.assertRaises(ValueError):
             core.continue_task(state,'same','same','new-grant',1)
-    def test_invalid_json_keeps_raw_response_and_does_not_spend_again(self):
+    def test_invalid_json_is_discarded_and_does_not_spend_again(self):
         self.prepare();self.loop([response('{bad json')])
         state=self.state_after();self.assertEqual(len(state['calls']),1)
-        self.assertIn('bad json',state['calls'][0]['response']['content']);self.assertTrue(state['status'].startswith('paused'))
+        self.assertNotIn('response',state['calls'][0]);self.assertEqual(state['status'],'uncertain')
     def test_validation_errors_feed_next_call_and_are_saved(self):
         self.prepare();results=[{'passed':False,'logs':['full failure log']},{'passed':True,'logs':['pass']}]
         seen=self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'bad'}]}),response({'status':'complete','files':[{'path':'src/a.ts','content':'fixed'}]})],lambda r,s:results.pop(0))
@@ -800,6 +891,96 @@ class Runtime(unittest.TestCase):
         with self.assertRaises(ValueError):cli.owned_pr(self.api,state)
         self.api.prs[0]['draft']=True;self.api.refs['kimi/issue-9']='human-commit'
         with self.assertRaises(ValueError):cli.owned_pr(self.api,state)
+    def test_publication_recovers_after_pr_creation_checkpoint_failure(self):
+        self.prepare()
+        self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})])
+        _,ledger,state=cli.load_activation(self.api)
+        original_save=ledger.save
+        count=0
+        def save(candidate):
+            nonlocal count
+            count+=1
+            if count==2:raise RuntimeError('simulated checkpoint failure')
+            return original_save(candidate)
+        with patch.object(ledger,'save',side_effect=save),self.assertRaises(RuntimeError):
+            core.publish_candidate(self.api,ledger,state)
+        self.assertEqual(len(self.api.prs),1)
+        saved=ledger.load()
+        self.assertNotIn('pr_number',saved)
+        head=self.api.ref('kimi/issue-9')
+        core.publish_candidate(self.api,ledger,saved)
+        self.assertEqual(saved['status'],'published_draft')
+        self.assertEqual(len(self.api.prs),1)
+        self.assertEqual(self.api.ref('kimi/issue-9'),head)
+
+    def test_publication_recovers_after_ref_creation_checkpoint_failure(self):
+        self.prepare()
+        self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})])
+        _,ledger,state=cli.load_activation(self.api)
+        with patch.object(ledger,'save',side_effect=RuntimeError('simulated failure')),self.assertRaises(RuntimeError):
+            core.publish_candidate(self.api,ledger,state)
+        head=self.api.ref('kimi/issue-9')
+        self.assertIsNotNone(head)
+        saved=ledger.load()
+        self.assertIsNone(saved['published_head'])
+        core.publish_candidate(self.api,ledger,saved)
+        self.assertEqual(self.api.ref('kimi/issue-9'),head)
+        self.assertEqual(saved['status'],'published_draft')
+
+    def test_existing_or_concurrently_ready_pr_never_has_branch_changed(self):
+        self.prepare()
+        self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})])
+        cli.publish('kimi',self.api)
+        state=self.state_after();head=state['published_head']
+        state['status']='ready_for_review'
+        state.pop('pr_number')
+        state['overlay']['src/a.ts']=base64.b64encode(b'different candidate').decode()
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        for draft in (True,False):
+            self.api.prs[0]['draft']=draft
+            with self.subTest(draft=draft),self.assertRaises(ValueError):
+                core.publish_candidate(self.api,ledger,state)
+            self.assertEqual(self.api.ref('kimi/issue-9'),head)
+        self.assertFalse(any(method=='PATCH' and endpoint=='/git/refs/heads/kimi/issue-9'
+                             for method,endpoint,_ in self.api.calls))
+
+    def test_draft_change_during_recovery_never_mutates_branch(self):
+        self.prepare()
+        self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})])
+        cli.publish('kimi',self.api)
+        state=self.state_after();state['status']='ready_for_review'
+        state.pop('pr_number');head=state['published_head']
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        original=self.api.request
+        def request(method,endpoint,data=None):
+            if method=='GET' and endpoint.startswith('/pulls/'):
+                self.api.prs[0]['draft']=False
+            return original(method,endpoint,data)
+        with patch.object(self.api,'request',side_effect=request),self.assertRaises(ValueError):
+            core.publish_candidate(self.api,ledger,state)
+        self.assertEqual(self.api.ref('kimi/issue-9'),head)
+        self.assertFalse(any(method=='PATCH' and endpoint=='/git/refs/heads/kimi/issue-9'
+                             for method,endpoint,_ in self.api.calls))
+    def test_draft_change_after_preflight_is_detected_without_branch_update(self):
+        self.prepare()
+        self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})])
+        cli.publish('kimi',self.api)
+        state=self.state_after();state['status']='ready_for_review'
+        head=state['published_head']
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        original=self.api.request;reads=0
+        def request(method,endpoint,data=None):
+            nonlocal reads
+            if method=='GET' and endpoint.startswith('/pulls/'):
+                reads+=1
+                if reads==2:self.api.prs[0]['draft']=False
+            return original(method,endpoint,data)
+        with patch.object(self.api,'request',side_effect=request),self.assertRaises(ValueError):
+            core.publish_candidate(self.api,ledger,state)
+        self.assertEqual(reads,2)
+        self.assertEqual(self.api.ref('kimi/issue-9'),head)
+        self.assertFalse(any(method=='PATCH' and endpoint=='/git/refs/heads/kimi/issue-9'
+                             for method,endpoint,_ in self.api.calls))
     def test_publish_requires_checks_not_model_claim(self):
         state=self.state();state['status']='ready_for_review'
         with self.assertRaises(ValueError):core.publish_candidate(self.api,Ledger(self.api,'kimi','issue-9'),state)
@@ -827,7 +1008,7 @@ class Runtime(unittest.TestCase):
     def test_report_links_full_outputs_instead_of_slicing(self):
         self.prepare();self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}],'report':'r'*100000})]);cli.report('kimi',self.api)
         self.assertEqual((self.out/'report.md').read_text(),'r'*100000)
-        self.assertIn('Full unabridged',self.api.notes[-1]['body'])
+        self.assertIn('Checked report',self.api.notes[-1]['body'])
     def test_documented_credential_placeholder_is_not_a_real_key(self):
         policy.safe_text('placeholder="ghp_'+('x'*36)+'"')
         with self.assertRaises(ValueError):policy.safe_text('ghp_'+('abc123'*6))
@@ -835,8 +1016,11 @@ class Runtime(unittest.TestCase):
     def test_raw_stream_sidecars_preserve_full_bytes_across_checkpoints(self):
         state=self.state();ledger=Ledger(self.api,'kimi','issue-9')
         core.reserve(state)
-        raw='data: '+('полный поток '*800000)+'\n'
-        reply=response({'status':'complete','report':'ok'});reply['raw']=raw
+        reply=response({'status':'complete','report':'ok'})
+        raw='data: '+json.dumps({'padding':'полный поток '*800000,
+            'choices':[{'delta':{'content':reply['content'],'reasoning_content':reply['reasoning_content']},
+                        'finish_reason':'stop'}]},ensure_ascii=False)+'\n\ndata: [DONE]\n'
+        reply['raw']=raw
         core.answered(state,reply);ledger.save(state)
         saved=ledger.load();self.assertNotIn('raw',saved['calls'][0]['response'])
         paths=saved['calls'][0]['response_artifacts'];self.assertGreater(len(paths),1)
@@ -844,18 +1028,17 @@ class Runtime(unittest.TestCase):
         restored=b''.join((self.out/'ledger-artifacts'/p).read_bytes() for p in paths)
         self.assertEqual(restored,raw.encode())
         self.assertEqual(saved['messages'][-1]['content'],reply['content'])
-    def test_transport_single_attempt_redacts_key_and_retains_large_stream(self):
-        raw='data: '+json.dumps({'choices':[{'delta':{'content':'fake-not-sent'+('x'*2100000)},'finish_reason':'stop'}]})+'\ndata: [DONE]\n'
+    def test_transport_single_attempt_rejects_key_without_output_artifacts(self):
+        raw='data: '+json.dumps({'choices':[{'delta':{'content':'fake-not-sent'},'finish_reason':'stop'}]})+'\ndata: [DONE]\n'
         def transport(argv,**kw):
             self.assertEqual(argv[argv.index('--retry')+1],'0');self.assertNotIn('--max-filesize',argv)
             Path(argv[argv.index('--output')+1]).write_text(raw)
             Path(argv[argv.index('--dump-header')+1]).write_text('Authorization: fake-not-sent\r\nmsh-usage-cache-write-tokens-5m: 12\r\n')
             return subprocess.CompletedProcess(argv,0,'200','')
         with patch.object(providers.subprocess,'run',side_effect=transport) as run:
-            reply=providers.infer(self.task(),[],self.out,30)
-        self.assertEqual(run.call_count,1);self.assertGreater(len(reply['content']),2100000)
-        self.assertNotIn('fake-not-sent',reply['raw']);self.assertFalse((self.out/'headers.tmp').exists())
-        self.assertEqual(reply['billing']['msh-usage-cache-write-tokens-5m'],12)
+            with self.assertRaises(ValueError):providers.infer(self.task(),[],self.out,30)
+        self.assertEqual(run.call_count,1)
+        self.assertFalse(self.out.exists())
 
     def test_active_routes_use_one_engine_and_do_not_load_old_caps(self):
         for name in ['zai','kimi']:

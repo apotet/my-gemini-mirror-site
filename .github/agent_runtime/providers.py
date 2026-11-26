@@ -5,6 +5,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
+from . import policy
 
 
 @dataclass(frozen=True)
@@ -118,38 +120,37 @@ def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
     if not key: raise ValueError('Missing provider credential')
-    output_dir.mkdir(parents=True,exist_ok=True)
     request = payload(task,messages)
-    (output_dir/'request.json').write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
-    raw, headers = output_dir/'response.sse', output_dir/'headers.tmp'
-    try:
+    policy.safe_value(request)
+    with tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
+        temp=Path(temp)
+        request_file=temp/'request.json'
+        request_file.write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
+        raw, headers = temp/'response.sse', temp/'headers.tmp'
         model=MODELS[task['model']]
         auth=('x-goog-api-key: ' if model.provider=='gemini' else 'Authorization: Bearer ')+key
         result = subprocess.run(['curl','-q','--silent','--show-error','--no-buffer','--retry','0',
             '--max-time',str(timeout),'--proto','=https','--output',str(raw),'--dump-header',str(headers),
             '--write-out','%{http_code}',model.endpoint,
             '--header',auth,'--header','Content-Type: application/json',
-            '--data-binary','@'+str(output_dir/'request.json')],capture_output=True,text=True,timeout=timeout+15)
+            '--data-binary','@'+str(request_file)],capture_output=True,text=True,timeout=timeout+15)
         status = result.stdout
-    finally:
         billing = {}
         if headers.exists():
             for line in headers.read_text(errors='replace').splitlines():
                 name, _, value = line.partition(':')
                 if name.lower() in ('msh-usage-cache-write-tokens-5m','msh-usage-cache-write-tokens-1h') and value.strip().isdigit():
                     billing[name.lower()] = int(value.strip())
-            headers.unlink()
-        (output_dir/'billing.json').write_text(json.dumps(billing))
-        if raw.exists(): raw.write_bytes(raw.read_bytes().replace(key.encode(),b'[REDACTED]'))
-    if result.returncode or status != '200':
-        (output_dir/'transport.json').write_text(json.dumps({'returncode':result.returncode,'http_status':status}))
-        if model.provider=='gemini' and not result.returncode and status.isascii() and status.isdecimal():
-            raise GeminiHTTPError(status)
-        raise ValueError('Transport failed; attempted request must not be silently repeated')
-    parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw.read_text(encoding='utf-8'))
-    parsed['billing'] = billing
-    parsed['raw'] = raw.read_text(encoding='utf-8')
-    return parsed
+        if result.returncode or status != '200':
+            if model.provider=='gemini' and not result.returncode and status.isascii() and status.isdecimal():
+                raise GeminiHTTPError(status)
+            raise ValueError('Transport failed; attempted request must not be silently repeated')
+        raw_text=raw.read_text(encoding='utf-8')
+        policy.safe_value(raw_text)
+        parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw_text)
+        parsed['billing'] = billing
+        parsed['raw'] = raw_text
+        return parsed
 
 
 def cost(model_name, usage, billing):

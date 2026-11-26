@@ -1,5 +1,4 @@
 """Trusted orchestration. No model-controlled host commands, checkout or endpoints."""
-import base64
 import copy
 import hashlib
 import json
@@ -17,6 +16,8 @@ OUT=Path(os.environ.get('AGENT_OUTPUT_DIR',str(Path(os.environ.get('RUNNER_TEMP'
 
 
 def save(name,data):
+    if name=='state.json':policy.check_state(data)
+    else:policy.safe_value(data)
     OUT.mkdir(parents=True,exist_ok=True)
     (OUT/name).write_text(data if isinstance(data,str) else json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
 
@@ -94,10 +95,9 @@ def owned_pr(api,state):
     if state.get('published_head'):
         branch=core.work_branch(state)
         if api.ref(branch)!=state['published_head']:raise ValueError('Work branch moved; do not spend or overwrite')
-    if state.get('pr_number'):
-        pr=api.request('GET','/pulls/'+str(state['pr_number']))
-        if pr['state']!='open' or not pr['draft'] or pr['head']['sha']!=state['published_head']:
-            raise ValueError('PR under owner control; create a new task instead')
+        core.existing_draft(api,state,branch,state['published_head'])
+    elif state.get('pr_number'):
+        raise ValueError('PR checkpoint has no published head')
 
 
 def prepare(provider,api=None):
@@ -210,7 +210,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                 updated=copy.deepcopy(state)
                 try:core.process(updated,repo,validator,trusted_repo)
                 except Exception as exc:
-                    # Save full response/overlay. No speculative repeat of a paid request.
+                    # Preserve only checked response/overlay; never repeat a paid request automatically.
                     updated['status']='paused_response_or_validation'
                     updated['problem']=type(exc).__name__
                     state=updated;persist(ledger,state,plan);break
@@ -232,16 +232,15 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             if provider=='kimi':
                 state['calls'][-1]['budget_reservation']=reservation
             persist(ledger,state,plan) # irrevocable spent-attempt reservation BEFORE HTTP
-            call_dir=OUT/'calls'/str(len(state['calls']))
             try:
-                response=infer(state['task'],state['messages'],call_dir,max(1,int(deadline-clock()-180)))
+                with tempfile.TemporaryDirectory(prefix='agent-call-') as call_dir:
+                    response=infer(state['task'],state['messages'],Path(call_dir),max(1,int(deadline-clock()-180)))
+                    policy.check_response(state,response)
             except Exception as exc:
                 state['status']='uncertain'
                 state['calls'][-1]['problem']=type(exc).__name__
                 if isinstance(exc,providers.GeminiHTTPError):
                     state['calls'][-1]['http_status']=exc.status
-                if (call_dir/'response.sse').exists():
-                    state['calls'][-1]['raw_partial_base64']=base64.b64encode((call_dir/'response.sse').read_bytes()).decode()
                 persist(ledger,state,plan);break
             core.answered(state,response);persist(ledger,state,plan)
             if provider=='kimi':
@@ -317,8 +316,8 @@ Usage/calls/spend (before tax; unknown calls are NOT zero):
 ```json
 {json.dumps(metrics,ensure_ascii=False,indent=2)}
 ```
-Full unabridged report, responses, code and checkpoints: [artifacts]({artifact}), [run]({run}).
-No report/source/result is silently shortened. This comment is an index, not an excerpt.
+Checked report, responses, code and checkpoints: [artifacts]({artifact}), [run]({run}).
+Unverified or unsafe responses are discarded; this comment is an index, not an excerpt.
 Continue only with an owner `/agent continue` command naming this exact checkpoint and a finite call grant.
 '''
     save('summary.md',body)

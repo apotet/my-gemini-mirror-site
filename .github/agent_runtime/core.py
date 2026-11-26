@@ -22,7 +22,7 @@ Return only a JSON object: {"status":"continue" or "complete","summary":"...","r
 "read_files":["project/path"],"files":[{"path":"...","action":"write|append|delete","encoding":"utf-8|base64",
 "content":"full content or exact next chunk","complete":true,"expected_sha256":"required for append"}]}.
 Use write complete=false and append chunks with the last file hash for very large outputs. No stubs, omissions or ellipses.
-All source context and outputs are retained. Ask for more source with read_files. Images are native attachments where supported;
+Verified source context and complete safe outputs are retained. Ask for more source with read_files. Images are native attachments where supported;
 text-only models must mark visual inspection UNVERIFIED. Finish only when the task is complete; runtime runs independent checks.
 Use continue for further work. Runtime may give full validation errors for a subsequent distinct request.
 Independent human acceptance is always pending, even when runtime checks pass.'''
@@ -59,9 +59,14 @@ def normalize(raw,provider):
         if type(task['max_output_tokens']) is not int or not 1<=task['max_output_tokens']<=65536:
             raise ValueError('Kimi output token limit must be 1..65536')
     elif provider=='gemini':
-        if any(k in raw for k in ('budget_usd','max_input_tokens','max_total_calls')):
+        if any(k in raw for k in ('budget_usd','max_input_tokens')):
             raise ValueError('Budget fields apply only to Kimi')
+        task['max_total_calls']=raw.get('max_total_calls',8)
         task['max_output_tokens']=raw.get('max_output_tokens',16384)
+        if type(task['max_total_calls']) is not int or not 1<=task['max_total_calls']<=8:
+            raise ValueError('Gemini allows 1 to 8 total attempts per task')
+        if type(task['max_calls']) is not int or not 1<=task['max_calls']<=task['max_total_calls']:
+            raise ValueError('Gemini call grant exceeds total task limit')
     elif any(k in raw for k in ('budget_usd','max_input_tokens','max_total_calls')):
         raise ValueError('Budget fields apply only to Kimi')
     if task['model'] not in providers.MODELS or providers.MODELS[task['model']].provider!=provider:
@@ -113,6 +118,7 @@ def context(repo,names,trusted_repo=None):
             policy.path(target)
             source=trusted_repo if trusted_repo and target in MANDATORY_CONTEXT else repo
             data=source.read(target)
+            policy.safe_bytes(data)
             item={'path':target,'sha256':policy.digest(data)}
             try:item.update(encoding='utf-8',content=policy.safe_text(data.decode('utf-8')))
             except UnicodeDecodeError:item.update(encoding='base64',content=base64.b64encode(data).decode())
@@ -160,6 +166,10 @@ def initial(task,repo,provider,key,issue=None,trusted_repo=None):
 def reserve(state):
     if state['remaining_calls']<1:raise ValueError('Call grant exhausted')
     if state['calls'] and state['calls'][-1]['status']=='reserved':raise ValueError('Uncertain previous attempt; owner acknowledgement required')
+    if state['provider']=='gemini':
+        limit=state['task'].get('max_total_calls')
+        if type(limit) is not int or not 1<=limit<=8 or len(state['calls'])>=limit:
+            raise ValueError('Gemini task attempt limit exhausted or missing')
     state['remaining_calls']-=1
     request=providers.payload(state['task'],state['messages'])
     state['calls'].append({'id':len(state['calls'])+1,'status':'reserved',
@@ -249,15 +259,19 @@ def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_unc
             raise ValueError('Legacy Kimi task has no budget; create a new explicitly authorized task')
         if len(state['calls'])+calls>state['task']['max_total_calls']:
             raise ValueError('Continuation grant exceeds Kimi task call limit')
+    elif state['provider']=='gemini':
+        limit=state['task'].get('max_total_calls')
+        if type(limit) is not int or not 1<=limit<=8 or len(state['calls'])+calls>limit:
+            raise ValueError('Continuation exceeds Gemini task attempt limit or legacy limit is missing')
     uncertain=state['status'] in ('request_reserved','uncertain') or state['calls'] and state['calls'][-1]['status']=='reserved'
     if uncertain and not acknowledge_uncertain:raise ValueError('Previous charge may have happened; explicit owner acknowledgement required')
     if uncertain:
         state['calls'][-1]['status']='uncertain_acknowledged'
-        state['messages'].append({'role':'user','content':'Coordinator acknowledged an uncertain previous request. Do not assume it completed; its saved data remain in the record.'})
+        state['messages'].append({'role':'user','content':'Coordinator acknowledged an uncertain previous request. Do not assume it completed; unverified response bytes were discarded.'})
     if reset_response:
         state['pending_text']=''
         if state['calls'] and state['calls'][-1]['status']=='answered':state['calls'][-1]['processed']=True
-        state['messages'].append({'role':'user','content':'Coordinator explicitly requests a fresh JSON envelope after the previous invalid/partial response. Full raw responses remain in the history.'})
+        state['messages'].append({'role':'user','content':'Coordinator explicitly requests a fresh JSON envelope after the previous invalid/partial response.'})
     if state['provider'] in ('kimi','gemini'):
         state['remaining_calls']=calls
     else:
@@ -298,6 +312,21 @@ def work_branch(state):
     return state.get('work_branch',f'agents/work/{state["provider"]}-{state["key"]}')
 
 
+def existing_draft(api,state,branch,head):
+    prs=api.request('GET','/pulls?'+urlencode({'state':'all','head':'apotet:'+branch,'per_page':100}))
+    if len(prs)>1:raise ValueError('Ambiguous PR history')
+    if not prs:
+        if state.get('pr_number'):raise ValueError('Previously published PR is missing')
+        return None
+    pr=api.request('GET','/pulls/'+str(prs[0]['number']))
+    if (state.get('pr_number') and state['pr_number']!=pr['number'] or
+        pr['state']!='open' or not pr['draft'] or not head or pr['head']['sha']!=head or
+        pr['head']['ref']!=branch or pr['head']['repo']['full_name']!='apotet/my-gemini-mirror-site' or
+        pr['base']['ref']!='main' or pr['base']['repo']['full_name']!='apotet/my-gemini-mirror-site'):
+        raise ValueError('Existing PR changed; do not alter its branch')
+    return pr
+
+
 def publish_candidate(api,ledger,state):
     if state['status']!='ready_for_review' or not state.get('validations') or not state['validations'][-1]['passed']:
         raise ValueError('Mandatory validation not passed')
@@ -306,10 +335,7 @@ def publish_candidate(api,ledger,state):
     previous=state.get('published_head')
     remote=api.ref(branch)
     if previous and remote!=previous:raise ValueError('Agent branch moved; never overwrite contributor work')
-    if state.get('pr_number'):
-        pr=api.request('GET','/pulls/'+str(state['pr_number']))
-        if pr['state']!='open' or not pr['draft'] or pr['head']['sha']!=previous:
-            raise ValueError('Owner changed PR state; independent acceptance cannot be overridden')
+    existing_draft(api,state,branch,remote)
     source=state['sourceSHA']
     base=api.request('GET','/git/commits/'+source)['tree']['sha']
     entries=[]
@@ -321,28 +347,26 @@ def publish_candidate(api,ledger,state):
     reusable=False
     if remote:
         obj=api.request('GET','/git/commits/'+remote)
-        if not previous:
-            if obj['tree']['sha']!=tree or [p['sha'] for p in obj['parents']]!=[source]:
-                raise ValueError('Unexpected pre-existing work branch')
-            reusable=True
-        elif obj['tree']['sha']==tree:
-            reusable=True
+        if obj['tree']['sha']!=tree or not previous and [p['sha'] for p in obj['parents']]!=[source]:
+            raise ValueError('Published branch is immutable; create a new task for changes')
+        reusable=True
     if reusable:
         commit=remote
     else:
         commit=api.request('POST','/git/commits',{'message':f'Agent {state["provider"]}: {state["key"]}',
             'tree':tree,'parents':[previous or source]})['sha']
-        if remote is None:api.request('POST','/git/refs',{'ref':'refs/heads/'+branch,'sha':commit})
-        else:api.request('PATCH','/git/refs/heads/'+branch,{'sha':commit,'force':False})
+        # A ref is created once and never updated: PR draft state and ref updates
+        # cannot be checked atomically across GitHub APIs.
+        existing_draft(api,state,branch,api.ref(branch))
+        api.request('POST','/git/refs',{'ref':'refs/heads/'+branch,'sha':commit})
+    if api.ref(branch)!=commit:raise ValueError('Work branch moved during publication')
     state['published_head']=commit;ledger.save(state) # checkpoint before PR HTTP request
-    existing=api.request('GET','/pulls?'+urlencode({'state':'all','head':'apotet:'+branch,'base':'main','per_page':100}))
-    if existing:
-        if len(existing)!=1:raise ValueError('Ambiguous PR history')
-        pr=existing[0]
-        if pr['state']!='open' or not pr['draft'] or pr['head']['sha']!=commit:raise ValueError('Existing PR changed; do not alter it')
-    else:
+    pr=existing_draft(api,state,branch,commit)
+    if not pr:
         pr=api.request('POST','/pulls',{'head':branch,'base':'main','draft':True,
             'title':f'{state["provider"].upper()}: {state["key"]}',
             'body':f'Source `{source}`. Mandatory sandbox checks passed. Independent review by another agent and owner acceptance: PENDING.\n\nCheckpoint: `{ledger.head}`. Full results and spend in the task ledger/artifacts. No automatic merge or deploy.'})
+        pr=existing_draft(api,state,branch,commit)
+        if not pr:raise ValueError('Created PR not found; retry recovery')
     state.update(pr_number=pr['number'],pr_url=pr['html_url'],status='published_draft')
     ledger.save(state)

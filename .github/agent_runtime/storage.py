@@ -11,6 +11,7 @@ import re
 import subprocess
 import urllib.error
 import urllib.request
+from . import policy
 
 REPOSITORY = 'apotet/my-gemini-mirror-site'
 
@@ -74,6 +75,8 @@ class Ledger:
         return state
 
     def save(self,state):
+        # Reject the entire checkpoint before creating even the first Git blob.
+        policy.check_state(state)
         # Check expected head before creating a child; Git's non-force ref update
         # rejects sibling commits if another writer wins after this read.
         if self.api.ref(self.branch)!=self.head:
@@ -107,13 +110,29 @@ class Ledger:
         return commit
 
     def materialize(self,state,directory):
+        policy.check_state(state)
+        pending=[]
         for name,sha in state.get('sidecars',{}).items():
             if not re.fullmatch(r'calls/[0-9]+/(response|partial)-[0-9]{5}\.sse',name):
                 raise ValueError('Invalid sidecar path')
+            if '/partial-' in name:
+                raise ValueError('Unverified partial response cannot be exported')
             target=Path(directory)/'ledger-artifacts'/name
-            if not target.exists():
-                blob=self.api.request('GET','/git/blobs/'+sha)
-                target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(base64.b64decode(blob['content']))
+            blob=self.api.request('GET','/git/blobs/'+sha)
+            pending.append((target,base64.b64decode(blob['content'])))
+        # Inspect the complete stream before writing any artifact, including chunk boundaries.
+        referenced=set()
+        for call in state.get('calls',[]):
+            paths=call.get('response_artifacts',[])
+            if paths:
+                pieces={str(target.relative_to(Path(directory)/'ledger-artifacts')):data for target,data in pending}
+                raw=b''.join(pieces[p] for p in paths).decode('utf-8')
+                policy.check_raw_response(state['provider'],call['response'],raw)
+                referenced.update(paths)
+        if referenced!=set(state.get('sidecars',{})):
+            raise ValueError('Unreferenced sidecar cannot be exported')
+        for target,data in pending:
+            target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
 
 
 

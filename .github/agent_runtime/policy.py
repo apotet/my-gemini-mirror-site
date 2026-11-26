@@ -1,6 +1,9 @@
 """Limit dangerous effects, not model intelligence. No secret/control-plane writes."""
 import base64
+import binascii
 import hashlib
+import json
+import os
 from pathlib import PurePosixPath
 import re
 
@@ -35,20 +38,114 @@ def scoped(value, scopes):
 
 
 def safe_text(text):
+    for name in ('PROVIDER_API_KEY','GH_TOKEN','GITHUB_TOKEN'):
+        secret=os.environ.get(name,'').strip()
+        if secret:
+            encoded=base64.b64encode(secret.encode()).decode()
+            urlencoded=base64.urlsafe_b64encode(secret.encode()).decode()
+            if any(value in text for value in (secret,encoded,encoded.rstrip('='),urlencoded, urlencoded.rstrip('='))):
+                raise ValueError('Credential material detected; do not disclose')
     if re.search(r'-----BEGIN (?:[A-Z ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----',text):
         raise ValueError('Private credential material in source; do not send to a model')
     if re.search(r'(?<![A-Za-z0-9_-])AIza[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])',text):
         raise ValueError('Possible Google API credential in source; do not disclose')
-    candidates=re.finditer(r'(?<![A-Za-z0-9_-])(?:sk-proj-|sk-ant-|sk-|ghp_|ghs_)([A-Za-z0-9_-]{24,})',text)
+    if re.search(r'(?<![A-Za-z0-9])AKIA[0-9A-Z]{16}(?![A-Za-z0-9])',text):
+        raise ValueError('Possible AWS credential in source; do not disclose')
+    candidates=re.finditer(r'(?<![A-Za-z0-9_-])(?:sk-proj-|sk-ant-|sk-|ghp_|ghs_|gho_|ghu_|ghr_|github_pat_)([A-Za-z0-9_-]{24,})',text)
     if any(set(match.group(1)) not in ({'x'},{'X'}) for match in candidates):
         raise ValueError('Possible credential in source; do not disclose')
     return text
 
 
 def safe_bytes(data):
-    # Inspect the assembled bytes, regardless of transport encoding or chunk cuts.
-    # Replacement decoding preserves binary files and still detects ASCII credentials.
+    # Binary data can place ASCII identifier characters directly beside a key.
+    if re.search(rb'AIza[A-Za-z0-9_-]{35}',data):
+        raise ValueError('Possible Google API credential in bytes; do not disclose')
+    if re.search(rb'AKIA[0-9A-Z]{16}',data):
+        raise ValueError('Possible AWS credential in bytes; do not disclose')
+    candidates=re.finditer(rb'(?:sk-proj-|sk-ant-|sk-|ghp_|ghs_|gho_|ghu_|ghr_|github_pat_)([A-Za-z0-9_-]{24,})',data)
+    if any(set(match.group(1)) not in ({ord('x')},{ord('X')}) for match in candidates):
+        raise ValueError('Possible credential in bytes; do not disclose')
     safe_text(data.decode('utf-8',errors='replace'))
+
+
+def safe_value(value):
+    if isinstance(value,str):
+        safe_text(value)
+        # Inspect encoded tokens as well as ordinary text, including JSON file content.
+        for match in re.finditer(r'(?<![A-Za-z0-9_+/=-])[A-Za-z0-9_+/-]{32,}={0,2}(?![A-Za-z0-9_+/=-])',value):
+            encoded=match.group()
+            try:decoded=base64.b64decode(encoded+'='*(-len(encoded)%4),altchars=b'-_',validate=True)
+            except (binascii.Error,ValueError):continue
+            safe_bytes(decoded)
+    elif isinstance(value,dict):
+        if value.get('encoding')=='base64' and isinstance(value.get('content'),str):
+            safe_bytes(base64.b64decode(value['content'],validate=True))
+        for key,item in value.items():
+            safe_value(key);safe_value(item)
+    elif isinstance(value,(list,tuple)):
+        for item in value:safe_value(item)
+
+
+def strict_json(text):
+    def pairs(items):
+        result={}
+        for key,value in items:
+            if key in result:raise ValueError('Duplicate JSON key')
+            result[key]=value
+        return result
+    return json.loads(text,object_pairs_hook=pairs)
+
+
+def check_state(state):
+    safe_value(state)
+    for encoded in state.get('overlay',{}).values():
+        if encoded is not None:safe_bytes(base64.b64decode(encoded,validate=True))
+    for call in state.get('calls',[]):
+        if call.get('raw_partial_base64'):
+            raise ValueError('Unverified partial response cannot be saved')
+        response=call.get('response')
+        if response:
+            try:envelope=strict_json(response['content'])
+            except (ValueError,TypeError):
+                raise ValueError('Unverified response cannot be saved') from None
+            safe_value(envelope)
+            if response.get('raw'):
+                check_raw_response(state['provider'],response,response['raw'])
+
+
+def check_raw_response(provider,response,raw):
+    from . import providers
+    safe_value(raw)
+    if provider=='gemini':
+        safe_value(strict_json(raw))
+        parsed=providers.parse_gemini(raw)
+    else:
+        for line in raw.splitlines():
+            if line.startswith('data:') and line[5:].strip() not in ('','[DONE]'):
+                safe_value(strict_json(line[5:].strip()))
+        parsed=providers.parse_stream(raw)
+    safe_value(parsed)
+    for key in ('content','reasoning_content','finish_reason'):
+        if parsed.get(key,'')!=response.get(key,''):
+            raise ValueError('Raw response does not match parsed response')
+
+
+def check_response(state,response):
+    safe_value(response)
+    if response.get('finish_reason')!='stop':
+        raise ValueError('Incomplete response cannot be checked safely')
+    envelope=strict_json(state.get('pending_text','')+response['content'])
+    safe_value(envelope)
+    if response.get('raw'):check_raw_response(state['provider'],response,response['raw'])
+    if not isinstance(envelope,dict):raise ValueError('Invalid response envelope')
+    # Check decoded and assembled file chunks before the response is persisted.
+    candidate={'task':state['task'],'overlay':dict(state['overlay']),
+               'incomplete_files':list(state['incomplete_files']),
+               'file_modes':dict(state.get('file_modes',{})),'source_files':state['source_files']}
+    files=envelope.get('files',[])
+    if not isinstance(files,list):raise ValueError('Invalid response files')
+    apply_files(candidate,files)
 
 
 def check_overlay(state):
