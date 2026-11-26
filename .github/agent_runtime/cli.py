@@ -1,5 +1,4 @@
 """Trusted orchestration. No model-controlled host commands, checkout or endpoints."""
-import base64
 import copy
 import hashlib
 import json
@@ -17,6 +16,8 @@ OUT=Path(os.environ.get('AGENT_OUTPUT_DIR',str(Path(os.environ.get('RUNNER_TEMP'
 
 
 def save(name,data):
+    if name=='state.json':policy.check_state(data)
+    else:policy.safe_value(data)
     OUT.mkdir(parents=True,exist_ok=True)
     (OUT/name).write_text(data if isinstance(data,str) else json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
 
@@ -34,14 +35,15 @@ def authorize(provider):
     event=json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     kind=os.environ['GITHUB_EVENT_NAME']
     if kind=='workflow_dispatch':
+        if provider=='gemini':raise ValueError('Gemini developer requires an owner Issue command')
         if provider=='kimi' and str(event.get('inputs',{}).get('confirm_paid_api','')).lower()!='true':
             raise ValueError('Explicit owner paid API confirmation required')
         return event,None
     issue=event['issue'];sender=event['sender']
     if issue.get('pull_request') or issue['user']['login']!='apotet' or sender['login']!='apotet' or sender['type']!='User':
         raise ValueError('Unauthorized Issue event')
-    if not issue['title'].startswith('[KIMI] ' if provider=='kimi' else '[ZAI] '):raise ValueError('Provider prefix mismatch')
-    if kind=='issues' and event.get('action')=='opened' and provider!='kimi':return event,issue
+    if not issue['title'].startswith({'kimi':'[KIMI] ','zai':'[ZAI] ','gemini':'[GEMINI DEV] '}[provider]):raise ValueError('Provider prefix mismatch')
+    if kind=='issues' and event.get('action')=='opened' and provider=='zai':return event,issue
     if kind=='issue_comment' and event.get('action')=='created':
         comment=event['comment']
         if comment['user']['login']!='apotet' or comment['user']['type']!='User':raise ValueError('Only coordinator may continue')
@@ -93,10 +95,9 @@ def owned_pr(api,state):
     if state.get('published_head'):
         branch=core.work_branch(state)
         if api.ref(branch)!=state['published_head']:raise ValueError('Work branch moved; do not spend or overwrite')
-    if state.get('pr_number'):
-        pr=api.request('GET','/pulls/'+str(state['pr_number']))
-        if pr['state']!='open' or not pr['draft'] or pr['head']['sha']!=state['published_head']:
-            raise ValueError('PR under owner control; create a new task instead')
+        core.existing_draft(api,state,branch,state['published_head'])
+    elif state.get('pr_number'):
+        raise ValueError('PR checkpoint has no published head')
 
 
 def prepare(provider,api=None):
@@ -105,9 +106,9 @@ def prepare(provider,api=None):
     trusted_repo=source_repo(os.environ['GITHUB_SHA'])
     repo=trusted_repo
     action='work';resume=None
-    is_kimi_start=(provider=='kimi' and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
-                   event['comment']['body']=='/agent start confirm-paid-api')
-    if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_kimi_start:
+    is_explicit_start=(provider in ('kimi','gemini') and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
+                       event['comment']['body']=='/agent start confirm-paid-api')
+    if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_explicit_start:
         match=re.fullmatch(r'/agent (continue|validate|publish)\s+(\{.*\})\s*',event['comment']['body'],re.S)
         if not match:raise ValueError('Expected /agent continue|validate|publish with structured JSON')
         action={'continue':'work','validate':'validate','publish':'publish'}[match[1]]
@@ -115,6 +116,7 @@ def prepare(provider,api=None):
     else:
         raw=core.strict_json(issue['body']) if issue else manual_task(event,provider,repo)
         if isinstance(raw,dict) and set(raw)=={'resume'}:
+            if issue is not None:raise ValueError('Issue continuations require an explicit checkpoint command')
             resume=raw['resume'];key=resume.get('task_id','');grant_id='manual-'+os.environ['GITHUB_RUN_ID']
             action=resume.get('action','work')
             if action not in ('work','validate','publish'):raise ValueError('Invalid manual continuation action')
@@ -137,6 +139,7 @@ def prepare(provider,api=None):
                 task['context_files']=list(dict.fromkeys([definition['path'],*task['context_files'],
                     'docs/LEARNING_CONTENT_STANDARD.md','docs/DEVELOPMENT_WORKFLOW.md','src/data/questions.json']))
             key='issue-'+str(issue['number']) if issue else 'manual-'+hashlib.sha256((repo.source+json.dumps(task,sort_keys=True,ensure_ascii=False)).encode()).hexdigest()[:24]
+    if provider=='gemini' and action=='work':providers.gemini_request_limits()
     ledger=Ledger(api,provider,key)
     state=ledger.load()
     if resume is None:
@@ -196,6 +199,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='work':raise ValueError('This activation cannot call a model')
+    if provider=='gemini':providers.gemini_request_limits()
     if not os.environ.get('PROVIDER_API_KEY'):raise ValueError('Missing provider credential; no attempt made')
     repo=source_repo(state['sourceSHA'])
     trusted_repo=source_repo(state.get('trustedSHA',state['sourceSHA']))
@@ -208,7 +212,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                 updated=copy.deepcopy(state)
                 try:core.process(updated,repo,validator,trusted_repo)
                 except Exception as exc:
-                    # Save full response/overlay. No speculative repeat of a paid request.
+                    # Preserve only checked response/overlay; never repeat a paid request automatically.
                     updated['status']='paused_response_or_validation'
                     updated['problem']=type(exc).__name__
                     state=updated;persist(ledger,state,plan);break
@@ -226,18 +230,23 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                     state['budget_problem']=str(exc)
                     persist(ledger,state,plan)
                     break
-            core.reserve(state)
+            try:core.reserve(state)
+            except providers.GeminiInputLimit as exc:
+                state['status']='paused_budget'
+                state['budget_problem']=str(exc)
+                persist(ledger,state,plan);break
             if provider=='kimi':
                 state['calls'][-1]['budget_reservation']=reservation
             persist(ledger,state,plan) # irrevocable spent-attempt reservation BEFORE HTTP
-            call_dir=OUT/'calls'/str(len(state['calls']))
             try:
-                response=infer(state['task'],state['messages'],call_dir,max(1,int(deadline-clock()-180)))
+                with tempfile.TemporaryDirectory(prefix='agent-call-') as call_dir:
+                    response=infer(state['task'],state['messages'],Path(call_dir),max(1,int(deadline-clock()-180)))
+                    policy.check_response(state,response)
             except Exception as exc:
                 state['status']='uncertain'
                 state['calls'][-1]['problem']=type(exc).__name__
-                if (call_dir/'response.sse').exists():
-                    state['calls'][-1]['raw_partial_base64']=base64.b64encode((call_dir/'response.sse').read_bytes()).decode()
+                if isinstance(exc,providers.GeminiHTTPError):
+                    state['calls'][-1]['http_status']=exc.status
                 persist(ledger,state,plan);break
             core.answered(state,response);persist(ledger,state,plan)
             if provider=='kimi':
@@ -252,6 +261,8 @@ def validate_only(provider,api=None):
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='validate' or state['incomplete_files'] or not state['overlay']:
         raise ValueError('No complete candidate for validation-only activation')
+    if provider=='gemini' and not state.get('candidate_complete'):
+        raise ValueError('Gemini candidate has not reached a complete response')
     repo=source_repo(state['sourceSHA'])
     result=sandbox.validate(repo,state,Path.cwd()/'node_modules')
     state.setdefault('validations',[]).append(result)
@@ -263,6 +274,8 @@ def publish(provider,api=None):
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     try:
+        if provider=='gemini' and plan['action']=='validate':
+            raise ValueError('Gemini validation-only activation cannot publish')
         if state['status']=='ready_for_review':core.publish_candidate(api,ledger,state)
     finally:
         plan['head']=ledger.head
@@ -289,6 +302,11 @@ def report(provider,api=None):
     metrics=core.totals(state)
     if provider=='kimi':
         metrics['daily_budget']=budget.daily_status(api)
+    gemini_status=''
+    if provider=='gemini' and state['calls']:
+        http=state['calls'][-1].get('http_status')
+        if http==429:gemini_status='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
+        elif http is not None:gemini_status=f'Gemini HTTP {http}. No automatic retry.\n'
     failures=[json.loads(p.read_text()) for p in sorted(OUT.glob('failure-*.json'))]
     run='https://github.com/'+REPOSITORY+'/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
@@ -298,14 +316,14 @@ Trusted standards `{state.get('trustedSHA',state['sourceSHA'])}`.
 Checkpoint `{plan['head']}`; remaining authorized calls: {state['remaining_calls']}.
 Phase failures: {json.dumps(failures,ensure_ascii=False)}.
 Budget status: {state.get('budget_problem','not blocked')}.
-Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
+{gemini_status}Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
 
 Usage/calls/spend (before tax; unknown calls are NOT zero):
 ```json
 {json.dumps(metrics,ensure_ascii=False,indent=2)}
 ```
-Full unabridged report, responses, code and checkpoints: [artifacts]({artifact}), [run]({run}).
-No report/source/result is silently shortened. This comment is an index, not an excerpt.
+Checked report, responses, code and checkpoints: [artifacts]({artifact}), [run]({run}).
+Unverified or unsafe responses are discarded; this comment is an index, not an excerpt.
 Continue only with an owner `/agent continue` command naming this exact checkpoint and a finite call grant.
 '''
     save('summary.md',body)

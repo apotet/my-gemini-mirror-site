@@ -1,10 +1,12 @@
-"""Provider boundary; no financial policy or arbitrary input/output byte caps."""
+"""Provider boundary; Gemini DEV uses explicitly approved local request limits."""
 from dataclasses import dataclass
 from decimal import Decimal
 import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
+from . import policy
 
 
 @dataclass(frozen=True)
@@ -25,8 +27,10 @@ MODELS = {
     'glm-5.3': Model('zai','https://api.z.ai/api/paas/v4/chat/completions',1048576,131072,'max_tokens','1.4','4.4','.26'),
     'glm-5.3-flash': Model('zai','https://api.z.ai/api/paas/v4/chat/completions',1048576,131072,'max_tokens','.15','.50','.03',True),
     'kimi-k3.1-pro': Model('kimi','https://api.moonshot.ai/v1/chat/completions',1048576,1048576,'max_completion_tokens','2','10','.2',True),
+    # Runtime output cap, not a claim about this model's native maximum.
+    'gemini-3.8-flash': Model('gemini','https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',1048576,16384,'maxOutputTokens','0','0','0'),
 }
-DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro'}
+DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro','gemini':'gemini-3.8-flash'}
 
 
 def payload(task, messages):
@@ -34,6 +38,12 @@ def payload(task, messages):
     output = task.get('max_output_tokens',model.output)
     if type(output) is not int or not 1 <= output <= model.output:
         raise ValueError('Output exceeds this model API limit')
+    if model.provider == 'gemini':
+        system=[m['content'] for m in messages if m['role']=='system']
+        history=[{'role':m['role'],'content':m['content']} for m in messages if m['role']!='system']
+        return {'systemInstruction':{'parts':[{'text':'\n'.join(system)}]},
+                'contents':[{'role':'user','parts':[{'text':json.dumps(history,ensure_ascii=False)}]}],
+                'generationConfig':{'maxOutputTokens':output}}
     result = {'model':task['model'],'messages':messages,model.output_parameter:output,
               'stream':True,'stream_options':{'include_usage':True},'reasoning_effort':task.get('reasoning_effort','high')}
     if model.provider == 'zai':
@@ -41,6 +51,40 @@ def payload(task, messages):
     # Do not estimate tokens from bytes and reject otherwise-valid multilingual input.
     # Provider-native context validation is authoritative; an error pauses, never trims.
     return result
+
+
+# Keep the new transport dormant even if repository variables were preconfigured.
+# Enabling live requests requires a separately reviewed code change.
+GEMINI_DEV_TRANSPORT_RELEASED=False
+
+
+class GeminiInputLimit(ValueError):
+    pass
+
+
+def gemini_request_limits():
+    if not GEMINI_DEV_TRANSPORT_RELEASED:
+        raise GeminiInputLimit('Gemini DEV transport disabled by the trusted release gate')
+    if os.environ.get('NETOPS_GEMINI_DEV_PROVIDER_VERIFIED')!='true':
+        raise GeminiInputLimit('Gemini DEV transport disabled pending owner verification of provider billing and data terms')
+    try:
+        per_attempt=int(os.environ['NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES'])
+        aggregate=int(os.environ['NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES'])
+    except (KeyError,ValueError):
+        raise GeminiInputLimit('Gemini DEV requires explicit request byte limits') from None
+    if not 1<=per_attempt<=aggregate:
+        raise GeminiInputLimit('Invalid Gemini DEV request byte limits')
+    return per_attempt,aggregate
+
+
+def check_gemini_request(size,prior=0):
+    per_attempt,aggregate=gemini_request_limits()
+    if size>per_attempt:raise GeminiInputLimit('Gemini DEV per-attempt request byte limit exceeded')
+    if size+prior>aggregate:raise GeminiInputLimit('Gemini DEV cumulative request byte limit exceeded')
+
+
+def request_bytes(request):
+    return json.dumps(request,ensure_ascii=False).encode('utf-8')
 
 
 def parse_stream(text):
@@ -72,42 +116,84 @@ def parse_stream(text):
     return {'content':''.join(content),'reasoning_content':''.join(reasoning),'finish_reason':finish,'usage':usage,'chunks':chunks}
 
 
+def parse_gemini(text):
+    data=json.loads(text)
+    candidates=data.get('candidates')
+    if not isinstance(candidates,list) or len(candidates)!=1:
+        raise ValueError('Missing or ambiguous Gemini response')
+    candidate=candidates[0]
+    finish={'STOP':'stop','MAX_TOKENS':'length'}.get(candidate.get('finishReason'))
+    parts=candidate.get('content',{}).get('parts',[])
+    if not finish or not isinstance(parts,list):
+        raise ValueError('Incomplete or unsupported Gemini response')
+    visible=[];reasoning=[]
+    for part in parts:
+        if not isinstance(part,dict) or not isinstance(part.get('text'),str):
+            raise ValueError('Unsupported Gemini response part')
+        (reasoning if part.get('thought') else visible).append(part['text'])
+    if not visible:raise ValueError('Empty Gemini response')
+    raw_usage=data.get('usageMetadata') or {}
+    usage=None
+    if isinstance(raw_usage,dict):
+        inp=raw_usage.get('promptTokenCount')
+        output=raw_usage.get('candidatesTokenCount')
+        thoughts=raw_usage.get('thoughtsTokenCount',0)
+        if all(type(n) is int and n>=0 for n in (inp,output,thoughts)):
+            usage={'prompt_tokens':inp,'completion_tokens':output+thoughts,'provider_usage':raw_usage}
+    return {'content':''.join(visible),'reasoning_content':''.join(reasoning),
+            'finish_reason':finish,'usage':usage}
+
+
+class GeminiHTTPError(ValueError):
+    def __init__(self, status):
+        self.status=int(status)
+        super().__init__(f'Gemini HTTP {self.status}; no automatic retry')
+
+
 def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
     if not key: raise ValueError('Missing provider credential')
-    output_dir.mkdir(parents=True,exist_ok=True)
     request = payload(task,messages)
-    (output_dir/'request.json').write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
-    raw, headers = output_dir/'response.sse', output_dir/'headers.tmp'
-    try:
+    policy.safe_value(request)
+    data=request_bytes(request)
+    model=MODELS[task['model']]
+    if model.provider=='gemini':check_gemini_request(len(data))
+    with tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
+        temp=Path(temp)
+        request_file=temp/'request.json'
+        request_file.write_bytes(data)
+        raw, headers = temp/'response.sse', temp/'headers.tmp'
+        auth=('x-goog-api-key: ' if model.provider=='gemini' else 'Authorization: Bearer ')+key
         result = subprocess.run(['curl','-q','--silent','--show-error','--no-buffer','--retry','0',
             '--max-time',str(timeout),'--proto','=https','--output',str(raw),'--dump-header',str(headers),
-            '--write-out','%{http_code}',MODELS[task['model']].endpoint,
-            '--header','Authorization: Bearer '+key,'--header','Content-Type: application/json',
-            '--data-binary','@'+str(output_dir/'request.json')],capture_output=True,text=True,timeout=timeout+15)
+            '--write-out','%{http_code}',model.endpoint,
+            '--header',auth,'--header','Content-Type: application/json',
+            '--data-binary','@'+str(request_file)],capture_output=True,text=True,timeout=timeout+15)
         status = result.stdout
-    finally:
         billing = {}
         if headers.exists():
             for line in headers.read_text(errors='replace').splitlines():
                 name, _, value = line.partition(':')
                 if name.lower() in ('msh-usage-cache-write-tokens-5m','msh-usage-cache-write-tokens-1h') and value.strip().isdigit():
                     billing[name.lower()] = int(value.strip())
-            headers.unlink()
-        (output_dir/'billing.json').write_text(json.dumps(billing))
-        if raw.exists(): raw.write_bytes(raw.read_bytes().replace(key.encode(),b'[REDACTED]'))
-    if result.returncode or status != '200':
-        (output_dir/'transport.json').write_text(json.dumps({'returncode':result.returncode,'http_status':status}))
-        raise ValueError('Transport failed; attempted request must not be silently repeated')
-    parsed = parse_stream(raw.read_text(encoding='utf-8'))
-    parsed['billing'] = billing
-    parsed['raw'] = raw.read_text(encoding='utf-8')
-    return parsed
+        if result.returncode or status != '200':
+            if model.provider=='gemini' and not result.returncode and status.isascii() and status.isdecimal():
+                raise GeminiHTTPError(status)
+            raise ValueError('Transport failed; attempted request must not be silently repeated')
+        raw_text=raw.read_text(encoding='utf-8')
+        policy.safe_value(raw_text)
+        parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw_text)
+        parsed['billing'] = billing
+        parsed['raw'] = raw_text
+        return parsed
 
 
 def cost(model_name, usage, billing):
     model=MODELS[model_name]
+    if model.provider=='gemini':
+        known=isinstance(usage,dict) and all(type(usage.get(k)) is int and usage[k]>=0 for k in ('prompt_tokens','completion_tokens'))
+        return {'exact_usd':None,'range_usd':None,'usage_known':known}
     if not isinstance(usage,dict):return {'exact_usd':None,'range_usd':None,'usage_known':False}
     inp,out=usage.get('prompt_tokens'),usage.get('completion_tokens')
     valid=lambda n:type(n) is int and n>=0

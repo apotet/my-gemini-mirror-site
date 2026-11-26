@@ -25,6 +25,9 @@ jobs:
       cancel-in-progress: false
     env:
       AGENT_PROVIDER: ${{ inputs.provider }}
+      NETOPS_GEMINI_DEV_PROVIDER_VERIFIED: ${{ vars.NETOPS_GEMINI_DEV_PROVIDER_VERIFIED }}
+      NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES }}
+      NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES }}
       PYTHONPATH: .github
     steps:
       - uses: actions/checkout@v4
@@ -59,11 +62,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m agent_runtime.cli validate
       - name: Publish only checked candidates to own branch and Draft PR
-        if: success()
+        if: success() && (inputs.provider != 'gemini' || steps.prepare.outputs.action != 'validate')
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m agent_runtime.cli publish
-      - name: Export full raw history from durable checkpoint blobs
+      - name: Export checked history from durable checkpoint blobs
         if: always() && steps.prepare.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
