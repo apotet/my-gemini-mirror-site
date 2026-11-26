@@ -208,3 +208,22 @@ job публикация best-effort; durable claim по-прежнему не �
 `l1-poe-screen-reading` в `src/data/lessons/foundation-coverage.ts`, тот же предмет
 аудита, GLM-5.3 Standard API, цель $0.20 без гарантированного потолка.
 В разработке #391 платная модель не запускается.
+
+## Заяц-автор: Draft PR из GLM-5.4 (`opencode-author.yml`)
+
+Отдельный workflow, `opencode-audit.yml` не меняется. Запуск: owner Issue с заголовком
+`[OPENCODE-DEV] ...` (описание задачи в теле) и точный комментарий
+`/opencode author zai-coding-plan glm-5.4 confirm-ci-terms`. Одна попытка на Issue
+(durable-отметка, без автоповтора); общая concurrency group с аудитом.
+
+- Job `author`: ключ `ZAI_CODING_API_KEY` виден только шагу модели; токен записи не выдаётся.
+  OpenCode 1.19.6, read/glob/grep/list и edit только в `src/**`, `docs/**`,
+  `public/lesson-images/**`; bash, task, webfetch, внешние каталоги запрещены.
+- `scripts/opencode_author_check.py` проверяет итоговый diff: только add/modify обычных
+  файлов в разрешённых путях, до 40 файлов и 400 КБ. `.github/`, `scripts/`, package-файлы
+  и удаления отклоняются. Затем `npm run lint` и `npm run build`.
+- Job `publish` без ключа модели применяет патч, пушит `zai/issue-N-RUN` и открывает
+  Draft PR; merge/deploy нет. Для PR нужна настройка «Allow GitHub Actions to create
+  pull requests»; без неё ветка пушится, а Issue получает пояснение.
+- PR от `GITHUB_TOKEN` не запускает CI автоматически; запускайте вручную. Независимую
+  приёмку делает не автор (Kimi/Codex), содержание принимает владелец.

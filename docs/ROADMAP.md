@@ -1,3 +1,7 @@
+## 26.11.2026 — Заяц-автор: workflow Draft PR из GLM-5.4
+
+Новый `opencode-author.yml` (Draft PR, ждёт приёмки владельца). GLM-5.4 через Coding Plan правит `src/`, `docs/`, `public/lesson-images/` в изолированной копии без shell; diff проверяется `scripts/opencode_author_check.py`, затем lint/build; отдельный job без ключа модели открывает Draft PR. Одна попытка на Issue, merge/deploy нет, `opencode-audit.yml` не изменён. Реальный запуск модели не выполнялся.
+
 ## 26.11.2026 — Восстановление GLM-5.4 в OpenCode Coding Plan
 
 [PR #435](https://github.com/apotet/my-gemini-mirror-site/pull/435), staging SHA `60f19d89565eeace8f21c32360cc8223c0cfaa8f`. Один каталог моделей используется в preflight и в окружении аудита. Контрольный запуск [#436](https://github.com/apotet/my-gemini-mirror-site/issues/436) нашёл GLM-5.4 в изоляции, подтвердил одинаковый SHA-256 `57f04a386a1edfce09e83ae211f266e58ffc681ae36b28c9c8aa9962035be9c5` и завершил один шаг модели с `stop`. [GitHub Actions](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45745128925) · [Исходный артефакт](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45745128925/artifacts/15083530928).
