@@ -40,9 +40,26 @@ def strict_json(text):
 
 def normalize(raw,provider):
     if not isinstance(raw,dict):raise ValueError('Task must be a JSON object')
-    allowed={'task','mode','model','files','context_files','target_files','write_paths','checks','max_calls','max_output_tokens','reasoning_effort','lesson','source_sha'}
+    allowed={'task','mode','model','files','context_files','target_files','write_paths','checks','max_calls','max_total_calls','max_output_tokens','max_input_tokens','budget_usd','reasoning_effort','lesson','source_sha'}
     if set(raw)-allowed:raise ValueError('Unknown task fields; no branch/credential/endpoint/budget overrides')
     task={'mode':'audit-only','model':providers.DEFAULT[provider],'max_calls':8,'reasoning_effort':'high','checks':[],**raw}
+    if provider=='kimi':
+        from . import budget
+        task['max_calls']=raw.get('max_calls',4)
+        task['max_total_calls']=raw.get('max_total_calls',8)
+        task['max_output_tokens']=raw.get('max_output_tokens',8192)
+        task['max_input_tokens']=raw.get('max_input_tokens',65536)
+        task['budget_usd']=budget.validate_task_budget(raw.get('budget_usd','0.75'))
+        if type(task['max_total_calls']) is not int or not 1<=task['max_total_calls']<=8:
+            raise ValueError('Kimi allows 1 to 8 total calls per task')
+        if type(task['max_calls']) is not int or not 1<=task['max_calls']<=task['max_total_calls']:
+            raise ValueError('Kimi call grant exceeds total task limit')
+        if type(task['max_input_tokens']) is not int or not 1<=task['max_input_tokens']<=100000:
+            raise ValueError('Kimi input estimate limit must be 1..100000')
+        if type(task['max_output_tokens']) is not int or not 1<=task['max_output_tokens']<=16384:
+            raise ValueError('Kimi output token limit must be 1..16384')
+    elif any(k in raw for k in ('budget_usd','max_input_tokens','max_total_calls')):
+        raise ValueError('Budget fields apply only to Kimi')
     if task['model'] not in providers.MODELS or providers.MODELS[task['model']].provider!=provider:
         raise ValueError('Model/provider mismatch')
     if task['mode'] not in ('audit-only','edit') or not isinstance(task.get('task'),str) or not task['task'].strip():
@@ -123,11 +140,16 @@ def initial(task,repo,provider,key,issue=None,trusted_repo=None):
     for name in missing:
         if name not in task.get('target_files',[]):raise ValueError('Explicit context file missing')
     items=context(repo,[n for n in names if n not in missing],trusted_repo)
+    task_context={'task':task,'sourceSHA':repo.source,'trustedSHA':trusted_repo.source,'source_files':files,'new_targets':missing}
+    if provider!='kimi':
+        task_context['file_modes']={p:repo.entries[p]['mode'] for p in files}
     state={'kind':'netops-agent-v2','version':2,'provider':provider,'key':key,'issue':issue,'task':task,
            'sourceSHA':repo.source,'trustedSHA':trusted_repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'status':'working','remaining_calls':task['max_calls'],
            'calls':[],'overlay':{},'incomplete_files':[],'pending_text':'','reports':[],'summaries':[],
-           'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps({'task':task,'sourceSHA':repo.source,'trustedSHA':trusted_repo.source,'source_files':files,'file_modes':{p:repo.entries[p]['mode'] for p in files},'new_targets':missing},ensure_ascii=False)},
+           'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(task_context,ensure_ascii=False)},
                        context_message(task,items)],'consumed_grants':[],'published_head':None,'independent_acceptance':'pending'}
+    if provider=='kimi':
+        state['work_branch']=f'kimi/{key}'
     return state
 
 
@@ -201,6 +223,11 @@ def process(state,repo,validator,trusted_repo=None):
 def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_uncertain=False,reset_response=False):
     if expected_head!=actual_head or grant_id in state['consumed_grants']:raise ValueError('Stale/repeated continuation grant')
     if type(calls) is not int or calls<0:raise ValueError('Invalid continuation call grant')
+    if state['provider']=='kimi':
+        if 'budget_usd' not in state['task'] or 'max_total_calls' not in state['task']:
+            raise ValueError('Legacy Kimi task has no budget; create a new explicitly authorized task')
+        if len(state['calls'])+calls>state['task']['max_total_calls']:
+            raise ValueError('Kimi task call limit cannot be increased by continuation')
     uncertain=state['status'] in ('request_reserved','uncertain') or state['calls'] and state['calls'][-1]['status']=='reserved'
     if uncertain and not acknowledge_uncertain:raise ValueError('Previous charge may have happened; explicit owner acknowledgement required')
     if uncertain:
@@ -210,7 +237,10 @@ def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_unc
         state['pending_text']=''
         if state['calls'] and state['calls'][-1]['status']=='answered':state['calls'][-1]['processed']=True
         state['messages'].append({'role':'user','content':'Coordinator explicitly requests a fresh JSON envelope after the previous invalid/partial response. Full raw responses remain in the history.'})
-    state['remaining_calls']+=calls
+    if state['provider']=='kimi':
+        state['remaining_calls']=calls
+    else:
+        state['remaining_calls']+=calls
     state['consumed_grants'].append(grant_id)
     state['status']='working'
 
@@ -234,14 +264,24 @@ def totals(state):
     results['cost_range_usd']={'min':float(low),'max':float(high)}
     results['range_coverage']='known calls only' if results['cost_unknown_calls'] else 'all calls'
     results['exact_cost_usd']=float(exact) if all_exact else None
+    if state['provider']=='kimi':
+        results['task_budget_usd']=state['task'].get('budget_usd')
+        results['daily_budget_usd']='2.00'
+        results['total_call_limit']=state['task'].get('max_total_calls')
+        results['reservation_estimate_usd']=sum(c.get('budget_reservation',{}).get('reserved_micro',0) for c in state['calls'])/1_000_000
+        results['budget_note']='Estimate, not a provider-enforced monetary ceiling; unknown calls retain reservations.'
     return results
+
+
+def work_branch(state):
+    return state.get('work_branch',f'agents/work/{state["provider"]}-{state["key"]}')
 
 
 def publish_candidate(api,ledger,state):
     if state['status']!='ready_for_review' or not state.get('validations') or not state['validations'][-1]['passed']:
         raise ValueError('Mandatory validation not passed')
     policy.check_overlay(state)
-    branch=f'agents/work/{state["provider"]}-{state["key"]}'
+    branch=work_branch(state)
     previous=state.get('published_head')
     remote=api.ref(branch)
     if previous and remote!=previous:raise ValueError('Agent branch moved; never overwrite contributor work')
@@ -282,6 +322,6 @@ def publish_candidate(api,ledger,state):
     else:
         pr=api.request('POST','/pulls',{'head':branch,'base':'main','draft':True,
             'title':f'{state["provider"].upper()}: {state["key"]}',
-            'body':f'Source `{source}`. Mandatory sandbox checks passed. Independent owner acceptance: PENDING.\n\nCheckpoint: `{ledger.head}`. Full results and spend in the task ledger/artifacts. No automatic merge or deploy.'})
+            'body':f'Source `{source}`. Mandatory sandbox checks passed. Independent review by another agent and owner acceptance: PENDING.\n\nCheckpoint: `{ledger.head}`. Full results and spend in the task ledger/artifacts. No automatic merge or deploy.'})
     state.update(pr_number=pr['number'],pr_url=pr['html_url'],status='published_draft')
     ledger.save(state)
