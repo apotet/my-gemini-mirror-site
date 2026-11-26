@@ -9,12 +9,14 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'.github'))
-from agent_runtime import budget, core, policy, providers, cli, sandbox
+from agent_runtime import budget, core, policy, providers, cli, sandbox, pilot
 from agent_runtime.storage import Ledger, Repository, APIError
 
 
@@ -518,6 +520,118 @@ class Runtime(unittest.TestCase):
                 core.normalize({'task':'pilot',**fields},'gemini')
         state['task'].pop('max_total_calls')
         with self.assertRaises(ValueError):core.reserve(state)
+
+    def test_synthetic_pilot_disabled_without_explicit_owner_authorization(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        for overrides in ({'NETOPS_GEMINI_PILOT_ENABLED':''}, {'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED':''},
+                          {'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'},
+                          {'GITHUB_REF':'refs/heads/other'}, {'GITHUB_EVENT_NAME':'issue_comment'}):
+            with self.subTest(overrides=overrides),patch.dict(os.environ,{**env,**overrides}):
+                with patch.object(pilot,'transport') as transport,self.assertRaises(ValueError):
+                    pilot.run(self.api,self.repo,infer=transport)
+                transport.assert_not_called()
+                self.assertFalse(self.api.refs)
+
+    def test_synthetic_pilot_success_is_reserved_and_publishes_only_scoped_file(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        calls=[]
+        def infer(request):
+            state=Ledger(self.api,'gemini',pilot.KEY).load()
+            self.assertEqual(state['calls'][0]['status'],'reserved')
+            self.assertEqual(state['remaining_calls'],0)
+            self.assertNotIn('STATE',json.dumps(request))
+            self.assertNotIn('Full mandatory',json.dumps(request))
+            self.assertEqual(request['generationConfig']['maxOutputTokens'],2048)
+            self.assertNotIn('tools',request)
+            calls.append(request)
+            return response({'status':'complete','files':[{'path':pilot.TARGET,'content':'# Fictional observatory\\n'}]})
+        def validate(repo,state):
+            self.assertEqual(list(state['overlay']),[pilot.TARGET])
+            return {'passed':True,'logs':[]}
+        with patch.dict(os.environ,env):
+            state,head=pilot.run(self.api,self.repo,infer=infer,validator=validate)
+            with self.assertRaisesRegex(ValueError,'already reserved'):
+                pilot.run(self.api,self.repo,infer=infer,validator=validate)
+        self.assertEqual(len(calls),1)
+        self.assertEqual(state['status'],'published_draft')
+        self.assertEqual(len(self.api.prs),1)
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertEqual(Ledger(self.api,'gemini',pilot.KEY).load()['published_head'],self.api.ref('gemini/synthetic-pilot'))
+        self.assertIsNotNone(head)
+
+    def test_synthetic_pilot_failure_never_publishes_or_retries(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        bad=[urllib.error.HTTPError('https://example.invalid',429,'quota',{},None),
+             urllib.error.HTTPError('https://example.invalid',503,'busy',{},None),
+             TimeoutError('timeout'),response('{"status":','length'),
+             response('invalid json'),
+             response({'status':'complete','files':[{'path':'docs/other.md','content':'# Wrong'}]})]
+        for answer in bad:
+            with self.subTest(answer=type(answer).__name__):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                calls=[]
+                def infer(request):
+                    calls.append(request)
+                    if isinstance(answer,Exception):raise answer
+                    return answer
+                with patch.dict(os.environ,env):
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer)
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer)
+                self.assertEqual(len(calls),1)
+                state=Ledger(self.api,'gemini',pilot.KEY).load()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertEqual(len(state['calls']),1)
+                self.assertFalse(self.api.prs)
+                self.assertIsNone(self.api.ref('gemini/synthetic-pilot'))
+
+    def test_synthetic_pilot_validation_failure_never_publishes(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        reply=response({'status':'complete','files':[{'path':pilot.TARGET,'content':'# Synthetic'}]})
+        with patch.dict(os.environ,env),self.assertRaisesRegex(ValueError,'validation failed'):
+            pilot.run(self.api,self.repo,infer=lambda _:reply,validator=lambda *_:{'passed':False,'logs':[]})
+        self.assertFalse(self.api.prs)
+        self.assertIsNone(self.api.ref('gemini/synthetic-pilot'))
+        self.assertEqual(len(Ledger(self.api,'gemini',pilot.KEY).load()['calls']),1)
+
+    def test_synthetic_transport_uses_one_fixed_bounded_request(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        request=providers.payload({'model':'gemini-3.8-flash','max_output_tokens':2048},
+                                  [{'role':'user','content':pilot.PROMPT}])
+        body={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'ok'}]}}]}
+        class FakeResponse:
+            def __enter__(self):return self
+            def __exit__(self,*_):return False
+            def read(self,limit):
+                self_limit=pilot.MAX_RESPONSE_BYTES+1
+                if limit!=self_limit:raise AssertionError('unbounded read')
+                return json.dumps(body).encode()
+        with patch.dict(os.environ,env),patch.object(pilot.urllib.request,'build_opener') as opener:
+            opener.return_value.open.return_value=FakeResponse()
+            pilot.transport(request)
+            self.assertEqual(opener.return_value.open.call_count,1)
+            self.assertEqual(opener.return_value.open.call_args.kwargs['timeout'],60)
+            self.assertEqual(opener.return_value.open.call_args.args[0].data,providers.request_bytes(request))
+            with self.assertRaises(ValueError):pilot.transport({**request,'tools':[{}]})
+            self.assertEqual(opener.return_value.open.call_count,1)
+
+    def test_synthetic_transport_enforces_total_deadline(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        request=providers.payload({'model':'gemini-3.8-flash','max_output_tokens':2048},
+                                  [{'role':'user','content':pilot.PROMPT}])
+        with patch.dict(os.environ,env),patch.object(pilot,'TIMEOUT',0.05), \
+             patch.object(pilot.urllib.request,'build_opener') as opener:
+            opener.return_value.open.side_effect=lambda *args,**kwargs:time.sleep(1)
+            with self.assertRaisesRegex(TimeoutError,'total request deadline'):
+                pilot.transport(request)
+            self.assertEqual(opener.return_value.open.call_count,1)
 
     def test_gemini_transport_defaults_off_before_claim_and_direct_transport(self):
         self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
