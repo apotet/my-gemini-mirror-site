@@ -85,12 +85,28 @@ jobs:
             core.setOutput('authorized', true);
             const packetMarker = '\nAudit-Packet:\n';
             const packetIndex = (task.body || '').indexOf(packetMarker);
-            core.setOutput('packet', packetIndex >= 0);
-            if (packetIndex >= 0) {
+            const blobLines = (task.body || '').split(/\r?\n/)
+              .filter(line => line.startsWith('Audit-Packet-Blob:'));
+            const isPacket = packetIndex >= 0 || blobLines.length > 0;
+            core.setOutput('packet', isPacket);
+            if (isPacket) {
               if (!target.source) throw new Error('Audit packet requires a pinned source');
-              const packet = task.body.slice(packetIndex + packetMarker.length);
-              if (Buffer.byteLength(packet) > 60000) throw new Error('Audit packet too large');
-              JSON.parse(packet);
+              if (blobLines.length > 1 || (blobLines.length && packetIndex >= 0))
+                throw new Error('Provide exactly one audit packet');
+              let packet;
+              if (blobLines.length) {
+                const match = /^Audit-Packet-Blob: ([a-f0-9]{40})$/.exec(blobLines[0]);
+                if (!match) throw new Error('Invalid audit packet blob SHA');
+                const {data: blob} = await github.rest.git.getBlob({owner, repo, file_sha: match[1]});
+                if (blob.sha !== match[1] || blob.encoding !== 'base64' || blob.size > 150000)
+                  throw new Error('Invalid or oversized audit packet blob');
+                packet = Buffer.from(blob.content, 'base64');
+                if (packet.length !== blob.size) throw new Error('Audit packet blob size mismatch');
+              } else {
+                packet = Buffer.from(task.body.slice(packetIndex + packetMarker.length));
+              }
+              if (packet.length > 150000) throw new Error('Audit packet too large');
+              JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(packet));
               fs.writeFileSync('opencode-prompt.txt', packet);
               return;
             }
