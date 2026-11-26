@@ -87,17 +87,46 @@ def save_accounting(out, report, stdout, provider):
             f.write(summary)
 
 
+def unique_json_object(pairs):
+    obj = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError(f'Duplicate JSON key: {key}')
+        obj[key] = value
+    return obj
+
+
+def report_json(answer):
+    text = answer.strip()
+    start = text.find('{')
+    if start < 0:
+        raise ValueError('Missing JSON object')
+    prefix, payload = text[:start], text[start:]
+    fence = re.search(r'(?:\A|\n)[ \t]*(`{3,}|~{3,})[ \t]*(?:json)?[ \t]*\r?\n\s*\Z',
+                      prefix, re.IGNORECASE)
+    if fence:
+        closing = re.search(r'\r?\n[ \t]*' + re.escape(fence[1]) + r'[ \t]*\Z', payload)
+        if not closing:
+            raise ValueError('Missing closing JSON fence')
+        payload = payload[:closing.start()]
+        prefix = prefix[:fence.start()]
+    # The first opening brace must begin the report. Never skip a malformed
+    # candidate or accept extra JSON, other fenced blocks, or a trailing suffix.
+    if re.search(r'[}\[\]]|```|~~~', prefix):
+        raise ValueError('Ambiguous text before JSON object')
+    return json.loads(payload, object_pairs_hook=unique_json_object)
+
+
 def packet_results(answer, expected_ids):
     try:
-        # Some CLI variants wrap a single JSON document in a Markdown fence.
-        fenced = re.fullmatch(r'```(?:json)?\s*\n(.*?)\n```', answer, re.DOTALL)
-        report = json.loads(fenced[1] if fenced else answer)
-    except ValueError:
+        report = report_json(answer)
+    except (ValueError, RecursionError):
         return None
     if not isinstance(report, dict) or set(report) != {'results'}:
         return None
     rows = report['results']
-    if not isinstance(rows, list) or len(rows) != len(expected_ids):
+    if (not isinstance(rows, list) or len(rows) != len(expected_ids)
+            or len(set(expected_ids)) != len(expected_ids)):
         return None
     for row, qid in zip(rows, expected_ids):
         if (not isinstance(row, dict) or set(row) != {'id', 'status', 'reason', 'recommendation'}
@@ -134,11 +163,12 @@ def audit_result(stdout, returncode=0, timed_out=False, expected_ids=None):
             finish = part.get('reason')
         elif event.get('type') == 'error':
             error = True
-    final = '\n'.join(texts).strip()
-    lines = final.splitlines()
+    final = '\n'.join(texts)
+    display = final.strip()
+    lines = display.splitlines()
     declaration = lines[-1].strip() if lines else ''
     has_marker = declaration in ('AUDIT_STATUS: COMPLETE', 'AUDIT_STATUS: INCOMPLETE')
-    summary = '\n'.join(lines[:-1]).strip() if has_marker else final
+    summary = '\n'.join(lines[:-1]).strip() if has_marker else display
     rows = packet_results(final, expected_ids) if expected_ids is not None else None
     if timed_out:
         status, reason = 'interrupted', 'timeout; outcome uncertain; no retry'
