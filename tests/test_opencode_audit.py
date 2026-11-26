@@ -228,3 +228,22 @@ class AuditTests(unittest.TestCase):
                 validate(dict(packet, snapshot_source_sha='c' * 40))
             with self.assertRaisesRegex(RuntimeError, 'too large'):
                 validate(packet, 150_001)
+
+    def test_packet_report_requires_all_twenty_rows_in_order(self):
+        ids = [f'question-{i}' for i in range(20)]
+        rows = [dict(id=qid, status='PASS', reason='Key checked', recommendation='No changes')
+                for qid in ids]
+        def result(payload, finish='stop'):
+            return audit.audit_result('\n'.join([
+                json.dumps({'type': 'text', 'part': {'text': payload}}),
+                json.dumps({'type': 'step_finish', 'part': {'reason': finish}})
+            ]), expected_ids=ids)
+        answer = json.dumps({'results': rows})
+        self.assertEqual(result(answer)['results'], rows)
+        self.assertEqual(result(answer)['status'], 'completed')
+        self.assertEqual(result(answer, finish='length')['status'], 'incomplete')
+        self.assertEqual(result(answer[:-10])['status'], 'incomplete')
+        self.assertEqual(result('AUDIT_STATUS: COMPLETE')['status'], 'incomplete')
+        for invalid in (rows[:-1], list(reversed(rows)), [rows[1], *rows[1:]],
+                        [dict(rows[0], reason=''), *rows[1:]]):
+            self.assertEqual(result(json.dumps({'results': invalid}))['status'], 'incomplete')
