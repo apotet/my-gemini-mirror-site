@@ -298,3 +298,30 @@ class AuditTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, 'SHA-256 mismatch'):
                         audit.main()
                     run.assert_not_called()
+
+    def test_packet_report_extracts_one_object_and_preserves_original_response(self):
+        row = dict(id='q1', status='PASS', reason='Valid {evidence}', recommendation='No changes')
+        raw = json.dumps({'results': [row]})
+        examples = (raw, f'\n  {raw}\n', f'```json\n{raw}\n```',
+                    f'Готовый результат.\n\n{raw}', f'Готовый результат.\n~~~JSON\n{raw}\n~~~')
+        for answer in examples:
+            events = '\n'.join([
+                json.dumps({'type': 'text', 'part': {'text': answer}}),
+                json.dumps({'type': 'step_finish', 'part': {'reason': 'stop'}}),
+            ])
+            with self.subTest(answer=answer):
+                result = audit.audit_result(events, expected_ids=['q1'])
+                self.assertEqual(result['status'], 'completed')
+                self.assertEqual(result['results'], [row])
+                self.assertEqual(result['final_response'], answer)
+
+    def test_packet_report_rejects_bad_boundaries_and_duplicate_keys(self):
+        row = dict(id='q1', status='PASS', reason='Valid', recommendation='No changes')
+        raw = json.dumps({'results': [row]})
+        for answer in (raw[:-1], f'{raw}\n{raw}', f'{raw}\nИтог', f'{{broken\n{raw}',
+                       f'[{raw}]', f'```json\n{raw}', f'```text\n{raw}\n```',
+                       f'```json\n{raw}\n```\n```json\n{raw}\n```',
+                       raw.replace('"id": "q1"', '"id": "q0", "id": "q1"')):
+            with self.subTest(answer=answer):
+                self.assertIsNone(audit.packet_results(answer, ['q1']))
+        self.assertIsNone(audit.packet_results(json.dumps({'results': [row, row]}), ['q1', 'q1']))
