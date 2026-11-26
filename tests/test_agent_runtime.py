@@ -246,11 +246,15 @@ class Runtime(unittest.TestCase):
         self.assertEqual(self.state_after()['sourceSHA'],sha);self.assertEqual(self.state_after()['trustedSHA'],self.source)
 
     def test_kimi_limits_and_zai_native_limits(self):
-        t=self.task(max_output_tokens=16384)
-        self.assertEqual(providers.payload(t,[])['max_completion_tokens'],16384)
+        default=self.task()
+        self.assertEqual((default['max_calls'],default['max_total_calls']), (8,24))
+        self.assertEqual((default['max_input_tokens'],default['max_output_tokens']), (120000,16384))
+        self.assertEqual(default['budget_usd'],'0.75')
+        t=self.task(max_output_tokens=65536)
+        self.assertEqual(providers.payload(t,[])['max_completion_tokens'],65536)
         z=core.normalize({'task':'audit','model':'glm-5.3','max_output_tokens':131072},'zai')
         self.assertEqual(providers.payload(z,[])['max_tokens'],131072)
-        with self.assertRaises(ValueError):self.task(max_output_tokens=16385)
+        with self.assertRaises(ValueError):self.task(max_output_tokens=65537)
     def test_model_endpoint_is_not_task_controlled(self):
         for bad in [{'endpoint':'https://evil'},{'branch':'someone'},{'token':'secret'},{'model':'gemini-unknown'}]:
             with self.subTest(bad=bad),self.assertRaises(ValueError):self.task(**bad)
@@ -330,6 +334,105 @@ class Runtime(unittest.TestCase):
         self.loop([response(full[:30],'length'),response(full[30:])])
         state=self.state_after();self.assertEqual(state['status'],'ready_for_review')
         self.assertEqual(state['calls'][0]['response']['content']+state['calls'][1]['response']['content'],full)
+
+    def test_owner_can_extend_pilot_limits_and_resume_saved_partial_response(self):
+        self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],
+                                                'max_calls':1,'max_total_calls':1,'budget_usd':'0.25',
+                                                'max_output_tokens':5120})
+        self.write_event()
+        self.prepare()
+        full=json.dumps({'status':'complete','files':[{'path':'src/a.ts','content':'FULL NEW SOURCE'}]})
+        self.loop([response(full[:30],'length')])
+        before=self.state_after()
+        self.assertEqual(before['status'],'paused')
+        self.assertEqual(before['pending_text'],full[:30])
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        self.event['comment']={'id':789,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,
+                  'limits':{'max_total_calls':2,'max_output_tokens':16384,'budget_usd':'0.75'}})}
+        self.write_event()
+        self.prepare()
+        resumed=self.state_after()
+        self.assertEqual(resumed['pending_text'],full[:30])
+        self.assertEqual(resumed['task']['max_total_calls'],2)
+        self.assertEqual(resumed['task']['budget_usd'],'0.75')
+        self.assertEqual(resumed['limit_changes'][-1]['grant_id'],'789')
+        seen=self.loop([response(full[30:])])
+        self.assertEqual(len(seen),1)
+        self.assertEqual(seen[0][0]['max_output_tokens'],16384)
+        after=self.state_after()
+        self.assertEqual(after['status'],'ready_for_review')
+        self.assertEqual(after['calls'][0]['response']['content']+after['calls'][1]['response']['content'],full)
+
+    def test_continuation_limit_updates_require_owner_and_valid_checkpoint(self):
+        self.prepare()
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        original=ledger.head
+        command={'checkpoint':original,'calls':0,'limits':{'budget_usd':'1.00','max_total_calls':32}}
+        self.event['comment']={'id':101,'user':{'login':'other','type':'User'},
+                               'body':'/agent continue '+json.dumps(command)}
+        self.write_event()
+        with self.assertRaises(ValueError):self.prepare()
+        self.assertEqual(self.api.ref('agents/state/kimi-issue-9'),original)
+        self.event['comment']['user']['login']='apotet'
+        for limits in [{'budget_usd':'2.01'},{'max_total_calls':33},
+                       {'max_output_tokens':65537},{'write_paths':['src/']}]:
+            command['limits']=limits
+            self.event['comment']['body']='/agent continue '+json.dumps(command)
+            self.write_event()
+            with self.subTest(limits=limits),self.assertRaises(ValueError):self.prepare()
+            self.assertEqual(self.api.ref('agents/state/kimi-issue-9'),original)
+        command['limits']={'budget_usd':'1.00','max_total_calls':32}
+        command['checkpoint']='0'*40
+        self.event['comment']['body']='/agent continue '+json.dumps(command)
+        self.write_event()
+        with self.assertRaises(ValueError):self.prepare()
+        self.assertEqual(self.api.ref('agents/state/kimi-issue-9'),original)
+
+    def test_limit_update_with_zero_call_grant_never_calls_model(self):
+        self.prepare()
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        self.event['comment']={'id':999,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':0,
+                                                  'limits':{'max_total_calls':32}})}
+        self.write_event()
+        self.prepare()
+        self.assertEqual(self.loop([]),[])
+        self.assertEqual(self.state_after()['task']['max_total_calls'],32)
+        self.assertEqual(self.state_after()['task']['budget_usd'],'0.75')
+        self.assertEqual(self.state_after()['calls'],[])
+        ledger.load()
+        self.event['comment']['body']='/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':0,
+                                                                      'limits':{'budget_usd':'2.00'}})
+        self.write_event()
+        with self.assertRaises(ValueError):self.prepare()
+        self.assertEqual(self.state_after()['task']['budget_usd'],'0.75')
+
+    def test_limit_update_does_not_bypass_task_budget(self):
+        self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],
+                                                'budget_usd':'0.01','max_calls':1})
+        self.write_event();self.prepare()
+        self.assertEqual(self.loop([]),[])
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load()
+        self.event['comment']={'id':900,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,
+                                                  'limits':{'max_total_calls':32}})}
+        self.write_event();self.prepare()
+        self.assertEqual(self.loop([]),[])
+        self.assertEqual(self.state_after()['status'],'paused_budget')
+        self.assertEqual(self.state_after()['task']['budget_usd'],'0.01')
+        self.assertEqual(self.state_after()['calls'],[])
+
+    def test_limit_update_does_not_acknowledge_uncertain_request(self):
+        self.prepare();self.loop([TimeoutError('not printed')])
+        ledger=Ledger(self.api,'kimi','issue-9');ledger.load();original=ledger.head
+        self.event['comment']={'id':901,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':original,'calls':1,
+                                                  'limits':{'budget_usd':'1.00'}})}
+        self.write_event()
+        with self.assertRaises(ValueError):self.prepare()
+        self.assertEqual(self.api.ref('agents/state/kimi-issue-9'),original)
+        self.assertEqual(self.state_after()['task']['budget_usd'],'0.75')
     def test_uncertain_failure_never_retried_automatically(self):
         self.prepare();seen=self.loop([TimeoutError('not printed')])
         self.assertEqual(len(seen),1);state=self.state_after();self.assertEqual(state['status'],'uncertain')
@@ -379,8 +482,8 @@ class Runtime(unittest.TestCase):
         for invalid in [0, -1, 2.01, 'NaN', '0.001']:
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 self.task(budget_usd=invalid)
-        for invalid in [{'max_total_calls':9}, {'max_input_tokens':100001},
-                        {'max_output_tokens':16385}, {'max_calls':2,'max_total_calls':1}]:
+        for invalid in [{'max_total_calls':33}, {'max_input_tokens':250001},
+                        {'max_output_tokens':65537}, {'max_calls':2,'max_total_calls':1}]:
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 self.task(**invalid)
         self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],

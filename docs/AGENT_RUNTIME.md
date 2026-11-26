@@ -53,9 +53,10 @@ owner-комментария `/agent start confirm-paid-api`.
   защищены от записи моделью. Это control plane, а не ограничение учебного/продуктового кода.
 - `checks`: дополнительные **файлы тестов**, не shell-команды. Изменённые/new test_*.py,
   *.test.mjs/js запускаются также автоматически. Базовые typecheck/build/questions обязательны.
-- `max_calls`: конечное разрешение координатора на последовательные обращения (ZAI default 8, Kimi default 4).
+- `max_calls`: конечное разрешение координатора на последовательные обращения (ZAI и Kimi default 8).
   При исчерпании — checkpoint, затем явное продолжение. Для Kimi дополнительно действует
-  неизменяемый для задачи `max_total_calls` (default/maximum 8) и бюджетная проверка.
+  `max_total_calls` (default 24, максимум 32) и бюджетная проверка. Владелец может
+  явно изменить лимиты существующей задачи при продолжении checkpoint.
 - `source_sha`: необязательный полный lowercase SHA существующего commit этого
   репозитория, только для `audit-only`. Workflow, parser и инструменты исполняются
   из доверенного main; выбранный commit читается только как Git blobs, без checkout
@@ -65,7 +66,7 @@ owner-комментария `/agent start confirm-paid-api`.
   последующем read_files. Продолжение не меняет эти SHA. Для edit поле запрещено;
   edit/publisher работают по прежнему контракту.
 - `model`, `reasoning_effort`, `max_output_tokens`: параметры конкретной модели. Для ZAI
-  по умолчанию применяется нативный максимум, для Kimi — 8192 (максимум 16384).
+  по умолчанию применяется нативный максимум, для Kimi — 16384 (максимум 65536).
   Kimi также принимает `budget_usd`, `max_input_tokens` и `max_total_calls`.
 
 Нативные параметры проверены 25.11.2026 по официальным API:
@@ -113,6 +114,7 @@ Actions rerun не даёт права снова вызвать модель.
 
 ```text
 /agent continue {"checkpoint":"<актуальный 40-hex SHA>","calls":4}
+/agent continue {"checkpoint":"<актуальный 40-hex SHA>","calls":1,"limits":{"max_total_calls":16}}
 /agent validate {"checkpoint":"<SHA>","calls":0}
 /agent publish {"checkpoint":"<SHA>","calls":0}
 ```
@@ -125,6 +127,10 @@ Actions rerun не даёт права снова вызвать модель.
 продолжение без расширения области записи. Validate/publish не получают ключ модели
 и не вызывают провайдера. Изменённая/принятая владельцем PR или чужой commit в рабочей
 ветке блокируют дальнейшее изменение, а не force-push.
+Для Kimi `limits` допускает только `max_total_calls`, `max_output_tokens`,
+`max_input_tokens` и `budget_usd`; бюджет меняется исключительно явным значением.
+Сохранённые ответы и учтённые расходы не сбрасываются. Расчётные лимиты задачи и
+суток могут остановить и продолженную работу.
 
 ## Исполнение и приёмка
 
@@ -159,7 +165,7 @@ cache/TTL. Неизвестная стоимость не считается н�
 ## Ручной Kimi и будущий Gemini
 
 Сохранён workflow_dispatch «Kimi Agent». Старые task_file/target_files поддержаны;
-max_tokens по умолчанию пустой (для Kimi используется 8192). Поле `spec` принимает тот же JSON
+max_tokens по умолчанию пустой (для Kimi используется 16384). Поле `spec` принимает тот же JSON
 или `{"resume":{"task_id":"manual-...","checkpoint":"...","calls":4}}`.
 Идентичная случайная повторная ручная отправка на том же source SHA имеет тот же
 ключ и не тратит деньги снова. Для продолжения используется checkpoint, не rerun.

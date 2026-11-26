@@ -45,19 +45,19 @@ def normalize(raw,provider):
     task={'mode':'audit-only','model':providers.DEFAULT[provider],'max_calls':8,'reasoning_effort':'high','checks':[],**raw}
     if provider=='kimi':
         from . import budget
-        task['max_calls']=raw.get('max_calls',4)
-        task['max_total_calls']=raw.get('max_total_calls',8)
-        task['max_output_tokens']=raw.get('max_output_tokens',8192)
-        task['max_input_tokens']=raw.get('max_input_tokens',65536)
+        task['max_calls']=raw.get('max_calls',8)
+        task['max_total_calls']=raw.get('max_total_calls',24)
+        task['max_output_tokens']=raw.get('max_output_tokens',16384)
+        task['max_input_tokens']=raw.get('max_input_tokens',120000)
         task['budget_usd']=budget.validate_task_budget(raw.get('budget_usd','0.75'))
-        if type(task['max_total_calls']) is not int or not 1<=task['max_total_calls']<=8:
-            raise ValueError('Kimi allows 1 to 8 total calls per task')
+        if type(task['max_total_calls']) is not int or not 1<=task['max_total_calls']<=32:
+            raise ValueError('Kimi allows 1 to 32 total calls per task')
         if type(task['max_calls']) is not int or not 1<=task['max_calls']<=task['max_total_calls']:
             raise ValueError('Kimi call grant exceeds total task limit')
-        if type(task['max_input_tokens']) is not int or not 1<=task['max_input_tokens']<=100000:
-            raise ValueError('Kimi input estimate limit must be 1..100000')
-        if type(task['max_output_tokens']) is not int or not 1<=task['max_output_tokens']<=16384:
-            raise ValueError('Kimi output token limit must be 1..16384')
+        if type(task['max_input_tokens']) is not int or not 1<=task['max_input_tokens']<=250000:
+            raise ValueError('Kimi input estimate limit must be 1..250000')
+        if type(task['max_output_tokens']) is not int or not 1<=task['max_output_tokens']<=65536:
+            raise ValueError('Kimi output token limit must be 1..65536')
     elif any(k in raw for k in ('budget_usd','max_input_tokens','max_total_calls')):
         raise ValueError('Budget fields apply only to Kimi')
     if task['model'] not in providers.MODELS or providers.MODELS[task['model']].provider!=provider:
@@ -220,6 +220,21 @@ def process(state,repo,validator,trusted_repo=None):
         state['messages'].append(context_message(state['task'],ctx,{'overlay_hashes':hashes,'incomplete_files':state['incomplete_files'],'instruction':'Continue the task. Return the next JSON envelope.'}))
 
 
+def update_kimi_limits(state, updates, grant_id):
+    allowed={'max_total_calls','max_output_tokens','max_input_tokens','budget_usd'}
+    if state['provider']!='kimi' or not isinstance(updates,dict) or not updates or set(updates)-allowed:
+        raise ValueError('Invalid Kimi continuation limits')
+    if any(key not in state['task'] for key in ('budget_usd','max_total_calls','max_input_tokens','max_output_tokens')):
+        raise ValueError('Legacy Kimi task has no budget limits')
+    previous={key:state['task'][key] for key in updates}
+    updated=normalize({**state['task'],**updates},'kimi')
+    if updated['max_total_calls']<len(state['calls']):
+        raise ValueError('Total call limit cannot be below already attempted calls')
+    state['task']=updated
+    state.setdefault('limit_changes',[]).append({'grant_id':grant_id,'previous':previous,
+                                                  'updated':{key:updated[key] for key in updates}})
+
+
 def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_uncertain=False,reset_response=False):
     if expected_head!=actual_head or grant_id in state['consumed_grants']:raise ValueError('Stale/repeated continuation grant')
     if type(calls) is not int or calls<0:raise ValueError('Invalid continuation call grant')
@@ -227,7 +242,7 @@ def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_unc
         if 'budget_usd' not in state['task'] or 'max_total_calls' not in state['task']:
             raise ValueError('Legacy Kimi task has no budget; create a new explicitly authorized task')
         if len(state['calls'])+calls>state['task']['max_total_calls']:
-            raise ValueError('Kimi task call limit cannot be increased by continuation')
+            raise ValueError('Continuation grant exceeds Kimi task call limit')
     uncertain=state['status'] in ('request_reserved','uncertain') or state['calls'] and state['calls'][-1]['status']=='reserved'
     if uncertain and not acknowledge_uncertain:raise ValueError('Previous charge may have happened; explicit owner acknowledgement required')
     if uncertain:
