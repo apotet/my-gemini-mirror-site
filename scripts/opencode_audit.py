@@ -1,5 +1,6 @@
 """Isolated OpenCode audit runner. Default path never starts a CLI or reads a key."""
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -252,6 +253,26 @@ def validate_packet(path, repo, expected_sha, source_path):
     return packet_text
 
 
+def redact_diagnostic(value, key):
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', errors='replace')
+    value = (value or '').replace(key, '[REDACTED]')
+    return re.sub(r'(?i)\bBearer\s+[^\s"\x27,;]+', 'Bearer [REDACTED]', value)
+
+
+def verify_catalog(path, expected_sha, model):
+    actual_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    if not re.fullmatch(r'[0-9a-f]{64}', expected_sha) or actual_sha != expected_sha:
+        raise RuntimeError(f'Model catalog SHA-256 mismatch (expected {expected_sha}, got {actual_sha})')
+    provider = json.loads(path.read_bytes()).get('zai-coding-plan', {})
+    if (provider.get('api') != 'https://api.z.ai/api/coding/paas/v4'
+            or provider.get('npm') != '@ai-sdk/openai-compatible'):
+        raise RuntimeError('Model catalog does not point to the official Coding Plan endpoint')
+    if model not in provider.get('models', {}):
+        raise RuntimeError(f'zai-coding-plan/{model} missing from the verified catalog')
+    return actual_sha
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--model', choices=MODELS, default=MODELS[0])
@@ -264,6 +285,8 @@ def main():
     p.add_argument('--packet', action='store_true')
     p.add_argument('--expected-sha')
     p.add_argument('--source', default='')
+    p.add_argument('--catalog', type=Path)
+    p.add_argument('--catalog-sha256', default='')
     args = p.parse_args()
     repo = Path(args.repo).resolve()
     if args.expected_sha is not None or args.source:
@@ -332,7 +355,36 @@ def main():
                    ZHIPU_API_KEY=key, OPENCODE_DISABLE_AUTOUPDATE='true',
                    OPENCODE_CONFIG=str(root / 'opencode.json'),
                    OPENCODE_PERMISSION=json.dumps(cfg['permission']))
-        command = ['opencode', 'run', '--pure', '--model', cfg['model'],
+        if args.catalog is not None or args.catalog_sha256:
+            try:
+                if args.catalog is None:
+                    raise RuntimeError('Verified model catalog path is required')
+                catalog = args.catalog.resolve()
+                digest = verify_catalog(catalog, args.catalog_sha256, args.model)
+                env.update(OPENCODE_MODELS_PATH=str(catalog), OPENCODE_DISABLE_MODELS_FETCH='true')
+                discovery = subprocess.run(
+                    ['opencode', 'models', args.provider, '--print-logs', '--log-level', 'ERROR'],
+                    cwd=str(workdir), env={**env, 'ZHIPU_API_KEY': 'opencode-catalog-placeholder'},
+                    stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+                diagnostics = redact_diagnostic(discovery.stderr, key)
+                (out / 'opencode-catalog.log').write_text(diagnostics)
+                if discovery.returncode != 0 or cfg['model'] not in discovery.stdout.splitlines():
+                    raise RuntimeError(f'{cfg["model"]} unavailable in the audit CLI environment')
+                verify_catalog(catalog, digest, args.model)
+                (out / 'catalog.json').write_text(json.dumps({
+                    'sha256': digest, 'preflight_sha256': args.catalog_sha256,
+                    'model': cfg['model'], 'discovery_verified': True,
+                }, indent=2) + '\n')
+                print(f'Audit catalog SHA-256: {digest}; model: {cfg["model"]}')
+            except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
+                reason = redact_diagnostic(str(exc), key)
+                if isinstance(exc, subprocess.TimeoutExpired):
+                    (out / 'opencode-catalog.log').write_text(redact_diagnostic(exc.stderr, key))
+                save_result(out, report, {'status': 'failed', 'reason': reason,
+                                         'summary': f'Model not started: {reason}'})
+                raise RuntimeError(reason) from None
+        command = ['opencode', 'run', '--pure', '--print-logs', '--log-level', 'ERROR',
+                   '--model', cfg['model'],
                    '--format', 'json', '--agent', 'audit']
         stdin = None
         if args.packet:
@@ -343,11 +395,11 @@ def main():
         try:
             result = subprocess.run(command, input=stdin, cwd=str(workdir), env=env,
                                     capture_output=True, text=True, timeout=600)
-            # Never stream CLI diagnostics; redact before publishing the sole output.
-            (out / 'events.jsonl').write_text(result.stdout.replace(key, '[REDACTED]'))
+            (out / 'opencode-stderr.log').write_text(redact_diagnostic(result.stderr, key))
+            (out / 'events.jsonl').write_text(redact_diagnostic(result.stdout, key))
             report.write_text(report.read_text() + f'\nCLI exit: {result.returncode}. '
                               'No automatic retry. See events.jsonl and usage.json; OpenCode cost is an estimate, not the provider bill.\n')
-            safe_stdout = result.stdout.replace(key, '[REDACTED]')
+            safe_stdout = redact_diagnostic(result.stdout, key)
             save_accounting(out, report, safe_stdout, args.provider)
             outcome = audit_result(safe_stdout, result.returncode, expected_ids=expected_ids)
             save_result(out, report, outcome)
@@ -355,10 +407,8 @@ def main():
                 raise RuntimeError('OpenCode audit failed or incomplete; inspect artifact, do not retry automatically')
         except subprocess.TimeoutExpired as exc:
             report.write_text(report.read_text() + '\nTimeout: outcome uncertain. Do not retry.\n')
-            partial = exc.stdout or ''
-            if isinstance(partial, bytes):
-                partial = partial.decode(errors='replace')
-            partial = partial.replace(key, '[REDACTED]')
+            (out / 'opencode-stderr.log').write_text(redact_diagnostic(exc.stderr, key))
+            partial = redact_diagnostic(exc.stdout, key)
             (out / 'events.jsonl').write_text(partial)
             save_accounting(out, report, partial, args.provider)
             save_result(out, report, audit_result(partial, timed_out=True, expected_ids=expected_ids))
