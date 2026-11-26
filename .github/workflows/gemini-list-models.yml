@@ -1,23 +1,29 @@
-name: Gemini list models (diagnostic)
+name: Hydrogen single synthetic test
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
-  list:
-    if: github.repository == 'apotet/my-gemini-mirror-site' && github.actor == 'apotet'
+  synthetic:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.actor == 'apotet' &&
+      github.ref == 'refs/heads/test/hydrogen-synthetic-once-20261126' &&
+      github.run_attempt == 1
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: List models (no generation)
+      - name: Atomically reserve the only request
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python3 scripts/gemini-list-models.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: gemini-models
-          path: gemini-models.json
-          retention-days: 7
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api --method POST repos/apotet/my-gemini-mirror-site/git/refs
+          -f ref=refs/heads/agents/state/hydrogen-synthetic-20261126
+          -f "sha=$GITHUB_SHA" > /dev/null
+      - name: One synthetic request and independent verification
+        env:
+          HYDROGEN_KEY: ${{ secrets.GEMINI_HYDROGEN_API_KEY }}
+        run: python3 scripts/hydrogen-synthetic-once.py
