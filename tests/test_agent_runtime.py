@@ -339,6 +339,16 @@ class Runtime(unittest.TestCase):
         self.assertEqual(len(state['calls']),1)
         with self.assertRaises(ValueError):core.continue_task(state,'head','head','fresh',1)
 
+    def test_gemini_dev_workflow_is_owner_only_and_never_merges(self):
+        text=(ROOT/'.github/workflows/gemini-dev-issue.yml').read_text()
+        for needle in ("github.actor == 'apotet'","github.event.issue.user.login == 'apotet'","github.event.comment.user.login == 'apotet'",
+                       "!github.event.issue.pull_request","startsWith(github.event.issue.title, '[GEMINI DEV] ')","github.run_attempt == 1",
+                       "== '/agent start confirm-paid-api'"):
+            self.assertIn(needle,text)
+        self.assertNotIn('issues:',text.split('jobs:')[0].split('on:')[1].split('permissions:')[0])
+        for bad in ('merge','deploy','workflow_dispatch','ready_for_review'):
+            self.assertNotIn(bad,text.lower())
+
     def test_gemini_successful_transport_parses_response(self):
         task=core.normalize({'task':'audit'},'gemini')
         raw={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"status":"complete"}'}]}}],

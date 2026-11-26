@@ -7,6 +7,20 @@ checkpoint и Draft PR. Старый Gemini-аудитор не изменён. 
 Google; тариф и доступность модели должны проверяться для API-проекта. Реального
 вызова нового агента не было; изменения не активны до merge.
 
+Команды запуска (только от `apotet`, Issue автора `apotet`, не PR):
+
+- Аудитор (старый, audit-only): создать Issue `[GEMINI] <название>` с JSON
+  `{"task":"...","mode":"audit-only","model":"gemini-4-hydrogen","files":["путь"]}`; запуск при создании Issue.
+- Разработчик: создать Issue `[GEMINI DEV] <название>` (само создание ничего не запускает),
+  затем комментарий `/agent start confirm-paid-api`; далее
+  `/agent continue {"checkpoint":"<SHA>","calls":1}`, `/agent validate {"checkpoint":"<SHA>","calls":0}`,
+  `/agent publish {"checkpoint":"<SHA>","calls":0}`; после ошибки/429 — `"acknowledge_uncertain":true`.
+
+Пилот для управления из ChatGPT: Issue `[GEMINI DEV] Pilot: docs note` с телом
+`{"task":"Добавь одну строку в docs/GEMINI_DEV_AGENT.md: дата проверки пилота.","mode":"edit","context_files":["docs/GEMINI_DEV_AGENT.md"],"write_paths":["docs/GEMINI_DEV_AGENT.md"],"max_calls":1,"max_output_tokens":2048}`.
+Issue создаётся и запускается только после отдельного разрешения владельца; результат — Draft PR на независимую приёмку.
+Статус: CI PR #457 `action_required` (требует одобрения владельца); локально 70/70 runtime, 11/11 Gemini-аудитор, lint и test:logic PASS; реальных вызовов 0.
+
 ## Kimi — увеличение лимитов и продолжение checkpoint
 
 Подготовлены в отдельном PR увеличенные лимиты вызовов/токенов и явное изменение
