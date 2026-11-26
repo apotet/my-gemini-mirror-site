@@ -25,6 +25,9 @@ jobs:
       cancel-in-progress: false
     env:
       AGENT_PROVIDER: ${{ inputs.provider }}
+      NETOPS_GEMINI_DEV_PROVIDER_VERIFIED: ${{ vars.NETOPS_GEMINI_DEV_PROVIDER_VERIFIED }}
+      NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES }}
+      NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES }}
       PYTHONPATH: .github
     steps:
       - uses: actions/checkout@v4

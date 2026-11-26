@@ -94,8 +94,11 @@ class Runtime(unittest.TestCase):
         self.event_file=self.root/'event.json';self.write_event()
         env={'GITHUB_REPOSITORY':'apotet/my-gemini-mirror-site','GITHUB_ACTOR':'apotet','GITHUB_REF':'refs/heads/main',
              'GITHUB_RUN_ATTEMPT':'1','GITHUB_EVENT_NAME':'issue_comment','GITHUB_EVENT_PATH':str(self.event_file),
-             'GITHUB_SHA':self.source,'GITHUB_RUN_ID':'100','PROVIDER_API_KEY':'fake-not-sent'}
+             'GITHUB_SHA':self.source,'GITHUB_RUN_ID':'100','PROVIDER_API_KEY':'fake-not-sent',
+             'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED':'true','NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         p=patch.dict(os.environ,env);p.start();self.addCleanup(p.stop)
+        p=patch.object(providers,'GEMINI_DEV_TRANSPORT_RELEASED',True);p.start();self.addCleanup(p.stop)
         p=patch.object(cli,'OUT',self.root/'private-output');p.start();self.addCleanup(p.stop)
         self.out=cli.OUT
     def write_event(self):self.event_file.write_text(json.dumps(self.event))
@@ -292,7 +295,7 @@ class Runtime(unittest.TestCase):
         self.assertFalse(self.api.refs)
         cli.prepare('gemini',self.api)
         def partial(task,messages,out,timeout):
-            return response('{"status":','length')
+            return response('{"status":"comp','length')
         cli.run_loop('gemini',self.api,infer=partial)
         ledger=Ledger(self.api,'gemini','issue-9');state=ledger.load()
         self.assertEqual(state['status'],'uncertain')
@@ -516,6 +519,63 @@ class Runtime(unittest.TestCase):
         state['task'].pop('max_total_calls')
         with self.assertRaises(ValueError):core.reserve(state)
 
+    def test_gemini_transport_defaults_off_before_claim_and_direct_transport(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        with patch.dict(os.environ,{'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED':''}):
+            with self.assertRaisesRegex(providers.GeminiInputLimit,'disabled'):
+                cli.prepare('gemini',self.api)
+            task=core.normalize({'task':'audit'},'gemini')
+            with patch.object(providers.subprocess,'run') as transport:
+                with self.assertRaisesRegex(providers.GeminiInputLimit,'disabled'):
+                    providers.infer(task,[{'role':'user','content':'hello'}],self.out,30)
+                transport.assert_not_called()
+        self.assertFalse(self.api.refs)
+
+    def test_gemini_release_gate_overrides_enabled_environment(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        path=ROOT/'.github/agent_runtime/providers.py'
+        import ast
+        tree=ast.parse(path.read_text())
+        gate=next(node for node in tree.body if isinstance(node,ast.Assign)
+                  and any(isinstance(target,ast.Name) and target.id=='GEMINI_DEV_TRANSPORT_RELEASED'
+                          for target in node.targets))
+        self.assertIs(ast.literal_eval(gate.value),False)
+        with patch.object(providers,'GEMINI_DEV_TRANSPORT_RELEASED',False):
+            with self.assertRaisesRegex(providers.GeminiInputLimit,'trusted release gate'):
+                cli.prepare('gemini',self.api)
+            task=core.normalize({'task':'audit'},'gemini')
+            with patch.object(providers.subprocess,'run') as transport:
+                with self.assertRaisesRegex(providers.GeminiInputLimit,'trusted release gate'):
+                    providers.infer(task,[{'role':'user','content':'hello'}],self.out,30)
+                transport.assert_not_called()
+        self.assertFalse(self.api.refs)
+
+    def test_gemini_per_attempt_and_cumulative_input_limits_precede_transport(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        cli.prepare('gemini',self.api)
+        ledger=Ledger(self.api,'gemini','issue-9')
+        with patch.dict(os.environ,{'NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES':'1'}):
+            cli.run_loop('gemini',self.api,infer=lambda *a:self.fail('Unexpected provider call'))
+        self.assertEqual(ledger.load()['status'],'paused_budget')
+        self.assertFalse(ledger.load()['calls'])
+        self.event['comment']['id']=503
+        self.event['comment']['body']='/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':2})
+        self.write_event();cli.prepare('gemini',self.api)
+        state=ledger.load()
+        exact_size=len(providers.request_bytes(providers.payload(state['task'],state['messages'])))
+        env={'NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES':str(exact_size+1000),
+             'NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES':str(exact_size+1000)}
+        calls=[]
+        def infer(task,messages,*args):
+            checkpoint=ledger.load()
+            self.assertEqual(checkpoint['calls'][-1]['request_bytes'],exact_size)
+            calls.append(True)
+            return response({'status':'continue','report':'continue the review'})
+        with patch.dict(os.environ,env):cli.run_loop('gemini',self.api,infer=infer)
+        self.assertEqual(calls,[True])
+        self.assertEqual(ledger.load()['status'],'paused_budget')
+        self.assertIn('cumulative',ledger.load()['budget_problem'])
+
     def test_gemini_dev_workflow_is_owner_only_and_never_merges(self):
         text=(ROOT/'.github/workflows/gemini-dev-issue.yml').read_text()
         for needle in ("github.actor == 'apotet'","github.event.issue.user.login == 'apotet'","github.event.comment.user.login == 'apotet'",
@@ -551,12 +611,21 @@ class Runtime(unittest.TestCase):
         files={f['path']:f['content'] for f in content['files']}
         self.assertEqual(files['src/a.ts'],self.repo.read('src/a.ts').decode())
         self.assertEqual(files['docs/standard.md'],'Full standard')
-    def test_native_images_and_text_only_visibility(self):
-        k=self.state(context_files=['public/image.png'])
-        self.assertEqual(k['messages'][-1]['content'][1]['type'],'image_url')
-        z=core.normalize({'task':'audit','files':['public/image.png']},'zai')
-        state=core.initial(z,self.repo,'zai','issue-9',9)
-        self.assertIn(base64.b64encode(b'\x89PNG\0data').decode(),state['messages'][-1]['content'])
+    def test_opaque_binary_context_fails_closed_for_all_shared_providers(self):
+        for provider in ('kimi','zai','gemini'):
+            task=core.normalize({'task':'Inspect image','context_files':['public/image.png']},provider)
+            with self.subTest(provider=provider),self.assertRaisesRegex(ValueError,'Opaque binary'):
+                core.initial(task,self.repo,provider,'issue-9',9)
+        self.assertFalse(self.api.refs)
+
+    def test_opaque_legacy_context_is_not_checkpointed(self):
+        state=self.state()
+        state['messages'][-1]['content']=json.dumps({'files':[{
+            'path':'public/image.png','encoding':'base64','content':'AAEC'}]})
+        with self.assertRaisesRegex(ValueError,'Opaque binary'):
+            Ledger(self.api,'kimi','issue-9').save(state)
+        self.assertFalse(self.api.blobs)
+
     def test_secret_paths_and_control_plane(self):
         for p in ['.env','src/.env.local','../a','/etc/passwd','.github/workflows/a.yml','scripts/zai-agent.py','src/a/../../x','src\\x']:
             with self.subTest(path=p),self.assertRaises(ValueError):policy.path(p,write=True)
@@ -577,9 +646,16 @@ class Runtime(unittest.TestCase):
         policy.apply_files(state,[{'path':'src/new.ts','action':'append','content':'part2','complete':True,'expected_sha256':policy.digest(b'part1')}])
         self.assertEqual(base64.b64decode(state['overlay']['src/new.ts']),b'part1part2');self.assertFalse(state['incomplete_files'])
         with self.assertRaises(ValueError):policy.apply_files(state,[{'path':'src/new.ts','action':'append','content':'x','expected_sha256':'bad'}])
-    def test_delete_and_binary_assets(self):
-        state=self.state();policy.apply_files(state,[{'path':'src/a.ts','action':'delete'},{'path':'public/new.png','encoding':'base64','content':'AAEC'}])
-        self.assertIsNone(state['overlay']['src/a.ts']);self.assertEqual(base64.b64decode(state['overlay']['public/new.png']),b'\0\1\2')
+    def test_delete_and_base64_text_assets(self):
+        state=self.state()
+        policy.apply_files(state,[{'path':'src/a.ts','action':'delete'},
+                                 {'path':'public/new.svg','encoding':'base64','content':'PHN2Zy8+'}])
+        self.assertIsNone(state['overlay']['src/a.ts'])
+        self.assertEqual(base64.b64decode(state['overlay']['public/new.svg']),b'<svg/>')
+        with self.assertRaisesRegex(ValueError,'Opaque binary'):
+            policy.apply_files(state,[{'path':'public/new.png','encoding':'base64','content':'AAEC'}])
+        self.assertNotIn('public/new.png',state['overlay'])
+
     def test_audit_rejects_any_edit(self):
         state=self.state(mode='audit-only',write_paths=[])
         with self.assertRaises(ValueError):policy.apply_files(state,[{'path':'src/a.ts','content':'x'}])
@@ -616,12 +692,109 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],'max_calls':1});self.write_event();self.prepare()
         self.loop([response({'status':'continue','report':'plan retained'})])
         state=self.state_after();self.assertEqual(state['status'],'paused');self.assertEqual(state['reports'],['plan retained'])
-    def test_incomplete_output_is_discarded_and_stops(self):
+    def test_complete_field_boundary_output_is_saved_then_continued_without_truncation(self):
         self.prepare();full=json.dumps({'status':'complete','files':[{'path':'src/a.ts','content':'FULL NEW SOURCE'}]})
-        self.loop([response(full[:30],'length'),response(full[30:])])
+        seen=self.loop([response(full[:30],'length'),response(full[30:])])
+        state=self.state_after()
+        self.assertEqual(len(seen),2)
+        self.assertEqual(state['status'],'ready_for_review')
+        self.assertEqual(state['calls'][0]['response']['content']+state['calls'][1]['response']['content'],full)
+
+    def test_incomplete_field_value_is_discarded_and_stops(self):
+        self.prepare()
+        partial='{"status":"complete","report":"an unfinished field'
+        self.loop([response(partial,'length')])
         state=self.state_after();self.assertEqual(state['status'],'uncertain')
         self.assertEqual(len(state['calls']),1)
         self.assertNotIn('response',state['calls'][0])
+        self.assertNotIn(partial.encode(),b''.join(self.api.blobs.values()))
+
+    def legacy_sse_answer(self,state,text,finish):
+        raw='data: '+json.dumps({'choices':[{'index':0,'delta':{'content':text},
+                                             'finish_reason':finish}]})+'\n\ndata: [DONE]\n'
+        core.reserve(state)
+        answer=providers.parse_stream(raw)
+        answer['raw']=raw
+        core.answered(state,answer)
+        del state['calls'][-1]['response_starts_envelope']
+        return raw
+
+    def test_legacy_complete_split_text_and_sse_survive_save_and_upgraded_continue(self):
+        state=self.state(mode='audit-only',write_paths=[])
+        first='{"status":"continue","report":"ordinary con'
+        second='tinued report"}'
+        first_raw=self.legacy_sse_answer(state,first,'length')
+        state['pending_text']=first
+        state['calls'][-1]['processed']=True
+        second_raw=self.legacy_sse_answer(state,second,'stop')
+        core.process(state,self.repo,lambda r,s:{'passed':True})
+        ledger=Ledger(self.api,'kimi','issue-9')
+        ledger.save(state)
+        ledger=Ledger(self.api,'kimi','issue-9')
+        saved=ledger.load()
+        previous=copy.deepcopy(saved)
+        ledger.save(saved)  # Require verification of pre-existing sidecar blobs before any write.
+        self.assertEqual(saved['calls'],previous['calls'])
+        self.assertEqual(saved['reports'],['ordinary continued report'])
+        ledger.materialize(saved,self.out)
+        for i,raw in enumerate((first_raw,second_raw),1):
+            self.assertEqual((self.out/f'ledger-artifacts/calls/{i}/response-00000.sse').read_text(),raw)
+        core.reserve(saved);core.answered(saved,response({'status':'complete','report':'fresh audit'}))
+        core.process(saved,self.repo,lambda r,s:{'passed':True})
+        ledger.save(saved)
+        self.assertEqual(ledger.load()['reports'],['ordinary continued report','fresh audit'])
+
+    def test_unverified_legacy_sidecar_cannot_be_referenced_in_new_checkpoint(self):
+        state=self.state(mode='audit-only',write_paths=[])
+        raw=self.legacy_sse_answer(state,'{"status":"complete","report":"text review"}','stop')
+        core.process(state,self.repo,lambda *a:{'passed':True})
+        self.assertTrue(raw)
+        ledger=Ledger(self.api,'kimi','issue-9')
+        ledger.save(state)
+        saved=ledger.load()
+        sidecar=next(iter(saved['sidecars'].values()))
+        # Simulate a missing or corrupted archived stream behind an existing ref.
+        self.api.blobs[sidecar]=b'not an SSE response'
+        baseline=(dict(self.api.refs),dict(self.api.blobs))
+        with self.assertRaisesRegex(ValueError,'legacy response artifacts cannot be verified'):
+            ledger.save(saved)
+        self.assertEqual((self.api.refs,self.api.blobs),baseline)
+
+    def test_legacy_known_reset_keeps_checked_prefix_without_treating_it_as_pending(self):
+        state=self.state(mode='audit-only',write_paths=[])
+        first='{"status":"complete","report"'
+        self.legacy_sse_answer(state,first,'length')
+        state['pending_text']=first;state['calls'][-1]['processed']=True
+        state['pending_text']=''
+        state['messages'].append({'role':'user','content':
+            'Coordinator explicitly requests a fresh JSON envelope after the previous invalid/partial response. Full raw responses remain in the history.'})
+        self.legacy_sse_answer(state,'{"status":"complete","report":"fresh audit"}','stop')
+        core.process(state,self.repo,lambda r,s:{'passed':True})
+        ledger=Ledger(self.api,'kimi','issue-9')
+        ledger.save(state)
+        self.assertEqual(ledger.load()['calls'][0]['response']['content'],first)
+        self.assertEqual(ledger.load()['reports'],['fresh audit'])
+
+    def test_legacy_uncheckable_tail_and_unproven_order_do_not_write_blobs(self):
+        for tail in ('{"status":"complete","report":"unfinished value', '{"status":"complete","report"'):
+            state=self.state(mode='audit-only',write_paths=[])
+            self.legacy_sse_answer(state,tail,'length')
+            state['pending_text']=tail;state['calls'][-1]['processed']=True
+            if tail.endswith('"'):state['calls'][-1]['message_count']+=1
+            ledger=Ledger(self.api,'kimi','issue-9')
+            with self.assertRaisesRegex(ValueError,'leave its ref intact'):
+                ledger.save(state)
+            self.assertFalse(self.api.blobs)
+            self.assertFalse(self.api.refs)
+
+    def test_explicit_reset_can_reserve_new_call_with_checked_abandoned_prefix(self):
+        state=self.state(mode='audit-only',write_paths=[])
+        core.reserve(state);core.answered(state,response('{"status":"complete","report"','length'))
+        core.process(state,self.repo,lambda r,s:{'passed':True})
+        core.continue_task(state,'head','head','fresh',1,reset_response=True)
+        core.reserve(state)
+        Ledger(self.api,'kimi','issue-9').save(state)
+        self.assertEqual(state['pending_text'],'')
 
     def test_owner_can_extend_kimi_limits_after_discarded_partial_response(self):
         self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],
@@ -630,7 +803,7 @@ class Runtime(unittest.TestCase):
         self.write_event()
         self.prepare()
         full=json.dumps({'status':'complete','files':[{'path':'src/a.ts','content':'FULL NEW SOURCE'}]})
-        self.loop([response(full[:30],'length')])
+        self.loop([response(full[:-9],'length')])
         before=self.state_after()
         self.assertEqual(before['status'],'uncertain')
         self.assertEqual(before['pending_text'],'')

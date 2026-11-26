@@ -1,4 +1,4 @@
-"""Provider boundary; no financial policy or arbitrary input/output byte caps."""
+"""Provider boundary; Gemini DEV uses explicitly approved local request limits."""
 from dataclasses import dataclass
 from decimal import Decimal
 import json
@@ -51,6 +51,40 @@ def payload(task, messages):
     # Do not estimate tokens from bytes and reject otherwise-valid multilingual input.
     # Provider-native context validation is authoritative; an error pauses, never trims.
     return result
+
+
+# Keep the new transport dormant even if repository variables were preconfigured.
+# Enabling live requests requires a separately reviewed code change.
+GEMINI_DEV_TRANSPORT_RELEASED=False
+
+
+class GeminiInputLimit(ValueError):
+    pass
+
+
+def gemini_request_limits():
+    if not GEMINI_DEV_TRANSPORT_RELEASED:
+        raise GeminiInputLimit('Gemini DEV transport disabled by the trusted release gate')
+    if os.environ.get('NETOPS_GEMINI_DEV_PROVIDER_VERIFIED')!='true':
+        raise GeminiInputLimit('Gemini DEV transport disabled pending owner verification of provider billing and data terms')
+    try:
+        per_attempt=int(os.environ['NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES'])
+        aggregate=int(os.environ['NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES'])
+    except (KeyError,ValueError):
+        raise GeminiInputLimit('Gemini DEV requires explicit request byte limits') from None
+    if not 1<=per_attempt<=aggregate:
+        raise GeminiInputLimit('Invalid Gemini DEV request byte limits')
+    return per_attempt,aggregate
+
+
+def check_gemini_request(size,prior=0):
+    per_attempt,aggregate=gemini_request_limits()
+    if size>per_attempt:raise GeminiInputLimit('Gemini DEV per-attempt request byte limit exceeded')
+    if size+prior>aggregate:raise GeminiInputLimit('Gemini DEV cumulative request byte limit exceeded')
+
+
+def request_bytes(request):
+    return json.dumps(request,ensure_ascii=False).encode('utf-8')
 
 
 def parse_stream(text):
@@ -122,12 +156,14 @@ def infer(task, messages, output_dir, timeout):
     if not key: raise ValueError('Missing provider credential')
     request = payload(task,messages)
     policy.safe_value(request)
+    data=request_bytes(request)
+    model=MODELS[task['model']]
+    if model.provider=='gemini':check_gemini_request(len(data))
     with tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
         temp=Path(temp)
         request_file=temp/'request.json'
-        request_file.write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
+        request_file.write_bytes(data)
         raw, headers = temp/'response.sse', temp/'headers.tmp'
-        model=MODELS[task['model']]
         auth=('x-goog-api-key: ' if model.provider=='gemini' else 'Authorization: Bearer ')+key
         result = subprocess.run(['curl','-q','--silent','--show-error','--no-buffer','--retry','0',
             '--max-time',str(timeout),'--proto','=https','--output',str(raw),'--dump-header',str(headers),

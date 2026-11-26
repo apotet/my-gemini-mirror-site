@@ -139,6 +139,7 @@ def prepare(provider,api=None):
                 task['context_files']=list(dict.fromkeys([definition['path'],*task['context_files'],
                     'docs/LEARNING_CONTENT_STANDARD.md','docs/DEVELOPMENT_WORKFLOW.md','src/data/questions.json']))
             key='issue-'+str(issue['number']) if issue else 'manual-'+hashlib.sha256((repo.source+json.dumps(task,sort_keys=True,ensure_ascii=False)).encode()).hexdigest()[:24]
+    if provider=='gemini' and action=='work':providers.gemini_request_limits()
     ledger=Ledger(api,provider,key)
     state=ledger.load()
     if resume is None:
@@ -198,6 +199,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='work':raise ValueError('This activation cannot call a model')
+    if provider=='gemini':providers.gemini_request_limits()
     if not os.environ.get('PROVIDER_API_KEY'):raise ValueError('Missing provider credential; no attempt made')
     repo=source_repo(state['sourceSHA'])
     trusted_repo=source_repo(state.get('trustedSHA',state['sourceSHA']))
@@ -228,7 +230,11 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                     state['budget_problem']=str(exc)
                     persist(ledger,state,plan)
                     break
-            core.reserve(state)
+            try:core.reserve(state)
+            except providers.GeminiInputLimit as exc:
+                state['status']='paused_budget'
+                state['budget_problem']=str(exc)
+                persist(ledger,state,plan);break
             if provider=='kimi':
                 state['calls'][-1]['budget_reservation']=reservation
             persist(ledger,state,plan) # irrevocable spent-attempt reservation BEFORE HTTP

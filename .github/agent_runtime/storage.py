@@ -61,6 +61,7 @@ class Ledger:
         self.api,self.provider,self.key=api,provider,key
         self.branch=f'agents/state/{provider}-{key}'
         self.head=None
+        self._verified_legacy_streams=set()
 
     def load(self):
         self.head=self.api.ref(self.branch)
@@ -77,6 +78,10 @@ class Ledger:
     def save(self,state):
         # Reject the entire checkpoint before creating even the first Git blob.
         policy.check_state(state)
+        if policy.needs_legacy_response_check(state):
+            try:self.checked_sidecars(state,write_to=None)
+            except (ValueError,TypeError,KeyError):
+                raise ValueError(policy.CHECKPOINT_REVIEW+' (legacy response artifacts cannot be verified)') from None
         # Check expected head before creating a child; Git's non-force ref update
         # rejects sibling commits if another writer wins after this read.
         if self.api.ref(self.branch)!=self.head:
@@ -109,30 +114,45 @@ class Ledger:
         self.head=commit
         return commit
 
-    def materialize(self,state,directory):
-        policy.check_state(state)
-        pending=[]
-        for name,sha in state.get('sidecars',{}).items():
-            if not re.fullmatch(r'calls/[0-9]+/(response|partial)-[0-9]{5}\.sse',name):
-                raise ValueError('Invalid sidecar path')
-            if '/partial-' in name:
-                raise ValueError('Unverified partial response cannot be exported')
-            target=Path(directory)/'ledger-artifacts'/name
-            blob=self.api.request('GET','/git/blobs/'+sha)
-            pending.append((target,base64.b64decode(blob['content'])))
-        # Inspect the complete stream before writing any artifact, including chunk boundaries.
+    def checked_sidecars(self,state,write_to):
+        sidecars=state.get('sidecars',{})
         referenced=set()
+        pending={}
+        for name in sidecars:
+            if not re.fullmatch(r'calls/[0-9]+/response-[0-9]{5}\.sse',name):
+                raise ValueError('Unverified or invalid sidecar cannot be reused')
         for call in state.get('calls',[]):
             paths=call.get('response_artifacts',[])
-            if paths:
-                pieces={str(target.relative_to(Path(directory)/'ledger-artifacts')):data for target,data in pending}
-                raw=b''.join(pieces[p] for p in paths).decode('utf-8')
-                policy.check_raw_response(state['provider'],call['response'],raw)
-                referenced.update(paths)
-        if referenced!=set(state.get('sidecars',{})):
-            raise ValueError('Unreferenced sidecar cannot be exported')
-        for target,data in pending:
-            target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+            if not paths:continue
+            expected=[f'calls/{call["id"]}/response-{i:05d}.sse' for i in range(len(paths))]
+            if paths!=expected or set(paths)&referenced:
+                raise ValueError('Unexpected sidecar identity or order')
+            referenced.update(paths)
+            response=call['response']
+            # Content-addressed raw blobs and their three checked response
+            # fields are immutable for this verification within one run.
+            identity=(tuple(sidecars[path] for path in paths),
+                      policy.digest(json.dumps([state['provider'],response['content'],
+                          response.get('reasoning_content',''),response['finish_reason']],ensure_ascii=False).encode()))
+            if write_to is None and identity in self._verified_legacy_streams:continue
+            pieces={}
+            for path in paths:
+                blob=self.api.request('GET','/git/blobs/'+sidecars[path])
+                pieces[path]=base64.b64decode(''.join(blob['content'].split()),validate=True)
+            raw=b''.join(pieces.values()).decode('utf-8')
+            policy.check_raw_response(state['provider'],response,raw)
+            self._verified_legacy_streams.add(identity)
+            if write_to is not None:pending.update(pieces)
+        if referenced!=set(sidecars):
+            raise ValueError('Unreferenced sidecar cannot be reused')
+        if write_to is not None:
+            for path,data in pending.items():
+                target=Path(write_to)/'ledger-artifacts'/path
+                target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+
+    def materialize(self,state,directory):
+        policy.check_state(state)
+        self.checked_sidecars(state,write_to=directory)
 
 
 
