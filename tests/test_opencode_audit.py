@@ -167,6 +167,34 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(result['status'], 'completed')
         self.assertEqual(result['summary'], 'Final scope findings.')
 
+    def test_author_result_requires_explicit_complete_and_success(self):
+        def events(text, reason='stop'):
+            return '\n'.join(json.dumps(e) for e in [
+                {'type': 'text', 'part': {'text': text}},
+                {'type': 'step_finish', 'part': {'reason': reason}}])
+        complete = events('Changed the lesson.\nDEV_STATUS: COMPLETE')
+        self.assertEqual(audit.audit_result(complete, status_prefix='DEV_STATUS')['status'], 'completed')
+        for data in [events('Changed the lesson.\nDEV_STATUS: INCOMPLETE'),
+                     events('Changed the lesson.\nAUDIT_STATUS: COMPLETE'),
+                     events('Changed the lesson.\nDEV_STATUS: COMPLETE', 'length'),
+                     complete + '\nnot-json']:
+            self.assertEqual(audit.audit_result(data, status_prefix='DEV_STATUS')['status'], 'incomplete')
+        self.assertEqual(audit.audit_result(complete, returncode=1, status_prefix='DEV_STATUS')['status'], 'failed')
+        self.assertEqual(audit.audit_result(complete, timed_out=True, status_prefix='DEV_STATUS')['status'], 'interrupted')
+
+    def test_author_result_cli_blocks_partial_patches(self):
+        script = Path(__file__).parents[1] / 'scripts/opencode_author_result.py'
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp)
+            for exitcode, marker, expected in [(0, 'COMPLETE', 0), (0, 'INCOMPLETE', 1), (124, 'COMPLETE', 1)]:
+                (report / 'exit.txt').write_text(f'exit={exitcode}\n')
+                (report / 'events.jsonl').write_text('\n'.join(json.dumps(e) for e in [
+                    {'type': 'text', 'part': {'text': f'Changes.\nDEV_STATUS: {marker}'}},
+                    {'type': 'step_finish', 'part': {'reason': 'stop'}}]))
+                result = subprocess.run([sys.executable, str(script), tmp], capture_output=True, text=True)
+                self.assertEqual(result.returncode, expected, result.stderr)
+                self.assertEqual((report / 'summary.txt').read_text(), 'Changes.')
+
     def test_timeout_persists_redacted_partial_result_and_usage_without_retry(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / 'repo'
