@@ -116,6 +116,7 @@ def prepare(provider,api=None):
     else:
         raw=core.strict_json(issue['body']) if issue else manual_task(event,provider,repo)
         if isinstance(raw,dict) and set(raw)=={'resume'}:
+            if issue is not None:raise ValueError('Issue continuations require an explicit checkpoint command')
             resume=raw['resume'];key=resume.get('task_id','');grant_id='manual-'+os.environ['GITHUB_RUN_ID']
             action=resume.get('action','work')
             if action not in ('work','validate','publish'):raise ValueError('Invalid manual continuation action')
@@ -237,6 +238,8 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             except Exception as exc:
                 state['status']='uncertain'
                 state['calls'][-1]['problem']=type(exc).__name__
+                if isinstance(exc,providers.GeminiHTTPError):
+                    state['calls'][-1]['http_status']=exc.status
                 if (call_dir/'response.sse').exists():
                     state['calls'][-1]['raw_partial_base64']=base64.b64encode((call_dir/'response.sse').read_bytes()).decode()
                 persist(ledger,state,plan);break
@@ -253,6 +256,8 @@ def validate_only(provider,api=None):
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='validate' or state['incomplete_files'] or not state['overlay']:
         raise ValueError('No complete candidate for validation-only activation')
+    if provider=='gemini' and not state.get('candidate_complete'):
+        raise ValueError('Gemini candidate has not reached a complete response')
     repo=source_repo(state['sourceSHA'])
     result=sandbox.validate(repo,state,Path.cwd()/'node_modules')
     state.setdefault('validations',[]).append(result)
@@ -264,6 +269,8 @@ def publish(provider,api=None):
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     try:
+        if provider=='gemini' and plan['action']=='validate':
+            raise ValueError('Gemini validation-only activation cannot publish')
         if state['status']=='ready_for_review':core.publish_candidate(api,ledger,state)
     finally:
         plan['head']=ledger.head
@@ -290,6 +297,11 @@ def report(provider,api=None):
     metrics=core.totals(state)
     if provider=='kimi':
         metrics['daily_budget']=budget.daily_status(api)
+    gemini_status=''
+    if provider=='gemini' and state['calls']:
+        http=state['calls'][-1].get('http_status')
+        if http==429:gemini_status='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
+        elif http is not None:gemini_status=f'Gemini HTTP {http}. No automatic retry.\n'
     failures=[json.loads(p.read_text()) for p in sorted(OUT.glob('failure-*.json'))]
     run='https://github.com/'+REPOSITORY+'/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
@@ -299,7 +311,7 @@ Trusted standards `{state.get('trustedSHA',state['sourceSHA'])}`.
 Checkpoint `{plan['head']}`; remaining authorized calls: {state['remaining_calls']}.
 Phase failures: {json.dumps(failures,ensure_ascii=False)}.
 Budget status: {state.get('budget_problem','not blocked')}.
-Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
+{gemini_status}Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
 
 Usage/calls/spend (before tax; unknown calls are NOT zero):
 ```json

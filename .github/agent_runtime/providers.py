@@ -108,6 +108,12 @@ def parse_gemini(text):
             'finish_reason':finish,'usage':usage}
 
 
+class GeminiHTTPError(ValueError):
+    def __init__(self, status):
+        self.status=int(status)
+        super().__init__(f'Gemini HTTP {self.status}; no automatic retry')
+
+
 def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
@@ -137,6 +143,8 @@ def infer(task, messages, output_dir, timeout):
         if raw.exists(): raw.write_bytes(raw.read_bytes().replace(key.encode(),b'[REDACTED]'))
     if result.returncode or status != '200':
         (output_dir/'transport.json').write_text(json.dumps({'returncode':result.returncode,'http_status':status}))
+        if model.provider=='gemini' and not result.returncode and status.isascii() and status.isdecimal():
+            raise GeminiHTTPError(status)
         raise ValueError('Transport failed; attempted request must not be silently repeated')
     parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw.read_text(encoding='utf-8'))
     parsed['billing'] = billing

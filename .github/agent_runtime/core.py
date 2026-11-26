@@ -185,6 +185,7 @@ def process(state,repo,validator,trusted_repo=None):
     call=state['calls'][-1]
     if call['status']!='answered' or call.get('processed'):raise ValueError('Response is not pending')
     response=call['response']
+    if state['provider']=='gemini':state['candidate_complete']=False
     text=state['pending_text']+response['content']
     if response['finish_reason']=='length':
         state['pending_text']=text
@@ -213,6 +214,7 @@ def process(state,repo,validator,trusted_repo=None):
         elif not state['overlay']:
             state['status']='completed_no_changes'
         else:
+            if state['provider']=='gemini':state['candidate_complete']=True
             result=validator(repo,state)
             state.setdefault('validations',[]).append(result)
             if result['passed']:state['status']='ready_for_review'

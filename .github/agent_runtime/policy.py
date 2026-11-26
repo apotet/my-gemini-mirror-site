@@ -7,6 +7,7 @@ import re
 ROOTS = ('src/','public/','assets/','docs/','tests/','scripts/')
 CONFIG = {'package.json','package-lock.json','tsconfig.json','vite.config.ts','index.html','index.dev.html','README.md'}
 CONTROL = ('scripts/zai','scripts/agent','scripts/gemini','scripts/telegram-notify.py','tests/test_agent_runtime',
+           'scripts/validate-questions.mjs','scripts/load-bank.mjs','scripts/data-entry.ts',
            'docs/AGENT_RUNTIME.md','docs/KIMI_ISSUE_AGENT.md','docs/ZAI_ISSUE_AGENT.md','docs/GEMINI_ISSUE_AGENT.md','docs/GEMINI_DEV_AGENT.md',
            'docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md')
 SECRET_NAMES = {'.env','.npmrc','.pypirc','.netrc','credentials','id_rsa','id_ed25519','authorized_keys'}
@@ -36,6 +37,8 @@ def scoped(value, scopes):
 def safe_text(text):
     if re.search(r'-----BEGIN (?:[A-Z ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----',text):
         raise ValueError('Private credential material in source; do not send to a model')
+    if re.search(r'(?<![A-Za-z0-9_-])AIza[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])',text):
+        raise ValueError('Possible Google API credential in source; do not disclose')
     candidates=re.finditer(r'(?<![A-Za-z0-9_-])(?:sk-proj-|sk-ant-|sk-|ghp_|ghs_)([A-Za-z0-9_-]{24,})',text)
     if any(set(match.group(1)) not in ({'x'},{'X'}) for match in candidates):
         raise ValueError('Possible credential in source; do not disclose')

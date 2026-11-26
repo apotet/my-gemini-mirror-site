@@ -175,7 +175,8 @@ class Runtime(unittest.TestCase):
     def test_gemini_and_agent_instructions_protected_under_broad_scopes(self):
         task=self.task(write_paths=['scripts/','docs/'])
         protected=['scripts/gemini-issue-agent.py','scripts/gemini-issue-agent.test.py','scripts/gemini-list-models.py',
-                   'scripts/gemini-l3-issue.py','docs/AGENT_RUNTIME.md','docs/GEMINI_ISSUE_AGENT.md','docs/GEMINI_DEV_AGENT.md','docs/KIMI_ISSUE_AGENT.md',
+                   'scripts/gemini-l3-issue.py','scripts/validate-questions.mjs','scripts/load-bank.mjs',
+                   'scripts/data-entry.ts','docs/AGENT_RUNTIME.md','docs/GEMINI_ISSUE_AGENT.md','docs/GEMINI_DEV_AGENT.md','docs/KIMI_ISSUE_AGENT.md',
                    'docs/ZAI_ISSUE_AGENT.md','docs/STATE.md','docs/DEVELOPMENT_WORKFLOW.md','docs/LEARNING_CONTENT_STANDARD.md']
         for name in protected:
             with self.subTest(name=name):
@@ -337,7 +338,94 @@ class Runtime(unittest.TestCase):
         self.assertEqual(len(attempts),1)
         self.assertEqual(state['status'],'uncertain')
         self.assertEqual(len(state['calls']),1)
+        self.assertEqual(state['calls'][0]['http_status'],429)
+        ledger=Ledger(self.api,'gemini','issue-9')
+        ledger.materialize(state,self.out)
+        saved_body=self.out/'ledger-artifacts'/state['calls'][0]['partial_artifacts'][0]
+        self.assertEqual(saved_body.read_text(),'{"error":"quota"}')
+        self.assertIsNone(core.totals(state)['exact_cost_usd'])
+        cli.report('gemini',self.api)
+        self.assertIn('Gemini HTTP 429 (quota or rate limit). No automatic retry.',self.api.notes[-1]['body'])
         with self.assertRaises(ValueError):core.continue_task(state,'head','head','fresh',1)
+        ledger.load()
+        self.event['comment']={'id':224,'user':{'login':'apotet','type':'User'},
+            'body':'/agent continue '+json.dumps({'checkpoint':ledger.head,'calls':1,'acknowledge_uncertain':True})}
+        self.write_event();cli.prepare('gemini',self.api)
+        cli.run_loop('gemini',self.api,infer=lambda *args: response({'status':'complete'}))
+        resumed=ledger.load()
+        self.assertEqual([c['status'] for c in resumed['calls']],['uncertain_acknowledged','answered'])
+        self.assertEqual(resumed['calls'][0]['http_status'],429)
+
+    def test_gemini_requires_owner_event_and_does_not_accept_resume_in_issue_body(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        for changes in ({'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'},
+                        {'GITHUB_EVENT_NAME':'workflow_dispatch'}, {'GITHUB_REF':'refs/heads/untrusted'},
+                        {'GITHUB_REPOSITORY':'other/repo'}):
+            with self.subTest(changes=changes), patch.dict(os.environ,changes),self.assertRaises(ValueError):
+                cli.prepare('gemini',self.api)
+        for field in ('issue','sender','comment'):
+            legitimate=copy.deepcopy(self.event[field])
+            if field=='issue':self.event[field]['pull_request']={'url':'https://example/pr'}
+            elif field=='sender':self.event[field]['type']='Bot'
+            if field=='comment':self.event[field]['user']['login']='other'
+            self.write_event()
+            with self.subTest(field=field), self.assertRaises(ValueError):cli.prepare('gemini',self.api)
+            self.event[field]=legitimate
+        self.event['issue']['body']=json.dumps({'resume':{'task_id':'issue-9','calls':1}})
+        self.write_event()
+        with self.assertRaisesRegex(ValueError,'Issue continuations require'):cli.prepare('gemini',self.api)
+        self.assertFalse(self.api.refs)
+
+    def test_gemini_validate_only_cannot_publish_then_explicit_publish_is_idempotent(self):
+        self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()
+        cli.prepare('gemini',self.api)
+        cli.run_loop('gemini',self.api,
+                     infer=lambda *args: response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]}),
+                     validator=lambda r,s:{'passed':True,'logs':[]})
+        ledger=Ledger(self.api,'gemini','issue-9');ledger.load()
+        self.event['comment'].update(id=225,
+            body='/agent validate '+json.dumps({'checkpoint':ledger.head,'calls':0}))
+        self.write_event();cli.prepare('gemini',self.api)
+        with patch.dict(os.environ,{'PROVIDER_API_KEY':''}), patch.object(sandbox,'validate',return_value={'passed':True,'logs':[]}):
+            cli.validate_only('gemini',self.api)
+            with self.assertRaisesRegex(ValueError,'validation-only activation'):cli.publish('gemini',self.api)
+        self.assertFalse(self.api.prs)
+        self.assertIsNone(self.api.ref('gemini/issue-9'))
+        for grant_id in (226,227):
+            ledger.load()
+            self.event['comment'].update(id=grant_id,
+                body='/agent publish '+json.dumps({'checkpoint':ledger.head,'calls':0}))
+            self.write_event();cli.prepare('gemini',self.api)
+            with patch.dict(os.environ,{'PROVIDER_API_KEY':''}):cli.publish('gemini',self.api)
+        self.assertEqual(len(self.api.prs),1)
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertEqual(ledger.load()['status'],'published_draft')
+        self.assertEqual(len(ledger.load()['calls']),1)
+
+    def test_gemini_validate_cannot_promote_an_unfinished_response(self):
+        self.event['issue']['title']='[GEMINI DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],'max_calls':1})
+        self.write_event();cli.prepare('gemini',self.api)
+        cli.run_loop('gemini',self.api,
+                     infer=lambda *args: response({'status':'continue','files':[{'path':'src/a.ts','content':'interim'}]}))
+        ledger=Ledger(self.api,'gemini','issue-9')
+        self.assertTrue(ledger.load()['overlay'])
+        self.event['comment'].update(id=228,
+            body='/agent validate '+json.dumps({'checkpoint':ledger.head,'calls':0}))
+        self.write_event();cli.prepare('gemini',self.api)
+        with patch.object(sandbox,'validate') as validate, self.assertRaisesRegex(ValueError,'complete response'):
+            cli.validate_only('gemini',self.api)
+        validate.assert_not_called()
+        self.assertFalse(self.api.prs)
+
+    def test_google_api_key_is_blocked_in_context_and_candidate_files(self):
+        key='AIza'+'a1_'*11+'a1'
+        with self.assertRaisesRegex(ValueError,'Google API credential'):policy.safe_text(key)
+        state=self.state()
+        with self.assertRaisesRegex(ValueError,'Google API credential'):
+            policy.apply_files(state,[{'path':'src/a.ts','encoding':'base64',
+                                       'content':base64.b64encode(key.encode()).decode()}])
+        self.assertFalse(state['overlay'])
 
     def test_gemini_dev_workflow_is_owner_only_and_never_merges(self):
         text=(ROOT/'.github/workflows/gemini-dev-issue.yml').read_text()
