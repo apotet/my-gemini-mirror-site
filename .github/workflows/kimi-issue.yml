@@ -1,7 +1,5 @@
 name: KIMI Agent from GitHub Issue
 on:
-  issues:
-    types: [opened]
   issue_comment:
     types: [created]
 permissions:
@@ -16,11 +14,11 @@ jobs:
       github.event.issue.user.login == 'apotet' && github.event.sender.type == 'User' &&
       !github.event.issue.pull_request && startsWith(github.event.issue.title, '[KIMI] ') &&
       github.run_attempt == 1 &&
-      (github.event_name == 'issues' ||
-       (github.event.comment.user.login == 'apotet' &&
-        (startsWith(github.event.comment.body, '/agent continue ') ||
+      github.event.comment.user.login == 'apotet' &&
+        (github.event.comment.body == '/agent start confirm-paid-api' ||
+         startsWith(github.event.comment.body, '/agent continue ') ||
          startsWith(github.event.comment.body, '/agent validate ') ||
-         startsWith(github.event.comment.body, '/agent publish '))))
+         startsWith(github.event.comment.body, '/agent publish '))
     uses: ./.github/workflows/agent-task.yml
     with:
       provider: kimi

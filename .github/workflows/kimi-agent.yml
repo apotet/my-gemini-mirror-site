@@ -2,6 +2,10 @@ name: Kimi Agent
 on:
   workflow_dispatch:
     inputs:
+      confirm_paid_api:
+        description: 'Owner authorizes paid Moonshot API calls for this activation'
+        type: boolean
+        default: false
       spec:
         description: 'Optional full v2 JSON task or {"resume":{...}}; overrides legacy fields'
         type: string
@@ -21,13 +25,13 @@ on:
         options: [structure, poe-full]
         default: structure
       max_tokens:
-        description: 'Optional coordinator choice; blank = full model-native maximum'
+        description: 'Optional output token limit; blank = 8192'
         type: string
         default: ''
       max_calls:
         description: 'Finite call grant for this activation; exhausted tasks checkpoint, never loop forever'
         type: string
-        default: '8'
+        default: '4'
 permissions:
   contents: write
   issues: write
@@ -35,7 +39,7 @@ permissions:
   actions: read
 jobs:
   task:
-    if: github.actor == 'apotet' && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    if: github.actor == 'apotet' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && inputs.confirm_paid_api
     uses: ./.github/workflows/agent-task.yml
     with:
       provider: kimi

@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import tempfile
-from . import core, policy, providers, sandbox
+from . import budget, core, policy, providers, sandbox
 from .storage import GitHub, Ledger, Repository, REPOSITORY, APIError
 
 OUT=Path(os.environ.get('AGENT_OUTPUT_DIR',str(Path(os.environ.get('RUNNER_TEMP','/tmp'))/'netops-agent-output')))
@@ -34,12 +34,14 @@ def authorize(provider):
     event=json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     kind=os.environ['GITHUB_EVENT_NAME']
     if kind=='workflow_dispatch':
+        if provider=='kimi' and str(event.get('inputs',{}).get('confirm_paid_api','')).lower()!='true':
+            raise ValueError('Explicit owner paid API confirmation required')
         return event,None
     issue=event['issue'];sender=event['sender']
     if issue.get('pull_request') or issue['user']['login']!='apotet' or sender['login']!='apotet' or sender['type']!='User':
         raise ValueError('Unauthorized Issue event')
     if not issue['title'].startswith('[KIMI] ' if provider=='kimi' else '[ZAI] '):raise ValueError('Provider prefix mismatch')
-    if kind=='issues' and event.get('action')=='opened':return event,issue
+    if kind=='issues' and event.get('action')=='opened' and provider!='kimi':return event,issue
     if kind=='issue_comment' and event.get('action')=='created':
         comment=event['comment']
         if comment['user']['login']!='apotet' or comment['user']['type']!='User':raise ValueError('Only coordinator may continue')
@@ -74,7 +76,7 @@ def manual_task(event,provider,repo):
     if not re.fullmatch(r'\.github/agent-tasks/[A-Za-z0-9_-]+\.md',task_file):raise ValueError('Invalid manual task file')
     targets=[p for p in inputs.get('target_files','src/data/lessons/l1-poe-injectors-splitters.ts').splitlines() if p]
     task={'task':policy.safe_text(repo.read(task_file).decode()),'mode':inputs.get('mode','audit-only'),
-          'target_files':targets,'max_calls':int(inputs.get('max_calls','8'))}
+          'target_files':targets,'max_calls':int(inputs.get('max_calls','4' if provider=='kimi' else '8'))}
     if inputs.get('max_tokens'):task['max_output_tokens']=int(inputs['max_tokens'])
     if inputs.get('verification')=='poe-full':task['checks']=['scripts/poe-injectors-lesson.test.mjs']
     return task
@@ -89,7 +91,7 @@ def persist(ledger,state,plan):
 
 def owned_pr(api,state):
     if state.get('published_head'):
-        branch=f'agents/work/{state["provider"]}-{state["key"]}'
+        branch=core.work_branch(state)
         if api.ref(branch)!=state['published_head']:raise ValueError('Work branch moved; do not spend or overwrite')
     if state.get('pr_number'):
         pr=api.request('GET','/pulls/'+str(state['pr_number']))
@@ -103,7 +105,9 @@ def prepare(provider,api=None):
     trusted_repo=source_repo(os.environ['GITHUB_SHA'])
     repo=trusted_repo
     action='work';resume=None
-    if os.environ['GITHUB_EVENT_NAME']=='issue_comment':
+    is_kimi_start=(provider=='kimi' and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
+                   event['comment']['body']=='/agent start confirm-paid-api')
+    if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_kimi_start:
         match=re.fullmatch(r'/agent (continue|validate|publish)\s+(\{.*\})\s*',event['comment']['body'],re.S)
         if not match:raise ValueError('Expected /agent continue|validate|publish with structured JSON')
         action={'continue':'work','validate':'validate','publish':'publish'}[match[1]]
@@ -209,7 +213,19 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             if state['remaining_calls']<1 or deadline-clock()<300:
                 state['status']='paused';persist(ledger,state,plan);break
             owned_pr(api,state)
-            core.reserve(state);persist(ledger,state,plan) # irrevocable spent-attempt reservation BEFORE HTTP
+            if provider=='kimi':
+                try:
+                    estimate=budget.estimate(state)
+                    reservation=budget.reserve_daily(api,state,estimate)
+                except budget.BudgetExceeded as exc:
+                    state['status']='paused_budget'
+                    state['budget_problem']=str(exc)
+                    persist(ledger,state,plan)
+                    break
+            core.reserve(state)
+            if provider=='kimi':
+                state['calls'][-1]['budget_reservation']=reservation
+            persist(ledger,state,plan) # irrevocable spent-attempt reservation BEFORE HTTP
             call_dir=OUT/'calls'/str(len(state['calls']))
             try:
                 response=infer(state['task'],state['messages'],call_dir,max(1,int(deadline-clock()-180)))
@@ -220,6 +236,8 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                     state['calls'][-1]['raw_partial_base64']=base64.b64encode((call_dir/'response.sse').read_bytes()).decode()
                 persist(ledger,state,plan);break
             core.answered(state,response);persist(ledger,state,plan)
+            if provider=='kimi':
+                budget.settle_daily(api,reservation,state['calls'][-1].get('cost'))
     finally:
         save('state.json',state);save('plan.json',plan);save('accounting.json',core.totals(state))
         save('report.md','\n\n'.join(state['reports']))
@@ -265,6 +283,8 @@ def report(provider,api=None):
     # State JSON always includes their immutable Git blob references as well.
     Ledger(api,provider,plan['key']).materialize(state,OUT)
     metrics=core.totals(state)
+    if provider=='kimi':
+        metrics['daily_budget']=budget.daily_status(api)
     failures=[json.loads(p.read_text()) for p in sorted(OUT.glob('failure-*.json'))]
     run='https://github.com/'+REPOSITORY+'/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
@@ -273,7 +293,8 @@ Task `{state['key']}`, source `{state['sourceSHA']}`.
 Trusted standards `{state.get('trustedSHA',state['sourceSHA'])}`.
 Checkpoint `{plan['head']}`; remaining authorized calls: {state['remaining_calls']}.
 Phase failures: {json.dumps(failures,ensure_ascii=False)}.
-Independent owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
+Budget status: {state.get('budget_problem','not blocked')}.
+Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
 
 Usage/calls/spend (before tax; unknown calls are NOT zero):
 ```json

@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'.github'))
-from agent_runtime import core, policy, providers, cli, sandbox
+from agent_runtime import budget, core, policy, providers, cli, sandbox
 from agent_runtime.storage import Ledger, Repository, APIError
 
 
@@ -86,10 +86,11 @@ class Runtime(unittest.TestCase):
         self.source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
         self.repo=Repository(self.root,self.source);self.api=FakeAPI()
         self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]};self.api.trees['base-tree']=[]
-        self.event={'action':'opened','issue':{'number':9,'title':'[KIMI] Task','body':json.dumps({'task':'Implement a feature','mode':'edit','write_paths':['src/','public/','tests/']}),'user':{'login':'apotet','type':'User'}},'sender':{'login':'apotet','type':'User'}}
+        self.event={'action':'created','issue':{'number':9,'title':'[KIMI] Task','body':json.dumps({'task':'Implement a feature','mode':'edit','write_paths':['src/','public/','tests/']}),'user':{'login':'apotet','type':'User'}},'sender':{'login':'apotet','type':'User'},
+                    'comment':{'id':100,'body':'/agent start confirm-paid-api','user':{'login':'apotet','type':'User'}}}
         self.event_file=self.root/'event.json';self.write_event()
         env={'GITHUB_REPOSITORY':'apotet/my-gemini-mirror-site','GITHUB_ACTOR':'apotet','GITHUB_REF':'refs/heads/main',
-             'GITHUB_RUN_ATTEMPT':'1','GITHUB_EVENT_NAME':'issues','GITHUB_EVENT_PATH':str(self.event_file),
+             'GITHUB_RUN_ATTEMPT':'1','GITHUB_EVENT_NAME':'issue_comment','GITHUB_EVENT_PATH':str(self.event_file),
              'GITHUB_SHA':self.source,'GITHUB_RUN_ID':'100','PROVIDER_API_KEY':'fake-not-sent'}
         p=patch.dict(os.environ,env);p.start();self.addCleanup(p.stop)
         p=patch.object(cli,'OUT',self.root/'private-output');p.start();self.addCleanup(p.stop)
@@ -244,12 +245,12 @@ class Runtime(unittest.TestCase):
             self.loop([response({'status':'complete','report':'done'})])
         self.assertEqual(self.state_after()['sourceSHA'],sha);self.assertEqual(self.state_after()['trustedSHA'],self.source)
 
-    def test_native_limits_and_no_budget_ceiling(self):
-        t=self.task(task='x'*200000,max_output_tokens=1048576)
-        self.assertEqual(providers.payload(t,[{'role':'user','content':'x'*3000000}])['max_completion_tokens'],1048576)
+    def test_kimi_limits_and_zai_native_limits(self):
+        t=self.task(max_output_tokens=16384)
+        self.assertEqual(providers.payload(t,[])['max_completion_tokens'],16384)
         z=core.normalize({'task':'audit','model':'glm-5.3','max_output_tokens':131072},'zai')
         self.assertEqual(providers.payload(z,[])['max_tokens'],131072)
-        with self.assertRaises(ValueError):self.task(max_output_tokens=1048577)
+        with self.assertRaises(ValueError):self.task(max_output_tokens=16385)
     def test_model_endpoint_is_not_task_controlled(self):
         for bad in [{'endpoint':'https://evil'},{'branch':'someone'},{'token':'secret'},{'model':'gemini-unknown'}]:
             with self.subTest(bad=bad),self.assertRaises(ValueError):self.task(**bad)
@@ -351,7 +352,102 @@ class Runtime(unittest.TestCase):
         with patch.dict(os.environ,{'GITHUB_EVENT_NAME':'issue_comment'}):
             cli.prepare('kimi',self.api)
             with self.assertRaises(ValueError):cli.prepare('kimi',self.api)
-        self.assertEqual(self.state_after()['remaining_calls'],10)
+        self.assertEqual(self.state_after()['remaining_calls'],2)
+
+    def test_kimi_requires_explicit_owner_start_or_dispatch_confirmation(self):
+        self.event.update(action='opened')
+        self.write_event()
+        with patch.dict(os.environ, {'GITHUB_EVENT_NAME':'issues'}), self.assertRaises(ValueError):
+            self.prepare()
+        self.assertFalse(self.api.refs)
+        self.event.update(action='created')
+        self.event['comment']['body']='/agent start'
+        self.write_event()
+        with self.assertRaises(ValueError):
+            self.prepare()
+        self.assertFalse(self.api.refs)
+        self.event['inputs']={'confirm_paid_api':'false'}
+        self.write_event()
+        with patch.dict(os.environ, {'GITHUB_EVENT_NAME':'workflow_dispatch'}), self.assertRaises(ValueError):
+            cli.authorize('kimi')
+        self.event['inputs']['confirm_paid_api']='true'
+        self.write_event()
+        with patch.dict(os.environ, {'GITHUB_EVENT_NAME':'workflow_dispatch'}):
+            cli.authorize('kimi')
+
+    def test_kimi_budget_and_token_limits_block_before_model_request(self):
+        for invalid in [0, -1, 2.01, 'NaN', '0.001']:
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                self.task(budget_usd=invalid)
+        for invalid in [{'max_total_calls':9}, {'max_input_tokens':100001},
+                        {'max_output_tokens':16385}, {'max_calls':2,'max_total_calls':1}]:
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                self.task(**invalid)
+        self.event['issue']['body']=json.dumps({'task':'work','mode':'edit','write_paths':['src/'],
+                                                'budget_usd':'0.01','max_calls':1})
+        self.write_event()
+        self.prepare()
+        self.assertEqual(self.loop([]), [])
+        state=self.state_after()
+        self.assertEqual(state['status'],'paused_budget')
+        self.assertIn('task budget',state['budget_problem'])
+        self.assertEqual(state['calls'],[])
+        self.assertFalse(any(name.startswith('agents/budgets/') for name in self.api.refs))
+
+    def test_kimi_shared_daily_reservations_cas_and_unknown_cost(self):
+        from datetime import datetime, timezone
+        now=datetime(2026,11,26,tzinfo=timezone.utc)
+        state=self.state(budget_usd='2.00')
+        estimate=budget.estimate(state)
+        reservation=budget.reserve_daily(self.api,state,estimate,now)
+        daily=budget.DailyLedger(self.api,'2026-11-26')
+        self.assertEqual(daily.data['reservations'][reservation['key']]['status'],'reserved')
+        with self.assertRaises(budget.BudgetExceeded):
+            budget.reserve_daily(self.api,state,estimate,now)
+        stale=budget.DailyLedger(self.api,'2026-11-26')
+        budget.settle_daily(self.api,reservation,{'range_usd':None})
+        with self.assertRaises(budget.BudgetExceeded):
+            stale.save()
+        daily=budget.DailyLedger(self.api,'2026-11-26')
+        self.assertEqual(daily.data['reservations'][reservation['key']]['held_micro'],estimate['reserved_micro'])
+        self.assertEqual(daily.data['reservations'][reservation['key']]['status'],'usage_unknown')
+        daily.data['reservations']['another-task']={'held_micro':budget.DAILY_MICRO,'status':'reserved'}
+        daily.save()
+        state['key']='issue-10'
+        with self.assertRaises(budget.BudgetExceeded):
+            budget.reserve_daily(self.api,state,estimate,now)
+
+    def test_kimi_daily_and_task_charge_use_known_upper_bound(self):
+        from datetime import datetime, timezone
+        now=datetime(2026,11,26,tzinfo=timezone.utc)
+        state=self.state(budget_usd='0.25',max_calls=1)
+        estimate=budget.estimate(state)
+        reservation=budget.reserve_daily(self.api,state,estimate,now)
+        self.assertEqual(budget.daily_status(self.api,now)['unsettled_or_unknown'],1)
+        budget.settle_daily(self.api,reservation,{'range_usd':{'min':0.02,'max':0.03}})
+        status=budget.daily_status(self.api,now)
+        self.assertEqual(status['held_or_known_upper_usd'],0.03)
+        self.assertEqual(status['unsettled_or_unknown'],0)
+        state['calls'].append({'budget_reservation':reservation,'cost':{'range_usd':{'min':0.02,'max':0.03}}})
+        self.assertEqual(budget.estimate(state)['task_used_micro'],30000)
+        state['task']['budget_usd']='0.01'
+        with self.assertRaises(budget.BudgetExceeded):
+            budget.estimate(state)
+
+    def test_kimi_input_limit_and_missing_budget_fail_closed(self):
+        state=self.state(max_input_tokens=1)
+        with self.assertRaises(budget.BudgetExceeded):
+            budget.estimate(state)
+        state=self.state()
+        del state['task']['budget_usd']
+        with self.assertRaises(budget.BudgetExceeded):
+            budget.estimate(state)
+
+    def test_kimi_total_calls_remain_bounded_across_continuations(self):
+        state=self.state(max_calls=1,max_total_calls=1)
+        core.reserve(state)
+        with self.assertRaises(ValueError):
+            core.continue_task(state,'same','same','new-grant',1)
     def test_invalid_json_keeps_raw_response_and_does_not_spend_again(self):
         self.prepare();self.loop([response('{bad json')])
         state=self.state_after();self.assertEqual(len(state['calls']),1)
@@ -390,7 +486,7 @@ class Runtime(unittest.TestCase):
         self.prepare();self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})]);cli.publish('kimi',self.api)
         state=self.state_after();self.assertEqual(state['status'],'published_draft');self.assertTrue(self.api.prs[0]['draft'])
         refs=[c[2]['ref'] for c in self.api.calls if c[0]=='POST' and c[1]=='/git/refs']
-        self.assertTrue(all(r.startswith(('refs/heads/agents/state/','refs/heads/agents/work/')) for r in refs))
+        self.assertTrue(all(r.startswith(('refs/heads/agents/state/','refs/heads/agents/budgets/','refs/heads/kimi/')) for r in refs))
         self.assertFalse(any('/merge' in c[1] or '/deploy' in c[1] for c in self.api.calls))
     def test_metadata_publish_is_idempotent(self):
         self.prepare();self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})]);cli.publish('kimi',self.api)
@@ -401,7 +497,7 @@ class Runtime(unittest.TestCase):
         self.prepare();self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}]})]);cli.publish('kimi',self.api)
         state=self.state_after();self.api.prs[0]['draft']=False
         with self.assertRaises(ValueError):cli.owned_pr(self.api,state)
-        self.api.prs[0]['draft']=True;self.api.refs['agents/work/kimi-issue-9']='human-commit'
+        self.api.prs[0]['draft']=True;self.api.refs['kimi/issue-9']='human-commit'
         with self.assertRaises(ValueError):cli.owned_pr(self.api,state)
     def test_publish_requires_checks_not_model_claim(self):
         state=self.state();state['status']='ready_for_review'
