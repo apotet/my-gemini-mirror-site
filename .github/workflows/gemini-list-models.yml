@@ -1,6 +1,15 @@
 name: Gemini list models (diagnostic)
 on:
   workflow_dispatch:
+    inputs:
+      credential:
+        description: 'Credential to check (no generation)'
+        type: choice
+        required: true
+        default: existing
+        options:
+          - existing
+          - hydrogen
 permissions:
   contents: read
 jobs:
@@ -12,9 +21,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: List models (no generation)
+      - name: List models with existing key (no generation)
+        if: inputs.credential == 'existing'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/gemini-list-models.py
+      - name: List models with Hydrogen key (no generation)
+        if: inputs.credential == 'hydrogen'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_HYDROGEN_API_KEY }}
         run: python3 scripts/gemini-list-models.py
       - uses: actions/upload-artifact@v4
         with:
