@@ -97,7 +97,7 @@ jobs:
           PY
       - name: Validate changes and build patch
         id: validate
-        run: python3 scripts/opencode_author_check.py --repo work --patch opencode-report/changes.patch
+        run: python3 work/scripts/opencode_author_check.py --repo work --patch opencode-report/changes.patch
       - name: Apply lint and build to the proposed change (no secrets, no write token)
         run: |
           cd work
