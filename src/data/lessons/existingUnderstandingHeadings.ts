@@ -25,6 +25,12 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: 'Как сравнить два адреса', professional: 'Одинаковая подсеть и разные локальные представления' } },
   { lessonId: 'l3-subnets', questionIds: ['gen-bc-26-1'], anchorId: 'ipv4-26-on-link-gateway',
     afterHeading: { plain: 'Пример: подходит ли шлюз 192.168.60.190 для хоста с /26', professional: '192.168.60.128/26: on-link шлюз и выбор MAC' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-ndp-1'], anchorId: 'ipv6-ndp-ns-solicited-node-multicast',
+    afterHeading: { plain: 'Пример: ПК 2001:db8:120::10 ищет соседа 2001:db8:120::20', professional: 'NS на solicited-node ff02::1:ff00:20: поиск MAC для 2001:db8:120::20' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-ndp-3'], anchorId: 'ipv6-dad-tentative-na-duplicate',
+    afterHeading: { plain: 'Пример: DAD для 2001:db8:120::25 — ответ пришёл от другого узла', professional: 'DAD (RFC 4862 §5.4): NA для tentative 2001:db8:120::25 — дубликат' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-slaac-5'], anchorId: 'ipv6-ra-prefix-onlink-no-slaac',
+    afterHeading: { plain: 'Пример: RA объявил 2001:db8:120::/64 с L=1 и A=0', professional: 'Prefix Information 2001:db8:120::/64 с L=1, A=0: on-link без SLAAC-адреса' } },
   { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
     afterHeading: { plain: '301 Moved Permanently', professional: '301 и Location' } },
   {
