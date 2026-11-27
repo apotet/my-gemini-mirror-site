@@ -1,4 +1,10 @@
-import type { Lesson } from './types';
+import type { Lesson, LessonBlock } from './types';
+
+const selectiveTrunkPractice: LessonBlock = {
+  heading: 'Практика в CLI Lab: частичная потеря связи',
+  body: 'VLAN 10 работает, а VLAN 20 потеряла связь между двумя коммутаторами. Сравните вывод show interfaces trunk на обоих концах. Восстановите связь в VLAN 20, не нарушив VLAN 10, и сохраните конфигурацию. Стенд проверяет сквозной путь L2 по настройкам, а не реальный трафик.',
+  practiceLink: 'cli-trunk-selective-diagnostics',
+};
 
 export const LESSON_CLI_TRUNK_VLAN_DIAGNOSTICS: Lesson = {
   "id": "cli-trunk-vlan-diagnostics",
@@ -32,7 +38,8 @@ export const LESSON_CLI_TRUNK_VLAN_DIAGNOSTICS: Lesson = {
     {
       "heading": "Согласовать native VLAN и проверить результат",
       "body": "На концах trunk сравни native VLAN и правила тегирования. Обычно нетегированный входящий кадр относится к локальной native VLAN, поэтому разные значения могут отправить его не в ту сеть. Некоторые проверки STP обнаруживают такое несоответствие и блокируют затронутые VLAN.\n\nЕсли есть предупреждения о native VLAN или inconsistent-состояние, устраняют несогласованность, а не просто снимают защиту. После правки повторяют show interfaces trunk, проверяют VLAN и состояние дерева на обоих концах, затем проверяют нужный обмен. Не меняй одновременно allowed list, native VLAN и STP без проверки причины."
-    }
+    },
+    selectiveTrunkPractice,
   ],
   "commands": [
     {
@@ -95,7 +102,8 @@ export const LESSON_CLI_TRUNK_VLAN_DIAGNOSTICS: Lesson = {
       {
         "heading": "Native mismatch и inconsistent-порты",
         "body": "Сравнивают operational native VLAN и правила tagged/untagged admission на обоих концах. Native mismatch может нарушить классификацию нетегированных кадров; PVST/Rapid PVST consistency checks могут дополнительно обнаружить несовпадение PVID и заблокировать затронутую VLAN. Это не обязательно физический down всего trunk.\n\nПри соответствующих логах используют show spanning-tree inconsistentports и интерфейсный вывод STP, чтобы отделить PVID inconsistency от root/loop-inconsistent и обычного Alternate. Устраняют причину на концах линка, затем повторяют проверку списков и нужного трафика. Команды и точный формат вывода зависят от семейства Cisco и версии IOS."
-      }
+      },
+      selectiveTrunkPractice,
     ],
     "commands": [
       {
