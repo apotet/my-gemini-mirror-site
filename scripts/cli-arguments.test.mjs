@@ -29,7 +29,7 @@ const run = (e, cmd) => {
 const matrix = [];
 // Every row exercises Enter, syntax ?, TAB, and the before/after state contract.
 const check = (mode, line, outcome, cr = outcome === 'complete') => {
-  const e = make(mode, 15, /^\s*ip\s+address\b/i.test(line));
+  const e = make(mode, 15, mode === 'config-if' && /^\s*(?:no\s+)?ip(?:\s+address\b|\s*$)/i.test(line));
   const before = structuredClone(e.getState());
   const help = e.execute(line + ' ?').output;
   const tab = e.complete(line);
@@ -140,9 +140,10 @@ const before = structuredClone(e.getState());
 assert.match(e.help('switchport trunk allowed vlan a?'), /add/);
 assert.match(e.help('switchport trunk allowed vlan a?'), /all/);
 assert.match(e.help('switchport trunk allowed vlan add ?'), /vlan-list/);
-assert.match(e.help('ip address ?'), /A.B.C.D/);
-assert.match(e.help('ip address 192.0.2.1 ?'), /mask/);
-assert.doesNotMatch(e.help('ip address 192.0.2.1?'), /<cr>/);
+const routedHelp = make('config-if', 15, true);
+assert.match(routedHelp.help('ip address ?'), /A.B.C.D/);
+assert.match(routedHelp.help('ip address 192.0.2.1 ?'), /mask/);
+assert.doesNotMatch(routedHelp.help('ip address 192.0.2.1?'), /<cr>/);
 assert.match(e.help('do show interfaces Fa0/1 ?'), /switchport/);
 assert.match(e.help('do show interfaces Fa0/1 ?'), /<cr>/);
 assert.equal(e.complete('do sh int Fa0/1 sw').completed, 'do sh int Fa0/1 switchport ');

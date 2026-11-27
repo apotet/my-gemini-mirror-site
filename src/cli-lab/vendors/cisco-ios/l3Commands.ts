@@ -1,4 +1,4 @@
-import { isIpv4, isAssignableIpv4, isLayer2Interface, maskToPrefix, ipv4Argument, maskArgument, interfaceMaskArgument } from './arguments';
+import { isIpv4, isAssignableIpv4, isLayer2Interface, routedInterfaceAvailable, maskToPrefix, ipv4Argument, maskArgument, interfaceMaskArgument } from './arguments';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 import { checkSviIpv4Reachability } from '../../engine/SviIpv4Reachability';
@@ -32,6 +32,7 @@ export const ciscoL3Commands: CommandSpec[] = [
     match: ['ip', 'address'],
     arguments: [[ipv4Argument, interfaceMaskArgument]],
     modes: ['config-if'],
+    available: routedInterfaceAvailable,
     minPrivilege: 15,
     handler: (tokens, state, device) => {
       if (tokens.length < 4) {
@@ -68,6 +69,7 @@ export const ciscoL3Commands: CommandSpec[] = [
     id: 'cisco.no_ip_address',
     match: ['no', 'ip', 'address'],
     modes: ['config-if'],
+    available: routedInterfaceAvailable,
     minPrivilege: 15,
     handler: (_tokens, state, device) => {
       const ifName = device.modeCtx.ifName;

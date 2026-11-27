@@ -1,8 +1,8 @@
 import { formatRunningConfig } from './configFormatter';
-import { normalizeIfaceName, wordArgument, vlanArgument, vlanNameArgument, interfaceArgument, interfaceTypeArgument, interfaceNumberArgument, isLayer2Interface } from './arguments';
+import { normalizeIfaceName, wordArgument, vlanArgument, vlanNameArgument, interfaceArgument, interfaceTypeArgument, interfaceNumberArgument, isLayer2Interface, l2InterfaceAvailable } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { formatAllowedVlans } from './trunkCommands';
-import { commandFor } from '../../engine/CommandResolution';
+import { commandFor, DO_FORBIDDEN_IDS } from '../../engine/CommandResolution';
 import { CommandResult, CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
 import { ciscoL3Commands } from './l3Commands';
@@ -194,6 +194,7 @@ const baseCommands: CommandSpec[] = [
   },
   {
     id: 'cisco.switchport_mode_access',
+    available: l2InterfaceAvailable,
     match: ['switchport', 'mode', 'access'],
     modes: ['config-if'],
     minPrivilege: 15,
@@ -219,6 +220,7 @@ const baseCommands: CommandSpec[] = [
   },
   {
     id: 'cisco.switchport_access_vlan',
+    available: l2InterfaceAvailable,
     match: ['switchport', 'access', 'vlan'],
     arguments: [[vlanArgument]],
     modes: ['config-if'],
@@ -360,7 +362,7 @@ const baseCommands: CommandSpec[] = [
       // IOS "do" is for EXEC commands that can return to the current config
       // context. A reload/disable/exit must not restore a stale privileged
       // context after changing or resetting the session.
-      if (new Set(['cisco.reload_simulated', 'cisco.disable', 'cisco.exit', 'cisco.end', 'cisco.configure_terminal']).has(best.id)) {
+      if (DO_FORBIDDEN_IDS.has(best.id)) {
         device.modeCtx = savedMode;
         device.privilege = savedPriv;
         return { output: '% Command not available through do in configuration mode', error: true };

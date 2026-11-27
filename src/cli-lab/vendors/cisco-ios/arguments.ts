@@ -41,6 +41,18 @@ export function isLayer2Interface(device: import('../../engine/types').DeviceSta
   return !!device.interfaces[name]?.switchport;
 }
 
+/** Shared by Enter, Tab and ?: IP only on a routed port or SVI. */
+export function routedInterfaceAvailable(device: import('../../engine/types').DeviceState): boolean {
+  const name = device.modeCtx.ifName;
+  return !!name && !!device.interfaces[name] && !isLayer2Interface(device, name);
+}
+
+/** Shared by Enter, Tab and ?: switchport only on an L2 port. */
+export function l2InterfaceAvailable(device: import('../../engine/types').DeviceState): boolean {
+  const name = device.modeCtx.ifName;
+  return !!name && isLayer2Interface(device, name);
+}
+
 export function normalizeIfaceName(raw: string): string {
   const compact = raw.replace(/\s+/g, '');
   const m = /^(fa|fastethernet|gi|gigabitethernet|eth|ethernet|vlan)(\d+(?:\/\d+)*)$/i.exec(compact);
