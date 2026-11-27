@@ -93,13 +93,40 @@ export const PREVIOUS_IN_DEPTH_QUESTIONS: Readonly<Record<string, Question>> = {
   }
 };
 
+// The canonical key is unchanged, but a saved attempt retains the exact wording it presented.
+export const LINK_LAYER_QUESTION_ID = 'tcpip-x11';
+export const PREVIOUS_LINK_LAYER_QUESTION: Pick<Question, 'text' | 'answers' | 'correct' | 'explanation'> = {
+  text: 'Что добавляет уровень Link при отправке IP-пакета в Ethernet?',
+  answers: ['Заголовок Ethernet (MAC src/dst) и FCS', 'Только IP TTL', 'SYN-флаг', 'HTTP Cookie'],
+  correct: [0],
+  explanation: 'Кадр Ethernet обрамляет IP-пакет: адреса MAC и контрольная сумма FCS.',
+};
+
+type SavedAnswerSnapshot = { id?: unknown; text?: unknown; answers?: unknown; correct?: unknown };
+
+function validatedDisplayedAnswers(original: Pick<Question, 'answers' | 'correct'>, saved: SavedAnswerSnapshot, order?: unknown) {
+  if (!Array.isArray(saved.answers) || !Array.isArray(saved.correct)) return null;
+  const indices = order === undefined ? original.answers.map((_, index) => index) : order;
+  if (!Array.isArray(indices) || indices.length !== original.answers.length || new Set(indices).size !== indices.length ||
+      indices.some(i => !Number.isInteger(i) || i < 0 || i >= original.answers.length)) return null;
+  const answers = indices.map(i => original.answers[i]);
+  const correct = indices.flatMap((i, displayed) => original.correct.includes(i) ? [displayed] : []);
+  return JSON.stringify(saved.answers) === JSON.stringify(answers) && JSON.stringify(saved.correct) === JSON.stringify(correct)
+    ? { answers, correct } : null;
+}
+
 /** Recognize only the reviewed historical option sets, never arbitrary bank drift. */
-export function previousInDepthSnapshot(current: Question, saved: {text?: unknown;answers?: unknown;correct?: unknown}, order?: unknown): Question | undefined {
+export function previousInDepthSnapshot(current: Question, saved: SavedAnswerSnapshot, order?: unknown): Question | undefined {
   const previous = PREVIOUS_IN_DEPTH_QUESTIONS[current.id];
-  if (!previous || saved.text !== previous.text || !Array.isArray(saved.answers) || !Array.isArray(saved.correct)) return undefined;
-  const indices = order === undefined ? previous.answers.map((_,index)=>index) : order;
-  if (!Array.isArray(indices) || indices.length !== previous.answers.length || new Set(indices).size !== indices.length || indices.some(i=>!Number.isInteger(i)||i<0||i>=previous.answers.length)) return undefined;
-  const answers=indices.map(i=>previous.answers[i]);
-  const correct=indices.flatMap((i,displayed)=>previous.correct.includes(i)?[displayed]:[]);
-  return JSON.stringify(saved.answers)===JSON.stringify(answers) && JSON.stringify(saved.correct)===JSON.stringify(correct) ? {...current,...previous} : undefined;
+  if (!previous || saved.text !== previous.text || !validatedDisplayedAnswers(previous, saved, order)) return undefined;
+  return { ...current, ...previous };
+}
+
+/** Preserve both exact stems and the confirmed displayed slots, not just bank order. */
+export function restoreLinkLayerSnapshot(current: Question, saved: SavedAnswerSnapshot | null | undefined, order?: unknown): Question | null {
+  if (current.id !== LINK_LAYER_QUESTION_ID || saved?.id !== current.id) return null;
+  const original = saved.text === PREVIOUS_LINK_LAYER_QUESTION.text ? { ...current, ...PREVIOUS_LINK_LAYER_QUESTION } : current;
+  if (saved.text !== original.text) return null;
+  const displayed = validatedDisplayedAnswers(original, saved, order);
+  return displayed ? { ...original, ...displayed } : null;
 }

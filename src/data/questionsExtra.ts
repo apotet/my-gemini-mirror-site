@@ -115,7 +115,7 @@ export const EXTRA_QUESTIONS: Question[] = [
     id: 'tcpip-x11',
     group: 'tcpip',
     topic: 'TCP/IP · Инкапсуляция',
-    text: 'Что добавляет уровень Link при отправке IP-пакета в Ethernet?',
+    text: 'Какие поля добавляет Ethernet при передаче IP-пакета?',
     answers: ['Заголовок Ethernet (MAC src/dst) и FCS', 'Только IP TTL', 'SYN-флаг', 'HTTP Cookie'],
     correct: [0],
     explanation: 'Кадр Ethernet обрамляет IP-пакет: адреса MAC и контрольная сумма FCS.',

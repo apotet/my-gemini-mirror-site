@@ -2195,7 +2195,7 @@ const TOOLTIP_NAMES: Record<string, [string, string, boolean, string?]> = {
   "Transport": ["Transport Layer", "Транспортный уровень", false],
   "Internet": ["Internet Layer", "Межсетевой уровень", false],
   "Link Up": ["Link Up", "Физическое соединение установлено", false],
-  "Link": ["Link Layer", "Уровень локального канала", false],
+  "Link": ["Link Layer", "Канальный уровень", false],
   "инкапсуляция": ["Encapsulation", "Вложение данных в оболочку протокола", false],
   "декапсуляция": ["Decapsulation", "Разбор оболочек протоколов", false],
   "порты": ["Ports", "Номера конечных точек транспорта", false],

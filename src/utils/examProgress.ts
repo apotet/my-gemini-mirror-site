@@ -1,4 +1,4 @@
-import { PREVIOUS_IN_DEPTH_QUESTIONS, previousInDepthSnapshot } from '../data/inDepth/previousQuestions';
+import { LINK_LAYER_QUESTION_ID, PREVIOUS_IN_DEPTH_QUESTIONS, previousInDepthSnapshot, restoreLinkLayerSnapshot } from '../data/inDepth/previousQuestions';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from '../data/previousDiagnosticQuestions';
 import { getRetiredPhotoQuestion, hasPhotoQuestionHistory, RETIRED_PHOTO_QUESTIONS, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
@@ -75,6 +75,14 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
         const order = saved.answerOrders?.[current.id];
         if (saved.answerOrders !== undefined && order === undefined) return null;
         const snapshot = restoreHistoricalPhotoQuestion(item, order, current);
+        if (!snapshot) return null;
+        questions.push(snapshot);
+        continue;
+      }
+      if (current.id === LINK_LAYER_QUESTION_ID) {
+        const order = saved.answerOrders?.[current.id];
+        if (saved.answerOrders !== undefined && order === undefined) return null;
+        const snapshot = restoreLinkLayerSnapshot(current, item, order);
         if (!snapshot) return null;
         questions.push(snapshot);
         continue;
