@@ -262,13 +262,29 @@ const MODES: { id: CaseId; label: string }[] = [
   { id: 'trunk', label: 'Дело 4 · Нет связи' },
 ];
 
-export const VlanSimulator: React.FC = () => {
-  const [mode, setMode] = useState<CaseId>('explore');
-  const [vlans, setVlans] = useState<Record<HostId, Vlan>>(INITIAL_VLANS);
-  const [trunks, setTrunks] = useState<TrunkConfig>(INITIAL_TRUNKS);
-  const [l3Role, setL3Role] = useState<L3Role>('none');
-  const [source, setSource] = useState<HostId>('pc1');
-  const [target, setTarget] = useState<HostId>('pc3');
+interface CasePreset {
+  vlans: Record<HostId, Vlan>;
+  trunks: TrunkConfig;
+  l3Role: L3Role;
+  source: HostId;
+  target: HostId;
+}
+
+// Treat presets as immutable: UI updates create new VLAN and trunk records.
+const CASE_PRESETS: Record<CaseId, CasePreset> = {
+  explore: { vlans: INITIAL_VLANS, trunks: INITIAL_TRUNKS, l3Role: 'none', source: 'pc1', target: 'pc3' },
+  access: { vlans: INITIAL_VLANS, trunks: INITIAL_TRUNKS, l3Role: 'none', source: 'pc1', target: 'pc2' },
+  trunk: { vlans: INITIAL_VLANS, trunks: { left: [10, 20], right: [10] }, l3Role: 'none', source: 'pc2', target: 'pc4' },
+};
+
+export const VlanSimulator: React.FC<{ initialCase?: CaseId }> = ({ initialCase = 'explore' }) => {
+  const preset = CASE_PRESETS[initialCase];
+  const [mode, setMode] = useState<CaseId>(initialCase);
+  const [vlans, setVlans] = useState(preset.vlans);
+  const [trunks, setTrunks] = useState(preset.trunks);
+  const [l3Role, setL3Role] = useState(preset.l3Role);
+  const [source, setSource] = useState(preset.source);
+  const [target, setTarget] = useState(preset.target);
   const [showSettings, setShowSettings] = useState(false);
   const [trace, setTrace] = useState<Trace | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
@@ -284,28 +300,17 @@ export const VlanSimulator: React.FC = () => {
   };
 
   const reset = (next: CaseId = mode) => {
+    const preset = CASE_PRESETS[next];
     setMode(next);
-    setL3Role('none');
+    setVlans(preset.vlans);
+    setTrunks(preset.trunks);
+    setL3Role(preset.l3Role);
+    setSource(preset.source);
+    setTarget(preset.target);
     setTrace(null);
     setStepIndex(0);
     setPlaying(false);
     setCompleted(false);
-    if (next === 'access') {
-      setVlans({ pc1: 10, pc2: 20, pc3: 10, pc4: 20 });
-      setTrunks({ left: [10, 20], right: [10, 20] });
-      setSource('pc1');
-      setTarget('pc2');
-    } else if (next === 'trunk') {
-      setVlans({ pc1: 10, pc2: 20, pc3: 10, pc4: 20 });
-      setTrunks({ left: [10, 20], right: [10] });
-      setSource('pc2');
-      setTarget('pc4');
-    } else {
-      setVlans({ ...INITIAL_VLANS });
-      setTrunks({ left: [10, 20], right: [10, 20] });
-      setSource('pc1');
-      setTarget('pc3');
-    }
     triggerHaptic('light');
   };
 
@@ -383,6 +388,7 @@ export const VlanSimulator: React.FC = () => {
             <button
               key={m.id}
               type="button"
+              aria-pressed={mode === m.id}
               onClick={() => reset(m.id)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer border ${
                 mode === m.id
