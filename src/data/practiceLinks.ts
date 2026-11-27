@@ -1,15 +1,17 @@
 export type PracticeLink =
-  | 'vlan' | 'packet' | 'dhcp' | 'nat' | 'tcp'
+  | 'vlan' | 'vlan-trunk-case' | 'packet' | 'dhcp' | 'nat' | 'tcp'
   | 'cli-vlan' | 'cli-trunk' | 'cli-gateway' | 'cli-modes' | 'cli-diagnostic' | 'cli-svi' | 'cli-svi-followup';
 
 interface PracticeDestination {
   simulator: 'journey' | 'vlan' | 'protocols' | 'cli';
   protocol?: 'dhcp' | 'nat' | 'tcp';
   scenarioId?: string;
+  vlanCase?: 'trunk';
 }
 
 export const PRACTICE_DESTINATIONS: Record<PracticeLink, PracticeDestination> = {
   vlan: { simulator: 'vlan' },
+  'vlan-trunk-case': { simulator: 'vlan', vlanCase: 'trunk' },
   packet: { simulator: 'journey' },
   dhcp: { simulator: 'protocols', protocol: 'dhcp' },
   nat: { simulator: 'protocols', protocol: 'nat' },
