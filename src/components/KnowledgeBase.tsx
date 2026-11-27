@@ -4,6 +4,8 @@ import { BEGINNER_CORE_IDS, BEGINNER_EXTRAS, BEGINNER_STAGES, beginnerNeighbors,
 import type { Lesson } from '../data/lessons/types';
 import type { PracticeButtonAction } from './PracticeLinkButton';
 import { LessonView } from './LessonView';
+import { LessonFavoriteButton } from './LessonFavoriteButton';
+import { toggleLessonFavorite, useLessonFavorites } from '../utils/lessonFavorites';
 import { LessonReviewBadge } from './LessonReviewBadge';
 import { CliReference } from './CliReference';
 import { Library, Search } from 'lucide-react';
@@ -78,8 +80,18 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   onOpenPractice,
   onClearLesson,
 }) => {
-  const [section, setSection] = useState<'lessons' | 'cli-reference'>('lessons');
+  const [section, setSection] = useState<'lessons' | 'favorites' | 'cli-reference'>('lessons');
   const [query, setQuery] = useState('');
+  const favorites = useLessonFavorites().map(getLesson).filter((lesson): lesson is Lesson => !!lesson);
+  const favoriteIds = new Set(favorites.map(lesson => lesson.id));
+  const catalogFavoriteTab = useRef<HTMLButtonElement>(null);
+  const favoriteFallback = useRef(false);
+  useLayoutEffect(() => {
+    if (favoriteFallback.current) {
+      favoriteFallback.current = false;
+      catalogFavoriteTab.current?.focus();
+    }
+  });
   const [layer, setLayer] = useState(() => readFilter('layer', LAYERS));
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
@@ -154,6 +166,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
           <div key={entry.key} hidden={!active} inert={!active}>
             <LessonView
               lesson={lesson}
+              favoriteAction={<LessonFavoriteButton title={lesson.title} saved={favoriteIds.has(lesson.id)} onToggle={() => toggleLessonFavorite(lesson.id)} />}
               onOpenLesson={openLinkedLesson}
               onOpenPathLesson={openLinkedLesson}
               onReturnToLesson={entry.from ? returnToLinkedLesson : undefined}
@@ -189,13 +202,13 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   }
 
   const card = (l: Lesson) => (
+    <div key={l.id} className="relative min-w-0">
     <button
-      key={l.id}
       data-catalog-lesson={l.id}
       title={l.summary}
       type="button"
-      onClick={() => openNewRoot(l.id, studyCatalog)}
-      className="min-w-0 text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
+      onClick={() => openNewRoot(l.id, section === 'lessons' && studyCatalog)}
+      className="min-w-0 w-full h-full pr-16 text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
     >
       <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-300">{l.category} · {l.difficulty}</div>
       <div className="font-semibold text-slate-900 dark:text-white">{l.title}</div>
@@ -208,6 +221,13 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         }}>{l.summary}</p>
       <div className="text-[11px] text-slate-500">Вопросов: {l.relatedQuestionIds.length}</div>
     </button>
+    <div className="absolute right-3 top-3">
+      <LessonFavoriteButton title={l.title} saved={favoriteIds.has(l.id)} compact onToggle={() => {
+        if (section === 'favorites') favoriteFallback.current = true;
+        toggleLessonFavorite(l.id);
+      }} />
+    </div>
+    </div>
   );
   const studyGroups = [...BEGINNER_STAGES, ...BEGINNER_EXTRAS];
   const knownIds = new Set<string>(studyGroups.flatMap(group => [...group.ids]));
@@ -225,13 +245,23 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
           className={`rounded-lg px-3 py-2 text-sm font-semibold cursor-pointer ${section === 'lessons' ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>
           Уроки
         </button>
+        <button ref={catalogFavoriteTab} type="button" aria-pressed={section === 'favorites'} onClick={() => setSection('favorites')}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold cursor-pointer ${section === 'favorites' ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>
+          Избранное
+        </button>
         <button type="button" aria-pressed={section === 'cli-reference'} onClick={() => setSection('cli-reference')}
           className={`rounded-lg px-3 py-2 text-sm font-semibold cursor-pointer ${section === 'cli-reference' ? 'bg-cyan-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>
           Справочник CLI
         </button>
       </div>
 
-      {section === 'cli-reference' ? (
+      {section === 'favorites' ? (
+        <section aria-label="Избранные уроки" className="space-y-3">
+          <p className="text-xs text-slate-500" role="status">Сохранено уроков: {favorites.length}</p>
+          {favorites.length ? <div className="grid gap-3 sm:grid-cols-2">{favorites.map(card)}</div> :
+            <p className="text-sm text-slate-500">Пока пусто. Нажмите на закладку рядом с уроком или в самом уроке.</p>}
+        </section>
+      ) : section === 'cli-reference' ? (
         <CliReference onOpenLesson={id => {
           openNewRoot(id);
           window.scrollTo({ top: 0, behavior: 'smooth' });

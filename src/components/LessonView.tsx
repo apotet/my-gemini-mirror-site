@@ -29,6 +29,7 @@ interface LessonViewProps {
   onOpenQuestion?: (questionId: string) => void;
   onOpenPractice?: PracticeButtonAction;
   returnQuestionId?: string | null;
+  favoriteAction?: React.ReactNode;
   studyBefore?: React.ReactNode;
   studyNavigation?: React.ReactNode;
   studyNextId?: string;
@@ -104,7 +105,7 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
                 </figure>
 );
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId, studyBefore, studyNavigation, studyNextId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId, favoriteAction, studyBefore, studyNavigation, studyNextId }) => {
   const [preferredTextMode, setTextMode] = useStudyTextMode();
   const textMode = pausedTextMode ?? preferredTextMode;
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
@@ -239,6 +240,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         <div className="flex flex-wrap items-center gap-2">
           <h2 ref={heading} tabIndex={focusPathHeading && !targetAnchor ? -1 : undefined} aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
           <LessonReviewBadge lessonId={lesson.id} />
+          {favoriteAction}
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
         <GlossaryHoverToggle />
