@@ -1,0 +1,44 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n  \"status\": \"complete\",\n  \"summary\": \"Создан файл docs/hydrogen-dev-route-smoke.md с заголовком и кратким вымышленным примером диагностики порта коммутатора.\",\n  \"report\": \"Создан новый Markdown-файл `docs/hydrogen-dev-route-smoke.md` (smoke-тест маршрута разработки). Документ содержит заголовок, краткое описание вымышленного инцидента на порту коммутатора `Gi0/24` (состояние `down/down` и рост счётчиков ошибок после переобжима патч-корда), пример вывода диагностических команд `show interfaces status` и `show interfaces GigabitEthernet0/24`, а также краткий вывод по устранению неисправности. Другие файлы не изменялись.\",\n  \"read_files\": [],\n  \"files\": [\n    {\n      \"path\": \"docs/hydrogen-dev-route-smoke.md\",\n      \"action\": \"write\",\n      \"encoding\": \"utf-8\",\n      \"content\": \"# Smoke-тест: диагностика порта коммутатора (вымышленный пример)\\n\\n## Сценарий\\n\\nНа условном коммутаторе доступа `SW-ACCESS-01` пользователь рабочей станции, подключённой к порту `Gi0/24"
+          },
+          {
+            "text": "`, сообщил о потере сетевого подключения (VLAN 120).\\n\\n## Проверка состояния и счётчиков\\n\\n```text\\nSW-ACCESS-01# show interfaces status | include Gi0/24\\nGi0/24    WS-1204-USER       notconnect   120          auto   auto 10/100/1000BaseTX\\n\\nSW-ACCESS-01# show interfaces GigabitEthernet0/24\\nGigabitEthernet0/24 is down, line protocol is down (notconnect)\\n  Hardware is Gigabit Ethernet, address is 0050.56ab.1224 (bia 0050.56ab.1224)\\n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,\\n  5 minute input rate 0 bits/sec, 0 packets/sec\\n  5 minute output rate 0 bits/sec, 0 packets/sec\\n     1842 packets input, 214500 bytes, 0 no buffer\\n     1"
+          },
+          {
+            "text": "47 input errors, 147 CRC, 0 frame, 0 overrun, 0 ignored\\n```\\n\\n## Вывод и действия\\n\\n- Состояние `down/down (notconnect)` в сочетании с накопленными `CRC` и `input errors` указывает на физическую проблему линии (неисправный патч-корд, розетка или контакт RJ-45).\\n- После замены вымышленного патч-корда на заведомо исправный порт `Gi0/24` переходит в `connected` (`up/up`), а счётчики `CRC` перестают расти.\\n\",\n      \"complete\": true\n    }\n  ]\n}",
+            "thoughtSignature": "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"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 33154,
+    "candidatesTokenCount": 713,
+    "totalTokenCount": 34417,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 33154
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 713
+      }
+    ],
+    "thoughtsTokenCount": 550,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-4-hydrogen",
+  "responseId": "CtgIa_OuBerw-sAPmsjZ2QY"
+}
