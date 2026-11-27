@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Layers,
-  Volume2,
-  VolumeX,
   Sun,
   Moon,
   Menu,
@@ -13,8 +11,8 @@ import {
   BookOpen,
   Search,
 } from 'lucide-react';
-import { TOTAL_QUESTION_COUNT } from '../data/questionsData';
 import { NetOpsLogo } from './NetOpsLogo';
+import { LanguageControl } from './LanguageControl';
 
 export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'practice-mock' | 'exam-mock' | 'osi';
 
@@ -23,8 +21,6 @@ interface NavbarProps {
   onTabChange: (tab: NavTab) => void;
   isDark: boolean;
   onToggleTheme: () => void;
-  soundEnabled: boolean;
-  onToggleSound: () => void;
   onOpenCommandPalette?: () => void;
 }
 
@@ -33,8 +29,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   isDark,
   onToggleTheme,
-  soundEnabled,
-  onToggleSound,
   onOpenCommandPalette,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,8 +50,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#07111f]/90 border-b border-slate-200 dark:border-cyan-500/20 backdrop-blur-xl transition-colors">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-3 xl:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-1.5 xl:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 lg:min-w-[100px] xl:min-w-0">
           <button
             onClick={() => handleTabClick('exam')}
             type="button"
@@ -75,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
                 type="button"
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all min-h-[38px] cursor-pointer ${
+                className={`flex items-center gap-1 xl:gap-1.5 px-1 xl:px-3.5 py-2 rounded-xl text-[11px] xl:text-xs font-bold transition-all min-h-[38px] cursor-pointer ${
                   isActive
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white dark:text-slate-950 shadow-md shadow-cyan-500/20 font-extrabold'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5'
@@ -101,19 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          <button
-            onClick={onToggleSound}
-            type="button"
-            className="hidden sm:flex p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors min-h-[38px] min-w-[38px] items-center justify-center cursor-pointer"
-            aria-label={soundEnabled ? 'Выключить звук' : 'Включить звук'}
-            title={soundEnabled ? 'Звук включен' : 'Звук выключен'}
-          >
-            {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-            ) : (
-              <VolumeX className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-            )}
-          </button>
+          <LanguageControl />
 
           <button
             onClick={onToggleTheme}
@@ -167,20 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 px-1">
               Быстрые настройки
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={onToggleSound}
-                type="button"
-                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 flex flex-col items-center justify-center gap-1 hover:border-cyan-500/40 cursor-pointer"
-              >
-                {soundEnabled ? (
-                  <Volume2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                ) : (
-                  <VolumeX className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                )}
-                <span className="text-[10px]">{soundEnabled ? 'Звук вкл' : 'Без звука'}</span>
-              </button>
-
+            <div className="grid">
               <button
                 onClick={onToggleTheme}
                 type="button"

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Settings2 } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
-import { playClickSound, playErrorSound, playSuccessSound } from '../utils/sound';
 
 export type Vlan = 10 | 20;
 export type HostId = 'pc1' | 'pc2' | 'pc3' | 'pc4';
@@ -403,7 +402,6 @@ export const MockVlanSimulator: React.FC = () => {
       setTarget('pc3');
     }
     triggerHaptic('light');
-    playClickSound();
   };
 
   const start = () => {
@@ -421,8 +419,7 @@ export const MockVlanSimulator: React.FC = () => {
       setPlaying(false);
       if (trace.outcome.delivered && mode !== 'explore') {
         setCompleted(true);
-        playSuccessSound();
-      } else if (!trace.outcome.delivered) playErrorSound();
+      }
       return;
     }
     const t = window.setTimeout(() => setStepIndex((s) => s + 1), 1600);
