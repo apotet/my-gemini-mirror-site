@@ -5,13 +5,21 @@ import { readFileSync } from 'node:fs';
 // These projections are test-only and never feed active question selection.
 export const retiredPvcPhoto = JSON.parse(readFileSync(new URL('../src/data/retiredPvcPhotoQuestion.json', import.meta.url), 'utf8'));
 export const previousCopperUtp = JSON.parse(readFileSync(new URL('../src/data/previousCopperUtpPhotoQuestion.json', import.meta.url), 'utf8'));
+export const previousOpticalInspection = JSON.parse(readFileSync(new URL('../src/data/previousOpticalInspectionQuestion.json', import.meta.url), 'utf8'));
 export const retiredPvcLevel = {
   status: 'ASSIGNED', auditAction: 'KEEP', learningLevel: 1, confidence: 'high',
   auditRationale: 'Распознать (L1 · Фото и практика): Поливинилхлорид (PVC)',
 };
 const position = 398;
 
-export function bankBeforeCopperPhotoChanges(questions) {
+export function bankBeforeOpticalWordingChange(questions) {
+  const revised = questions.filter(q => q.id === previousOpticalInspection.id);
+  assert.equal(revised.length, 1);
+  assert.equal(revised[0].text, 'Какую проверку выполняют этим прибором перед подключением оптического патч-корда?');
+  return questions.map(q => q.id === previousOpticalInspection.id ? { ...q, ...previousOpticalInspection } : q);
+}
+export function bankBeforeCopperPhotoChanges(currentQuestions) {
+  const questions = bankBeforeOpticalWordingChange(currentQuestions);
   assert.ok(questions.every(q => q.id !== retiredPvcPhoto.id), 'retired question is not active');
   assert.equal(questions[position - 1]?.id, 'l1v2-a-mark-frequency');
   assert.equal(questions[position]?.id, 'l1v2-a-solid-view');

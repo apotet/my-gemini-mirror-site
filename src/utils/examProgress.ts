@@ -1,6 +1,6 @@
 import { PREVIOUS_IN_DEPTH_QUESTIONS, previousInDepthSnapshot } from '../data/inDepth/previousQuestions';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from '../data/previousDiagnosticQuestions';
-import { COPPER_UTP_PHOTO_ID, RETIRED_PVC_PHOTO, restoreCopperPhoto } from './copperPhotoQuestionHistory';
+import { hasPhotoQuestionHistory, RETIRED_PVC_PHOTO, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { isLearningLevel } from '../types/learningLevel';
@@ -71,10 +71,10 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
       const active = bank.find(q => q.id === item?.id);
       const current = active ?? (item?.id === RETIRED_PVC_PHOTO.id ? RETIRED_PVC_PHOTO : undefined);
       if (!current) return null;
-      if (!active || current.id === COPPER_UTP_PHOTO_ID) {
+      if (hasPhotoQuestionHistory(current.id)) {
         const order = saved.answerOrders?.[current.id];
         if (saved.answerOrders !== undefined && order === undefined) return null;
-        const snapshot = restoreCopperPhoto(item, order, current);
+        const snapshot = restoreHistoricalPhotoQuestion(item, order, current);
         if (!snapshot) return null;
         questions.push(snapshot);
         continue;
