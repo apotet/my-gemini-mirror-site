@@ -74,6 +74,7 @@ export function GlossaryText({ children, enabled = true, plainTerms = [], scope 
         type="button"
         className="glossary-trigger"
         data-glossary-term={part.term}
+        data-glossary-hover={hoverEnabled ? 'on' : undefined}
         aria-describedby={active?.anchor.dataset.glossaryIndex === `${index}` ? id : undefined}
         data-glossary-index={index}
         onPointerEnter={event => {
