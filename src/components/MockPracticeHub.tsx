@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
+import { MockCliCurriculum } from './MockCliCurriculum';
 import { MockPacketJourney } from './MockPacketJourney';
 import { MockVlanSimulator } from './MockVlanSimulator';
 import { MockProtocolSimulators } from './MockProtocolSimulators';
 import { ExperimentalMockCliLabShell } from '../cli-lab/ExperimentalMockCliLabShell';
 import { ExperimentalCliUxV2Shell } from '../cli-lab/ExperimentalCliUxV2Shell';
 
-export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli' | 'cli-ux-v2';
+export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli' | 'cli-ux-v2' | 'cli-curriculum';
 
 interface PracticeItem {
   id: PracticeSimulator;
@@ -17,6 +18,13 @@ interface PracticeItem {
 }
 
 const PRACTICE_ITEMS: PracticeItem[] = [
+  {
+    id: 'cli-curriculum',
+    title: 'CLI · Темы и режимы',
+    badge: 'Макет',
+    subtitle: 'Одна тема, три уровня и три способа тренироваться в настоящем CLI Lab',
+    icon: <Terminal className="w-4 h-4 text-emerald-400" />,
+  },
   {
     id: 'journey',
     title: 'Путь пакета',
@@ -102,6 +110,7 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
                 key={item.id}
                 onClick={() => setActiveSimulator(item.id)}
                 type="button"
+                aria-pressed={isActive}
                 className={cardClass(isActive)}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -124,6 +133,7 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
         {activeSimulator === 'journey' && <MockPacketJourney />}
         {activeSimulator === 'vlan' && <MockVlanSimulator />}
         {activeSimulator === 'protocols' && <MockProtocolSimulators />}
+        {activeSimulator === 'cli-curriculum' && <MockCliCurriculum />}
         {activeSimulator === 'cli' && <ExperimentalMockCliLabShell />}
         {activeSimulator === 'cli-ux-v2' && <ExperimentalCliUxV2Shell />}
       </div>
