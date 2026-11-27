@@ -204,7 +204,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     "anchorId": "in-depth-existing-l3-bgp-01",
     "afterHeading": {
       "plain": "Пример: OPEN соседа принят, а его KEEPALIVE ещё нет",
-      "professional": "OpenSent → OpenConfirm → Established по RFC 4271 §8.2.2–8.2.3"
+      "professional": "OpenSent → OpenConfirm → Established по RFC 4271 §8.2.2"
     }
   },
   {
