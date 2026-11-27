@@ -12,7 +12,7 @@ const ownedRoutes = [
   ['tr-07', crc, 'wireshark-ip-addr-filter', 0, /ip\.addr == 10\.1\.1\.10/],
   ['ts-pack1-07', crc, 'interface-crc-delta-snapshots', 1, /счётчик.*(сброс|обнули)/i],
 ];
-assert.equal(m.ALL_QUESTIONS.length, 862);
+assert.equal(m.ALL_QUESTIONS.length, 861);
 for (const [id, lessonId, anchor, key, body] of ownedRoutes) {
   const question = m.ALL_QUESTIONS.find(q => q.id === id);
   assert.deepEqual(question?.correct, [key], id);

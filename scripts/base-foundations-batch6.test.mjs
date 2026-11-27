@@ -108,8 +108,8 @@ const expected = {
 const ids=Object.keys(expected);
 assert.equal(ids.length,20,'scope 20 items');
 assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH6).sort(),ids.sort(),'exact authored scope');
-assert.equal(ALL_QUESTIONS.length,862,'bank unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(x=>x.id)).size,862,'unique IDs');
+assert.equal(ALL_QUESTIONS.length,861,'bank unchanged');
+assert.equal(new Set(ALL_QUESTIONS.map(x=>x.id)).size,861,'unique IDs');
 for(const id of ids){
  const [answer,image,lessonId] = expected[id];
  const question=ALL_QUESTIONS.find(x=>x.id===id);

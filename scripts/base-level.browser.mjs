@@ -7,7 +7,7 @@ const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playw
 const { ALL_QUESTIONS } = await loadBankWithExplanations();
 const registry = JSON.parse(readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8'));
 const foundationCount = Object.values(registry).filter(entry => entry.status === 'ASSIGNED' && entry.learningLevel === 1).length;
-assert.equal(foundationCount, 216, 'Issue #257 approved L1 count');
+assert.equal(foundationCount, 215, 'L1 count after one approved photo retirement');
 const base = process.env.NETOPS_BASE_URL || 'http://127.0.0.1:5428/my-gemini-mirror-site/';
 const browser = await chromium.launch({
   ...(process.env.NETOPS_CHROMIUM_PATH ? { executablePath: process.env.NETOPS_CHROMIUM_PATH } : {}),

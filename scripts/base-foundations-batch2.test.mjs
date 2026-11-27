@@ -29,8 +29,8 @@ const expected = {
   "tcpip-x12": "tcpip-model"
 };
 assert.deepEqual(Object.keys(BASE_FOUNDATION_UPGRADES).sort(), Object.keys(expected).sort(), 'fixed batch ID list');
-assert.equal(ALL_QUESTIONS.length, 862, 'question bank size unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 862, 'all question IDs remain unique');
+assert.equal(ALL_QUESTIONS.length, 861, 'question bank size unchanged');
+assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 861, 'all question IDs remain unique');
 
 for (const [id, expectedLesson] of Object.entries(expected)) {
   const q = ALL_QUESTIONS.find(item => item.id === id);

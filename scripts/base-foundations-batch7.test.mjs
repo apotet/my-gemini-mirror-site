@@ -83,8 +83,8 @@ const expected={
 const ids=Object.keys(expected);
 assert.equal(ids.length,15,'final gap scope exactly 15');
 assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH7).sort(),ids.sort(),'no other question overridden');
-assert.equal(ALL_QUESTIONS.length,862,'original bank size unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(x=>x.id)).size,862,'no duplicate IDs');
+assert.equal(ALL_QUESTIONS.length,861,'original bank size unchanged');
+assert.equal(new Set(ALL_QUESTIONS.map(x=>x.id)).size,861,'no duplicate IDs');
 for(const id of ids){
  const [answer,image,lessonId]=expected[id];
  const q=ALL_QUESTIONS.find(x=>x.id===id);
@@ -165,4 +165,4 @@ const old=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-a-futp'));
 assert.ok(old.practicalTip.includes('медной линии'),'batch5 copper fix preserved');
 const fusion=getQuestionDeepDive(ALL_QUESTIONS.find(x=>x.id==='l1v2-b-screen-loss-read'));
 assert.ok(fusion.practicalTip.includes('0,01 dB'),'batch6 optical practice preserved');
-console.log('PASS: final 15 exact beginner keys and original images, 15 authored two-style explanations, 4 new + 1 reused lessons, approved PSE tip, glossary, copper/optics regression, 862 unchanged');
+console.log('PASS: final 15 exact beginner keys and original images, 15 authored two-style explanations, 4 new + 1 reused lessons, approved PSE tip, glossary, copper/optics regression, 861 unchanged');

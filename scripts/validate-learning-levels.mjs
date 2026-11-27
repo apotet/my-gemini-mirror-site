@@ -1,3 +1,4 @@
+import { bankBeforeCopperPhotoChanges, registryBeforePvcRetirement } from './copper-photo-history-fixtures.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -20,16 +21,16 @@ export const sha256 = value => createHash('sha256').update(value).digest('hex');
 /** Versioned stage-2 boundary: future content migrations must update it explicitly. */
 export function verifyLearningLevelBaseline(bank, registry) {
   const baseline = JSON.parse(readFileSync(new URL('../docs/audits/issue-171-baseline.json', import.meta.url), 'utf8'));
-  assert.equal(bank.length, 862);
-  assert.equal(new Set(bank.map(q => q.id)).size, 862);
+  assert.equal(bank.length, 861);
+  assert.equal(new Set(bank.map(q => q.id)).size, 861);
   // One ID per line is the reviewable registry format; JSON.parse alone hides duplicate keys.
   const source = readFileSync(new URL('../src/data/questionLearningLevels.json', import.meta.url), 'utf8');
   const keys = [...source.matchAll(/^  ("(?:[^"\\]|\\.)*"):/gm)].map(match => JSON.parse(match[1]));
   assert.equal(keys.length, bank.length, 'registry must contain one ID entry per line');
   assert.equal(new Set(keys).size, keys.length, 'duplicate registry ID');
-  // Compare to the immutable historical bank after reverting ONLY five approved
-  // teaching fields; exact new values are asserted by the restoration helper.
-  const historicalProjection = restoreGate06HistoricalTeachingFields(bank);
+  // Restore only the approved copper-photo changes and five reviewed teaching
+  // fields before comparing with the immutable historical bank.
+  const historicalProjection = restoreGate06HistoricalTeachingFields(bankBeforeCopperPhotoChanges(bank));
   assert.equal(sha256(JSON.stringify(historicalProjection)), baseline.bankSHA256, 'unapproved bank content/order/difficulty/answers drifted');
   for (const [path, hash] of Object.entries(baseline.protectedFiles)) {
     const bytes = readFileSync(new URL('../' + path, import.meta.url));
@@ -39,8 +40,9 @@ export function verifyLearningLevelBaseline(bank, registry) {
       assert.equal(sha256(bytes), hash, `stage-2 protected source changed: ${path}`);
     }
   }
-  const projection = bank.map(q => {
-    const entry = registry[q.id];
+  const historicalRegistry = registryBeforePvcRetirement(registry);
+  const projection = historicalProjection.map(q => {
+    const entry = historicalRegistry[q.id];
     return { id: q.id, action: entry.auditAction,
       level: entry.status === 'ASSIGNED' ? entry.learningLevel : entry.auditProposedLevel,
       confidence: entry.confidence, rationale: entry.auditRationale };

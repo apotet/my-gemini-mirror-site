@@ -10,7 +10,7 @@ const expected = {
     "l1-copper-installation"
   ],
   "l1v2-a-uutp": [
-    "U/UTP: экранов не видно",
+    "U/UTP",
     "copper-utp-section.webp",
     "l1-copper-cable"
   ],
@@ -94,11 +94,6 @@ const expected = {
     "copper-mark-cat6.webp",
     "l1-copper-cable"
   ],
-  "l1v2-a-pvc-read": [
-    "Поливинилхлорид (PVC)",
-    "copper-pvc-label.webp",
-    "l1-copper-cable"
-  ],
   "l1v2-a-solid-view": [
     "Один сплошной проводник в каждой жиле",
     "copper-wire-solid.webp",
@@ -106,10 +101,10 @@ const expected = {
   ]
 };
 const ids=Object.keys(expected);
-assert.equal(ids.length,20,'exact expected scope');
-assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH5).sort(),ids.sort(),'20 authored keys only');
-assert.equal(ALL_QUESTIONS.length,862,'original bank count unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,862,'no ID collision');
+assert.equal(ids.length,19,'exact remaining scope');
+assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH5).sort(),ids.sort(),'19 remaining authored keys only');
+assert.equal(ALL_QUESTIONS.length,861,'861 active questions after one approved retirement');
+assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,861,'no ID collision');
 for(const id of ids){
  const [correct,image,lessonId]=expected[id];
  const q=ALL_QUESTIONS.find(q=>q.id===id);
@@ -149,4 +144,4 @@ for(const lesson of lessons){
    assert.ok(GLOSSARY[term]?.description?.length>40&&GLOSSARY[term]?.relatesTo?.length>20,'missing glossary '+term);
  }
 }
-console.log('PASS: 20 original beginner photo keys, 20 exact source images, 20 individual why/plain/pro/trap; two complete lessons and glossary; original bank untouched');
+console.log('PASS: 19 original beginner photo keys, 19 exact source images, 19 individual why/plain/pro/trap; two complete lessons and glossary; one photo question retired separately');

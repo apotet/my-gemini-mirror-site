@@ -1,4 +1,5 @@
 import { restoreGate06HistoricalTeachingFields } from './gate06-targeted-bank-fields.mjs';
+import { bankBeforeCopperPhotoChanges, registryBeforePvcRetirement } from './copper-photo-history-fixtures.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -230,11 +231,13 @@ assert.equal(pool.length,164);assert.deepEqual(pool.map(q=>q.id).sort(),assigned
 assert.ok(transferred.every(id=>assignedIds.includes(id)),'All four moved Fundamentals questions belong to the current pool');
 assert.deepEqual(m.getLearningLevelPool('mixed',2).map(q=>q.id),pool.map(q=>q.id));
 const registryRaw=readFileSync('src/data/questionLearningLevels.json','utf8');
-const gitRegistryBlob=createHash('sha1').update('blob '+Buffer.byteLength(registryRaw)+'\0').update(registryRaw).digest('hex');
+assert.equal(registryRaw,JSON.stringify(registry,null,2)+'\n','active registry serialization is protected');
+const historicalRegistryRaw=JSON.stringify(registryBeforePvcRetirement(registry),null,2)+'\n';
+const gitRegistryBlob=createHash('sha1').update('blob '+Buffer.byteLength(historicalRegistryRaw)+'\0').update(historicalRegistryRaw).digest('hex');
 assert.equal(gitRegistryBlob,'aa4682284e7803f1fbd4e930a6e154d71acc96af','Exact approved post-#258 registry; no reclassification');
 assert.deepEqual(m.QUESTION_LEARNING_LEVELS,registry);
-assert.equal(m.ALL_QUESTIONS.length,862);
-const reconstructed=m.ALL_QUESTIONS.map(q=>m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id]?{...q,answers:m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id].answers}:q);
+assert.equal(m.ALL_QUESTIONS.length,861);
+const reconstructed=bankBeforeCopperPhotoChanges(m.ALL_QUESTIONS).map(q=>m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id]?{...q,answers:m.PREVIOUS_IN_DEPTH_QUESTIONS[q.id].answers}:q);
 assert.equal(hash(restoreGate06HistoricalTeachingFields(reconstructed)),baseline.bankSHA256,'Only previously reviewed options and five exact GATE-06 teaching fields changed; stems, keys, order and all other records preserved');
 assert.equal(new Set(m.IN_DEPTH_IDS).size,164);assert.equal(m.IN_DEPTH_IDS.length,164);assert.deepEqual([...m.IN_DEPTH_IDS].sort(),assignedIds,'Every ID has exactly one repair/review batch');
 for(const batch of m.IN_DEPTH_BATCHES) {assert.ok(batch.questionIds.length>0&&batch.questionIds.length<=20,`Small batch ${batch.id}`);}

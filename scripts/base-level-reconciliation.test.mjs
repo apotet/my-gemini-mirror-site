@@ -20,10 +20,10 @@ const legacyIds = new Set(legacy.map(q => q.id));
 const baseIds = new Set(base.map(q => q.id));
 
 // Exact published bank snapshot. No question, answer, key or registry is reclassified.
-assert.equal(ALL_QUESTIONS.length, 862);
-assert.equal(legacy.length, 253, 'legacy beginner selection is preserved for saved attempts');
-assert.equal(base.length, 216, 'the new Base is exactly the approved L1 Foundations pool');
-assert.deepEqual([1, 2, 3].map(l => legacy.filter(q => level(q.id) === l).length), [152, 40, 61]);
+assert.equal(ALL_QUESTIONS.length, 861);
+assert.equal(legacy.length, 252, 'one retired photo removed from new legacy-mode selections');
+assert.equal(base.length, 215, 'the new Base is exactly the approved L1 Foundations pool');
+assert.deepEqual([1, 2, 3].map(l => legacy.filter(q => level(q.id) === l).length), [151, 40, 61]);
 assert.equal(legacy.filter(q => !baseIds.has(q.id)).length, 101, 'remove 101 L2/L3 from new Base');
 assert.equal(base.filter(q => !legacyIds.has(q.id)).length, 64, 'restore 64 current L1 absent from legacy beginner');
 assert.ok(base.every(q => level(q.id) === 1), 'new Base never includes L2+');
@@ -103,4 +103,4 @@ assert.equal(restored.questions[0].id, hard.id, 'do not replace an old question'
 assert.equal(JSON.stringify(oldSession), serialized, 'saved attempt is not modified');
 assert.equal(JSON.stringify(ALL_QUESTIONS), before, 'bank is not mutated');
 
-console.log('PASS: Base uses exactly 216 L1; remove 101 L2/L3, add 64 L1; all topics/sizes/photo/families, custom pools and saved legacy sessions');
+console.log('PASS: Base uses exactly 215 L1; remove 101 L2/L3, add 64 L1; all topics/sizes/photo/families, custom pools and saved legacy sessions');
