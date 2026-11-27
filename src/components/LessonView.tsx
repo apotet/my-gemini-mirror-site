@@ -16,6 +16,7 @@ import { LessonReviewBadge } from './LessonReviewBadge';
 import { getLessonReviewStatus } from '../data/lessons/reviewStatus';
 import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
+import { ArpVisualPilot } from './ArpVisualPilot';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
 interface LessonViewProps {
@@ -257,6 +258,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
       </header>
 
       {studyBefore}
+      {lesson.id === 'l3-arp' && !targetAnchor && <ArpVisualPilot />}
+
       {lesson.animation && (lesson.id !== 'l1-poe-budget' || textMode === 'meaning') && (
         <figure className="mx-auto w-full max-w-[31rem] overflow-hidden rounded-2xl border border-cyan-400/30 bg-[#06111d] p-3 shadow-sm" data-lesson-animation={lesson.animation.file}>
           <div className="mb-2 text-sm font-semibold text-cyan-100">{lesson.animation.label}</div>
