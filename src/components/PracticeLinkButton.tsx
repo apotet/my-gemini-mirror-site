@@ -1,7 +1,8 @@
 import { FlaskConical } from 'lucide-react';
 import type { PracticeLink } from '../data/practiceLinks';
 
-export type PracticeButtonAction = (link: PracticeLink, trigger: HTMLButtonElement) => void;
+export type PracticeVariant = 'dhcp-lease';
+export type PracticeButtonAction = (link: PracticeLink, trigger: HTMLButtonElement, variant?: PracticeVariant) => void;
 
 interface Props {
   link?: PracticeLink;

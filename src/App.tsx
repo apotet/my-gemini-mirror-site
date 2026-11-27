@@ -1,3 +1,4 @@
+import type { PracticeVariant } from './components/PracticeLinkButton';
 import type { PracticeLink } from './data/practiceLinks';
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
@@ -30,7 +31,7 @@ interface LessonPracticeOrigin {
 }
 
 export function App() {
-  const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin } | null>(null);
+  const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin; variant?: PracticeVariant } | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
   const pendingLessonReturn = useRef<LessonPracticeOrigin | null>(null);
   const [theoryInstance, setTheoryInstance] = useState(0);
@@ -107,10 +108,10 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenLessonPractice = (link: PracticeLink, trigger: HTMLButtonElement) => {
+  const handleOpenLessonPractice = (link: PracticeLink, trigger: HTMLButtonElement, variant?: PracticeVariant) => {
     if (activeTab !== 'theory' && activeTab !== 'osi') return;
     const origin = { tab: activeTab, trigger: captureNavigationTrigger(trigger) };
-    setPracticeRequest(previous => ({ link, id: (previous?.id ?? 0) + 1, origin }));
+    setPracticeRequest(previous => ({ link, id: (previous?.id ?? 0) + 1, origin, variant }));
     setActiveTab('practice');
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
@@ -218,6 +219,7 @@ export function App() {
         )}
         {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'}
           initialPracticeLink={practiceRequest?.link}
+          variant={practiceRequest?.variant}
           onReturnToLesson={lessonPracticeOrigin ? handleReturnToLesson : undefined} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
         {activeTab === 'exam-mock' && <MockTestingHub onOpenLesson={handleOpenLesson} onNavigateToTheory={handleNavigateToTheory} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} />}
