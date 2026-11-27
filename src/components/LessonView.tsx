@@ -9,6 +9,7 @@ import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../dat
 import { StudyTextToggle } from './StudyTextToggle';
 import { GlossaryHoverToggle } from './GlossaryHoverToggle';
 import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
+import { LessonLearningPath } from './LessonLearningPath';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { LessonTermTags } from './LessonTermTags';
@@ -21,6 +22,8 @@ interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
   onOpenLesson?: (lessonId: string) => void;
+  onOpenPathLesson?: (lessonId: string) => void;
+  focusPathHeading?: boolean;
   onOpenQuestion?: (questionId: string) => void;
   onOpenPractice?: (link: PracticeLink) => void;
   returnQuestionId?: string | null;
@@ -96,7 +99,7 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
                 </figure>
 );
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
   const [textMode, setTextMode] = useStudyTextMode();
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
   const glossaryScope = getLessonGlossaryScope(lesson.id);
@@ -105,6 +108,12 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
     : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);
   const blocks = getLessonBlocksWithSections(lesson, textMode === 'professional' && lesson.professional ? 'professional' : 'plain');
   const targetAnchor = getLessonSectionForQuestion(lesson.id, returnQuestionId);
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    // A question's exact section anchor, when present, still takes precedence.
+    if (focusPathHeading && !targetAnchor) heading.current?.focus({ preventScroll: true });
+  }, [focusPathHeading, targetAnchor]);
+
   const anchorElements = useRef<Record<string, HTMLElement | null>>({});
   const [highlightedAnchor, setHighlightedAnchor] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -212,7 +221,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <span>{lesson.difficulty}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <h2 aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
+          <h2 ref={heading} tabIndex={focusPathHeading && !targetAnchor ? -1 : undefined} aria-label={lesson.title} className="text-xl font-bold text-slate-900 dark:text-white">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? lesson.title : <GlossaryText scope={glossaryScope}>{lesson.title}</GlossaryText>}</h2>
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
@@ -378,6 +387,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           ))}
         </ul>
       </section>
+      <LessonLearningPath lessonId={lesson.id} onOpenLesson={onOpenPathLesson} onOpenPractice={onOpenPractice} />
     </article>
   );
 };
