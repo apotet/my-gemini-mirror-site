@@ -29,6 +29,9 @@ interface LessonViewProps {
   onOpenQuestion?: (questionId: string) => void;
   onOpenPractice?: PracticeButtonAction;
   returnQuestionId?: string | null;
+  studyBefore?: React.ReactNode;
+  studyNavigation?: React.ReactNode;
+  studyNextId?: string;
 }
 
 /** Native, mobile-readable PoE cheat sheet: no tiny SVG columns or cached image. */
@@ -101,7 +104,7 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
                 </figure>
 );
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId, studyBefore, studyNavigation, studyNextId }) => {
   const [preferredTextMode, setTextMode] = useStudyTextMode();
   const textMode = pausedTextMode ?? preferredTextMode;
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
@@ -251,6 +254,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} currentLessonId={lesson.id} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />
       </header>
 
+      {studyBefore}
       {lesson.animation && (lesson.id !== 'l1-poe-budget' || textMode === 'meaning') && (
         <figure className="mx-auto w-full max-w-[31rem] overflow-hidden rounded-2xl border border-cyan-400/30 bg-[#06111d] p-3 shadow-sm" data-lesson-animation={lesson.animation.file}>
           <div className="mb-2 text-sm font-semibold text-cyan-100">{lesson.animation.label}</div>
@@ -410,7 +414,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           </button>
         </section>
       )}
-      <LessonLearningPath lessonId={lesson.id} onOpenLesson={onOpenPathLesson} onOpenPractice={onOpenPractice} />
+      <LessonLearningPath lessonId={lesson.id} onOpenLesson={onOpenPathLesson} onOpenPractice={onOpenPractice} studyNextId={studyNextId} />
+      {studyNavigation}
     </article>
   );
 };

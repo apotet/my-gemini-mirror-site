@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { LESSONS, searchLessons, getLesson } from '../data/lessons';
+import { BEGINNER_CORE_IDS, BEGINNER_EXTRAS, BEGINNER_STAGES, beginnerNeighbors, compareBeginnerOrder, compareBeginnerTitles } from '../data/lessons/beginnerOrder';
 import type { Lesson } from '../data/lessons/types';
 import type { PracticeButtonAction } from './PracticeLinkButton';
 import { LessonView } from './LessonView';
@@ -25,6 +26,21 @@ const DIFFICULTIES: { id: DifficultyFilter; label: string }[] = [
   { id: 'applied', label: 'Средний' },
   { id: 'advanced', label: 'Продвинутый' },
 ];
+const BEGINNER_SORTS = [
+  { id: 'original', label: 'Как сейчас' },
+  { id: 'alphabet', label: 'А–Я' },
+  { id: 'study', label: 'По порядку изучения' },
+] as const;
+type BeginnerSort = typeof BEGINNER_SORTS[number]['id'];
+const BEGINNER_SORT_KEY = 'osi_knowledge_beginner_sort_v1';
+let memoryBeginnerSort: BeginnerSort = 'original';
+function readBeginnerSort(): BeginnerSort {
+  try {
+    const id = window.localStorage.getItem(BEGINNER_SORT_KEY);
+    return BEGINNER_SORTS.find(sort => sort.id === id)?.id ?? memoryBeginnerSort;
+  } catch { return memoryBeginnerSort; }
+}
+const routeButton = 'min-h-11 cursor-pointer rounded-lg border border-cyan-500/40 px-3 py-2 text-left text-sm font-semibold text-cyan-800 dark:text-cyan-200 focus-visible:outline-2 focus-visible:outline-cyan-500';
 const DIFFICULTY_ORDER = { beginner: 0, applied: 1, advanced: 2 };
 const FILTER_KEYS = {
   layer: 'osi_knowledge_layer_v1',
@@ -38,6 +54,8 @@ interface LessonEntry {
   id: string;
   key: number;
   from?: NavigationTrigger;
+  study?: boolean;
+  focusHeading?: boolean;
   pausedTextMode?: StudyTextMode;
 }
 
@@ -65,6 +83,8 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const [layer, setLayer] = useState(() => readFilter('layer', LAYERS));
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
+  const [beginnerSort, setBeginnerSort] = useState(readBeginnerSort);
+  const studyCatalog = difficulty === 'beginner' && beginnerSort === 'study';
   const [trail, setTrail] = useState<LessonEntry[]>(() => initialLessonId ? [{ id: initialLessonId, key: 0 }] : []);
   const nextKey = useRef(1);
   const pendingRestore = useRef<NavigationTrigger | null>(null);
@@ -75,7 +95,13 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   }, [initialLessonId]);
 
   const current = trail.at(-1);
-  const openNewRoot = (id: string) => setTrail([{ id, key: nextKey.current++ }]);
+  const openNewRoot = (id: string, study = false) => setTrail([{ id, key: nextKey.current++, study }]);
+  const openStudyNeighbor = (id: string) => {
+    if (!current?.study || !getLesson(id)) return;
+    const next = { ...current, id, key: nextKey.current++, focusHeading: true };
+    setTrail(previous => previous.at(-1)?.key === current.key ? [...previous.slice(0, -1), next] : previous);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
   const openLinkedLesson = (id: string, trigger: HTMLElement) => {
     if (!current || id === current.id || !getLesson(id)) return;
     const next = { id, key: nextKey.current++, from: captureNavigationTrigger(trigger) };
@@ -105,11 +131,15 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const list = useMemo(() => {
     const matches = searchLessons(query, layer === 'all' ? undefined : layer)
       .filter(item => difficulty === 'all' || item.difficulty === difficulty);
-    if (layer !== 'all') {
+    if (difficulty === 'beginner' && beginnerSort === 'alphabet') {
+      matches.sort(compareBeginnerTitles);
+    } else if (studyCatalog) {
+      matches.sort(compareBeginnerOrder);
+    } else if (layer !== 'all') {
       matches.sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);
     }
     return matches;
-  }, [query, layer, difficulty]);
+  }, [query, layer, difficulty, beginnerSort, studyCatalog]);
 
   if (current && getLesson(current.id)) {
     return (
@@ -117,6 +147,9 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         const lesson = getLesson(entry.id);
         if (!lesson) return null;
         const active = entry === current;
+        const neighbors = beginnerNeighbors(lesson.id);
+        const previous = neighbors.previous && getLesson(neighbors.previous);
+        const next = neighbors.next && getLesson(neighbors.next);
         return (
           <div key={entry.key} hidden={!active} inert={!active}>
             <LessonView
@@ -124,7 +157,22 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
               onOpenLesson={openLinkedLesson}
               onOpenPathLesson={openLinkedLesson}
               onReturnToLesson={entry.from ? returnToLinkedLesson : undefined}
-              focusPathHeading={!!entry.from}
+              focusPathHeading={!!entry.from || entry.focusHeading}
+              studyBefore={!entry.study && lesson.difficulty === 'beginner' && previous ? (
+                <button type="button" className={routeButton} onClick={event => openLinkedLesson(previous.id, event.currentTarget)}>
+                  Перед этим: {previous.title}
+                </button>
+              ) : undefined}
+              studyNavigation={entry.study ? (
+                <nav aria-label="Учебный маршрут" className="space-y-2 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-sm font-semibold">{neighbors.position ? `Шаг ${neighbors.position} из ${BEGINNER_CORE_IDS.length}` : 'Дополнительный урок'}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {previous && <button type="button" className={routeButton} onClick={() => openStudyNeighbor(previous.id)}>Предыдущий: {previous.title}</button>}
+                    {next && <button type="button" className={routeButton} onClick={() => openStudyNeighbor(next.id)}>Следующий: {next.title}</button>}
+                  </div>
+                </nav>
+              ) : undefined}
+              studyNextId={entry.study && next ? next.id : undefined}
               pausedTextMode={entry.pausedTextMode}
               returnQuestionId={returnQuestionId}
               onOpenQuestion={onOpenQuestion}
@@ -139,6 +187,30 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
       })}</>
     );
   }
+
+  const card = (l: Lesson) => (
+    <button
+      key={l.id}
+      data-catalog-lesson={l.id}
+      title={l.summary}
+      type="button"
+      onClick={() => openNewRoot(l.id, studyCatalog)}
+      className="min-w-0 text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
+    >
+      <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-300">{l.category} · {l.difficulty}</div>
+      <div className="font-semibold text-slate-900 dark:text-white">{l.title}</div>
+      <LessonReviewBadge lessonId={l.id} />
+      <p className={`text-xs text-slate-600 dark:text-slate-400${expandedSummaryId === l.id ? '' : ' line-clamp-3'}`}
+        onClick={event => {
+          if (!window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+          event.stopPropagation();
+          setExpandedSummaryId(current => current === l.id ? null : l.id);
+        }}>{l.summary}</p>
+      <div className="text-[11px] text-slate-500">Вопросов: {l.relatedQuestionIds.length}</div>
+    </button>
+  );
+  const studyGroups = [...BEGINNER_STAGES, ...BEGINNER_EXTRAS];
+  const knownIds = new Set<string>(studyGroups.flatMap(group => [...group.ids]));
 
   return (
     <div className="space-y-4">
@@ -214,36 +286,47 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         ))}
       </div>
 
-      {list.length === 0 ? (
-        <p className="text-sm text-slate-500">Ничего не найдено. Пустые карточки не показываем — в каталоге только готовые уроки.</p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {list.map((l) => (
-            <button
-              key={l.id}
-              title={l.summary}
-              type="button"
-              onClick={() => openNewRoot(l.id)}
-              className="text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
-            >
-              <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-300">
-                {l.category} · {l.difficulty}
-              </div>
-              <div className="font-semibold text-slate-900 dark:text-white">{l.title}</div>
-              <LessonReviewBadge lessonId={l.id} />
-              <p
-                className={`text-xs text-slate-600 dark:text-slate-400${expandedSummaryId === l.id ? '' : ' line-clamp-3'}`}
-                onClick={event => {
-                  if (!window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
-                  event.stopPropagation();
-                  setExpandedSummaryId(current => current === l.id ? null : l.id);
-                }}
-              >{l.summary}</p>
-              <div className="text-[11px] text-slate-500">Вопросов: {l.relatedQuestionIds.length}</div>
+      {difficulty === 'beginner' && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Порядок уроков «Базы»">
+          {BEGINNER_SORTS.map(sort => (
+            <button key={sort.id} type="button" aria-pressed={beginnerSort === sort.id}
+              className={routeButton + (beginnerSort === sort.id ? ' bg-cyan-500/20' : '')}
+              onClick={() => {
+                setBeginnerSort(sort.id);
+                memoryBeginnerSort = sort.id;
+                try { window.localStorage.setItem(BEGINNER_SORT_KEY, sort.id); } catch { /* Keep the choice in this tab. */ }
+              }}>
+              {sort.label}
             </button>
           ))}
         </div>
       )}
+      {difficulty === 'beginner' && <p className="text-xs text-slate-500" role="status">Найдено уроков: {list.length}</p>}
+      {list.length === 0 ? (
+        <p className="text-sm text-slate-500">Ничего не найдено. Пустые карточки не показываем — в каталоге только готовые уроки.</p>
+      ) : studyCatalog ? (
+        <div className="space-y-5">
+          {studyGroups.map(group => {
+            const ids: readonly string[] = group.ids;
+            const matches = list.filter(lesson => ids.includes(lesson.id));
+            if (!matches.length) return null;
+            return (
+              <section key={group.title} aria-label={group.title} className="space-y-2">
+                <h3 className="text-sm font-semibold">{group.title}</h3>
+                {'after' in group && <p className="text-xs text-slate-500">После урока «{getLesson(group.after)?.title}»</p>}
+                <div className="grid gap-3 sm:grid-cols-2">{matches.map(card)}</div>
+              </section>
+            );
+          })}
+          {list.some(lesson => !knownIds.has(lesson.id)) && (
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold">Вне маршрута</h3>
+              <div className="grid gap-3 sm:grid-cols-2">{list.filter(lesson => !knownIds.has(lesson.id)).map(card)}</div>
+            </section>
+          )}
+        </div>
+      ) : <div className="grid gap-3 sm:grid-cols-2">{list.map(card)}</div>}
+
       </>
       )}
     </div>

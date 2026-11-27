@@ -134,7 +134,9 @@ export function getLessonForQuestion(questionId: string): Lesson | undefined {
 export function searchLessons(query: string, layer?: string): Lesson[] {
   const q = query.trim().toLowerCase();
   return LESSONS.filter((l) => {
-    if (layer && layer !== 'all' && !l.osiLayers.some((x) => x.toLowerCase().includes(layer.toLowerCase()))) {
+    if (layer && layer !== 'all' && !l.osiLayers.some(x => layer === 'L5–L7'
+      ? /^(L[567]|L5[–-]L7)$/i.test(x)
+      : x.toLowerCase().includes(layer.toLowerCase()))) {
       return false;
     }
     if (!q) return true;
