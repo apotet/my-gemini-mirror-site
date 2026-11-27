@@ -1,4 +1,4 @@
-import { parseVlanList, vlanListArgument, isLayer2Interface } from './arguments';
+import { parseVlanList, vlanListArgument, isLayer2Interface, l2InterfaceAvailable } from './arguments';
 import { interfaceStatus } from '../../engine/OperationalState';
 import { CommandSpec, DeviceState, NetworkState } from '../../engine/types';
 import { ciscoIosProfile } from './profile';
@@ -72,6 +72,7 @@ function updateAllowed(tokens: string[], state: NetworkState, device: DeviceStat
 export const ciscoTrunkCommands: CommandSpec[] = [
   {
     id: 'cisco.switchport_mode_trunk',
+    available: l2InterfaceAvailable,
     match: ['switchport', 'mode', 'trunk'],
     modes: ['config-if'],
     minPrivilege: 15,
@@ -98,6 +99,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
   },
   ...(['add', 'remove', 'all', 'none'] as const).map(operation => ({
     id: 'cisco.switchport_trunk_allowed_vlan_' + operation,
+    available: l2InterfaceAvailable,
     match: ['switchport', 'trunk', 'allowed', 'vlan', operation],
     arguments: operation === 'add' || operation === 'remove' ? [[vlanListArgument]] : [[]],
     modes: ['config-if'] as const as ('config-if')[],
@@ -106,6 +108,7 @@ export const ciscoTrunkCommands: CommandSpec[] = [
   })),
   {
     id: 'cisco.switchport_trunk_allowed_vlan',
+    available: l2InterfaceAvailable,
     match: ['switchport', 'trunk', 'allowed', 'vlan'],
     arguments: [[vlanListArgument]],
     modes: ['config-if'],

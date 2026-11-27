@@ -6,6 +6,25 @@ export function matchingKeywords(keywords: string[], token: string): string[] {
   return keywords.includes(partial) ? [partial] : keywords.filter(k => k.startsWith(partial));
 }
 
+/** Session commands must not be offered or accepted through do. */
+export const DO_FORBIDDEN_IDS = new Set([
+  'cisco.reload_simulated',
+  'cisco.disable',
+  'cisco.exit',
+  'cisco.end',
+  'cisco.configure_terminal',
+]);
+export const DO_FORBIDDEN_REASON = '% Command not available through do in configuration mode';
+
+function completedForbiddenDo(specs: CommandSpec[], words: string[], privilege: number): boolean {
+  const blocked = specs.filter(s => DO_FORBIDDEN_IDS.has(s.id));
+  if (!blocked.length || !words.length) return false;
+  const resolved = resolveKeywords(blocked, words, 'privileged', privilege);
+  if (resolved.ambiguous || resolved.candidates.length !== 1) return false;
+  const spec = resolved.candidates[0];
+  return spec.match.length === words.length && spec.match.every((keyword, i) => keyword === resolved.tokens[i]);
+}
+
 /** Resolve a completed 'do' prefix with the same mode/privilege rules as Enter. */
 export function commandContext(specs: CommandSpec[], words: string[], mode: DeviceMode, privilege: number) {
   const leading = resolveKeywords(specs, words.slice(0, 1), mode, privilege);
@@ -63,7 +82,18 @@ export function inspectCommand(
   specs: CommandSpec[], words: string[], mode: DeviceMode, privilege: number, device?: DeviceState,
 ): CommandInspection {
   const context = commandContext(specs, words, mode, privilege);
-  let branches = context.specs.filter(s => s.modes.includes(context.mode) && (s.minPrivilege ?? 0) <= context.privilege &&
+  if (context.delegated && completedForbiddenDo(context.specs, context.words, context.privilege)) {
+    return {
+      status: 'invalid',
+      tokens: ['do', ...context.words],
+      next: [],
+      invalidReason: DO_FORBIDDEN_REASON,
+    };
+  }
+  const eligible = context.delegated
+    ? context.specs.filter(s => !DO_FORBIDDEN_IDS.has(s.id))
+    : context.specs;
+  let branches = eligible.filter(s => s.modes.includes(context.mode) && (s.minPrivilege ?? 0) <= context.privilege &&
       (!s.available || !!device && s.available(device)))
     .flatMap(spec => (spec.arguments ?? [[]]).map(args => ({
       spec, path: [...spec.match.map(keyword => ({ keyword })), ...args] as CommandArgument[],
