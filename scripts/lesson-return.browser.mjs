@@ -107,8 +107,19 @@ try {
     await b(page, 'Вернуться к вопросу l3-05').click();
     await review.waitFor();
 
+    // Going to the catalog deliberately drops the previous question's provenance.
+    await b(review, 'Перейти к уроку: ' + route).click();
+    await title(page, route).waitFor();
+    await b(page, 'К каталогу уроков').click();
+    const unrelatedLesson = 'TCP/UDP-порты: как найти нужную службу';
+    await page.getByPlaceholder(catalog).fill(unrelatedLesson);
+    await page.getByText(unrelatedLesson, { exact: true }).click();
+    await title(page, unrelatedLesson).waitFor();
+    assert.equal(await b(page, /^Вернуться к вопросу/).count(), 0, 'catalog lessons must not inherit an unrelated question');
+    assert.equal(await b(page, backToPrevious).count(), 0);
+
     // Direct catalog lesson, ordinary inline practice, exact catalog context on return.
-    const inlineTitle = 'TCP/UDP-порты: как найти нужную службу';
+    const inlineTitle = unrelatedLesson;
     await openCatalog(page, mobile, inlineTitle);
     assert.equal(await b(page, backToPrevious).count(), 0);
     const inlineStand = b(page, 'Открыть стенд');

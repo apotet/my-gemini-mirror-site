@@ -120,7 +120,11 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
           initialLessonId={lessonId}
           returnQuestionId={returnQuestionId}
           onOpenQuestion={openQuestionFromLesson}
-          onClearLesson={() => setLessonId(null)}
+          onClearLesson={() => {
+            setLessonId(null);
+            setReturnQuestionId(null);
+            clearFocusedQuestion();
+          }}
         />
       )}
       {section === 'razbory' && (
