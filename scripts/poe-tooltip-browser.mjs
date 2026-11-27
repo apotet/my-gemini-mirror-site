@@ -20,6 +20,7 @@ try{
   await page.getByRole('button',{name:/^#l1v2-c-injector-direction ·/}).click();
   await page.locator('[data-explanation-question-id="l1v2-c-injector-direction"]').getByRole('button',{name:`Перейти к уроку: ${lesson.title}`}).click();
   const article=page.locator('article').filter({has:page.getByRole('heading',{name:lesson.title,exact:true})});await article.waitFor();
+  if (!mobile) await article.getByRole('switch', { name: 'Подсказки при наведении' }).click();
   const seen=new Set();
   for(const mode of['plain','professional']){
    await article.getByRole('button',{name:mode==='plain'?'Простыми словами':'По делу',exact:true}).click();

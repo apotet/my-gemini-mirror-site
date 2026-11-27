@@ -8,6 +8,7 @@ import { getQuestionDeepDive } from '../data/questionExplanations';
 import { getLessonForQuestion } from '../data/lessons';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { StudyTextToggle } from './StudyTextToggle';
+import { GlossaryHoverToggle } from './GlossaryHoverToggle';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { ZoomableImage } from './ZoomableImage';
 import {
@@ -177,6 +178,7 @@ export const TheoryRazbory: React.FC<Props> = ({
             {showEngineering && (
               <div className="px-4 pb-4 space-y-3 border-t border-slate-200 dark:border-slate-800">
                 {hasProfessional && deep.deepAnalysis.trim() && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+                <GlossaryHoverToggle />
                 {!hasProfessional && <p className="text-xs text-slate-500 dark:text-slate-400">Профессиональный разбор пока не подготовлен</p>}
                 {professional?.notice && <p className="text-xs text-amber-700 dark:text-amber-300">{professional.notice}</p>}
                 <FormattedExplanation text={engineering} glossaryScope={glossaryScope} />

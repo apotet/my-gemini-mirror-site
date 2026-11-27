@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Lesson, type LessonIllustration } from '../data/lessons/types';
 import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
+import { GlossaryHoverToggle } from './GlossaryHoverToggle';
 import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
@@ -197,6 +198,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <LessonReviewBadge lessonId={lesson.id} />
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+        <GlossaryHoverToggle />
         {lesson.id === 'l1-poe-injectors-splitters' ? <p className="whitespace-pre-line">{content.summary}</p> : lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
           <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
             <p className="whitespace-pre-line">
