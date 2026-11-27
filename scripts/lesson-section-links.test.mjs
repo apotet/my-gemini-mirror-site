@@ -6,7 +6,7 @@ const { ALL_QUESTIONS, getLesson, getLessonForQuestion, LESSONS,
   QUESTION_SECTION_LINKS, getLessonBlocksWithSections, getLessonSectionForQuestion } =
   await bundleEntry('scripts/lesson-section-links-entry.ts', 'lesson-section-links.mjs');
 
-assert.equal(ALL_QUESTIONS.length, 861, 'existing question bank is unchanged');
+assert.equal(ALL_QUESTIONS.length, 860, 'existing question bank is unchanged');
 assert.ok(QUESTION_SECTION_LINKS.length >= 3, 'three approved spotlights remain alongside reviewed L2 sections');
 const expectedTexts = {
   'photo-otdr-end': 'Что обычно означает резкий спад трассы с переходом в шум в конце линии на рефлектограмме?',

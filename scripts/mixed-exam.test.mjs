@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
 
 const { ALL_QUESTIONS, getRandomQuestions, resolveImageUrl } = await bundleEntry('src/data/questionsData.ts', 'mixed-data.mjs');
+const { FIBER_END_FACE_PHOTO } = await bundleEntry('src/config/sharedAssets.ts', 'mixed-assets.mjs');
 const { selectMixedQuestions, MIXED_GROUPS, mixedGroup, isMixedPhoto } = await bundleEntry('src/data/mixedExam.ts', 'mixed-picker.mjs');
 
 function seeded(seed) {
@@ -23,6 +25,12 @@ function verify(questions) {
   assert.ok(questions.every(q => MIXED_GROUPS.includes(mixedGroup(q))), 'no unknown groups');
   if (counts['l1-l2'] === 2) assert.equal(questions.filter(q => q.group === 'l1-l2' && !q.image).length, 1);
   for (const photo of photos) {
+    if (photo.image === FIBER_END_FACE_PHOTO) {
+      assert.equal(photo.id, 'photo-cleaning');
+      assert.equal(resolveImageUrl(photo.image), '/' + photo.image);
+      assert.equal(readFileSync('public/' + photo.image).subarray(8, 12).toString(), 'WEBP');
+      continue;
+    }
     const url = new URL(resolveImageUrl(photo.image));
     assert.equal(url.protocol, 'https:');
     assert.ok(url.pathname.endsWith(photo.image), 'relative photo resolves without changing the path');

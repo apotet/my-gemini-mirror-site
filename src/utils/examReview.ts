@@ -4,6 +4,7 @@ import type { ProgressSession } from './examProgress';
 import { answerCorrect, hasValidTrialTiming } from './examProgress';
 import { getLessonForQuestion } from '../data/lessons';
 import { isLearningLevel } from '../types/learningLevel';
+import { isRetiredWiremapReviewSnapshot, RETIRED_WIREMAP_LIMIT_PHOTO } from './copperPhotoQuestionHistory';
 
 export const LAST_REVIEW_KEY = 'osi_last_exam_review_v1';
 export type ReviewFilter = 'all' | 'wrong' | 'correct';
@@ -51,6 +52,7 @@ export function restoreReview(raw: string, epoch: string): ProgressSession | nul
           !Array.isArray(q.correct) || !q.correct.length || new Set(q.correct).size !== q.correct.length ||
           q.correct.some((i: unknown) => !Number.isInteger(i) || Number(i) < 0 || Number(i) >= q.answers.length) ||
           (q.image !== undefined && typeof q.image !== 'string') || (q.imageAlt !== undefined && typeof q.imageAlt !== 'string')) return null;
+      if (q.id === RETIRED_WIREMAP_LIMIT_PHOTO.id && !isRetiredWiremapReviewSnapshot(q, s.answerOrders)) return null;
       ids.add(q.id);
       const chosen = s.userAnswers[q.id];
       if (chosen !== undefined && (!Array.isArray(chosen) || new Set(chosen).size !== chosen.length ||

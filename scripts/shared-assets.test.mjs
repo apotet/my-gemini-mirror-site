@@ -16,7 +16,7 @@ const photos = ALL_QUESTIONS.filter(q => q.image);
 const localPhoto = photos.filter(q => q.image === config.FIBER_END_FACE_PHOTO);
 assert.deepEqual(localPhoto.map(q => q.id), ['photo-cleaning']);
 const paths = [...new Set(photos.map(q => q.image))].filter(path => path !== config.FIBER_END_FACE_PHOTO);
-assert.equal(photos.length, 194);
+assert.equal(photos.length, 193);
 assert.equal(paths.length, 89);
 for (const path of paths) {
   assert.equal(resolveImageUrl(path), `${base}/${path}`);
@@ -66,4 +66,4 @@ function checkSources(dir) {
   }
 }
 checkSources('src');
-console.log('PASS: 194 photo questions / 89 pinned shared URLs and one local crop, external URLs, credits, 14 cheatsheets, both Vite HTML transforms, no mutable source URLs');
+console.log('PASS: 193 photo questions / 89 pinned shared URLs and one local crop, external URLs, credits, 14 cheatsheets, both Vite HTML transforms, no mutable source URLs');

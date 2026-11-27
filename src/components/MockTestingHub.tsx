@@ -6,7 +6,7 @@ import { filterLearningLevel, LEARNING_LEVEL_DESCRIPTIONS } from '../data/learni
 import { LEARNING_LEVELS, type LearningLevel } from '../types/learningLevel';
 import type { Question, QuizModeId } from '../types/quiz';
 import { getMistakeQuestions } from '../utils/userProgress';
-import { PREVIOUS_FIBER_END_FACE, RETIRED_PVC_PHOTO } from '../utils/copperPhotoQuestionHistory';
+import { getRetiredPhotoQuestion, PREVIOUS_FIBER_END_FACE, RETIRED_PHOTO_QUESTIONS } from '../utils/copperPhotoQuestionHistory';
 import { FIBER_END_FACE_PHOTO } from '../config/sharedAssets';
 import { selectFamilyQuestions } from '../data/beginnerExam';
 import { KnowledgeRadar } from './KnowledgeRadar';
@@ -41,7 +41,7 @@ type SavedSession = {ids:string[];index:number;answers:Record<string,number[]>;s
 const questionForSavedRound = (id:string, fiberPhotoV1?:true) => {
   // Before the local crop was introduced, ID-only rounds always used the shared photo.
   if(id===PREVIOUS_FIBER_END_FACE.id && !fiberPhotoV1)return PREVIOUS_FIBER_END_FACE;
-  return ALL_QUESTIONS.find(q=>q.id===id) ?? (id===RETIRED_PVC_PHOTO.id ? RETIRED_PVC_PHOTO : undefined);
+  return ALL_QUESTIONS.find(q=>q.id===id) ?? getRetiredPhotoQuestion(id);
 };
 function readSession():SavedSession|null {
   try {
@@ -51,9 +51,11 @@ function readSession():SavedSession|null {
     if(v.ids.some((id:string)=>!questionForSavedRound(id,v.fiberPhotoV1)))return null;
     if(Object.values(v.answers).some(a=>!Array.isArray(a)||a.some(n=>!Number.isInteger(n))))return null;
     // These old rounds saved only IDs and answer indices in original bank order.
-    const retiredAnswers=v.answers[RETIRED_PVC_PHOTO.id];
-    if(retiredAnswers && (new Set(retiredAnswers).size!==retiredAnswers.length ||
-      retiredAnswers.some((n:number)=>n<0||n>=RETIRED_PVC_PHOTO.answers.length)))return null;
+    for(const retired of RETIRED_PHOTO_QUESTIONS){
+      const retiredAnswers=v.answers[retired.id];
+      if(retiredAnswers && (new Set(retiredAnswers).size!==retiredAnswers.length ||
+        retiredAnswers.some((n:number)=>n<0||n>=retired.answers.length)))return null;
+    }
     return v;
   }catch{return null;}
 }
