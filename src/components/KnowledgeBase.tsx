@@ -42,6 +42,32 @@ function readBeginnerSort(): BeginnerSort {
     return BEGINNER_SORTS.find(sort => sort.id === id)?.id ?? memoryBeginnerSort;
   } catch { return memoryBeginnerSort; }
 }
+// A resume checkpoint records an intentionally opened route step, not course progress.
+const BEGINNER_RESUME_KEY = 'osi_knowledge_beginner_resume_v1';
+let memoryBeginnerResume: string | null = null;
+let resumeWriteBlocked = false;
+
+function getBeginnerCoreLesson(id: string | null) {
+  if (!id || !BEGINNER_CORE_IDS.includes(id)) return undefined;
+  const lesson = getLesson(id);
+  return lesson?.difficulty === 'beginner' ? lesson : undefined;
+}
+
+function readBeginnerResume(): string | null {
+  if (typeof window === 'undefined') return null;
+  if (resumeWriteBlocked) return memoryBeginnerResume;
+  try {
+    return getBeginnerCoreLesson(window.localStorage.getItem(BEGINNER_RESUME_KEY))?.id ?? null;
+  } catch { return memoryBeginnerResume; }
+}
+
+function saveBeginnerResume(id: string) {
+  memoryBeginnerResume = id;
+  try {
+    window.localStorage.setItem(BEGINNER_RESUME_KEY, id);
+    resumeWriteBlocked = false;
+  } catch { resumeWriteBlocked = true; }
+}
 const routeButton = 'min-h-11 cursor-pointer rounded-lg border border-cyan-500/40 px-3 py-2 text-left text-sm font-semibold text-cyan-800 dark:text-cyan-200 focus-visible:outline-2 focus-visible:outline-cyan-500';
 const DIFFICULTY_ORDER = { beginner: 0, applied: 1, advanced: 2 };
 const FILTER_KEYS = {
@@ -57,6 +83,7 @@ interface LessonEntry {
   key: number;
   from?: NavigationTrigger;
   study?: boolean;
+  trackStudy?: boolean;
   focusHeading?: boolean;
   pausedTextMode?: StudyTextMode;
 }
@@ -96,6 +123,8 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
   const [beginnerSort, setBeginnerSort] = useState(readBeginnerSort);
+  const [beginnerResumeId, setBeginnerResumeId] = useState(readBeginnerResume);
+  const resumeLesson = getBeginnerCoreLesson(beginnerResumeId);
   const studyCatalog = difficulty === 'beginner' && beginnerSort === 'study';
   const [trail, setTrail] = useState<LessonEntry[]>(() => initialLessonId ? [{ id: initialLessonId, key: 0 }] : []);
   const nextKey = useRef(1);
@@ -107,9 +136,21 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   }, [initialLessonId]);
 
   const current = trail.at(-1);
-  const openNewRoot = (id: string, study = false) => setTrail([{ id, key: nextKey.current++, study }]);
+  const rememberStudyStep = (id: string) => {
+    if (!getBeginnerCoreLesson(id)) return;
+    saveBeginnerResume(id);
+    setBeginnerResumeId(id);
+  };
+  const openNewRoot = (id: string, options: Pick<LessonEntry, 'study' | 'trackStudy' | 'focusHeading'> = {}) => {
+    const { study, focusHeading } = options;
+    const trackStudy = study && options.trackStudy && !!getBeginnerCoreLesson(id);
+    if (trackStudy) rememberStudyStep(id);
+    setTrail([{ id, key: nextKey.current++, study, trackStudy, focusHeading }]);
+    if (focusHeading) window.scrollTo({ top: 0, behavior: 'instant' });
+  };
   const openStudyNeighbor = (id: string) => {
     if (!current?.study || !getLesson(id)) return;
+    if (current.trackStudy) rememberStudyStep(id);
     const next = { ...current, id, key: nextKey.current++, focusHeading: true };
     setTrail(previous => previous.at(-1)?.key === current.key ? [...previous.slice(0, -1), next] : previous);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -207,7 +248,10 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
       data-catalog-lesson={l.id}
       title={l.summary}
       type="button"
-      onClick={() => openNewRoot(l.id, section === 'lessons' && studyCatalog)}
+      onClick={() => openNewRoot(l.id, {
+        study: section === 'lessons' && studyCatalog,
+        trackStudy: !query.trim() && layer === 'all',
+      })}
       className="min-w-0 w-full h-full pr-16 text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
     >
       <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-300">{l.category} · {l.difficulty}</div>
@@ -268,6 +312,14 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         }} />
       ) : (
       <>
+      {studyCatalog && resumeLesson && (
+        <button type="button" aria-label={`Продолжить: ${resumeLesson.title}`}
+          className={`w-full sm:w-auto ${routeButton}`}
+          onClick={() => openNewRoot(resumeLesson.id, { study: true, trackStudy: true, focusHeading: true })}>
+          <span className="block">Продолжить</span>
+          <span className="block break-words text-xs font-normal">{resumeLesson.title}</span>
+        </button>
+      )}
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
