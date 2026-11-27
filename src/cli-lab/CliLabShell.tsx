@@ -171,7 +171,15 @@ function goalLabel(g: Scenario['goals'][number]): string {
   }
 }
 
-export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTopology?: boolean; topologyUxV2?: boolean }> = ({ initialScenarioId, experimentalTopology = true, topologyUxV2 = true }) => {
+interface CliLabShellProps {
+  initialScenarioId?: string;
+  experimentalTopology?: boolean;
+  topologyUxV2?: boolean;
+  /** The mock picker owns scenario/mode selection. The regular Lab omits this. */
+  curriculumPreviewMode?: LabMode;
+}
+
+export const CliLabShell: React.FC<CliLabShellProps> = ({ initialScenarioId, experimentalTopology = true, topologyUxV2 = true, curriculumPreviewMode }) => {
   const [scenarioId, setScenarioId] = useState(() =>
     SCENARIOS.find(scenario => scenario.id === initialScenarioId)?.id ?? SCENARIOS[0].id
   );
@@ -179,7 +187,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
   const [scenarioLevel, setScenarioLevel] = useState<ScenarioLevel>(() =>
     SCENARIO_LEVELS.find(level => level.scenarios.some(item => item.id === (initialScenarioId ?? SCENARIOS[0].id)))?.id ?? 'beginner'
   );
-  const [labMode, setLabMode] = useState<LabMode>('learn');
+  const [labMode, setLabMode] = useState<LabMode>(curriculumPreviewMode ?? 'learn');
   const [history, setHistory] = useState<HistoryLine[]>([]);
   const [input, setInput] = useState('');
   const [stepIndex, setStepIndex] = useState(0);
@@ -511,6 +519,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
     requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
   };
 
+  const previewTask = curriculumPreviewMode === 'task';
   const modes: LabMode[] = ['learn', 'drill', 'task'];
   void tick;
   const currentStep = steps[stepIndex];
@@ -573,12 +582,12 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <button type="button" onClick={() => setCommandCatalogOpen(v => !v)}
+          {!previewTask && <button type="button" onClick={() => setCommandCatalogOpen(v => !v)}
             aria-expanded={commandCatalogOpen}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
             <TerminalIcon className="w-3.5 h-3.5" /> {commandCatalogOpen ? 'Скрыть команды' : 'Команды Cisco'}
-          </button>
-          {modes.map((m) => (
+          </button>}
+          {!curriculumPreviewMode && modes.map((m) => (
             <button
               key={m}
               type="button"
@@ -635,7 +644,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
         </section>
       )}
 
-      <section className="space-y-2" aria-label="Уровень сложности и сценарий CLI">
+      {!curriculumPreviewMode && <section className="space-y-2" aria-label="Уровень сложности и сценарий CLI">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Сложность:</span>
           {SCENARIO_LEVELS.map(level => (
@@ -667,7 +676,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             </button>
           ))}
         </div>
-      </section>
+      </section>}
 
   </>;
 
@@ -935,7 +944,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {scenario.description}
             </p>
-            {allLessonChoices.length > 0 && (
+            {!previewTask && allLessonChoices.length > 0 && (
               <details className="border-t border-slate-200 dark:border-slate-700 pt-2">
                 <summary className="text-xs text-cyan-700 dark:text-cyan-300 cursor-pointer">Теория по заданию</summary>
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1029,7 +1038,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
                 <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
                   {scenario.successMessage}
                 </p>
-                {scenario.nextScenarioId && SCENARIOS.some(s => s.id === scenario.nextScenarioId) && (
+                {!curriculumPreviewMode && scenario.nextScenarioId && SCENARIOS.some(s => s.id === scenario.nextScenarioId) && (
                   <button
                     type="button"
                     onClick={() => { setScenarioId(scenario.nextScenarioId!); focusCliInput(); }}
@@ -1042,7 +1051,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+          {!curriculumPreviewMode && <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
             <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Режимы</p>
             <p>
               <span className="font-mono text-cyan-600 dark:text-cyan-400">learn</span> — пошагово с
@@ -1054,7 +1063,7 @@ export const CliLabShell: React.FC<{ initialScenarioId?: string; experimentalTop
               Сокращения интерфейсов: <span className="font-mono">fa0/1</span>,{' '}
               <span className="font-mono">gi0/0</span>. Из config: <span className="font-mono">do show …</span>
             </p>
-          </div>
+          </div>}
         </div>
       </div>
     </div>
