@@ -197,6 +197,39 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     }
   },
   {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-01"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-01",
+    "afterHeading": {
+      "plain": "Пример: OPEN соседа принят, а его KEEPALIVE ещё нет",
+      "professional": "OpenSent → OpenConfirm → Established по RFC 4271 §8.2.2–8.2.3"
+    }
+  },
+  {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-04"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-04",
+    "afterHeading": {
+      "plain": "Пример: кому RR отдаст путь, полученный от клиента C1",
+      "professional": "Отражение пути клиента C1 клиентам C2 и non-client N (RFC 4456 §6, §8)"
+    }
+  },
+  {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-07"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-07",
+    "afterHeading": {
+      "plain": "Пример: Weight 200 у пути A против Weight 0 у пути B",
+      "professional": "Best path на Cisco IOS: Weight 200 у пути A против Weight 0 у пути B"
+    }
+  },
+  {
     "lessonId": "l4-lb",
     "questionIds": [
       "l4-lb-01"
