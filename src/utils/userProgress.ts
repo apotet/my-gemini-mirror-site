@@ -1,5 +1,6 @@
 import { ALL_QUESTIONS } from '../data/questionsData';
 import type { Question } from '../types/quiz';
+import { LINK_LAYER_QUESTION_ID, restoreLinkLayerSnapshot } from '../data/inDepth/previousQuestions';
 import { hasPhotoQuestionHistory, RETIRED_PHOTO_QUESTIONS, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 
 export const PROGRESS_KEY = 'osi_user_progress_v4';
@@ -111,9 +112,14 @@ export function createProgressStore(bank: readonly Question[], storage: () => St
         for (const item of active.questions) {
           const current = byId.get(item?.id);
           const order = active.answerOrders?.[item?.id];
-          const question = current && hasPhotoQuestionHistory(current.id)
-            ? (active.answerOrders === undefined || order !== undefined ? restoreHistoricalPhotoQuestion(item, order, current) : null)
-            : current;
+          let question = current;
+          if (current?.id === LINK_LAYER_QUESTION_ID) {
+            question = active.answerOrders === undefined || order !== undefined
+              ? restoreLinkLayerSnapshot(current, item, order) ?? undefined : undefined;
+          } else if (current && hasPhotoQuestionHistory(current.id)) {
+            question = active.answerOrders === undefined || order !== undefined
+              ? restoreHistoricalPhotoQuestion(item, order, current) ?? undefined : undefined;
+          }
           const chosen = active.userAnswers[item?.id];
           if (!question || model.questions[question.id] || active.submittedQuestions[question.id] !== true ||
               !Array.isArray(chosen) || !chosen.length || new Set(chosen).size !== chosen.length ||

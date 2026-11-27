@@ -42,7 +42,13 @@ export function bankBeforeFiberEndFaceChange(currentQuestions) {
 }
 
 export function bankBeforeOpticalWordingChange(currentQuestions) {
-  const questions = bankBeforeFiberEndFaceChange(currentQuestions);
+  // Today's Ethernet stem is newer than all of these frozen bank snapshots.
+  // This projection also accepts raw questions.json, which doesn't contain this extra-pack ID.
+  const questions = bankBeforeFiberEndFaceChange(currentQuestions).map(q => {
+    if (q.id !== 'tcpip-x11') return q;
+    assert.equal(q.text, 'Какие поля добавляет Ethernet при передаче IP-пакета?');
+    return { ...q, text: 'Что добавляет уровень Link при отправке IP-пакета в Ethernet?' };
+  });
   const revised = questions.filter(q => q.id === previousOpticalInspection.id);
   assert.equal(revised.length, 1);
   assert.equal(revised[0].text, 'Какую проверку выполняют этим прибором перед подключением оптического патч-корда?');
