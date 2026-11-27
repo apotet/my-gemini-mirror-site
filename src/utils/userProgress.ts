@@ -1,6 +1,6 @@
 import { ALL_QUESTIONS } from '../data/questionsData';
 import type { Question } from '../types/quiz';
-import { COPPER_UTP_PHOTO_ID, RETIRED_PVC_PHOTO, restoreCopperPhoto } from './copperPhotoQuestionHistory';
+import { hasPhotoQuestionHistory, RETIRED_PVC_PHOTO, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 
 export const PROGRESS_KEY = 'osi_user_progress_v4';
 const LEGACY_KEYS = ['osi_user_progress_v3', 'osi_last_mistakes', 'osi_exam_history', 'osi_active_session'];
@@ -111,8 +111,8 @@ export function createProgressStore(bank: readonly Question[], storage: () => St
         for (const item of active.questions) {
           const current = byId.get(item?.id);
           const order = active.answerOrders?.[item?.id];
-          const question = current?.id === RETIRED_PVC_PHOTO.id || current?.id === COPPER_UTP_PHOTO_ID
-            ? (active.answerOrders === undefined || order !== undefined ? restoreCopperPhoto(item, order, current) : null)
+          const question = current && hasPhotoQuestionHistory(current.id)
+            ? (active.answerOrders === undefined || order !== undefined ? restoreHistoricalPhotoQuestion(item, order, current) : null)
             : current;
           const chosen = active.userAnswers[item?.id];
           if (!question || model.questions[question.id] || active.submittedQuestions[question.id] !== true ||

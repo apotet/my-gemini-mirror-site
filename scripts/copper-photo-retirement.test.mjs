@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { bundleEntry } from './load-bank.mjs';
-import { bankBeforeCopperPhotoChanges, previousCopperUtp, retiredPvcPhoto as retired } from './copper-photo-history-fixtures.mjs';
+import { bankBeforeCopperPhotoChanges, bankBeforeOpticalWordingChange, previousOpticalInspection, previousCopperUtp, retiredPvcPhoto as retired } from './copper-photo-history-fixtures.mjs';
 
 const runtime = await bundleEntry('scripts/learning-level-exam-entry.ts', 'retired-pvc-photo-runtime.mjs');
 const { BASE_FOUNDATIONS_BATCH5 } = await bundleEntry('src/data/baseFoundationsBatch5.ts', 'retired-pvc-photo-overlays.mjs');
@@ -13,8 +13,9 @@ const hash = value => createHash('sha256').update(JSON.stringify(value)).digest(
 
 // Exact post-filter projections derived independently from staging 3da4d9c, not today's candidate.
 assert.equal(bank.length, 861);
-assert.equal(hash(bank.filter(q => q.id !== previousCopperUtp.id)), 'e82c26e7f46fdca5a529347fc5489f720be6d53807b3bbab442f36e4ae9b0553');
-assert.equal(hash(bank), 'e16e9241a6c47173fcd05ad5109e1faa490bcba762cf51fc9b517c2842bff335');
+const copperEraBank = bankBeforeOpticalWordingChange(bank);
+assert.equal(hash(copperEraBank.filter(q => q.id !== previousCopperUtp.id)), 'e82c26e7f46fdca5a529347fc5489f720be6d53807b3bbab442f36e4ae9b0553');
+assert.equal(hash(copperEraBank), 'e16e9241a6c47173fcd05ad5109e1faa490bcba762cf51fc9b517c2842bff335');
 const currentUtp = bank.find(q => q.id === previousCopperUtp.id);
 assert.equal(currentUtp.image, 'assets/photos/copper-utp-section.webp');
 assert.equal(currentUtp.imageAlt, 'Поперечный срез кабеля рядом с масштабной линейкой');
@@ -138,4 +139,25 @@ wrongLegacyUtp.questions[0].answers[0] = 'Unrecognized label';
 const sanitized = createProgressStore(bank, () => fakeStorage({ osi_active_session: JSON.stringify(wrongLegacyUtp) }), () => now, [retired]);
 assert.equal(sanitized.summary().answeredCount, 0, 'an invalid old form does not become a migrated statistic');
 
+// A terminology-only edit must keep both forms and the shuffled grading of older attempts.
+const currentOptical = bank.find(q => q.id === previousOpticalInspection.id);
+const oldOptical = { ...currentOptical, ...previousOpticalInspection };
+assert.notEqual(currentOptical.text, oldOptical.text);
+for (const optical of [oldOptical, currentOptical]) {
+  for (const saved of [{ questions: [optical] }, runtime.prepareAttemptQuestions([optical], () => 0.5)]) {
+    const session = { ...common, ...saved };
+    const restoredOptical = runtime.restoreSession(JSON.stringify(session), bank, now);
+    assert.deepEqual(restoredOptical?.questions, saved.questions);
+    const completedOptical = { ...restoredOptical, isCompleted: true };
+    assert.deepEqual(runtime.restoreReview(runtime.serializeReview(completedOptical), common.progressEpoch)?.questions, saved.questions);
+    const activeOptical = { ...session, userAnswers: { [optical.id]: saved.questions[0].correct },
+      submittedQuestions: { [optical.id]: true } };
+    const migratedOptical = createProgressStore(bank, () => fakeStorage({ osi_active_session: JSON.stringify(activeOptical) }), () => now);
+    assert.equal(migratedOptical.summary().correctCount, 1);
+  }
+}
+for (const question of [
+  { ...oldOptical, text: 'Unknown stem' }, { ...oldOptical, correct: [0] },
+  { ...oldOptical, image: 'assets/photos/unknown.webp' },
+]) assert.equal(runtime.restoreSession(JSON.stringify({ ...common, questions: [question] }), bank, now), null);
 console.log('PASS: one exact removal, one narrow U/UTP edit, other 860 identical, no active links/sampling, trusted historical attempts and receipts restored');
