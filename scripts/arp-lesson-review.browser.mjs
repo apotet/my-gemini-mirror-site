@@ -37,7 +37,7 @@ try {
       await button(check,'Посмотреть результат').click();
       await check.getByText('Результат: 1 из 1',{exact:true}).waitFor();
     }
-    const terms = button(page, 'next hop');
+    const terms = page.getByRole('button', {name:'next hop',exact:true}).and(page.locator('button[aria-expanded]'));
     await terms.click();
     const card=page.getByRole('region',{name:'next hop',exact:true});
     await card.getByText(/Следующий узел, которому передаётся пакет/).waitFor();
