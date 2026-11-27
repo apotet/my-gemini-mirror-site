@@ -67,7 +67,8 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   {
     "lessonId": "l2-vlan",
     "questionIds": [
-      "new-ts-vlan"
+      "new-ts-vlan",
+      "eth-vlan-benefits"
     ],
     "anchorId": "in-depth-existing-new-ts-vlan",
     "afterHeading": {
@@ -75,7 +76,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
       "professional": "Access и trunk"
     }
   },
-  { lessonId: 'l2-vlan', questionIds: ['l2-07'], anchorId: 'vlan-native-untagged-ingress',
+  { lessonId: 'l2-vlan', questionIds: ['l2-07', 'l12-d03'], anchorId: 'vlan-native-untagged-ingress',
     afterHeading: { plain: 'Как принимают кадр без метки', professional: 'Native VLAN' } },
   { lessonId: 'l2-vlan', questionIds: ['l2-08'], anchorId: 'vlan-access-frame-ingress-egress',
     afterHeading: { plain: 'Что видит компьютер на обычном порту', professional: 'Access-порт: принадлежность кадра на входе и тег на выходе' } },
