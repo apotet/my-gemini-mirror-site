@@ -141,13 +141,31 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
     const frame = window.requestAnimationFrame(() => keepAnchorVisible(true));
     const settle = window.setTimeout(() => keepAnchorVisible(), 120);
     const lateSettle = window.setTimeout(() => keepAnchorVisible(), 400);
+    const clearSettles = () => {
+      window.clearTimeout(settle);
+      window.clearTimeout(lateSettle);
+    };
+    // Keep exact arrival, but don't pull the viewport back after the learner
+    // starts interacting; doing so can dismiss a tooltip they just opened.
+    const yieldToInteraction = (event: Event) => {
+      if (event.isTrusted) clearSettles();
+    };
+    const navigationKeys = new Set(['Tab', 'Enter', ' ', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End']);
+    const yieldToNavigationKey = (event: KeyboardEvent) => {
+      if (navigationKeys.has(event.key)) yieldToInteraction(event);
+    };
+    window.addEventListener('pointerdown', yieldToInteraction, { capture: true, passive: true });
+    window.addEventListener('wheel', yieldToInteraction, { capture: true, passive: true });
+    window.addEventListener('keydown', yieldToNavigationKey, true);
     const timeout = window.setTimeout(() => setHighlightedAnchor(null), 2800);
     return () => {
       disposed = true;
       window.cancelAnimationFrame(frame);
-      window.clearTimeout(settle);
-      window.clearTimeout(lateSettle);
+      clearSettles();
       window.clearTimeout(timeout);
+      window.removeEventListener('pointerdown', yieldToInteraction, true);
+      window.removeEventListener('wheel', yieldToInteraction, true);
+      window.removeEventListener('keydown', yieldToNavigationKey, true);
     };
   }, [lesson.id, targetAnchor, textMode]);
 

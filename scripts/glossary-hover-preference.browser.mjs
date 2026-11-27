@@ -230,6 +230,40 @@ try {
     await c.close();
     console.log('PASS: another tab receives the setting and dismisses its open automatic tooltip');
   }
+  {
+    const c = await context(390);
+    const page = await c.newPage();
+    await page.goto(base);
+    const { review } = await openTheory(page, true);
+    const link = same(review, /^Перейти к уроку:/);
+    await link.scrollIntoViewIfNeeded();
+    // Pin time and use instant scrolling only in this race fixture. This
+    // isolates the two lesson settle timers from compositor scroll animation.
+    await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' });
+    await page.clock.install();
+    await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 100));
+    const linkBox = await link.boundingBox();
+    await page.touchscreen.tap(linkBox.x + linkBox.width / 2, linkBox.y + linkBox.height / 2);
+    const anchor = page.locator('[data-lesson-section-anchor="cidr-contiguous-mask-validation"]');
+    await anchor.waitFor({ state: 'attached' });
+    await page.clock.runFor(155);
+    assert.ok(await anchor.evaluate(node => node === document.activeElement &&
+      node.getBoundingClientRect().bottom > 0 && node.getBoundingClientRect().top < innerHeight), 'first anchor arrival keeps focus and visibility');
+    const word = page.locator('article [data-glossary-term]').first();
+    await word.evaluate(node => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.clock.runFor(32);
+    assert.ok(await anchor.evaluate(node => node.getBoundingClientRect().top >= innerHeight), 'the viewed term is away from the original anchor');
+    const wordBox = await word.boundingBox();
+    await page.touchscreen.tap(wordBox.x + wordBox.width / 2, wordBox.y + wordBox.height / 2);
+    await shown(page, word);
+    const currentScroll = await page.evaluate(() => scrollY);
+    await page.clock.runFor(255);
+    assert.equal(await page.evaluate(() => scrollY), currentScroll, 'pending anchor settle yields to a deliberate touch');
+    await shown(page, word);
+    await dismiss(page);
+    await c.close();
+    console.log('PASS: exact initial anchor navigation and no delayed recenter after real glossary tap');
+  }
   for (const storage of ['blocked', 'readonly']) {
     const c = await context(1440, storage);
     const page = await c.newPage();
