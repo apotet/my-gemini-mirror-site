@@ -7,14 +7,15 @@ import { PracticeLinkButton, type PracticeButtonAction } from './PracticeLinkBut
 
 interface Props {
   lessonId: string;
+  studyNextId?: string;
   onOpenLesson?: (lessonId: string, trigger: HTMLButtonElement) => void;
   onOpenPractice?: PracticeButtonAction;
 }
 
-export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice }: Props) {
+export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice, studyNextId }: Props) {
   const titleId = useId();
   const path = getLessonLearningPath(lessonId);
-  const next = path?.next;
+  const next = path?.next?.lessonId === studyNextId ? undefined : path?.next;
   const nextLesson = next && next.lessonId !== lessonId && onOpenLesson ? getLesson(next.lessonId) : undefined;
   const practices = (path?.practice ?? []).filter(practice => practice.kind === 'planned' ||
     (onOpenPractice && Object.hasOwn(PRACTICE_DESTINATIONS, practice.link)));
