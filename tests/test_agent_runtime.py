@@ -839,6 +839,110 @@ class Runtime(unittest.TestCase):
                 self.assertFalse(self.api.prs)
                 self.assertIsNone(self.api.ref('hydrogen/issue-9'))
 
+    def test_hydrogen_failure_stages_keep_only_safe_diagnostics(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        marker='unpublished-fixture-marker'
+        fixtures=[
+            ('curl-failure','transport',28,'000',None),
+            ('timeout','transport',None,None,None),
+            ('http-503','transport',0,'503',None),
+            ('malformed-json','response_decode',0,'200',marker.encode()),
+            ('missing-candidate','response_decode',0,'200',json.dumps({'note':marker}).encode()),
+            ('blocked-finish','response_decode',0,'200',
+             b'{"candidates":[{"finishReason":"SAFETY"}]}'),
+            ('non-text-part','response_decode',0,'200',
+             b'{"candidates":[{"finishReason":"STOP","content":{"parts":[{"note":"non-text"}]}}]}'),
+            ('invalid-utf8','response_decode',0,'200',b'\xff'),
+            ('out-of-scope','policy_validation',0,'200',json.dumps({'candidates':[
+                {'finishReason':'STOP','content':{'parts':[{'text':json.dumps(
+                     {'status':'complete','files':[{'path':'src/b.ts','content':marker}]})}]}}]}).encode()),
+        ]
+        for case,stage,exit_code,http,body in fixtures:
+            with self.subTest(case=case):
+                api=FakeAPI()
+                api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                api.trees['base-tree']=[]
+                seen=[]
+                def curl(argv,**kwargs):
+                    seen.append(True)
+                    self.assertEqual(argv[argv.index('--retry')+1],'0')
+                    saved=Ledger(api,'hydrogen','issue-9').load()
+                    self.assertEqual(saved['status'],'request_reserved')
+                    self.assertEqual(saved['calls'][-1]['status'],'reserved')
+                    if exit_code is None:
+                        raise subprocess.TimeoutExpired(argv,1,stderr=marker)
+                    if body is not None:
+                        Path(argv[argv.index('--output')+1]).write_bytes(body)
+                    Path(argv[argv.index('--dump-header')+1]).write_text('X-Mock: '+marker)
+                    return subprocess.CompletedProcess(argv,exit_code,http,marker)
+                def offline_infer(*args):
+                    with patch.object(providers.subprocess,'run',side_effect=curl):
+                        return providers.infer(*args)
+                with patch.dict(os.environ,env):
+                    cli.prepare('hydrogen',api)
+                    cli.run_loop('hydrogen',api,infer=offline_infer)
+                    cli.report('hydrogen',api)
+                    with self.assertRaisesRegex(ValueError,'already durably claimed'):
+                        cli.prepare('hydrogen',api)
+                state=Ledger(api,'hydrogen','issue-9').load()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertEqual(state['remaining_calls'],0)
+                self.assertEqual(len(state['calls']),1)
+                call=state['calls'][0]
+                self.assertEqual(call['status'],'reserved')
+                self.assertEqual(call['failure_stage'],stage)
+                self.assertEqual(call.get('http_status'),503 if case=='http-503' else None)
+                self.assertNotIn('response',call)
+                self.assertNotIn(marker.encode(),b''.join(api.blobs.values()))
+                self.assertNotIn(b'fake-not-sent',b''.join(api.blobs.values()))
+                self.assertEqual(seen,[True])
+                self.assertFalse(api.prs)
+                note=api.notes[-1]['body']
+                self.assertIn(f'Hydrogen failure stage: `{stage}`.',note)
+                self.assertNotIn(marker,note)
+                self.assertNotIn('fake-not-sent',note)
+                self.assertFalse(state['overlay'])
+                self.assertFalse(state.get('sidecars'))
+                self.assertFalse(list(self.out.rglob('response-*')))
+
+    def test_hydrogen_failure_report_handles_legacy_and_untrusted_labels(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        marker='unclassified-fixture-marker'
+        def unclassified(*_):
+            raise ValueError(marker)
+        with patch.dict(os.environ,env):
+            cli.prepare('hydrogen',self.api)
+            cli.run_loop('hydrogen',self.api,infer=unclassified)
+            state=Ledger(self.api,'hydrogen','issue-9').load()
+            call=state['calls'][0]
+            self.assertEqual(call['failure_stage'],'unknown')
+            self.assertNotIn(marker.encode(),b''.join(self.api.blobs.values()))
+            cli.report('hydrogen',self.api)
+            self.assertIn('Hydrogen failure stage: `unknown`.',self.api.notes[-1]['body'])
+            # Simulate the prior ledger shape, then non-allowlisted exported diagnostics.
+            del call['failure_stage']
+            call['problem']='ValueError'
+            for fields in ({},{'failure_stage':marker,'http_status':marker}):
+                call.update(fields)
+                cli.save('state.json',state)
+                cli.report('hydrogen',self.api)
+                note=self.api.notes[-1]['body']
+                self.assertIn('Hydrogen failure stage: `unknown`.',note)
+                self.assertNotIn(marker,note)
+                self.assertNotIn('Gemini HTTP',note)
+
     def test_hydrogen_issue_transport_uses_google_endpoint_and_no_retry(self):
         task=core.normalize({'task':'audit','max_calls':1,'max_total_calls':1},'hydrogen')
         env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',

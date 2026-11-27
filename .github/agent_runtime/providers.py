@@ -1,4 +1,5 @@
 """Provider boundary; Gemini DEV uses explicitly approved local request limits."""
+from contextlib import contextmanager
 from dataclasses import dataclass
 from decimal import Decimal
 import json
@@ -163,6 +164,34 @@ class GeminiHTTPError(ValueError):
         super().__init__(f'Gemini HTTP {self.status}; no automatic retry')
 
 
+HYDROGEN_FAILURE_STAGES = ('transport', 'response_decode', 'policy_validation')
+
+
+def hydrogen_failure_stage(value):
+    # Trusted labels only, including when displaying diagnostics from old checkpoints.
+    return value if type(value) is str and value in HYDROGEN_FAILURE_STAGES else 'unknown'
+
+
+class HydrogenFailure(ValueError):
+    def __init__(self, stage):
+        self.stage = hydrogen_failure_stage(stage)
+        super().__init__('Hydrogen attempt failed')
+
+
+@contextmanager
+def hydrogen_stage(provider, stage):
+    try:
+        yield
+    except (GeminiHTTPError, HydrogenFailure):
+        # Preserve the structured HTTP path and nested stage labels.
+        raise
+    except Exception:
+        if provider != 'hydrogen':
+            raise
+        # No exception text, original exception type or checked/unchecked payload.
+        raise HydrogenFailure(stage) from None
+
+
 def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
@@ -172,7 +201,7 @@ def infer(task, messages, output_dir, timeout):
     data=request_bytes(request)
     model=MODELS[task['model']]
     if model.provider in GOOGLE_PROVIDERS:check_gemini_request(len(data),provider=model.provider)
-    with tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
+    with hydrogen_stage(model.provider,'transport'), tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
         temp=Path(temp)
         request_file=temp/'request.json'
         request_file.write_bytes(data)
@@ -194,9 +223,12 @@ def infer(task, messages, output_dir, timeout):
             if model.provider in GOOGLE_PROVIDERS and not result.returncode and status.isascii() and status.isdecimal():
                 raise GeminiHTTPError(status)
             raise ValueError('Transport failed; attempted request must not be silently repeated')
-        raw_text=raw.read_text(encoding='utf-8')
-        policy.safe_value(raw_text)
-        parsed = (parse_gemini if model.provider in GOOGLE_PROVIDERS else parse_stream)(raw_text)
+        with hydrogen_stage(model.provider,'response_decode'):
+            raw_text=raw.read_text(encoding='utf-8')
+        with hydrogen_stage(model.provider,'policy_validation'):
+            policy.safe_value(raw_text)
+        with hydrogen_stage(model.provider,'response_decode'):
+            parsed = (parse_gemini if model.provider in GOOGLE_PROVIDERS else parse_stream)(raw_text)
         parsed['billing'] = billing
         parsed['raw'] = raw_text
         return parsed

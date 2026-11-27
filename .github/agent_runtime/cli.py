@@ -241,12 +241,27 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             try:
                 with tempfile.TemporaryDirectory(prefix='agent-call-') as call_dir:
                     response=infer(state['task'],state['messages'],Path(call_dir),max(1,int(deadline-clock()-180)))
-                    policy.check_response(state,response)
+                    with providers.hydrogen_stage(provider,'policy_validation'):
+                        policy.check_response(state,response)
             except Exception as exc:
                 state['status']='uncertain'
-                state['calls'][-1]['problem']=type(exc).__name__
-                if isinstance(exc,providers.GeminiHTTPError):
-                    state['calls'][-1]['http_status']=exc.status
+                call=state['calls'][-1]
+                if provider=='hydrogen':
+                    if isinstance(exc,providers.HydrogenFailure):
+                        call['failure_stage']=providers.hydrogen_failure_stage(exc.stage)
+                        call['problem']='HydrogenFailure'
+                    elif isinstance(exc,providers.GeminiHTTPError):
+                        call['failure_stage']='transport'
+                        call['problem']='GeminiHTTPError'
+                        if type(exc.status) is int and 100 <= exc.status <= 599:
+                            call['http_status']=exc.status
+                    else:
+                        call['failure_stage']='unknown'
+                        call['problem']='UnclassifiedError'
+                else:
+                    call['problem']=type(exc).__name__
+                    if isinstance(exc,providers.GeminiHTTPError):
+                        call['http_status']=exc.status
                 persist(ledger,state,plan);break
             core.answered(state,response);persist(ledger,state,plan)
             if provider=='kimi':
@@ -304,9 +319,15 @@ def report(provider,api=None):
         metrics['daily_budget']=budget.daily_status(api)
     gemini_status=''
     if provider in providers.GOOGLE_PROVIDERS and state['calls']:
-        http=state['calls'][-1].get('http_status')
+        call=state['calls'][-1]
+        http=call.get('http_status')
+        if provider=='hydrogen' and not (type(http) is int and 100 <= http <= 599):
+            http=None
         if http==429:gemini_status='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
         elif http is not None:gemini_status=f'Gemini HTTP {http}. No automatic retry.\n'
+        if provider=='hydrogen' and state['status']=='uncertain':
+            stage=providers.hydrogen_failure_stage(call.get('failure_stage'))
+            gemini_status+=f'Hydrogen failure stage: `{stage}`.\n'
     failures=[json.loads(p.read_text()) for p in sorted(OUT.glob('failure-*.json'))]
     run='https://github.com/'+REPOSITORY+'/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
