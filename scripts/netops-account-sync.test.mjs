@@ -120,6 +120,8 @@ function fixture(opt = false) {
   assert.equal(f.resumes.get('a'), 'step-2', 'latest deliberate navigation wins for this device');
   f.confirm('a', { confirmed: false, injectFavorites: ['other'], injectResume: 'step-1' });
   assert.equal(s.getSnapshot().confirmed, false);
+  assert.equal(s.getSnapshot().favoritesLoaded, true, 'warm list remains known');
+  assert.equal(s.getSnapshot().resumeLoaded, true, 'warm checkpoint remains known');
   assert.deepEqual(s.getSnapshot().favorites, ['local'], 'cached snapshot is not accepted as server state');
   assert.equal(s.getSnapshot().resumeId, 'step-2');
   await s.toggleFavorite('local');
@@ -172,5 +174,37 @@ function fixture(opt = false) {
   assert.equal(s.getSnapshot().resumeId, null);
   await s.importGuest({ favorites: [], resumeId: 'step-1' });
   assert.equal(s.getSnapshot().resumeId, 'step-1', 'explicit import initializes a missing checkpoint');
+}
+{
+  const f = fixture(true);
+  const s = f.store;
+  f.setOffline(true);
+  await s.restore(); await flush();
+  assert.equal(s.getSnapshot().stage, 'account');
+  assert.equal(s.getSnapshot().confirmed, false);
+  assert.equal(s.getSnapshot().favoritesLoaded, false, 'cold offline list is unknown, not empty');
+  assert.equal(s.getSnapshot().resumeLoaded, false, 'cold offline checkpoint is unknown, not absent');
+  const [favorites, resume] = f.watchers;
+  favorites.next({ confirmed: true, value: ['online'] });
+  assert.equal(s.getSnapshot().favoritesLoaded, true, 'independently confirmed favorites can be displayed');
+  assert.equal(s.getSnapshot().resumeLoaded, false);
+  assert.equal(s.getSnapshot().confirmed, false, 'partial read does not enable writes');
+  resume.next({ confirmed: true, value: 'step-2' });
+  assert.equal(s.getSnapshot().resumeLoaded, true);
+  assert.equal(s.getSnapshot().confirmed, true);
+  await s.retry();
+  await flush();
+  assert.equal(s.getSnapshot().favoritesLoaded, true, 'retry does not erase previously known favorite state');
+  assert.deepEqual(s.getSnapshot().favorites, ['online']);
+  assert.equal(s.getSnapshot().resumeLoaded, true, 'retry does not erase previously known checkpoint');
+  assert.equal(s.getSnapshot().resumeId, 'step-2');
+  f.confirm('a', { injectFavorites: [] });
+  assert.deepEqual(s.getSnapshot().favorites, [], 'confirmed empty results still replace the old list');
+  f.switchTo('b');
+  await flush();
+  assert.equal(s.getSnapshot().favoritesLoaded, false, 'warm data cannot cross account boundaries');
+  assert.equal(s.getSnapshot().resumeLoaded, false);
+  assert.deepEqual(s.getSnapshot().favorites, []);
+  assert.equal(s.getSnapshot().resumeId, null);
 }
 console.log('PASS: guest lazy load, opt-in/reload, scoped favorites and tombstones, import policy, server confirmation, ordered resume and stale-account guards');

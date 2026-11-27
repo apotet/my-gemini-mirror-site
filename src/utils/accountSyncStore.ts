@@ -28,6 +28,10 @@ export interface AccountSyncSnapshot {
   identity: SyncIdentity | null;
   favorites: readonly string[];
   resumeId: string | null;
+  // These mean a server value was received in this account session, even if
+  // connectivity was lost later. An empty result and an unread result differ.
+  favoritesLoaded: boolean;
+  resumeLoaded: boolean;
   confirmed: boolean;
   busy: boolean;
   error: string | null;
@@ -38,6 +42,8 @@ interface Session {
   identity: SyncIdentity;
   favorites: string[];
   resumeId: string | null;
+  favoritesLoaded: boolean;
+  resumeLoaded: boolean;
   favoritesConfirmed: boolean;
   resumeConfirmed: boolean;
   importing: boolean;
@@ -49,7 +55,7 @@ interface Session {
 }
 
 export const guestAccountSnapshot: AccountSyncSnapshot = {
-  stage: 'guest', identity: null, favorites: [], resumeId: null,
+  stage: 'guest', identity: null, favorites: [], resumeId: null, favoritesLoaded: false, resumeLoaded: false,
   confirmed: false, busy: false, error: null, importStatus: 'idle',
 };
 const cloudReadError = 'Не удалось прочитать данные аккаунта. Проверьте подключение или повторите загрузку.';
@@ -85,6 +91,7 @@ export function createAccountSyncStore(options: AccountSyncOptions) {
     if (session !== s) return;
     update({
       stage: 'account', identity: s.identity, favorites: s.favorites, resumeId: s.resumeId,
+      favoritesLoaded: s.favoritesLoaded, resumeLoaded: s.resumeLoaded,
       confirmed: s.favoritesConfirmed && s.resumeConfirmed,
       busy: s.importing || s.busyFavorites.size > 0 || s.writingResume,
       error, importStatus: s.importing ? 'running' : s.imported ? 'done' : 'idle',
@@ -108,13 +115,19 @@ export function createAccountSyncStore(options: AccountSyncOptions) {
     stops.push(backend.watchFavorites(s.identity.uid, result => {
       if (!alive()) return;
       s.favoritesConfirmed = result.confirmed;
-      if (result.confirmed) s.favorites = [...new Set(result.value.filter(options.validFavorite))];
+      if (result.confirmed) {
+        s.favorites = [...new Set(result.value.filter(options.validFavorite))];
+        s.favoritesLoaded = true;
+      }
       publish(s, s.favoritesConfirmed && s.resumeConfirmed && current.error === cloudReadError ? null : current.error);
     }, failed));
     stops.push(backend.watchResume(s.identity.uid, result => {
       if (!alive()) return;
       s.resumeConfirmed = result.confirmed;
-      if (result.confirmed) s.resumeId = result.value && options.validResume(result.value) ? result.value : null;
+      if (result.confirmed) {
+        s.resumeId = result.value && options.validResume(result.value) ? result.value : null;
+        s.resumeLoaded = true;
+      }
       publish(s, s.favoritesConfirmed && s.resumeConfirmed && current.error === cloudReadError ? null : current.error);
     }, failed));
   }
@@ -134,7 +147,8 @@ export function createAccountSyncStore(options: AccountSyncOptions) {
     }
     clearSession();
     const next: Session = {
-      identity, favorites: [], resumeId: null, favoritesConfirmed: false, resumeConfirmed: false,
+      identity, favorites: [], resumeId: null, favoritesLoaded: false, resumeLoaded: false,
+      favoritesConfirmed: false, resumeConfirmed: false,
       importing: false, imported: false, busyFavorites: new Set(), pendingResume: null, writingResume: false, stops: [],
     };
     session = next;

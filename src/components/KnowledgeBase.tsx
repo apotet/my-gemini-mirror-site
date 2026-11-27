@@ -329,6 +329,12 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         </button>
       )}
 
+      {section === 'lessons' && studyCatalog && cloudMode && !sync.resumeLoaded && sync.stage !== 'signing-out' && (
+        <p role="status" className="text-xs text-slate-600 dark:text-slate-300">{sync.stage === 'connecting'
+          ? 'Загружаю место остановки из аккаунта…'
+          : 'Пока не удалось загрузить место остановки из аккаунта.'}</p>
+      )}
+
       {accountSyncEnabled && (
         <NetopsAccountPanel state={sync} hasGuestData={localFavorites.some(id => !!getLesson(id)) || !!getBeginnerCoreLesson(beginnerResumeId)}
           onImport={() => void accountSync.importGuest({ favorites: localFavorites, resumeId: beginnerResumeId })} />
@@ -336,9 +342,21 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
 
       {section === 'favorites' ? (
         <section aria-label="Избранные уроки" className="space-y-3">
-          <p className="text-xs text-slate-500" role="status">Сохранено уроков: {favorites.length}</p>
-          {favorites.length ? <div className="grid gap-3 sm:grid-cols-2">{favorites.map(card)}</div> :
-            <p className="text-sm text-slate-500">Пока пусто. Нажмите на закладку рядом с уроком или в самом уроке.</p>}
+          {cloudMode && !sync.favoritesLoaded ? (
+            <p className="text-sm text-slate-600 dark:text-slate-300" role="status">{sync.stage === 'connecting'
+              ? 'Загружаю избранное из аккаунта…'
+              : sync.stage === 'signing-out'
+                ? 'Переключаюсь на локальные данные…'
+                : 'Пока не удалось загрузить избранное из аккаунта.'}</p>
+          ) : (
+            <>
+              <p className="text-xs text-slate-500" role="status">{cloudMode && !sync.confirmed ? 'Уроков при последней загрузке' : 'Сохранено уроков'}: {favorites.length}</p>
+              {favorites.length ? <div className="grid gap-3 sm:grid-cols-2">{favorites.map(card)}</div> :
+                cloudMode && !sync.confirmed
+                  ? <p className="text-sm text-slate-500">При последней загрузке избранное было пустым.</p>
+                  : <p className="text-sm text-slate-500">Пока пусто. Нажмите на закладку рядом с уроком или в самом уроке.</p>}
+            </>
+          )}
         </section>
       ) : section === 'cli-reference' ? (
         <CliReference onOpenLesson={id => {

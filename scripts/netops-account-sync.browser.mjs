@@ -20,14 +20,20 @@ const fake = `
     const favoriteListeners = new Set();
     const resumeListeners = new Set();
     const identity = { uid: 'fixture-a', label: 'test@example.invalid' };
-    let confirmed = true;
+    const OFFLINE = '__netops_sync_browser_offline';
+    let confirmed = sessionStorage.getItem(OFFLINE) !== '1';
     const send = () => {
       for (const next of favoriteListeners) next({ confirmed, value: Object.entries(read().favorites).filter(([, active]) => active).map(([id]) => id) });
       for (const next of resumeListeners) next({ confirmed, value: read().resumeId });
     };
     globalThis.netopsFakeSync = {
       get: read,
-      setConfirmed: value => { confirmed = value; send(); },
+      setConfirmed: value => {
+        if (value) sessionStorage.removeItem(OFFLINE);
+        else sessionStorage.setItem(OFFLINE, '1');
+        confirmed = value;
+        send();
+      },
     };
     const guard = (uid, current) => {
       if (uid !== read().uid || !current() || !confirmed) throw new Error('blocked fixture request');
@@ -155,9 +161,24 @@ try {
     assert.deepEqual(await favIds(), ['l3-route-selection']);
     await page.reload();
     await catalog();
-    await panel.getByText('Подключено', { exact: true }).waitFor();
+    await panel.getByText(/Нет подтверждения от сервера/).waitFor();
     assert.equal(backendLoads, 2, 'one lazy reload follows explicit opt-in');
-    await b('Продолжить: ARP: чей MAC нужен для IP').waitFor();
+    const continueArp = b('Продолжить: ARP: чей MAC нужен для IP');
+    await page.getByText(/Пока не удалось загрузить место остановки/).waitFor();
+    assert.equal(await b(/^Продолжить:/).count(), 0, 'no invented checkpoint and no guest substitution');
+    await b('Избранное').click();
+    await fav.getByText(/Пока не удалось загрузить избранное/).waitFor();
+    assert.equal(await fav.getByText(/Сохранено уроков:|Пока пусто/).count(), 0,
+      'no empty account assertion before a server result');
+    assert.deepEqual(await favIds(), [], 'do not display guest or cached account favorites');
+
+    await page.evaluate(() => globalThis.netopsFakeSync.setConfirmed(true));
+    await panel.getByText('Подключено', { exact: true }).waitFor();
+    await fav.getByText('Сохранено уроков: 1', { exact: true }).waitFor();
+    assert.deepEqual(await favIds(), ['l3-route-selection'], 'recovery shows original server favorites');
+    await b('Уроки').click();
+    await continueArp.waitFor();
+    assert.equal(await page.getByText(/Пока не удалось загрузить место остановки/).count(), 0);
 
     await b('Выйти', panel).click();
     await b('Подключить синхронизацию', panel).waitFor();
