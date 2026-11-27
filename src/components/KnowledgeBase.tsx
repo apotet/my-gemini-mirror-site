@@ -1,17 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { LESSONS, searchLessons, getLesson } from '../data/lessons';
 import type { Lesson } from '../data/lessons/types';
-import type { PracticeLink } from '../data/practiceLinks';
+import type { PracticeButtonAction } from './PracticeLinkButton';
 import { LessonView } from './LessonView';
 import { LessonReviewBadge } from './LessonReviewBadge';
 import { CliReference } from './CliReference';
 import { Library, Search } from 'lucide-react';
+import { getStudyTextMode, setStudyTextMode, type StudyTextMode } from '../utils/studyTextMode';
+import { captureNavigationTrigger, restoreNavigationTrigger, type NavigationTrigger } from '../utils/navigationTrigger';
 
 interface KnowledgeBaseProps {
   initialLessonId?: string | null;
   returnQuestionId?: string | null;
   onOpenQuestion?: (questionId: string) => void;
-  onOpenPractice?: (link: PracticeLink) => void;
+  onOpenPractice?: PracticeButtonAction;
   onClearLesson?: () => void;
 }
 
@@ -29,6 +31,15 @@ const FILTER_KEYS = {
   difficulty: 'osi_knowledge_difficulty_v1',
 };
 const memoryFilters = { layer: 'all', difficulty: 'all' };
+// Keep even repeated/cyclic lesson links usable without retaining an unbounded DOM.
+const MAX_OPEN_LESSONS = 8;
+
+interface LessonEntry {
+  id: string;
+  key: number;
+  from?: NavigationTrigger;
+  pausedTextMode?: StudyTextMode;
+}
 
 function readFilter(key: keyof typeof FILTER_KEYS, allowed: readonly string[]): string {
   if (typeof window === 'undefined') return 'all';
@@ -54,18 +65,43 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const [layer, setLayer] = useState(() => readFilter('layer', LAYERS));
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
-  const [openId, setOpenId] = useState<string | null>(initialLessonId || null);
-  const [pathFocusId, setPathFocusId] = useState<string | null>(null);
+  const [trail, setTrail] = useState<LessonEntry[]>(() => initialLessonId ? [{ id: initialLessonId, key: 0 }] : []);
+  const nextKey = useRef(1);
+  const pendingRestore = useRef<NavigationTrigger | null>(null);
   const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
 
   React.useEffect(() => {
-    if (initialLessonId) {
-      setPathFocusId(null);
-      setOpenId(initialLessonId);
-    }
+    if (initialLessonId) setTrail([{ id: initialLessonId, key: 0 }]);
   }, [initialLessonId]);
 
-  const lesson = openId ? getLesson(openId) : undefined;
+  const current = trail.at(-1);
+  const openNewRoot = (id: string) => setTrail([{ id, key: nextKey.current++ }]);
+  const openLinkedLesson = (id: string, trigger: HTMLElement) => {
+    if (!current || id === current.id || !getLesson(id)) return;
+    const next = { id, key: nextKey.current++, from: captureNavigationTrigger(trigger) };
+    const pausedTextMode = getStudyTextMode();
+    setTrail(previous => {
+      if (previous.at(-1)?.key !== current.key) return previous;
+      const retained = previous.slice(-MAX_OPEN_LESSONS + 1);
+      if (retained.length < previous.length) retained[0] = { ...retained[0], from: undefined };
+      return [...retained.slice(0, -1), { ...current, pausedTextMode }, next];
+    });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+  const returnToLinkedLesson = () => {
+    const parent = trail.at(-2);
+    if (!current?.from || !parent) return;
+    pendingRestore.current = current.from;
+    if (parent.pausedTextMode && parent.pausedTextMode !== getStudyTextMode()) setStudyTextMode(parent.pausedTextMode);
+    setTrail([...trail.slice(0, -2), { ...parent, pausedTextMode: undefined }]);
+  };
+  useLayoutEffect(() => {
+    const trigger = pendingRestore.current;
+    if (!trigger) return;
+    pendingRestore.current = null;
+    restoreNavigationTrigger(trigger);
+  }, [current]);
+
   const list = useMemo(() => {
     const matches = searchLessons(query, layer === 'all' ? undefined : layer)
       .filter(item => difficulty === 'all' || item.difficulty === difficulty);
@@ -75,31 +111,32 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
     return matches;
   }, [query, layer, difficulty]);
 
-  if (lesson) {
+  if (current && getLesson(current.id)) {
     return (
-      <LessonView
-        key={lesson.id}
-        lesson={lesson}
-        onOpenLesson={id => {
-          setPathFocusId(null);
-          setOpenId(id);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenPathLesson={id => {
-          setPathFocusId(id);
-          setOpenId(id);
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }}
-        focusPathHeading={pathFocusId === lesson.id}
-        returnQuestionId={returnQuestionId}
-        onOpenQuestion={onOpenQuestion}
-        onOpenPractice={onOpenPractice}
-        onBack={() => {
-          setPathFocusId(null);
-          setOpenId(null);
-          onClearLesson?.();
-        }}
-      />
+      <>{trail.map(entry => {
+        const lesson = getLesson(entry.id);
+        if (!lesson) return null;
+        const active = entry === current;
+        return (
+          <div key={entry.key} hidden={!active} inert={!active}>
+            <LessonView
+              lesson={lesson}
+              onOpenLesson={openLinkedLesson}
+              onOpenPathLesson={openLinkedLesson}
+              onReturnToLesson={entry.from ? returnToLinkedLesson : undefined}
+              focusPathHeading={!!entry.from}
+              pausedTextMode={entry.pausedTextMode}
+              returnQuestionId={returnQuestionId}
+              onOpenQuestion={onOpenQuestion}
+              onOpenPractice={onOpenPractice}
+              onBack={() => {
+                setTrail([]);
+                onClearLesson?.();
+              }}
+            />
+          </div>
+        );
+      })}</>
     );
   }
 
@@ -124,7 +161,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
 
       {section === 'cli-reference' ? (
         <CliReference onOpenLesson={id => {
-          setOpenId(id);
+          openNewRoot(id);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }} />
       ) : (
@@ -186,7 +223,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
               key={l.id}
               title={l.summary}
               type="button"
-              onClick={() => setOpenId(l.id)}
+              onClick={() => openNewRoot(l.id)}
               className="text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 cursor-pointer hover:border-cyan-500/40"
             >
               <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-300">

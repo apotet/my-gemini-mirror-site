@@ -1,5 +1,5 @@
 import type { PracticeLink } from './data/practiceLinks';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { ExamView, type ExamViewHandle } from './components/ExamView';
 import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
@@ -12,6 +12,7 @@ import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
 import { PhotoCredits } from './components/PhotoCredits';
 import { TOTAL_QUESTION_COUNT } from './data/questionsData';
+import { captureNavigationTrigger, restoreNavigationTrigger, type NavigationTrigger } from './utils/navigationTrigger';
 
 function readStoredBool(key: string, fallback: boolean): boolean {
   try {
@@ -23,9 +24,18 @@ function readStoredBool(key: string, fallback: boolean): boolean {
   }
 }
 
+interface LessonPracticeOrigin {
+  tab: 'theory' | 'osi';
+  trigger: NavigationTrigger;
+}
+
 export function App() {
-  const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number } | null>(null);
+  const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin } | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
+  const pendingLessonReturn = useRef<LessonPracticeOrigin | null>(null);
+  const [theoryInstance, setTheoryInstance] = useState(0);
+  const isTheoryTab = activeTab === 'theory' || activeTab === 'osi';
+  const lessonPracticeOrigin = activeTab === 'practice' ? practiceRequest?.origin : undefined;
   const examViewRef = useRef<ExamViewHandle>(null);
   const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
@@ -36,6 +46,13 @@ export function App() {
   const [theoryFromExam, setTheoryFromExam] = useState<boolean>(false);
   const [ipv4InitialPrefix, setIpv4InitialPrefix] = useState<number | undefined>(undefined);
   const [ipv4InitialSubTab, setIpv4InitialSubTab] = useState<Ipv4SubTab | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const origin = pendingLessonReturn.current;
+    if (!origin || activeTab !== origin.tab) return;
+    pendingLessonReturn.current = null;
+    restoreNavigationTrigger(origin.trigger);
+  }, [activeTab]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,7 +107,35 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenLessonPractice = (link: PracticeLink, trigger: HTMLButtonElement) => {
+    if (activeTab !== 'theory' && activeTab !== 'osi') return;
+    const origin = { tab: activeTab, trigger: captureNavigationTrigger(trigger) };
+    setPracticeRequest(previous => ({ link, id: (previous?.id ?? 0) + 1, origin }));
+    setActiveTab('practice');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleReturnToLesson = () => {
+    if (!lessonPracticeOrigin) return;
+    pendingLessonReturn.current = lessonPracticeOrigin;
+    setActiveTab(lessonPracticeOrigin.tab);
+    setPracticeRequest(null);
+  };
+
+  const discardLessonPracticeOrigin = (tab: NavTab) => {
+    if (!lessonPracticeOrigin) return;
+    setPracticeRequest(null);
+    if (tab === 'theory' || tab === 'osi') {
+      // A normal navigation entry is not the explicit lesson return.
+      setTheoryInstance(instance => instance + 1);
+      setTheoryLessonId(null);
+      setTheoryQuestionId(null);
+      setTheoryFromExam(false);
+    }
+  };
+
   const handleTabChange = (tab: NavTab) => {
+    discardLessonPracticeOrigin(tab);
     setTheoryLessonId(null);
     if (tab === 'ipv6') setIpv6InitialMode(undefined);
     if (tab === 'practice') setPracticeRequest(null);
@@ -144,21 +189,25 @@ export function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }} />
         )}
-        {(activeTab === 'theory' || activeTab === 'osi') && (
-          <TheoryView
-            initialLessonId={theoryLessonId}
-            onOpenPractice={handleOpenPractice}
-            initialQuestionId={theoryQuestionId}
-            fromExam={theoryFromExam}
-            onReturnToExam={handleReturnToExam}
-            onNavigateToIpv4={handleNavigateToIpv4}
-            onNavigateToIpv6={handleNavigateToIpv6}
-            onClearInitialQuestion={() => {
-              setTheoryLessonId(null);
-              setTheoryQuestionId(null);
-              setTheoryFromExam(false);
-            }}
-          />
+        {(isTheoryTab || lessonPracticeOrigin) && (
+          // Keep the lesson, its catalog filters and question context mounted only for this round trip.
+          <div key={theoryInstance} hidden={!isTheoryTab} inert={!isTheoryTab}>
+            <TheoryView
+              initialLessonId={theoryLessonId}
+              onOpenPractice={handleOpenPractice}
+              onOpenLessonPractice={handleOpenLessonPractice}
+              initialQuestionId={theoryQuestionId}
+              fromExam={theoryFromExam}
+              onReturnToExam={handleReturnToExam}
+              onNavigateToIpv4={handleNavigateToIpv4}
+              onNavigateToIpv6={handleNavigateToIpv6}
+              onClearInitialQuestion={() => {
+                setTheoryLessonId(null);
+                setTheoryQuestionId(null);
+                setTheoryFromExam(false);
+              }}
+            />
+          </div>
         )}
         {activeTab === 'ipv6' && <Ipv6Trainer key={ipv6InitialMode} initialMode={ipv6InitialMode} />}
         {activeTab === 'ipv4' && (
@@ -167,7 +216,9 @@ export function App() {
             initialSubTab={ipv4InitialSubTab}
           />
         )}
-        {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'} initialPracticeLink={practiceRequest?.link} />}
+        {activeTab === 'practice' && <PracticeHub key={practiceRequest?.id ?? 'default'}
+          initialPracticeLink={practiceRequest?.link}
+          onReturnToLesson={lessonPracticeOrigin ? handleReturnToLesson : undefined} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
         {activeTab === 'exam-mock' && <MockTestingHub onOpenLesson={handleOpenLesson} onNavigateToTheory={handleNavigateToTheory} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} />}
       </main>
@@ -181,8 +232,9 @@ export function App() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
+          discardLessonPracticeOrigin(tab);
           if (tab === 'ipv6') setIpv6InitialMode(undefined);
-    if (tab === 'practice') setPracticeRequest(null);
+          if (tab === 'practice') setPracticeRequest(null);
           setActiveTab(tab);
           if (tab !== 'theory') {
             setTheoryQuestionId(null);
@@ -190,6 +242,7 @@ export function App() {
           }
         }}
         onSelectLayer={() => {
+          discardLessonPracticeOrigin('theory');
           setActiveTab('theory');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}

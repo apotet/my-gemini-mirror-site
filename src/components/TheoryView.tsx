@@ -7,10 +7,12 @@ import { TheoryCheatsheets } from './TheoryCheatsheets';
 import { TheoryScenarios } from './TheoryScenarios';
 import { TheoryRazbory } from './TheoryRazbory';
 import { KnowledgeBase } from './KnowledgeBase';
+import type { PracticeButtonAction } from './PracticeLinkButton';
 
 interface TheoryViewProps {
   initialLessonId?: string | null;
   onOpenPractice?: (link: PracticeLink) => void;
+  onOpenLessonPractice?: PracticeButtonAction;
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
@@ -32,6 +34,7 @@ const SECTIONS: { id: TheorySection; label: string; icon: React.ReactNode }[] = 
 
 export const TheoryView: React.FC<TheoryViewProps> = ({
   onOpenPractice,
+  onOpenLessonPractice,
   initialLessonId,
   initialQuestionId,
   fromExam,
@@ -113,11 +116,15 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
       {section === 'scenarios' && <TheoryScenarios />}
       {section === 'knowledge' && (
         <KnowledgeBase
-          onOpenPractice={onOpenPractice}
+          onOpenPractice={onOpenLessonPractice}
           initialLessonId={lessonId}
           returnQuestionId={returnQuestionId}
           onOpenQuestion={openQuestionFromLesson}
-          onClearLesson={() => setLessonId(null)}
+          onClearLesson={() => {
+            setLessonId(null);
+            setReturnQuestionId(null);
+            clearFocusedQuestion();
+          }}
         />
       )}
       {section === 'razbory' && (

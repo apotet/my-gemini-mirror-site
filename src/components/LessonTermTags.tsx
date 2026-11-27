@@ -1,17 +1,19 @@
-import React, { useRef, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { GLOSSARY } from '../data/glossary';
 import { getLesson } from '../data/lessons';
 
 interface Props {
   terms: string[];
-  onOpenLesson?: (lessonId: string) => void;
+  onOpenLesson?: (lessonId: string, trigger: HTMLAnchorElement) => void;
   showLessonLink?: boolean;
   currentLessonId?: string;
 }
 
 /** Inline card: opening a definition keeps the reader in the current lesson. */
 export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, currentLessonId }: Props) {
+  const cardId = useId();
+  const titleId = useId();
   const [selected, setSelected] = useState<string | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const entry = selected ? GLOSSARY[selected] : undefined;
@@ -34,7 +36,7 @@ export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, cur
             key={term}
             type="button"
             aria-expanded={selected === term}
-            aria-controls={selected === term ? 'lesson-term-card' : undefined}
+            aria-controls={selected === term ? cardId : undefined}
             onClick={event => {
               trigger.current = event.currentTarget;
               setSelected(selected === term ? null : term);
@@ -46,10 +48,10 @@ export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, cur
         ))}
       </div>
       {selected && entry && (
-        <section id="lesson-term-card" role="region" aria-labelledby="lesson-term-title"
+        <section id={cardId} role="region" aria-labelledby={titleId}
           className="min-w-0 rounded-xl border border-cyan-500/30 bg-cyan-50 dark:bg-slate-900 p-4 space-y-3 text-sm break-words">
           <div className="flex items-start justify-between gap-3">
-            <h3 id="lesson-term-title" className="font-semibold text-slate-900 dark:text-white">{selected}</h3>
+            <h3 id={titleId} className="font-semibold text-slate-900 dark:text-white">{selected}</h3>
             <button type="button" onClick={close} aria-label="Закрыть карточку термина"
               className="shrink-0 p-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
               <X className="w-4 h-4" />
@@ -60,8 +62,7 @@ export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, cur
           {showLessonLink && related && related.id !== currentLessonId && onOpenLesson && (
             <a href={`#lesson-${related.id}`} onClick={event => {
               event.preventDefault();
-              setSelected(null);
-              onOpenLesson(related.id);
+              onOpenLesson(related.id, event.currentTarget);
             }} className="inline-block text-cyan-800 dark:text-cyan-300 underline underline-offset-2">
               разобрать в теме<span className="sr-only">: {related.title}</span>
             </a>
