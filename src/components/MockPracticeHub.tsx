@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
-import { MockCliCurriculum } from './MockCliCurriculum';
 import { MockPacketJourney } from './MockPacketJourney';
 import { MockVlanSimulator } from './MockVlanSimulator';
 import { MockProtocolSimulators } from './MockProtocolSimulators';
 import { ExperimentalMockCliLabShell } from '../cli-lab/ExperimentalMockCliLabShell';
-import { ExperimentalCliUxV2Shell } from '../cli-lab/ExperimentalCliUxV2Shell';
 
-export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli' | 'cli-ux-v2' | 'cli-curriculum';
+export type PracticeSimulator = 'journey' | 'vlan' | 'protocols' | 'cli';
 
 interface PracticeItem {
   id: PracticeSimulator;
@@ -18,13 +16,6 @@ interface PracticeItem {
 }
 
 const PRACTICE_ITEMS: PracticeItem[] = [
-  {
-    id: 'cli-curriculum',
-    title: 'CLI · Темы и режимы',
-    badge: 'Макет',
-    subtitle: 'Одна тема, три уровня и три способа тренироваться в настоящем CLI Lab',
-    icon: <Terminal className="w-4 h-4 text-emerald-400" />,
-  },
   {
     id: 'journey',
     title: 'Путь пакета',
@@ -52,13 +43,6 @@ const PRACTICE_ITEMS: PracticeItem[] = [
     badge: 'Cisco IOS',
     subtitle: 'Packet Tracer-топология, VLAN/STP/SVI и Cisco IOS консоль (макет)',
     icon: <Terminal className="w-4 h-4 text-amber-400" />,
-  },
-  {
-    id: 'cli-ux-v2',
-    title: 'CLI · Схема UX v2',
-    badge: 'UX v2',
-    subtitle: 'Альтернативный полноэкранный просмотр схемы: жесты, Вписать и инспектор',
-    icon: <Terminal className="w-4 h-4 text-cyan-400" />,
   },
 ];
 
@@ -102,7 +86,7 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {PRACTICE_ITEMS.map((item) => {
             const isActive = activeSimulator === item.id;
             return (
@@ -110,7 +94,6 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
                 key={item.id}
                 onClick={() => setActiveSimulator(item.id)}
                 type="button"
-                aria-pressed={isActive}
                 className={cardClass(isActive)}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -133,9 +116,7 @@ export const MockPracticeHub: React.FC<{ initialSimulator?: PracticeSimulator }>
         {activeSimulator === 'journey' && <MockPacketJourney />}
         {activeSimulator === 'vlan' && <MockVlanSimulator />}
         {activeSimulator === 'protocols' && <MockProtocolSimulators />}
-        {activeSimulator === 'cli-curriculum' && <MockCliCurriculum />}
         {activeSimulator === 'cli' && <ExperimentalMockCliLabShell />}
-        {activeSimulator === 'cli-ux-v2' && <ExperimentalCliUxV2Shell />}
       </div>
     </div>
   );
