@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { bundleEntry } from './load-bank.mjs';
 
 const { ALL_QUESTIONS, getLesson, getLessonForQuestion, LESSONS,
@@ -55,3 +56,54 @@ for (const lesson of LESSONS) {
   }
 }
 console.log('PASS: three real questions link to an exact paragraph in both modes; other lessons and bank unchanged');
+
+// Worked IPv4 examples have one canonical target in each reading mode.
+const routeExamples = [
+  {
+    q: 'gap-pack1-02', key: [1], lessonId: 'l3-route-selection', anchor: 'lpm-withdrawal-c-to-b',
+    headings: ['Пример: почему путь к 10.44.6.180 меняется с C на B', 'LPM для 10.44.6.180: /25 через C, затем /24 через B'],
+    plain: [/сначала пакеты идут через C/, /теперь пакеты идут через B/i, /установленных маршрутов/],
+    professional: [/10\.44\.6\.180/, /\/25 via C/, /\/24 via B, а не \/16 via A/, /RFC 1812 §5\.2\.4\.3/,
+      /разные источники предлагают один и тот же префикс/, /Метрика обычно сравнивает пути внутри одного протокола/],
+  },
+  {
+    q: 'new-l3-next-hop', key: [0], lessonId: 'l3-route-selection', anchor: 'recursive-ipv4-next-hop-arp',
+    headings: ['Пример: кому передать кадр для 203.0.113.77', 'Рекурсивное разрешение next hop: 10.0.0.9 → 192.0.2.2 на eth1'],
+    plain: [/10\.0\.0\.9\/32/, /192\.0\.2\.0\/24 на eth1/, /ARP на eth1 именно про 192\.0\.2\.2/, /IP назначения.*останется 203\.0\.113\.77/s],
+    professional: [/203\.0\.113\.0\/24 via 10\.0\.0\.9/, /10\.0\.0\.9\/32 via 192\.0\.2\.2/, /Отдельный шаг/,
+      /ARP Request с Target Protocol Address 192\.0\.2\.2 \(RFC 826\)/, /IPv4 Destination Address остаётся 203\.0\.113\.77/],
+  },
+  {
+    q: 'gen-bc-26-1', key: [0], lessonId: 'l3-subnets', anchor: 'ipv4-26-on-link-gateway',
+    headings: ['Пример: подходит ли шлюз 192.168.60.190 для хоста с /26', '192.168.60.128/26: on-link шлюз и выбор MAC'],
+    plain: [/192\.168\.60\.190 и хост 192\.168\.60\.130/, /\.129–\.190, широковещательный адрес \.191/,
+      /Для удалённого.*если выбран маршрут.*MAC шлюза/, /не доказывает/],
+    professional: [/255\.255\.255\.192/, /192\.168\.60\.128; broadcast — 192\.168\.60\.191/,
+      /Для локального адресата next hop — его собственный IP, для off-link назначения по default — 192\.168\.60\.190/,
+      /MAC самого получателя, во втором — MAC шлюза/, /не гарантирует доступность на L2/],
+  },
+];
+const modes = ['plain', 'professional'];
+const registry = JSON.parse(readFileSync('src/data/questionLearningLevels.json', 'utf8'));
+for (const row of routeExamples) {
+  const lesson = getLessonForQuestion(row.q);
+  assert.equal(registry[row.q]?.learningLevel, 3);
+  assert.deepEqual(ALL_QUESTIONS.find(q => q.id === row.q)?.correct, row.key);
+  assert.equal(lesson?.id, row.lessonId);
+  assert.deepEqual(LESSONS.filter(item => item.relatedQuestionIds.includes(row.q)).map(item => item.id), [row.lessonId]);
+  assert.equal(getLessonSectionForQuestion(row.lessonId, row.q), row.anchor);
+  assert.equal(getLessonSectionForQuestion(row.lessonId), undefined, 'direct lesson has no preselected question anchor');
+  assert.deepEqual(QUESTION_SECTION_LINKS.filter(link => link.questionIds.includes(row.q)).map(link => link.anchorId), [row.anchor]);
+  for (const [index, mode] of modes.entries()) {
+    const blocks = getLessonBlocksWithSections(lesson, mode).filter(block => block.anchorId === row.anchor);
+    assert.equal(blocks.length, 1, row.q + '/' + mode);
+    assert.equal(blocks[0].heading, row.headings[index]);
+    assert.doesNotMatch(blocks[0].body, /5\.2\.4\.4/, 'the example does not attribute platform recursion to that RFC section');
+    for (const phrase of row[mode]) assert.match(blocks[0].body, phrase, row.q + '/' + mode);
+  }
+}
+
+const routeLesson = getLesson('l3-route-selection');
+const revised = 'Установленный default 0.0.0.0/0 совпадает с любым адресом, но выигрывает только при отсутствии пригодного более длинного совпадения.';
+assert.ok(routeLesson.professional.blocks[0].body.includes(revised));
+console.log('PASS: three worked IPv4 examples in both modes, unique ownership and exact anchors');

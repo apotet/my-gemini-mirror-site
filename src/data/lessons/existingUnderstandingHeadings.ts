@@ -7,6 +7,12 @@ export interface ExistingHeadingLink {
   afterHeading: {plain: string; professional: string};
 }
 export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
+  { lessonId: 'l3-route-selection', questionIds: ['gap-pack1-02'], anchorId: 'lpm-withdrawal-c-to-b',
+    afterHeading: { plain: 'Пример: почему путь к 10.44.6.180 меняется с C на B', professional: 'LPM для 10.44.6.180: /25 через C, затем /24 через B' } },
+  { lessonId: 'l3-route-selection', questionIds: ['new-l3-next-hop'], anchorId: 'recursive-ipv4-next-hop-arp',
+    afterHeading: { plain: 'Пример: кому передать кадр для 203.0.113.77', professional: 'Рекурсивное разрешение next hop: 10.0.0.9 → 192.0.2.2 на eth1' } },
+  { lessonId: 'l3-subnets', questionIds: ['gen-bc-26-1'], anchorId: 'ipv4-26-on-link-gateway',
+    afterHeading: { plain: 'Пример: подходит ли шлюз 192.168.60.190 для хоста с /26', professional: '192.168.60.128/26: on-link шлюз и выбор MAC' } },
   { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
     afterHeading: { plain: '301 Moved Permanently', professional: '301 и Location' } },
   {
