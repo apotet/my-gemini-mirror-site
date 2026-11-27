@@ -56,7 +56,7 @@ export const LESSON_L3_ROUTE_SELECTION: Lesson = {
       },
       {
         heading: 'RIB/FIB, route selection и разрешение next hop',
-        body: 'RIB может содержать маршруты с разными administrative distance/metric, а FIB использует выбранный forwarding outcome. Не смешивать preference между конкурирующими маршрутами одной и той же сети с longest-prefix match для адреса назначения. Для 10.0.5.20 в FIB совпадают 10.0.0.0/16 via A и 10.0.5.0/24 via B: по LPM выбирается /24 via B.\n\nПосле egress/next-hop lookup L2 resolution сопоставляет IPv4 next hop с MAC через ARP. ARP broadcast не маршрутизируется к удалённому серверу. TTL уменьшается при IPv4 forwarding, а MAC на новом Ethernet-сегменте формируется заново.',
+        body: 'RIB может содержать маршруты с разными administrative distance/metric, а FIB использует выбранный forwarding outcome. Не смешивать preference между конкурирующими маршрутами одной и той же сети с longest-prefix match для адреса назначения. Для 10.0.5.20 в FIB совпадают 10.0.0.0/16 via A и 10.0.5.0/24 via B: по LPM выбирается /24 via B.\n\nГраничный случай: для 10.5.5.128 запись 10.5.5.0/25 через eth2 не совпадает (её диапазон .0–.127). Из совпавших 10.5.0.0/16, 10.5.5.0/24 и default самый длинный префикс — /24, выход eth1.\n\nПосле egress/next-hop lookup L2 resolution сопоставляет IPv4 next hop с MAC через ARP. ARP broadcast не маршрутизируется к удалённому серверу. TTL уменьшается при IPv4 forwarding, а MAC на новом Ethernet-сегменте формируется заново.',
       },
       {
         heading: 'Установка маршрута в RIB: административная дистанция для одного префикса',

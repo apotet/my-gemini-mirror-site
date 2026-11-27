@@ -17,6 +17,8 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: 'Пример: почему путь к 10.44.6.180 меняется с C на B', professional: 'LPM для 10.44.6.180: /25 через C, затем /24 через B' } },
   { lessonId: 'l3-route-selection', questionIds: ['new-l3-next-hop'], anchorId: 'recursive-ipv4-next-hop-arp',
     afterHeading: { plain: 'Пример: кому передать кадр для 203.0.113.77', professional: 'Рекурсивное разрешение next hop: 10.0.0.9 → 192.0.2.2 на eth1' } },
+  { lessonId: 'l3-subnets', questionIds: ['gen-bc-25-2'], anchorId: 'ipv4-on-link-different-masks',
+    afterHeading: { plain: 'Как сравнить два адреса', professional: 'Одинаковая подсеть и разные локальные представления' } },
   { lessonId: 'l3-subnets', questionIds: ['gen-bc-26-1'], anchorId: 'ipv4-26-on-link-gateway',
     afterHeading: { plain: 'Пример: подходит ли шлюз 192.168.60.190 для хоста с /26', professional: '192.168.60.128/26: on-link шлюз и выбор MAC' } },
   { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
@@ -34,7 +36,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   },
   {
     "lessonId": "l3-route-selection",
-    "questionIds": ["l3-05"],
+    "questionIds": ["l3-05", "l3-02"],
     "anchorId": "in-depth-existing-l3-16",
     "afterHeading": {
       "plain": "Сначала совпадение, затем самая длинная маска",
