@@ -63,6 +63,10 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
       "professional": "Access и trunk"
     }
   },
+  { lessonId: 'l2-vlan', questionIds: ['l2-07'], anchorId: 'vlan-native-untagged-ingress',
+    afterHeading: { plain: 'Как принимают кадр без метки', professional: 'Native VLAN' } },
+  { lessonId: 'l2-vlan', questionIds: ['l2-08'], anchorId: 'vlan-access-frame-ingress-egress',
+    afterHeading: { plain: 'Что видит компьютер на обычном порту', professional: 'Access-порт: принадлежность кадра на входе и тег на выходе' } },
   {
     "lessonId": "l7-dns",
     "questionIds": [
