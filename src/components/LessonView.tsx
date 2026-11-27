@@ -13,6 +13,7 @@ import { useStudyTextMode, type StudyTextMode } from '../utils/studyTextMode';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { LessonTermTags } from './LessonTermTags';
 import { LessonReviewBadge } from './LessonReviewBadge';
+import { getLessonReviewStatus } from '../data/lessons/reviewStatus';
 import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
@@ -399,6 +400,16 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           ))}
         </ul>
       </section>
+      {lesson.id === 'l7-dhcp' && getLessonReviewStatus(lesson.id) !== 'approved' && onOpenPractice && (
+        <section aria-label="Что дальше" className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900/60 sm:p-5">
+          <h3 className="font-bold text-slate-900 dark:text-slate-100">Что дальше</h3>
+          <p className="text-slate-700 dark:text-slate-300">Проследите обмен клиента с DHCP-сервером и определите, на каком шаге подтверждается аренда IPv4.</p>
+          <button type="button" onClick={event => onOpenPractice('dhcp', event.currentTarget)}
+            className="inline-flex min-h-11 cursor-pointer items-center rounded-xl bg-cyan-700 px-3 py-2 font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300">
+            Открыть практику DHCP
+          </button>
+        </section>
+      )}
       <LessonLearningPath lessonId={lesson.id} onOpenLesson={onOpenPathLesson} onOpenPractice={onOpenPractice} />
     </article>
   );

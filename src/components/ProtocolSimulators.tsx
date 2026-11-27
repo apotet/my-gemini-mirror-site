@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
+import type { LessonKnowledgeCheck as KnowledgeCheck } from '../data/lessons/types';
 import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react';
 
 type Lab = 'dhcp' | 'nat' | 'tcp';
@@ -377,7 +379,7 @@ const FAULTS: Record<Lab, Fault> = {
   },
 };
 
-function Stand({ lab, nodes, steps }: { lab: Lab; nodes: { id: string; x: number; y: number; title: string; sub: string; extra: string }[]; steps: Step[] }) {
+function Stand({ lab, nodes, steps, guidedOnly = false }: { lab: Lab; nodes: { id: string; x: number; y: number; title: string; sub: string; extra: string }[]; steps: Step[]; guidedOnly?: boolean }) {
   const [mode, setMode] = useState<Mode>('learn');
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -401,13 +403,13 @@ function Stand({ lab, nodes, steps }: { lab: Lab; nodes: { id: string; x: number
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      {!guidedOnly && <div className="flex justify-end">
         <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 p-0.5">
           {([['learn', 'Разобраться'], ['fix', 'Исправить']] as const).map(([id, label]) => (
             <button key={id} type="button" onClick={() => setMode(id)} className={'px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ' + (mode === id ? 'bg-cyan-500 text-slate-950' : 'text-slate-600 dark:text-slate-300')}>{label}</button>
           ))}
         </div>
-      </div>
+      </div>}
       {mode === 'fix' && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
           {fault.brief}
@@ -464,9 +466,9 @@ function Stand({ lab, nodes, steps }: { lab: Lab; nodes: { id: string; x: number
               ) : (
                 <button type="button" onClick={() => setPlaying(false)} className="flex-1 rounded-xl bg-amber-400 text-slate-950 text-sm font-semibold py-2 cursor-pointer"><Pause className="w-4 h-4 inline" /> Пауза</button>
               )}
-              <button type="button" onClick={() => { setPlaying(false); setStep((s) => Math.max(0, s - 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
-              <button type="button" onClick={() => { setPlaying(false); setStep((s) => Math.min(steps.length - 1, s + 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
-              <button type="button" onClick={restart} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><RotateCcw className="w-4 h-4" /></button>
+              <button type="button" aria-label="Предыдущий шаг" onClick={() => { setPlaying(false); setStep((s) => Math.max(0, s - 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
+              <button type="button" aria-label="Следующий шаг" onClick={() => { setPlaying(false); setStep((s) => Math.min(steps.length - 1, s + 1)); }} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
+              <button type="button" aria-label="Начать с первого шага" onClick={restart} className="px-3 rounded-xl bg-slate-100 dark:bg-slate-800 cursor-pointer"><RotateCcw className="w-4 h-4" /></button>
             </div>
           </div>
         </div>
@@ -510,3 +512,31 @@ export const ProtocolSimulators: React.FC<{ initialLab?: Lab }> = ({ initialLab 
     </section>
   );
 };
+
+
+const DHCP_LEASE_CHECK: KnowledgeCheck = {
+  title: 'Самопроверка: аренда IPv4',
+  questions: [{
+    id: 'dhcp-lease-ack',
+    prompt: 'Какое сообщение клиент должен получить, чтобы считать аренду IPv4 подтверждённой?',
+    choices: [
+      { id: 'A', label: 'DHCP Discover' },
+      { id: 'B', label: 'DHCP Offer' },
+      { id: 'C', label: 'DHCP Request' },
+      { id: 'D', label: 'DHCP ACK' },
+    ],
+    correctChoiceId: 'D',
+    explanation: 'Discover и Request отправляет клиент: сначала ищет сервер, затем выбирает предложение. Offer от сервера только предлагает параметры. Аренда подтверждается, когда клиент получает DHCP ACK от сервера.',
+  }],
+};
+
+export function DhcpLeasePractice() {
+  return (
+    <section className="mx-auto max-w-6xl space-y-3" aria-label="Практика DHCP">
+      <h1 className="text-xl font-bold text-slate-900 dark:text-white">Практика DHCP: получение аренды IPv4</h1>
+      <p className="text-sm text-slate-700 dark:text-slate-300">Проследите начальный обмен Discover → Offer → Request → ACK. Найдите момент, когда клиент получает подтверждение.</p>
+      <Stand lab="dhcp" nodes={DHCP_NODES} steps={DHCP_STEPS} guidedOnly />
+      <LessonKnowledgeCheck check={DHCP_LEASE_CHECK} />
+    </section>
+  );
+}
