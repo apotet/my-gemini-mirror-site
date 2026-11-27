@@ -1,3 +1,4 @@
+import {bankBeforeCopperPhotoChanges} from './copper-photo-history-fixtures.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
@@ -33,7 +34,7 @@ for(const alias of aliases){assert.deepEqual(tokens(alias),[alias],`${alias}: en
 // Existing meanings remain valid in their original domains.
 assert.ok(tokens('HTTP GET').includes('GET'));assert.match(m.GLOSSARY_TOOLTIPS.Request.summary,/DHCP/);assert.match(m.GLOSSARY_TOOLTIPS.NEXT.summary,/перекрёстной наводке/i);
 const baseline=JSON.parse(readFileSync('docs/audits/in-depth/invariants-baseline.json'));
-const oldAnswers=m.ALL_QUESTIONS.map(question=>m.PREVIOUS_IN_DEPTH_QUESTIONS[question.id]?{...question,answers:m.PREVIOUS_IN_DEPTH_QUESTIONS[question.id].answers}:question);
+const oldAnswers=bankBeforeCopperPhotoChanges(m.ALL_QUESTIONS).map(question=>m.PREVIOUS_IN_DEPTH_QUESTIONS[question.id]?{...question,answers:m.PREVIOUS_IN_DEPTH_QUESTIONS[question.id].answers}:question);
 const restored=restoreGate06HistoricalTeachingFields(oldAnswers);
 const sha=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 assert.equal(sha(restored),baseline.bankSHA256,'Unchanged historical bank baseline; only explicit teaching fields/options normalized');

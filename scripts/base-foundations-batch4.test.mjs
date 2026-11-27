@@ -28,8 +28,8 @@ const expectedKeys = {
 const ids = Object.keys(expectedKeys);
 assert.equal(ids.length,20,'exact agreed scope of 20 photo questions');
 assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH4).sort(),ids.sort(),'no hidden extra materials');
-assert.equal(ALL_QUESTIONS.length,862,'bank count unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,862,'unique source question ids');
+assert.equal(ALL_QUESTIONS.length,861,'bank count unchanged');
+assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,861,'unique source question ids');
 for(const id of ids){
   const question=ALL_QUESTIONS.find(q=>q.id===id);
   assert.ok(question,id+' exists in live bank');

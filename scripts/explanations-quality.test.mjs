@@ -6,7 +6,7 @@ const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, formatExplanat
   await bundleEntry('scripts/explanations-test-entry.ts', 'explanations-test.mjs');
 
 const all = new Map(ALL_QUESTIONS.map(question => [question.id, question]));
-assert.equal(ALL_QUESTIONS.length, 862);
+assert.equal(ALL_QUESTIONS.length, 861);
 assert.equal(all.size, ALL_QUESTIONS.length);
 const normalized = text => text.toLowerCase().replace(/[\p{P}\p{Z}\p{S}]+/gu, '');
 for (const question of ALL_QUESTIONS) {

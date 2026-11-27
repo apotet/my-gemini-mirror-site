@@ -9,8 +9,8 @@ const foundations = ALL_QUESTIONS.filter(q => {
   const meta = QUESTION_LEARNING_LEVELS[q.id];
   return meta.status === 'ASSIGNED' && meta.learningLevel === 1;
 });
-assert.equal(ALL_QUESTIONS.length, 862, 'question bank must not change');
-assert.equal(foundations.length, 216, 'canonical L1 after Issue #257 semantic review');
+assert.equal(ALL_QUESTIONS.length, 861, 'only the approved photo question is retired');
+assert.equal(foundations.length, 215, 'canonical L1 after Issue #257 semantic review');
 const lessonsById = new Map(LESSONS.map(lesson => [lesson.id, lesson]));
 assert.equal(lessonsById.size, LESSONS.length, 'lesson IDs must remain unique');
 
@@ -44,7 +44,7 @@ for (const [id, lessonId] of newLinks) {
   assert.ok(resolved.relatedQuestionIds.includes(id), 'lesson must display related ID ' + id);
 }
 const uncovered = foundations.filter(q => !getLessonForQuestion(q.id)).map(q => q.id);
-assert.deepEqual(uncovered, [], 'all 216 current L1 questions must have linked lessons');
+assert.deepEqual(uncovered, [], 'all 215 current L1 questions must have linked lessons');
 const incompleteLessonStyles = foundations
   .map(q => ({ id: q.id, lesson: getLessonForQuestion(q.id) }))
   .filter(({lesson}) => lesson && (!lesson.blocks?.length || !lesson.professional?.blocks?.length))
@@ -67,4 +67,4 @@ assert.equal(getLessonForQuestion('l1v2-a-mark-frequency')?.id, 'l1-copper-mark-
 assert.equal(getLessonForQuestion('photo-patch-caps')?.id, 'l1-optical-panel-photo', 'optical endface caps tutorial');
 assert.equal(getLessonForQuestion('l4-d05')?.id, 'l4-tcp-sack', 'SACK selective acknowledgment gets dedicated dual-style lesson');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');
-console.log('PASS: all 216 current L1 questions have exact lesson links; four accepted copper routes plain-only, all others two-style; 89 explicit links verified');
+console.log('PASS: all 215 current L1 questions have exact lesson links; four accepted copper routes plain-only, all others two-style; 89 explicit links verified');

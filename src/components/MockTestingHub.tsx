@@ -6,6 +6,7 @@ import { filterLearningLevel, LEARNING_LEVEL_DESCRIPTIONS } from '../data/learni
 import { LEARNING_LEVELS, type LearningLevel } from '../types/learningLevel';
 import type { Question, QuizModeId } from '../types/quiz';
 import { getMistakeQuestions } from '../utils/userProgress';
+import { RETIRED_PVC_PHOTO } from '../utils/copperPhotoQuestionHistory';
 import { selectFamilyQuestions } from '../data/beginnerExam';
 import { KnowledgeRadar } from './KnowledgeRadar';
 import { ZoomableImage } from './ZoomableImage';
@@ -36,13 +37,18 @@ const settingsKey = 'netops_mock_testing_settings';
 const mockProgressKey = 'netops_mock_testing_progress_v1';
 const mockSessionKey = 'netops_mock_testing_active_v1';
 type SavedSession = {ids:string[];index:number;answers:Record<string,number[]>;submitted:boolean};
+const questionForSavedRound = (id:string) =>
+  ALL_QUESTIONS.find(q=>q.id===id) ?? (id===RETIRED_PVC_PHOTO.id ? RETIRED_PVC_PHOTO : undefined);
 function readSession():SavedSession|null {
   try {
     const v=JSON.parse(localStorage.getItem(mockSessionKey)||'null');
     if(!v||!Array.isArray(v.ids)||!v.ids.length||!v.ids.every((id:unknown)=>typeof id==='string')||!Number.isInteger(v.index)||v.index<0||v.index>=v.ids.length||!v.answers||typeof v.answers!=='object'||typeof v.submitted!=='boolean')return null;
-    const known=new Set(ALL_QUESTIONS.map(q=>q.id));
-    if(v.ids.some((id:string)=>!known.has(id)))return null;
+    if(v.ids.some((id:string)=>!questionForSavedRound(id)))return null;
     if(Object.values(v.answers).some(a=>!Array.isArray(a)||a.some(n=>!Number.isInteger(n))))return null;
+    // These old rounds saved only IDs and answer indices in original bank order.
+    const retiredAnswers=v.answers[RETIRED_PVC_PHOTO.id];
+    if(retiredAnswers && (new Set(retiredAnswers).size!==retiredAnswers.length ||
+      retiredAnswers.some((n:number)=>n<0||n>=RETIRED_PVC_PHOTO.answers.length)))return null;
     return v;
   }catch{return null;}
 }
@@ -61,7 +67,7 @@ export function MockTestingHub(navigation: ExplanationNavigation) {
   const [savedSession] = useState(readSession);
   const [advanced,setAdvanced] = useState(false);
   const [osiPhotosOnly,setOsiPhotosOnly] = useState(false);
-  const [questions,setQuestions] = useState<Question[]>(()=>savedSession?savedSession.ids.map(id=>ALL_QUESTIONS.find(q=>q.id===id)!).filter(Boolean):[]);
+  const [questions,setQuestions] = useState<Question[]>(()=>savedSession?savedSession.ids.map(id=>questionForSavedRound(id)!):[]);
   const [index,setIndex] = useState(savedSession?.index??0);
   const [answers,setAnswers] = useState<Record<string,number[]>>(savedSession?.answers??{});
   const [submitted,setSubmitted] = useState(savedSession?.submitted??false);
