@@ -5,6 +5,8 @@ import type { Lesson } from '../data/lessons/types';
 import type { PracticeButtonAction } from './PracticeLinkButton';
 import { LessonView } from './LessonView';
 import { LessonFavoriteButton } from './LessonFavoriteButton';
+import { NetopsAccountPanel } from './NetopsAccountPanel';
+import { accountSync, accountSyncEnabled, useNetopsAccountSync } from '../utils/netopsAccountSync';
 import { toggleLessonFavorite, useLessonFavorites } from '../utils/lessonFavorites';
 import { LessonReviewBadge } from './LessonReviewBadge';
 import { CliReference } from './CliReference';
@@ -109,14 +111,25 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
 }) => {
   const [section, setSection] = useState<'lessons' | 'favorites' | 'cli-reference'>('lessons');
   const [query, setQuery] = useState('');
-  const favorites = useLessonFavorites().map(getLesson).filter((lesson): lesson is Lesson => !!lesson);
+  const localFavorites = useLessonFavorites();
+  const sync = useNetopsAccountSync();
+  const cloudMode = sync.stage === 'account' || sync.stage === 'connecting' || sync.stage === 'signing-out';
+  const favorites = (cloudMode ? sync.favorites : localFavorites).map(getLesson).filter((lesson): lesson is Lesson => !!lesson);
+  const canEditFavorites = !cloudMode || (sync.confirmed && !sync.busy);
+  const toggleFavorite = (id: string) => {
+    if (cloudMode) void accountSync.toggleFavorite(id);
+    else toggleLessonFavorite(id);
+  };
   const favoriteIds = new Set(favorites.map(lesson => lesson.id));
   const catalogFavoriteTab = useRef<HTMLButtonElement>(null);
-  const favoriteFallback = useRef(false);
+  const favoriteFallback = useRef<boolean | string>(false);
   useLayoutEffect(() => {
-    if (favoriteFallback.current) {
+    const pending = favoriteFallback.current;
+    if (pending === true || (typeof pending === 'string' && !favoriteIds.has(pending))) {
       favoriteFallback.current = false;
       catalogFavoriteTab.current?.focus();
+    } else if (typeof pending === 'string' && !sync.busy && sync.error) {
+      favoriteFallback.current = false;
     }
   });
   const [layer, setLayer] = useState(() => readFilter('layer', LAYERS));
@@ -124,7 +137,7 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
   const [beginnerSort, setBeginnerSort] = useState(readBeginnerSort);
   const [beginnerResumeId, setBeginnerResumeId] = useState(readBeginnerResume);
-  const resumeLesson = getBeginnerCoreLesson(beginnerResumeId);
+  const resumeLesson = getBeginnerCoreLesson(cloudMode ? sync.resumeId : beginnerResumeId);
   const studyCatalog = difficulty === 'beginner' && beginnerSort === 'study';
   const [trail, setTrail] = useState<LessonEntry[]>(() => initialLessonId ? [{ id: initialLessonId, key: 0 }] : []);
   const nextKey = useRef(1);
@@ -138,8 +151,11 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const current = trail.at(-1);
   const rememberStudyStep = (id: string) => {
     if (!getBeginnerCoreLesson(id)) return;
-    saveBeginnerResume(id);
-    setBeginnerResumeId(id);
+    if (cloudMode) void accountSync.saveResume(id);
+    else {
+      saveBeginnerResume(id);
+      setBeginnerResumeId(id);
+    }
   };
   const openNewRoot = (id: string, options: Pick<LessonEntry, 'study' | 'trackStudy' | 'focusHeading'> = {}) => {
     const { study, focusHeading } = options;
@@ -205,9 +221,14 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         const next = neighbors.next && getLesson(neighbors.next);
         return (
           <div key={entry.key} hidden={!active} inert={!active}>
+            {active && accountSyncEnabled && (sync.error || (cloudMode && !sync.confirmed)) && (
+              <p role={sync.error ? 'alert' : 'status'} className="rounded-xl border border-amber-400/50 p-2 text-xs text-amber-800 dark:text-amber-300">
+                {sync.error ?? 'Сервер не подтвердил подключение. Точка продолжения и избранное пока не синхронизируются.'}
+              </p>
+            )}
             <LessonView
               lesson={lesson}
-              favoriteAction={<LessonFavoriteButton title={lesson.title} saved={favoriteIds.has(lesson.id)} onToggle={() => toggleLessonFavorite(lesson.id)} />}
+              favoriteAction={<LessonFavoriteButton title={lesson.title} saved={favoriteIds.has(lesson.id)} disabled={!canEditFavorites} onToggle={() => toggleFavorite(lesson.id)} />}
               onOpenLesson={openLinkedLesson}
               onOpenPathLesson={openLinkedLesson}
               onReturnToLesson={entry.from ? returnToLinkedLesson : undefined}
@@ -266,9 +287,9 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
       <div className="text-[11px] text-slate-500">Вопросов: {l.relatedQuestionIds.length}</div>
     </button>
     <div className="absolute right-3 top-3">
-      <LessonFavoriteButton title={l.title} saved={favoriteIds.has(l.id)} compact onToggle={() => {
-        if (section === 'favorites') favoriteFallback.current = true;
-        toggleLessonFavorite(l.id);
+      <LessonFavoriteButton title={l.title} saved={favoriteIds.has(l.id)} compact disabled={!canEditFavorites} onToggle={() => {
+        if (section === 'favorites') favoriteFallback.current = cloudMode ? l.id : true;
+        toggleFavorite(l.id);
       }} />
     </div>
     </div>
@@ -299,6 +320,20 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         </button>
       </div>
 
+      {section === 'lessons' && studyCatalog && resumeLesson && (
+        <button type="button" aria-label={`Продолжить: ${resumeLesson.title}`}
+          className={`w-full sm:w-auto ${routeButton}`}
+          onClick={() => openNewRoot(resumeLesson.id, { study: true, trackStudy: true, focusHeading: true })}>
+          <span className="block">Продолжить</span>
+          <span className="block break-words text-xs font-normal">{resumeLesson.title}</span>
+        </button>
+      )}
+
+      {accountSyncEnabled && (
+        <NetopsAccountPanel state={sync} hasGuestData={localFavorites.some(id => !!getLesson(id)) || !!getBeginnerCoreLesson(beginnerResumeId)}
+          onImport={() => void accountSync.importGuest({ favorites: localFavorites, resumeId: beginnerResumeId })} />
+      )}
+
       {section === 'favorites' ? (
         <section aria-label="Избранные уроки" className="space-y-3">
           <p className="text-xs text-slate-500" role="status">Сохранено уроков: {favorites.length}</p>
@@ -312,14 +347,6 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         }} />
       ) : (
       <>
-      {studyCatalog && resumeLesson && (
-        <button type="button" aria-label={`Продолжить: ${resumeLesson.title}`}
-          className={`w-full sm:w-auto ${routeButton}`}
-          onClick={() => openNewRoot(resumeLesson.id, { study: true, trackStudy: true, focusHeading: true })}>
-          <span className="block">Продолжить</span>
-          <span className="block break-words text-xs font-normal">{resumeLesson.title}</span>
-        </button>
-      )}
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
