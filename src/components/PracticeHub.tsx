@@ -1,6 +1,6 @@
 import { PRACTICE_DESTINATIONS, type PracticeLink } from '../data/practiceLinks';
-import React, { useState } from 'react';
-import { Activity, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { Activity, ArrowLeft, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
 import { PacketJourney } from './PacketJourney';
 import { VlanSimulator } from './VlanSimulator';
 import { ProtocolSimulators } from './ProtocolSimulators';
@@ -60,14 +60,31 @@ function iconWrapClass(isActive: boolean): string {
     : 'p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
 }
 
-export const PracticeHub: React.FC<{ initialSimulator?: PracticeSimulator; initialPracticeLink?: PracticeLink }> = ({ initialSimulator, initialPracticeLink }) => {
+interface PracticeHubProps {
+  initialSimulator?: PracticeSimulator;
+  initialPracticeLink?: PracticeLink;
+  onReturnToLesson?: () => void;
+}
+
+export const PracticeHub: React.FC<PracticeHubProps> = ({ initialSimulator, initialPracticeLink, onReturnToLesson }) => {
   const destination = initialPracticeLink ? PRACTICE_DESTINATIONS[initialPracticeLink] : undefined;
   const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>(() =>
     destination?.simulator ?? initialSimulator ?? (typeof window !== 'undefined' && window.innerWidth < 640 ? 'journey' : 'cli')
   );
+  const returnButton = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    returnButton.current?.focus({ preventScroll: true });
+  }, []);
 
   return (
     <div className="space-y-6">
+      {onReturnToLesson && (
+        <button ref={returnButton} type="button" onClick={onReturnToLesson}
+          className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/40 bg-white px-3 py-2 text-sm font-semibold text-cyan-800 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-[#091524] dark:text-cyan-200 dark:hover:bg-cyan-950/50">
+          <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+          Вернуться к уроку
+        </button>
+      )}
       <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#091524] border border-slate-200 dark:border-cyan-500/20 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>

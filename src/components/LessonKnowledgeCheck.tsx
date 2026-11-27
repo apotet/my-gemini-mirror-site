@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import type { LessonKnowledgeCheck as LessonKnowledgeCheckData } from '../data/lessons/types';
 import { GlossaryText } from './GlossaryText';
 
@@ -15,6 +15,7 @@ export const LessonKnowledgeCheckExplanation: React.FC<{ explanation: string; gl
  * This is deliberately not an exam: no saved attempts or global statistics.
  */
 export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData; glossaryScope?: 'poe' | 'ipv6' | 'http' }> = ({ check, glossaryScope }) => {
+  const headingId = useId();
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
@@ -49,8 +50,8 @@ export const LessonKnowledgeCheck: React.FC<{ check: LessonKnowledgeCheckData; g
   };
 
   return (
-    <section data-lesson-knowledge-check className="rounded-2xl border border-cyan-400/40 bg-cyan-50/60 p-4 dark:bg-cyan-950/20 dark:border-cyan-400/25 space-y-3" aria-labelledby="lesson-check-heading">
-      <h3 id="lesson-check-heading" className="text-base font-bold text-slate-900 dark:text-white">{check.title}</h3>
+    <section data-lesson-knowledge-check className="rounded-2xl border border-cyan-400/40 bg-cyan-50/60 p-4 dark:bg-cyan-950/20 dark:border-cyan-400/25 space-y-3" aria-labelledby={headingId}>
+      <h3 id={headingId} className="text-base font-bold text-slate-900 dark:text-white">{check.title}</h3>
       {check.intro && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{check.intro}</p>}
       {finished ? (
         <div className="space-y-3" aria-live="polite">

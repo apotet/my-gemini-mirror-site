@@ -1,16 +1,15 @@
 import { FormattedExplanation } from './FormattedExplanation';
 import { GlossaryText } from './GlossaryText';
 import { ZoomableImage } from './ZoomableImage';
-import { PracticeLinkButton } from './PracticeLinkButton';
-import type { PracticeLink } from '../data/practiceLinks';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { PracticeLinkButton, type PracticeButtonAction } from './PracticeLinkButton';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Lesson, type LessonIllustration } from '../data/lessons/types';
 import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
 import { GlossaryHoverToggle } from './GlossaryHoverToggle';
 import { LessonKnowledgeCheck } from './LessonKnowledgeCheck';
 import { LessonLearningPath } from './LessonLearningPath';
-import { useStudyTextMode } from '../utils/studyTextMode';
+import { useStudyTextMode, type StudyTextMode } from '../utils/studyTextMode';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { LessonTermTags } from './LessonTermTags';
 import { LessonReviewBadge } from './LessonReviewBadge';
@@ -21,11 +20,13 @@ import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
-  onOpenLesson?: (lessonId: string) => void;
-  onOpenPathLesson?: (lessonId: string) => void;
+  onOpenLesson?: (lessonId: string, trigger: HTMLElement) => void;
+  onOpenPathLesson?: (lessonId: string, trigger: HTMLElement) => void;
+  onReturnToLesson?: () => void;
+  pausedTextMode?: StudyTextMode;
   focusPathHeading?: boolean;
   onOpenQuestion?: (questionId: string) => void;
-  onOpenPractice?: (link: PracticeLink) => void;
+  onOpenPractice?: PracticeButtonAction;
   returnQuestionId?: string | null;
 }
 
@@ -99,8 +100,9 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
                 </figure>
 );
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
-  const [textMode, setTextMode] = useStudyTextMode();
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId }) => {
+  const [preferredTextMode, setTextMode] = useStudyTextMode();
+  const textMode = pausedTextMode ?? preferredTextMode;
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
   const glossaryScope = getLessonGlossaryScope(lesson.id);
   const activeKnowledgeCheck = textMode === 'professional'
@@ -118,7 +120,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
   const [highlightedAnchor, setHighlightedAnchor] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const cheatsheetElements = useRef<Record<string, HTMLDetailsElement | null>>({});
-  const cheatsheetId = (file: string) => `lesson-cheatsheet-${lesson.id}-${file.replace(/[^a-z0-9-]/gi, '-')}`;
+  const viewId = useId();
+  const cheatsheetId = (file: string) => `lesson-cheatsheet-${viewId}-${file.replace(/[^a-z0-9-]/gi, '-')}`;
   const revealCheatsheet = (file: string) => {
     const details = cheatsheetElements.current[file];
     if (!details) return;
@@ -137,7 +140,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
     const keepAnchorVisible = (initial = false) => {
       if (disposed) return;
       const section = anchorElements.current[targetAnchor];
-      if (!section) return;
+      if (!section?.getClientRects().length) return;
       const bounds = section.getBoundingClientRect();
       if (initial || bounds.bottom <= 0 || bounds.top >= window.innerHeight) {
         section.scrollIntoView({ behavior: 'auto', block: 'center' });
@@ -193,6 +196,13 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
   return (
     <article className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
+        {onReturnToLesson && (
+          <button type="button" onClick={onReturnToLesson}
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/40 bg-white px-3 py-2 text-sm font-semibold text-cyan-800 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-[#091524] dark:text-cyan-200 dark:hover:bg-cyan-950/50">
+            <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+            Вернуться к предыдущему уроку
+          </button>
+        )}
         <button
           type="button"
           onClick={onBack}
@@ -321,7 +331,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               </details>
             )}
             {b.relatedLesson && onOpenLesson && (
-              <button type="button" onClick={() => onOpenLesson(b.relatedLesson!.id)}
+              <button type="button" onClick={event => onOpenLesson(b.relatedLesson!.id, event.currentTarget)}
                 data-related-lesson={b.relatedLesson.id}
                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-700 underline underline-offset-2 hover:bg-cyan-500/20 dark:text-cyan-300">
                 <BookOpen className="h-4 w-4" aria-hidden="true" />{b.relatedLesson.label}

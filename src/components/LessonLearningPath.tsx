@@ -2,13 +2,13 @@ import { useId } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { getLesson } from '../data/lessons';
 import { getLessonLearningPath } from '../data/lessons/learningPaths';
-import { PRACTICE_DESTINATIONS, type PracticeLink } from '../data/practiceLinks';
-import { PracticeLinkButton } from './PracticeLinkButton';
+import { PRACTICE_DESTINATIONS } from '../data/practiceLinks';
+import { PracticeLinkButton, type PracticeButtonAction } from './PracticeLinkButton';
 
 interface Props {
   lessonId: string;
-  onOpenLesson?: (lessonId: string) => void;
-  onOpenPractice?: (link: PracticeLink) => void;
+  onOpenLesson?: (lessonId: string, trigger: HTMLButtonElement) => void;
+  onOpenPractice?: PracticeButtonAction;
 }
 
 export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice }: Props) {
@@ -30,7 +30,7 @@ export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice }: P
         <div className="space-y-2">
           <h4 className="font-semibold text-slate-900 dark:text-slate-100">Для полноты понимания</h4>
           <p className="text-slate-700 dark:text-slate-300">{next.reason}</p>
-          <button type="button" onClick={() => onOpenLesson(nextLesson.id)}
+          <button type="button" onClick={event => onOpenLesson(nextLesson.id, event.currentTarget)}
             className="inline-flex min-h-11 max-w-full cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/40 px-3 py-2 text-left font-semibold text-cyan-800 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:text-cyan-200 dark:hover:bg-cyan-950/50">
             <span className="min-w-0 break-words">Читать урок: {nextLesson.title}</span>
             <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
