@@ -410,6 +410,8 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: 'Фактические опции TCP и IPv4: почему данных бывает меньше объявленного MSS', professional: 'Точный расчёт полезной нагрузки с фактическими IPv4/TCP options (RFC 6691)' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-02'], anchorId: 'mtu-ipv4-tcp-options-1444',
     afterHeading: { plain: 'Пример: IPv4 24 байта и TCP 32 байта — 1444 байта данных', professional: 'Расчёт gap-pack2-02: IPv4 options и TCP options — 1444 байта' } },
+  { lessonId: 'l3-subnets', questionIds: ['gen-net-25-4'], anchorId: 'cidr-contiguous-mask-validation',
+    afterHeading: { plain: 'Как распознать недопустимую маску CIDR', professional: 'Проверка непрерывности маски IPv4 (RFC 4632)' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['ts-pack1-15'], anchorId: 'mtu-local-pmtu-cache',
     afterHeading: { plain: 'Локальный кэш PMTU: какое ограничение срабатывает ещё до выхода кадра', professional: 'Локальный route/PMTU cache стека и порядок срабатывания ограничений' } },
   { lessonId: 'l3-mtu-mss-fragmentation', questionIds: ['gap-pack2-04'], anchorId: 'mtu-ipv6-ptb-transit',
