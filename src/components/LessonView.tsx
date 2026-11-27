@@ -143,7 +143,9 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
       if (!section?.getClientRects().length) return;
       const bounds = section.getBoundingClientRect();
       if (initial || bounds.bottom <= 0 || bounds.top >= window.innerHeight) {
-        section.scrollIntoView({ behavior: 'auto', block: 'center' });
+        // "auto" inherits the page's smooth scrolling, which can continue
+        // after a learner taps even when the other settle timers are canceled.
+        section.scrollIntoView({ behavior: 'instant', block: 'center' });
       }
       if (initial) section.focus({ preventScroll: true });
       setHighlightedAnchor(targetAnchor);

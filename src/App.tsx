@@ -95,7 +95,7 @@ export function App() {
     setTheoryFromExam(true);
     setActiveTab('theory');
     // Do not race the paragraph-anchor scroll animation in LessonView.
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleOpenPractice = (link: PracticeLink) => {

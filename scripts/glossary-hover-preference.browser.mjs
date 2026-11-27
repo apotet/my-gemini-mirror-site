@@ -318,6 +318,52 @@ try {
     await c.close();
     console.log('PASS: exact initial anchor navigation and no delayed recenter after real glossary tap');
   }
+  {
+    const c = await context(390);
+    const page = await c.newPage();
+    await page.goto(base);
+    const { review } = await openTheory(page, true);
+    const link = same(review, /^Перейти к уроку:/);
+    await link.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    const linkBox = await link.boundingBox();
+    await page.clock.install();
+    await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 100));
+    await page.touchscreen.tap(linkBox.x + linkBox.width / 2, linkBox.y + linkBox.height / 2);
+    const anchor = page.locator('[data-lesson-section-anchor="cidr-contiguous-mask-validation"]');
+    await anchor.waitFor({ state: 'attached' });
+    await page.clock.runFor(55);
+    // Fake JS time pins the settle callbacks; the browser's native scroll animation
+    // still uses real time. Let the first anchor placement finish before moving away.
+    await new Promise(resolve => setTimeout(resolve, 550));
+    assert.ok(await anchor.evaluate(node => node.getBoundingClientRect().top < innerHeight));
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    assert.ok(await anchor.evaluate(node => node.getBoundingClientRect().top >= innerHeight));
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), 'smooth');
+
+    // The 120 ms settle is now allowed to run before a real coordinate-only tap;
+    // locator.tap would introduce its own bring-into-view scroll.
+    await page.clock.runFor(77);
+    const words = page.locator('article [data-glossary-term]');
+    const point = await words.evaluateAll(nodes => nodes.map((node, index) => {
+      const rect = node.getBoundingClientRect();
+      const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+      return rect.width > 0 && y > 80 && y < innerHeight - 84 &&
+        document.elementFromPoint(x, y)?.closest('button') === node ? { index, x, y } : null;
+    }).find(Boolean));
+    assert.ok(point, 'a glossary word is directly tappable in the viewport');
+    const scrollAtTap = await page.evaluate(() => scrollY);
+    await page.touchscreen.tap(point.x, point.y);
+    const word = words.nth(point.index);
+    await tooltip(page).waitFor();
+    await page.clock.runFor(300);
+    await new Promise(resolve => setTimeout(resolve, 260));
+    assert.equal(await page.evaluate(() => scrollY), scrollAtTap, 'the already-started anchor settle must not keep scrolling after a tap');
+    await shown(page, word);
+    await page.evaluate(() => window.scrollBy({ top: 110, behavior: 'instant' }));
+    await tooltip(page).waitFor({ state: 'hidden' });
+    await c.close();
+    console.log('PASS: coordinate tap after the 120 ms anchor settle stays open; a subsequent ordinary scroll closes the tooltip');
+  }
   for (const storage of ['blocked', 'readonly']) {
     const c = await context(1440, storage);
     const page = await c.newPage();

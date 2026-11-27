@@ -63,7 +63,7 @@ export const TheoryView: React.FC<TheoryViewProps> = ({
     setLessonId(id);
     setReturnQuestionId(fromQuestionId || focusQuestionId || initialQuestionId || null);
     setSection('knowledge');
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const openQuestionFromLesson = (questionId: string) => {
