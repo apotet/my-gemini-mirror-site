@@ -3,6 +3,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Layers, Cpu, Terminal, FlaskConical } from 'lucide-react';
 import { PacketJourney } from './PacketJourney';
 import { VlanSimulator } from './VlanSimulator';
+import type { PracticeVariant } from './PracticeLinkButton';
 import { DhcpLeasePractice, ProtocolSimulators } from './ProtocolSimulators';
 import { CliLabShell } from '../cli-lab/CliLabShell';
 
@@ -63,10 +64,11 @@ function iconWrapClass(isActive: boolean): string {
 interface PracticeHubProps {
   initialSimulator?: PracticeSimulator;
   initialPracticeLink?: PracticeLink;
+  variant?: PracticeVariant;
   onReturnToLesson?: () => void;
 }
 
-export const PracticeHub: React.FC<PracticeHubProps> = ({ initialSimulator, initialPracticeLink, onReturnToLesson }) => {
+export const PracticeHub: React.FC<PracticeHubProps> = ({ initialSimulator, initialPracticeLink, variant, onReturnToLesson }) => {
   const destination = initialPracticeLink ? PRACTICE_DESTINATIONS[initialPracticeLink] : undefined;
   const [activeSimulator, setActiveSimulator] = useState<PracticeSimulator>(() =>
     destination?.simulator ?? initialSimulator ?? (typeof window !== 'undefined' && window.innerWidth < 640 ? 'journey' : 'cli')
@@ -84,8 +86,8 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({ initialSimulator, init
     </button>
   );
 
-  // Question links have no lesson origin; they and the general hub keep all protocol tabs.
-  if (initialPracticeLink === 'dhcp' && onReturnToLesson) {
+  // Only the authored footer opts in; existing lesson and question links keep all tabs.
+  if (initialPracticeLink === 'dhcp' && onReturnToLesson && variant === 'dhcp-lease') {
     return <div className="space-y-6">{returnButtonView}<DhcpLeasePractice /></div>;
   }
 

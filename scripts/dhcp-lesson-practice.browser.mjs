@@ -79,6 +79,14 @@ try {
     await page.waitForTimeout(470);
     assert.ok(Math.abs((await open.boundingBox()).y - box.y) <= 12);
     assert.equal(await button(page, mode).getAttribute('aria-pressed'), 'true');
+    // The established DHCP link in the APIPA section is a different entry.
+    const inline = button(page, 'Открыть стенд');
+    await inline.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await activate(inline);
+    await button(page, 'NAT/PAT').waitFor();
+    assert.equal(await dhcp.count(), 0);
+    await activate(back);
+    await page.waitForFunction(el => document.activeElement === el, await inline.elementHandle());
     await button(page, 'Практика').click();
     await button(page, /^DHCP \/ NAT \/ TCP/).click();
     await button(page, 'NAT/PAT').click();
