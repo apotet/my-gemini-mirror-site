@@ -55,10 +55,14 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
   const [difficulty, setDifficulty] = useState<DifficultyFilter>(() =>
     readFilter('difficulty', DIFFICULTIES.map(item => item.id)) as DifficultyFilter);
   const [openId, setOpenId] = useState<string | null>(initialLessonId || null);
+  const [pathFocusId, setPathFocusId] = useState<string | null>(null);
   const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
 
   React.useEffect(() => {
-    if (initialLessonId) setOpenId(initialLessonId);
+    if (initialLessonId) {
+      setPathFocusId(null);
+      setOpenId(initialLessonId);
+    }
   }, [initialLessonId]);
 
   const lesson = openId ? getLesson(openId) : undefined;
@@ -77,13 +81,21 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         key={lesson.id}
         lesson={lesson}
         onOpenLesson={id => {
+          setPathFocusId(null);
           setOpenId(id);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onOpenPathLesson={id => {
+          setPathFocusId(id);
+          setOpenId(id);
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }}
+        focusPathHeading={pathFocusId === lesson.id}
         returnQuestionId={returnQuestionId}
         onOpenQuestion={onOpenQuestion}
         onOpenPractice={onOpenPractice}
         onBack={() => {
+          setPathFocusId(null);
           setOpenId(null);
           onClearLesson?.();
         }}
