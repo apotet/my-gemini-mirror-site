@@ -113,7 +113,13 @@ try {
     const cta = resume(arp);
     await cta.waitFor();
     assert.equal(await anyResume().count(), 1);
-    assert((await cta.boundingBox()).height >= 44, 'resume control is touch-sized');
+    const box = await cta.boundingBox();
+    assert(box && box.height >= 44, 'resume control is touch-sized');
+    if (mobile) {
+      const fixedNav = await b('Теория').locator('xpath=ancestor::nav[1]').boundingBox();
+      assert(fixedNav && box.y >= 0 && box.y + box.height < fixedNav.y,
+        `resume must be entirely above the first viewport’s mobile navigation: ${JSON.stringify({ box, fixedNav })}`);
+    }
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no horizontal overflow');
     await cta.click();
     await heading(arp).waitFor();
