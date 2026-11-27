@@ -2,24 +2,23 @@
 
 ## NETOPS-FEDOT-2026-11-26
 
-Решение владельца от 26.11.2026. Этот раздел определяет текущие полномочия и заменяет прежнее распределение координации.
+Решение владельца от 26.11.2026 с уточнениями от 27.11.2026. Этот раздел определяет текущие полномочия и заменяет прежнее распределение координации.
 
 - Федот — основной автономный руководитель и исполнитель NetOps. В рамках согласованной глобальной задачи он самостоятельно разрабатывает контент, исправляет ошибки, делегирует задачи, организует независимую приёмку, выполняет merge и deploy по [регламенту](DEVELOPMENT_WORKFLOW.md).
-- Заяц (OpenCode / GLM-5.4 / Z.AI Coding Plan) и Геннадий (Gemini) — основные дополнительные исполнители. Codex и Work привлекать преимущественно для сложных задач, чтобы экономить агентные лимиты ChatGPT. Химик и Семёныч остаются в резерве.
+- Заяц (OpenCode / GLM-5.4 / Z.AI Coding Plan) — приоритетный дополнительный исполнитель. Геннадий принят в команду как разработчик через выделенный маршрут Hydrogen с ограничениями ниже. Codex и Work — преимущественно для сложных задач; Химик и Семёныч остаются в резерве.
 - Независимая приёмка обязательна. Автор не принимает собственную работу. Использовать возобновляемые квоты и не повторять запуски без конкретной причины.
-- **Глобальную разработку L3 пока не начинать.** Условие переноса стабильной версии выполнено выпуском N5; это не открывает глобальную разработку L3 и не даёт общего разрешения на будущие production deploy.
+- **L3: разрешены только согласованные адресные работы на зеркале** `apotet/my-gemini-mirror-site`. Не начинать глобальную переработку, не изменять Draft #352 или ветку Геннадия, не переносить L3 в production. Для production `apotet/netops` требуется отдельное разрешение владельца.
 
-## Выпуск N5
+## Выпуск N5 и статус PoE
 
-- **Перенос завершён:** production `3df2cb7a101a97495146b14b40a9144349c220fe`, [PR #6](https://github.com/apotet/netops/pull/6), [успешная выкладка](https://github.com/apotet/netops/actions/runs/45894920722), независимый PASS. [Архив N5](ROADMAP-history-2026-11-n5-production.md) хранит SHA, доказательства и проверку опубликованного сайта.
+- **Исходный выпуск N5:** production `3df2cb7a101a97495146b14b40a9144349c220fe`, [PR #6](https://github.com/apotet/netops/pull/6), [успешная выкладка](https://github.com/apotet/netops/actions/runs/45894920722), независимый PASS. [Архив N5](ROADMAP-history-2026-11-n5-production.md) хранит SHA, доказательства и проверку опубликованного сайта.
 - **Откат:** N4 `dc205a85d76e90d35fdcd20c5a1f11f48463ca2e`; только отдельный rollback PR, CI, явное разрешение владельца и проверка Pages. [Инструкция и ожидаемый release.json](ROADMAP-history-2026-11-n5-production.md). Данные браузера не очищать.
-- **PoE:** В production N5 «PoE на приборе» (`l1-poe-screen-reading`) и «PoE-инжекторы и сплиттеры» (`l1-poe-injectors-splitters`) остаются `needs-review`. [В исходном staging](https://github.com/apotet/my-gemini-mirror-site/blob/ff3fe73696aabbf53caf57c8a9aaf2b270bf48f8/src/data/lessons/reviewStatus.ts) для урока про инжекторы записана личная приёмка от 24.11.2026. Она относится к staging и не переносит отметку `approved` на production N5.
-- **Отдельный техдолг:** `l2-security.test.mjs` (наследованные ожидания по ссылкам и позиционным блокам), `practice-links.test.mjs` (устаревшая карта ссылок), `study-text.test.mjs` (старый список материалов и конфигурация Node-теста). Три теста одинаково падают на staging-источнике и N5; релиз не блокируют, но не закрыты. Критерии ниже.
-- **Глобальная разработка L3 остаётся на паузе.** Закрыт перенос стабильной версии, не этап разработки L3.
+- **PoE в production:** при исходном выпуске оба урока были `needs-review`. После отдельного разрешения владельца [production PR #7](https://github.com/apotet/netops/pull/7) перенёс только плашку `approved` для «PoE-инжекторы и сплиттеры» (`l1-poe-injectors-splitters`) из [закреплённого staging](https://github.com/apotet/my-gemini-mirror-site/blob/ff3fe73696aabbf53caf57c8a9aaf2b270bf48f8/src/data/lessons/reviewStatus.ts). Production SHA `37bd44d20a0f9971c42fc73b6980361fae4ab0b4`, [CI](https://github.com/apotet/netops/actions/runs/45909695993) и [Pages](https://github.com/apotet/netops/actions/runs/45909845551); «PoE на приборе» (`l1-poe-screen-reading`) остаётся `needs-review`. Содержание уроков, банк и данные браузера не менялись.
+- **Отдельный техдолг:** `l2-security.test.mjs` (наследованные ожидания по ссылкам и позиционным блокам), `practice-links.test.mjs` (устаревшая карта ссылок), `study-text.test.mjs` (старый список материалов и конфигурация Node-теста). На момент исходного выпуска три теста одинаково падали на закреплённом staging-источнике и N5 и не блокировали релиз. Критерии закрытия ниже.
 
 ### Технический долг N5
 
-Три старых теста идентично падают на staging-источнике и исходном N5. Это отдельный технический долг, не сбой публикации. Исправлять в staging отдельной задачей, не возвращая неподходящие переходы ради зелёного теста.
+На момент выпуска три старых теста идентично падали на закреплённом staging-источнике и исходном N5. Это отдельный технический долг, не сбой публикации. Исправлять в staging отдельной задачей, не возвращая неподходящие переходы ради зелёного теста.
 
 | Тест | Почему расходится | Критерий закрытия |
 | --- | --- | --- |
@@ -29,7 +28,15 @@
 
 Общий критерий: все три скрипта проходят на актуальном staging, значимые проверки не ослаблены, независимая приёмка и CI подтверждены на одном SHA.
 
-## Сверка с GitHub — 26.11.2026
+## 27.11.2026 — подтверждённые изменения на зеркале
+
+- [#464](https://github.com/apotet/my-gemini-mirror-site/pull/464) · `2a2f61bfac63e0b42c05506ddab04d370e6ef888`: вторая пятёрка Applied (PRP, TLS/ALPN, SMTP, GRE/VXLAN, SSH); 10 точных переходов, независимый PASS, [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45904042993) и [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45908553679). Тяжёлые задания, помеченные skipped, не считать пройденными.
+- [#466](https://github.com/apotet/my-gemini-mirror-site/pull/466) · `81283ebb2c811afa15ccd9de5aac498624e5fa55`: адресно исправлены три разбора (TFTP, DNS, HTTP); банк, ключи, уровни и маршруты сохранены. [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45908862859) подтверждён.
+- [#471](https://github.com/apotet/my-gemini-mirror-site/pull/471) · `901260a78bc60b5736664ddbef641e1ffab2014f`: пять уроков (Linux PBR, Private VLAN, TCP Window Scale/Keepalive, HTTP/1.1 framing/Range/ETag, Wireshark CRC/FCS) и 10 точных переходов. Независимый PASS, [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45913158703), [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45913368272). После этого пакета из 376 вопросов L3 266 были связаны с уроком; 38 имели точный якорь в обоих режимах. Банк (862), уровни и ключи не изменены. Техническая приёмка не меняет личные плашки. L3 не переносился в production.
+- [#476](https://github.com/apotet/my-gemini-mirror-site/pull/476) · `e13e5b0c59603533ffcc64a0d9f42f9d7397946c`: шесть точных переходов по DNS, DHCP, MX и SNMP. Независимый PASS, [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45921498276) и [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45921729466). Сейчас из 376 вопросов L3 урок есть у 267, точный раздел в обоих режимах — у 44. Банк, ключи и тексты уроков не менялись.
+- **Hydrogen:** владелец разрешил отдельный маршрут `[HYDROGEN DEV]` в рамках настроенных лимитов; [#473](https://github.com/apotet/my-gemini-mirror-site/pull/473) в staging. Проверка через обычный Issue [#474](https://github.com/apotet/my-gemini-mirror-site/issues/474) завершилась прохождением sandbox и созданием [Draft #475](https://github.com/apotet/my-gemini-mirror-site/pull/475) ([run](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45920780854)); независимая и личная приёмки этого Draft ожидаются. Точная стоимость не подтверждена. Ни merge результата, ни deploy не выполнялись. Обычный [GEMINI DEV] остаётся заблокированным; это не изменение его полномочий. [Условия Hydrogen](GEMINI_DEV_AGENT.md#подготовленный-маршрут-hydrogen-через-issues). Рабочая задача по IPv4 /25 [#477](https://github.com/apotet/my-gemini-mirror-site/issues/477) завершилась `uncertain`: одна зарезервированная попытка, подтверждённого ответа и Draft нет. [Run](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45921645975). Повтор не запускался, стоимость неизвестна.
+
+## Сверка с GitHub — 26.11.2026 (снимок)
 
 - На момент фиксации решения [#458](https://github.com/apotet/my-gemini-mirror-site/pull/458) вошёл в staging `main` (`60337ad1`); [ROADMAP](ROADMAP.md) теперь компактный, а исторический снимок сохранён в [архиве](ROADMAP-ARCHIVE.md).
 - [#457](https://github.com/apotet/my-gemini-mirror-site/pull/457) слит в staging (`d79778b4`). Живой `[GEMINI DEV]` заблокирован в коде даже при настроенных переменных; отдельный `[GEMINI]` audit-only сохранён. Для живого пилота нужны отдельное решение, проверка тарифа и условий передачи данных, внешний стоп-лимит расходов. См. [инструкцию Gemini DEV](GEMINI_DEV_AGENT.md).
@@ -63,19 +70,16 @@
 
 - Issue #414: https://github.com/apotet/my-gemini-mirror-site/issues/414 — completed, фактический ответ по tsconfig.json получен через zai-coding-plan/glm-5.4. Run https://github.com/apotet/my-gemini-mirror-site/actions/runs/45633970628; usage input 9295, output 32, reasoning 440, cache_read 8768, cache_write 0. Фактические кредиты и баланс сверить в кабинете Z.AI; стоимость OpenCode null не означает доказанный нулевой расход.
 - Запуск: отдельный owner Issue [OPENCODE], точный комментарий `/opencode run zai-coding-plan glm-5.4 confirm-ci-terms`. Только Coding Plan, без обычного API, автоматических повторов и новых инфраструктурных изменений. Подтверждение владельца на CI получено; отдельного обязательного ответа поддержки нет.
-- Исторический план первой партии аудита вопросов не является разрешением на новые запуски. Текущие роли и пауза L3 указаны в решении выше.
+- Исторический план первой партии аудита вопросов не является разрешением на новые запуски. Текущие роли и границы L3 указаны в решении выше.
 
 ## Приоритеты
 
 1. PoE на приборе (`l1-poe-screen-reading`). Первые исправления вошли через #400,
    правки по последующему аудиту #440 — через [#449](https://github.com/apotet/my-gemini-mirror-site/pull/449).
    Личная приёмка опубликованного урока в этой сверке не подтверждена.
-2. Первая пятёрка L3 (LACP, LLDP, MTU/MSS, PTP, ACL) уже в `main` через
-   [#409](https://github.com/apotet/my-gemini-mirror-site/pull/409), merge `3ce45998`.
-   Связанные Issues #408 и #418 остаются открыты.
-3. Следующая пятёрка — открытый Issue #396 (Gemini).
-4. Уровень «Применение» — Draft PR #352, ветка Геннадия. Инвентаризация 376 вопросов.
-5. Избранное уроков — отдельная задача.
+2. L3 на зеркале: продолжать только согласованные адресные изменения с независимой приёмкой. Первая пятёрка вошла через [#409](https://github.com/apotet/my-gemini-mirror-site/pull/409); вторая и третья отмечены в сверке выше.
+3. [#396](https://github.com/apotet/my-gemini-mirror-site/issues/396) — отдельная очередь Геннадия, не запускать в рамках этой работы. [Draft #352](https://github.com/apotet/my-gemini-mirror-site/pull/352) и его ветку не изменять.
+4. Избранное уроков — отдельная задача.
 
 ## Роли
 
@@ -97,7 +101,7 @@
 | [#401](https://github.com/apotet/my-gemini-mirror-site/issues/401) | История передачи координации Ромке | Историческая задача; актуальное решение выше |
 | [#400](https://github.com/apotet/my-gemini-mirror-site/pull/400) | PoE на приборе, 4 FIX | MERGED |
 | [#395](https://github.com/apotet/my-gemini-mirror-site/issues/395) | Аудит первой пятёрки (Kimi) | OPEN, исправленный пакет #406 интегрирован в #409 |
-| [#396](https://github.com/apotet/my-gemini-mirror-site/issues/396) | Следующая пятёрка (Gemini) | OPEN |
+| [#396](https://github.com/apotet/my-gemini-mirror-site/issues/396) | Отдельная очередь Геннадия | На паузе |
 | [#352](https://github.com/apotet/my-gemini-mirror-site/pull/352) | L3 инвентаризация | Draft, чужая ветка |
 | [#361](https://github.com/apotet/my-gemini-mirror-site/pull/361) | Kimi: порядок PoE под нагрузкой | Draft, не мержить автоматически |
 
