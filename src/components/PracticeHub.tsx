@@ -130,7 +130,7 @@ export const PracticeHub: React.FC<PracticeHubProps> = ({ initialSimulator, init
 
       <div className="animate-fade-in">
         {activeSimulator === 'journey' && <PacketJourney />}
-        {activeSimulator === 'vlan' && <VlanSimulator />}
+        {activeSimulator === 'vlan' && <VlanSimulator initialCase={destination?.vlanCase} />}
         {activeSimulator === 'protocols' && <ProtocolSimulators initialLab={destination?.protocol} />}
         {activeSimulator === 'cli' && <CliLabShell initialScenarioId={destination?.scenarioId} />}
       </div>

@@ -16,11 +16,10 @@ export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice }: P
   const path = getLessonLearningPath(lessonId);
   const next = path?.next;
   const nextLesson = next && next.lessonId !== lessonId && onOpenLesson ? getLesson(next.lessonId) : undefined;
-  const practice = path?.practice;
-  const showPractice = practice?.kind === 'planned' ||
-    (practice?.kind === 'available' && onOpenPractice && Object.hasOwn(PRACTICE_DESTINATIONS, practice.link));
+  const practices = (path?.practice ?? []).filter(practice => practice.kind === 'planned' ||
+    (onOpenPractice && Object.hasOwn(PRACTICE_DESTINATIONS, practice.link)));
 
-  if (!nextLesson && !showPractice) return null;
+  if (!nextLesson && !practices.length) return null;
 
   return (
     <section data-lesson-learning-path={lessonId} aria-labelledby={titleId}
@@ -37,20 +36,25 @@ export function LessonLearningPath({ lessonId, onOpenLesson, onOpenPractice }: P
           </button>
         </div>
       )}
-      {practice && showPractice && (
+      {practices.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-slate-900 dark:text-slate-100">Практика</h4>
-          <div className="flex flex-wrap items-center gap-2 text-slate-900 dark:text-slate-100">
-            <strong>{practice.title}</strong>
-            {practice.kind === 'planned' && (
-              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">В разработке</span>
-            )}
-          </div>
-          <p className="text-slate-700 dark:text-slate-300">{practice.goal}</p>
-          {practice.kind === 'available' && (
-            <PracticeLinkButton link={practice.link} onOpenPractice={onOpenPractice}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-cyan-700 px-3 py-2 font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300" />
-          )}
+          {practices.map(practice => (
+            <div key={practice.kind === 'available' ? practice.link : practice.scenarioId}
+              className="space-y-2 [&+&]:border-t [&+&]:border-slate-200 [&+&]:pt-3 dark:[&+&]:border-slate-700">
+              <div className="flex flex-wrap items-center gap-2 text-slate-900 dark:text-slate-100">
+                <strong>{practice.title}</strong>
+                {practice.kind === 'planned' && (
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">В разработке</span>
+                )}
+              </div>
+              <p className="text-slate-700 dark:text-slate-300">{practice.goal}</p>
+              {practice.kind === 'available' && (
+                <PracticeLinkButton link={practice.link} label={practice.buttonLabel} onOpenPractice={onOpenPractice}
+                  className="inline-flex min-h-11 max-w-full cursor-pointer items-center gap-2 rounded-xl bg-cyan-700 px-3 py-2 text-left font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300" />
+              )}
+            </div>
+          ))}
         </div>
       )}
     </section>
