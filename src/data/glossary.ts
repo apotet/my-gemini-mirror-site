@@ -1656,9 +1656,9 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     lessonId: "l2-wifi-security-diagnostics",
   },
   "PoE": {
-    description: "Power over Ethernet — передача электропитания по витой паре Ethernet к точкам доступа, камерам и телефонам с учётом общего бюджета мощности коммутатора.",
-    relatesTo: "Питание точек доступа Wi-Fi 6 и диагностика show power inline.",
-    lessonId: "l12-wifi-standards-roaming",
+    description: "По одному кабелю Ethernet передаются данные и питание, например для камеры или точки доступа. Источник питания называют PSE, а устройство, которое его получает, — PD.",
+    relatesTo: "Питание устройств по витой паре Ethernet, стандарты IEEE 802.3 и расчёт бюджета PoE.",
+    lessonId: "l1-poe-budget",
   },
   "PoE-тестер": {
     description: "Измерительный прибор для проверки параметров питания PoE: в зависимости от модели показывает тип или класс питания, напряжение, а под нагрузкой может измерять ток и мощность.",
@@ -1676,12 +1676,14 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     lessonId: "l1-poe-budget",
   },
   "PSE": {
-    description: "Power Sourcing Equipment — оборудование, подающее питание через Ethernet, например PoE-коммутатор или инжектор.",
+    description: "Устройство, подающее питание через Ethernet, например PoE-коммутатор или инжектор. В стандартном PoE источник сначала проверяет совместимость потребителя.",
     relatesTo: "Роль источника питания в PoE.",
+    lessonId: "l1-poe-budget",
   },
   "PD": {
-    description: "Powered Device — устройство, получающее питание через Ethernet, например IP-камера или точка доступа.",
+    description: "Устройство, получающее питание по кабелю Ethernet, например IP-камера или точка доступа.",
     relatesTo: "Роль потребителя питания в PoE.",
+    lessonId: "l1-poe-budget",
   },
   "802.3af": {
     description: "IEEE 802.3af (PoE, Type 1): до 15,4 Вт от источника PSE и до 12,95 Вт на входе потребителя PD с учётом допустимых потерь в кабеле.",

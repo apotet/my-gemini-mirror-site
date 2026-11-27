@@ -29,10 +29,11 @@ const poeLine = 'IEEE 802.3af — 15,4 Вт; 802.3at — 30 Вт; 802.3bt — 60
 const poeParts = splitGlossaryText(poeLine);
 assert.equal(poeParts.map(part => part.text).join(''), poeLine);
 assert.deepEqual(
-  poeParts.filter(part => part.term && part.term.startsWith('802.3')).map(part => part.term),
-  ['802.3af', '802.3at', '802.3bt'],
+  poeParts.filter(part => part.term && /^(?:IEEE )?802\.3/.test(part.term)).map(part => part.term),
+  ['IEEE 802.3af', '802.3at', '802.3bt'],
   'each standard must be a recognized tooltip trigger',
 );
+assert.deepEqual(splitGlossaryText('802.3af').map(part => part.term), ['802.3af']);
 for (const term of ['802.3af', '802.3at', '802.3bt']) {
   assert.ok(GLOSSARY[term], 'missing glossary term: ' + term);
   assert.ok(GLOSSARY_TOOLTIPS[term]?.summary, 'missing live hover popup: ' + term);
@@ -55,6 +56,6 @@ for (const term of ['PoE-тестер', 'PoE-тестером', 'порт up']) 
 }
 assert.match(GLOSSARY_TOOLTIPS['порт up'].summary, /физическое соединение.*не доказывает достаточность PoE-питания/u);
 assert.match(GLOSSARY_TOOLTIPS['PoE-тестером'].summary, /под нагрузкой.*ток и мощность/u);
-assert.ok(!splitGlossaryText('PoE-тестеромX').some(part => part.term === 'PoE-тестером'), 'do not match inside a longer token');
+assert.ok(!splitGlossaryText('PoE-тестеромX').some(part => part.term), 'do not match inside a longer token');
 
 console.log(`PASS: ${GLOSSARY_ABBREVIATIONS.length} abbreviations, ${Object.keys(GLOSSARY_TOOLTIPS).length} complete tooltips; boundaries and longest matches`);
