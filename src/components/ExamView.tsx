@@ -14,7 +14,6 @@ import {
   resolveImageUrl,
 } from '../data/questionsData';
 import { getTestingPool, getTestingQuestions, getTestingEligibleQuestions, getTrialExamQuestions, TRIAL_EXAM_OPTIONS } from '../data/learningLevelExam';
-import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 import { triggerHaptic } from '../utils/haptics';
 import { getInitialProgress, getMistakeQuestions, getProgressEpoch, subscribeProgress, retainProgressBackup } from '../utils/userProgress';
 import { prepareAttemptQuestions, restoreSession, confirmAnswer, recordConfirmedAnswers, expireTrial, TRIAL_MINUTES, TRIAL_QUESTION_COUNT, type ProgressSession } from '../utils/examProgress';
@@ -133,12 +132,11 @@ export interface ExamViewHandle {
 
 interface ExamViewProps extends ExplanationNavigation {
   ref?: React.Ref<ExamViewHandle>;
-  soundEnabled: boolean;
   onNavigateToLearning?: () => void;
   onSelectLevel?: (level: string) => void;
 }
 
-export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigateToLearning, ...navigation }) => {
+export const ExamView: React.FC<ExamViewProps> = ({ ref, onNavigateToLearning, ...navigation }) => {
   const [session, setSession] = useState<ProgressSession | null>(null);
   const [selectedMode, setSelectedMode] = useState<QuizModeId>('mixed');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExamDifficulty>('beginner');
@@ -324,7 +322,6 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
   const handleSelectAnswer = (index: number) => {
     if (isAnswerSubmitted) return;
     triggerHaptic('selection');
-    if (soundEnabled) playClickSound();
     if (isMultiSelect) {
       setSelectedAnswers((prev) =>
         prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
@@ -344,7 +341,6 @@ export const ExamView: React.FC<ExamViewProps> = ({ ref, soundEnabled, onNavigat
       const question = current.questions[current.currentIndex];
       const isCorrect = selectedAnswers.length === question.correct.length && selectedAnswers.every(a => question.correct.includes(a));
       triggerHaptic(isCorrect ? 'success' : 'error');
-      if (soundEnabled) { if (isCorrect) playSuccessSound(); else playErrorSound(); }
     } else {
       triggerHaptic('selection');
     }

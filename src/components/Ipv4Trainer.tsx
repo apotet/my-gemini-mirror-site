@@ -13,7 +13,6 @@ import {
   Activity,
   Layers,
 } from 'lucide-react';
-import { playSuccessSound, playErrorSound, playClickSound } from '../utils/sound';
 
 // IPv4 helper math functions matching original site logic
 function maskInt(prefix: number): number {
@@ -93,13 +92,11 @@ interface QuestionTask {
 }
 
 interface Ipv4TrainerProps {
-  soundEnabled: boolean;
   initialPrefix?: number;
   initialSubTab?: Ipv4SubTab;
 }
 
 export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
-  soundEnabled,
   initialPrefix,
   initialSubTab,
 }) => {
@@ -316,7 +313,6 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
 
   const handleSelectOption = (option: string) => {
     if (isAnswered) return;
-    if (soundEnabled) playClickSound();
     setUserSelection(option);
   };
 
@@ -326,11 +322,6 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
     const correct = userSelection === currentTask.correctAnswer;
     setIsCorrect(correct);
     setIsAnswered(true);
-
-    if (soundEnabled) {
-      if (correct) playSuccessSound();
-      else playErrorSound();
-    }
 
     if (correct) {
       setScoreCorrect((prev) => prev + 1);
@@ -349,7 +340,6 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
       .fill(0)
       .map((_, i) => (i < count ? 1 : 0));
     setBits(newBits);
-    if (soundEnabled) playClickSound();
   };
 
   const toggleBit = (index: number) => {
@@ -360,7 +350,6 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
     const newCount = currentActiveCount === index + 1 ? index : index + 1;
     const newBits = Array.from({ length: 8 }, (_, i) => (i < newCount ? 1 : 0));
     setBits(newBits);
-    if (soundEnabled) playClickSound();
   };
 
   const calcResult = subnetCalc(calcIp, calcPrefix);

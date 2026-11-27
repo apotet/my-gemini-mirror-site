@@ -28,7 +28,6 @@ export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('exam');
   const examViewRef = useRef<ExamViewHandle>(null);
   const [isDark, setIsDark] = useState<boolean>(() => readStoredBool('osi_theme_dark', true));
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => readStoredBool('osi_sound', false));
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [showCredits, setShowCredits] = useState<boolean>(false);
 
@@ -64,14 +63,6 @@ export function App() {
       // ignore
     }
   }, [isDark]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('osi_sound', soundEnabled ? '1' : '0');
-    } catch {
-      // ignore
-    }
-  }, [soundEnabled]);
 
   const handleNavigateToTheory = (questionId: string) => {
     setTheoryLessonId(null);
@@ -140,14 +131,12 @@ export function App() {
         onTabChange={handleTabChange}
         isDark={isDark}
         onToggleTheme={() => setIsDark((v) => !v)}
-        soundEnabled={soundEnabled}
-        onToggleSound={() => setSoundEnabled((v) => !v)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
         {activeTab === 'exam' && (
-          <ExamView onOpenLesson={handleOpenLesson} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} soundEnabled={soundEnabled} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
+          <ExamView onOpenLesson={handleOpenLesson} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryLessonId(null);
             setTheoryQuestionId(null);
             setTheoryFromExam(false);
@@ -174,7 +163,6 @@ export function App() {
         {activeTab === 'ipv6' && <Ipv6Trainer key={ipv6InitialMode} initialMode={ipv6InitialMode} />}
         {activeTab === 'ipv4' && (
           <Ipv4Trainer
-            soundEnabled={soundEnabled}
             initialPrefix={ipv4InitialPrefix}
             initialSubTab={ipv4InitialSubTab}
           />
