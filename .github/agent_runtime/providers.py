@@ -29,8 +29,11 @@ MODELS = {
     'kimi-k3.1-pro': Model('kimi','https://api.moonshot.ai/v1/chat/completions',1048576,1048576,'max_completion_tokens','2','10','.2',True),
     # Runtime output cap, not a claim about this model's native maximum.
     'gemini-3.8-flash': Model('gemini','https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',1048576,16384,'maxOutputTokens','0','0','0'),
+    # Conservative pilot limits, not claims about native limits or pricing.
+    'gemini-4-hydrogen': Model('hydrogen','https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent',4096,2048,'maxOutputTokens','0','0','0'),
 }
-DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro','gemini':'gemini-3.8-flash'}
+DEFAULT = {'zai':'glm-5.3','kimi':'kimi-k3.1-pro','gemini':'gemini-3.8-flash','hydrogen':'gemini-4-hydrogen'}
+GOOGLE_PROVIDERS = ('gemini','hydrogen')
 
 
 def payload(task, messages):
@@ -38,7 +41,7 @@ def payload(task, messages):
     output = task.get('max_output_tokens',model.output)
     if type(output) is not int or not 1 <= output <= model.output:
         raise ValueError('Output exceeds this model API limit')
-    if model.provider == 'gemini':
+    if model.provider in GOOGLE_PROVIDERS:
         system=[m['content'] for m in messages if m['role']=='system']
         history=[{'role':m['role'],'content':m['content']} for m in messages if m['role']!='system']
         return {'systemInstruction':{'parts':[{'text':'\n'.join(system)}]},
@@ -56,20 +59,29 @@ def payload(task, messages):
 # Keep the new transport dormant even if repository variables were preconfigured.
 # Enabling live requests requires a separately reviewed code change.
 GEMINI_DEV_TRANSPORT_RELEASED=False
+HYDROGEN_DEV_TRANSPORT_RELEASED=False
 
 
 class GeminiInputLimit(ValueError):
     pass
 
 
-def gemini_request_limits():
-    if not GEMINI_DEV_TRANSPORT_RELEASED:
-        raise GeminiInputLimit('Gemini DEV transport disabled by the trusted release gate')
-    if os.environ.get('NETOPS_GEMINI_DEV_PROVIDER_VERIFIED')!='true':
-        raise GeminiInputLimit('Gemini DEV transport disabled pending owner verification of provider billing and data terms')
+def gemini_request_limits(provider='gemini'):
+    if provider=='gemini':
+        released=GEMINI_DEV_TRANSPORT_RELEASED
+        prefix='NETOPS_GEMINI_DEV'
+    elif provider=='hydrogen':
+        released=HYDROGEN_DEV_TRANSPORT_RELEASED
+        prefix='NETOPS_HYDROGEN_DEV'
+    else:
+        raise GeminiInputLimit('Unknown Google developer provider')
+    if not released:
+        raise GeminiInputLimit(f'{provider} DEV transport disabled by the trusted release gate')
+    if os.environ.get(prefix+'_PROVIDER_VERIFIED')!='true':
+        raise GeminiInputLimit(f'{provider} DEV transport disabled pending owner verification of provider billing and data terms')
     try:
-        per_attempt=int(os.environ['NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES'])
-        aggregate=int(os.environ['NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES'])
+        per_attempt=int(os.environ[prefix+'_MAX_REQUEST_BYTES'])
+        aggregate=int(os.environ[prefix+'_MAX_TOTAL_REQUEST_BYTES'])
     except (KeyError,ValueError):
         raise GeminiInputLimit('Gemini DEV requires explicit request byte limits') from None
     if not 1<=per_attempt<=aggregate:
@@ -77,8 +89,8 @@ def gemini_request_limits():
     return per_attempt,aggregate
 
 
-def check_gemini_request(size,prior=0):
-    per_attempt,aggregate=gemini_request_limits()
+def check_gemini_request(size,prior=0,provider='gemini'):
+    per_attempt,aggregate=gemini_request_limits(provider)
     if size>per_attempt:raise GeminiInputLimit('Gemini DEV per-attempt request byte limit exceeded')
     if size+prior>aggregate:raise GeminiInputLimit('Gemini DEV cumulative request byte limit exceeded')
 
@@ -158,13 +170,13 @@ def infer(task, messages, output_dir, timeout):
     policy.safe_value(request)
     data=request_bytes(request)
     model=MODELS[task['model']]
-    if model.provider=='gemini':check_gemini_request(len(data))
+    if model.provider in GOOGLE_PROVIDERS:check_gemini_request(len(data),provider=model.provider)
     with tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
         temp=Path(temp)
         request_file=temp/'request.json'
         request_file.write_bytes(data)
         raw, headers = temp/'response.sse', temp/'headers.tmp'
-        auth=('x-goog-api-key: ' if model.provider=='gemini' else 'Authorization: Bearer ')+key
+        auth=('x-goog-api-key: ' if model.provider in GOOGLE_PROVIDERS else 'Authorization: Bearer ')+key
         result = subprocess.run(['curl','-q','--silent','--show-error','--no-buffer','--retry','0',
             '--max-time',str(timeout),'--proto','=https','--output',str(raw),'--dump-header',str(headers),
             '--write-out','%{http_code}',model.endpoint,
@@ -178,12 +190,12 @@ def infer(task, messages, output_dir, timeout):
                 if name.lower() in ('msh-usage-cache-write-tokens-5m','msh-usage-cache-write-tokens-1h') and value.strip().isdigit():
                     billing[name.lower()] = int(value.strip())
         if result.returncode or status != '200':
-            if model.provider=='gemini' and not result.returncode and status.isascii() and status.isdecimal():
+            if model.provider in GOOGLE_PROVIDERS and not result.returncode and status.isascii() and status.isdecimal():
                 raise GeminiHTTPError(status)
             raise ValueError('Transport failed; attempted request must not be silently repeated')
         raw_text=raw.read_text(encoding='utf-8')
         policy.safe_value(raw_text)
-        parsed = (parse_gemini if model.provider=='gemini' else parse_stream)(raw_text)
+        parsed = (parse_gemini if model.provider in GOOGLE_PROVIDERS else parse_stream)(raw_text)
         parsed['billing'] = billing
         parsed['raw'] = raw_text
         return parsed
@@ -191,7 +203,7 @@ def infer(task, messages, output_dir, timeout):
 
 def cost(model_name, usage, billing):
     model=MODELS[model_name]
-    if model.provider=='gemini':
+    if model.provider in GOOGLE_PROVIDERS:
         known=isinstance(usage,dict) and all(type(usage.get(k)) is int and usage[k]>=0 for k in ('prompt_tokens','completion_tokens'))
         return {'exact_usd':None,'range_usd':None,'usage_known':known}
     if not isinstance(usage,dict):return {'exact_usd':None,'range_usd':None,'usage_known':False}

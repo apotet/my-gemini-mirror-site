@@ -9,12 +9,14 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'.github'))
-from agent_runtime import budget, core, policy, providers, cli, sandbox
+from agent_runtime import budget, core, policy, providers, cli, sandbox, pilot
 from agent_runtime.storage import Ledger, Repository, APIError
 
 
@@ -518,6 +520,394 @@ class Runtime(unittest.TestCase):
                 core.normalize({'task':'pilot',**fields},'gemini')
         state['task'].pop('max_total_calls')
         with self.assertRaises(ValueError):core.reserve(state)
+
+    def test_synthetic_pilot_disabled_without_explicit_owner_authorization(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        for overrides in ({'NETOPS_GEMINI_PILOT_ENABLED':''}, {'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED':''},
+                          {'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'},
+                          {'GITHUB_REF':'refs/heads/other'}, {'GITHUB_EVENT_NAME':'issue_comment'}):
+            with self.subTest(overrides=overrides),patch.dict(os.environ,{**env,**overrides}):
+                with patch.object(pilot,'transport') as transport,self.assertRaises(ValueError):
+                    pilot.run(self.api,self.repo,infer=transport)
+                transport.assert_not_called()
+                self.assertFalse(self.api.refs)
+
+    def test_synthetic_pilot_success_is_reserved_and_publishes_only_scoped_file(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        calls=[]
+        def infer(request):
+            state=Ledger(self.api,'gemini',pilot.KEY).load()
+            self.assertEqual(state['calls'][0]['status'],'reserved')
+            self.assertEqual(state['remaining_calls'],0)
+            self.assertNotIn('STATE',json.dumps(request))
+            self.assertNotIn('Full mandatory',json.dumps(request))
+            self.assertEqual(request['generationConfig']['maxOutputTokens'],2048)
+            self.assertNotIn('tools',request)
+            calls.append(request)
+            return response({'status':'complete','files':[{'path':pilot.TARGET,'content':'# Fictional observatory\\n'}]})
+        def validate(repo,state):
+            self.assertEqual(list(state['overlay']),[pilot.TARGET])
+            return {'passed':True,'logs':[]}
+        with patch.dict(os.environ,env):
+            state,head=pilot.run(self.api,self.repo,infer=infer,validator=validate)
+            with self.assertRaisesRegex(ValueError,'already reserved'):
+                pilot.run(self.api,self.repo,infer=infer,validator=validate)
+        self.assertEqual(len(calls),1)
+        self.assertEqual(state['status'],'published_draft')
+        self.assertEqual(len(self.api.prs),1)
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertEqual(Ledger(self.api,'gemini',pilot.KEY).load()['published_head'],self.api.ref('gemini/synthetic-pilot'))
+        self.assertIsNotNone(head)
+
+    def test_synthetic_pilot_failure_never_publishes_or_retries(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        bad=[urllib.error.HTTPError('https://example.invalid',429,'quota',{},None),
+             urllib.error.HTTPError('https://example.invalid',503,'busy',{},None),
+             TimeoutError('timeout'),response('{"status":','length'),
+             response('invalid json'),
+             response({'status':'complete','files':[{'path':'docs/other.md','content':'# Wrong'}]})]
+        for answer in bad:
+            with self.subTest(answer=type(answer).__name__):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                calls=[]
+                def infer(request):
+                    calls.append(request)
+                    if isinstance(answer,Exception):raise answer
+                    return answer
+                with patch.dict(os.environ,env):
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer)
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer)
+                self.assertEqual(len(calls),1)
+                state=Ledger(self.api,'gemini',pilot.KEY).load()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertEqual(len(state['calls']),1)
+                self.assertFalse(self.api.prs)
+                self.assertIsNone(self.api.ref('gemini/synthetic-pilot'))
+
+    def test_synthetic_pilot_validation_failure_never_publishes(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        reply=response({'status':'complete','files':[{'path':pilot.TARGET,'content':'# Synthetic'}]})
+        with patch.dict(os.environ,env),self.assertRaisesRegex(ValueError,'validation failed'):
+            pilot.run(self.api,self.repo,infer=lambda _:reply,validator=lambda *_:{'passed':False,'logs':[]})
+        self.assertFalse(self.api.prs)
+        self.assertIsNone(self.api.ref('gemini/synthetic-pilot'))
+        self.assertEqual(len(Ledger(self.api,'gemini',pilot.KEY).load()['calls']),1)
+
+    def test_synthetic_transport_uses_one_fixed_bounded_request(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        request=providers.payload({'model':'gemini-3.8-flash','max_output_tokens':2048},
+                                  [{'role':'user','content':pilot.PROMPT}])
+        body={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'ok'}]}}]}
+        class FakeResponse:
+            def __enter__(self):return self
+            def __exit__(self,*_):return False
+            def read(self,limit):
+                self_limit=pilot.MAX_RESPONSE_BYTES+1
+                if limit!=self_limit:raise AssertionError('unbounded read')
+                return json.dumps(body).encode()
+        with patch.dict(os.environ,env),patch.object(pilot.urllib.request,'build_opener') as opener:
+            opener.return_value.open.return_value=FakeResponse()
+            pilot.transport(request)
+            self.assertEqual(opener.return_value.open.call_count,1)
+            self.assertEqual(opener.return_value.open.call_args.kwargs['timeout'],60)
+            self.assertEqual(opener.return_value.open.call_args.args[0].data,providers.request_bytes(request))
+            with self.assertRaises(ValueError):pilot.transport({**request,'tools':[{}]})
+            self.assertEqual(opener.return_value.open.call_count,1)
+
+    def test_synthetic_transport_enforces_total_deadline(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':'one-synthetic-request'}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        request=providers.payload({'model':'gemini-3.8-flash','max_output_tokens':2048},
+                                  [{'role':'user','content':pilot.PROMPT}])
+        with patch.dict(os.environ,env),patch.object(pilot,'TIMEOUT',0.05), \
+             patch.object(pilot.urllib.request,'build_opener') as opener:
+            opener.return_value.open.side_effect=lambda *args,**kwargs:time.sleep(1)
+            with self.assertRaisesRegex(TimeoutError,'total request deadline'):
+                pilot.transport(request)
+            self.assertEqual(opener.return_value.open.call_count,1)
+
+    def test_hydrogen_pilot_requires_its_own_authorization(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.HYDROGEN.confirmation}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_HYDROGEN_PILOT_ENABLED':'true',
+             'NETOPS_HYDROGEN_PROVIDER_VERIFIED':'true','NETOPS_GEMINI_PILOT_ENABLED':'true'}
+        for overrides in ({'NETOPS_HYDROGEN_PILOT_ENABLED':''}, {'NETOPS_HYDROGEN_PROVIDER_VERIFIED':''},
+                          {'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'},
+                          {'GITHUB_REF':'refs/heads/other'}, {'GITHUB_EVENT_NAME':'issue_comment'}):
+            with self.subTest(overrides=overrides),patch.dict(os.environ,{**env,**overrides}):
+                with patch.object(pilot,'transport') as transport,self.assertRaises(ValueError):
+                    pilot.run(self.api,self.repo,profile=pilot.HYDROGEN)
+                transport.assert_not_called()
+                self.assertFalse(self.api.refs)
+        with patch.dict(os.environ,env):
+            self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.FLASH.confirmation}}))
+            with self.assertRaises(ValueError):pilot.run(self.api,self.repo,profile=pilot.HYDROGEN)
+        with self.assertRaisesRegex(ValueError,'Model/provider mismatch'):
+            core.normalize({'task':'normal issue','model':'gemini-4-hydrogen'},'gemini')
+        with self.assertRaisesRegex(ValueError,'Model/provider mismatch'):
+            core.normalize({'task':'normal issue','model':'gemini-3.8-flash'},'hydrogen')
+
+    def test_hydrogen_pilot_reserves_once_and_publishes_only_scoped_file(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.HYDROGEN.confirmation}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_HYDROGEN_PILOT_ENABLED':'true',
+             'NETOPS_HYDROGEN_PROVIDER_VERIFIED':'true'}
+        calls=[]
+        def infer(request):
+            state=Ledger(self.api,'hydrogen',pilot.HYDROGEN.key).load()
+            self.assertEqual(state['calls'][0]['status'],'reserved')
+            self.assertEqual(state['remaining_calls'],0)
+            self.assertEqual(state['task']['model'],'gemini-4-hydrogen')
+            self.assertEqual(request['generationConfig']['maxOutputTokens'],2048)
+            self.assertNotIn('STATE',json.dumps(request))
+            self.assertNotIn('tools',request)
+            calls.append(request)
+            return response({'status':'complete','files':[{'path':pilot.HYDROGEN.target,'content':'# Fictional observatory'}]})
+        def validate(repo,state):
+            self.assertEqual(list(state['overlay']),[pilot.HYDROGEN.target])
+            return {'passed':True,'logs':[]}
+        with patch.dict(os.environ,env):
+            state,_=pilot.run(self.api,self.repo,infer=infer,validator=validate,profile=pilot.HYDROGEN)
+            with self.assertRaisesRegex(ValueError,'already reserved'):
+                pilot.run(self.api,self.repo,infer=infer,validator=validate,profile=pilot.HYDROGEN)
+        self.assertEqual(len(calls),1)
+        self.assertEqual(state['status'],'published_draft')
+        self.assertEqual(len(self.api.prs),1)
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertEqual(Ledger(self.api,'hydrogen',pilot.HYDROGEN.key).load()['published_head'],
+                         self.api.ref(pilot.HYDROGEN.branch))
+        self.assertIsNone(self.api.ref('gemini/synthetic-pilot'))
+        self.assertIsNone(Ledger(self.api,'gemini',pilot.FLASH.key).load())
+
+    def test_hydrogen_pilot_failures_never_publish_or_repeat(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.HYDROGEN.confirmation}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_HYDROGEN_PILOT_ENABLED':'true',
+             'NETOPS_HYDROGEN_PROVIDER_VERIFIED':'true'}
+        bad=[urllib.error.HTTPError('https://example.invalid',429,'quota',{},None),
+             urllib.error.HTTPError('https://example.invalid',503,'busy',{},None),
+             TimeoutError('timeout'),response('{"status":','length'),response('invalid json'),
+             response({'status':'complete','files':[{'path':pilot.TARGET,'content':'# Wrong'}]})]
+        for answer in bad:
+            with self.subTest(answer=type(answer).__name__):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                calls=[]
+                def infer(request):
+                    calls.append(request)
+                    if isinstance(answer,Exception):raise answer
+                    return answer
+                with patch.dict(os.environ,env):
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer,profile=pilot.HYDROGEN)
+                    with self.assertRaises(ValueError):pilot.run(self.api,self.repo,infer=infer,profile=pilot.HYDROGEN)
+                self.assertEqual(len(calls),1)
+                self.assertEqual(Ledger(self.api,'hydrogen',pilot.HYDROGEN.key).load()['status'],'uncertain')
+                self.assertFalse(self.api.prs)
+                self.assertIsNone(self.api.ref(pilot.HYDROGEN.branch))
+
+    def test_hydrogen_pilot_validation_failure_never_publishes(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.HYDROGEN.confirmation}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_HYDROGEN_PILOT_ENABLED':'true',
+             'NETOPS_HYDROGEN_PROVIDER_VERIFIED':'true'}
+        reply=response({'status':'complete','files':[{'path':pilot.HYDROGEN.target,'content':'# Synthetic'}]})
+        with patch.dict(os.environ,env),self.assertRaisesRegex(ValueError,'validation failed'):
+            pilot.run(self.api,self.repo,infer=lambda _:reply,validator=lambda *_:{'passed':False,'logs':[]},
+                      profile=pilot.HYDROGEN)
+        self.assertFalse(self.api.prs)
+        self.assertIsNone(self.api.ref(pilot.HYDROGEN.branch))
+        self.assertEqual(len(Ledger(self.api,'hydrogen',pilot.HYDROGEN.key).load()['calls']),1)
+
+    def test_hydrogen_transport_uses_only_fixed_endpoint_and_prompt(self):
+        self.event_file.write_text(json.dumps({'inputs':{'confirmation':pilot.HYDROGEN.confirmation}}))
+        env={'GITHUB_EVENT_NAME':'workflow_dispatch','NETOPS_HYDROGEN_PILOT_ENABLED':'true',
+             'NETOPS_HYDROGEN_PROVIDER_VERIFIED':'true'}
+        request=providers.payload({'model':pilot.HYDROGEN.model,'max_output_tokens':2048},
+                                  [{'role':'user','content':pilot.HYDROGEN.prompt}])
+        body={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'ok'}]}}]}
+        class FakeResponse:
+            def __enter__(self):return self
+            def __exit__(self,*_):return False
+            def read(self,limit):
+                if limit!=pilot.MAX_RESPONSE_BYTES+1:raise AssertionError('unbounded read')
+                return json.dumps(body).encode()
+        with patch.dict(os.environ,env),patch.object(pilot.urllib.request,'build_opener') as opener:
+            opener.return_value.open.return_value=FakeResponse()
+            pilot.transport(request,pilot.HYDROGEN)
+            sent=opener.return_value.open.call_args.args[0]
+            self.assertEqual(sent.full_url,providers.MODELS['gemini-4-hydrogen'].endpoint)
+            self.assertEqual(sent.data,providers.request_bytes(request))
+            with self.assertRaises(ValueError):pilot.transport({**request,'tools':[{}]},pilot.HYDROGEN)
+            self.assertEqual(opener.return_value.open.call_count,1)
+
+    def test_hydrogen_issue_release_gate_blocks_before_claim_and_transport(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',False):
+            with self.assertRaisesRegex(providers.GeminiInputLimit,'disabled'):
+                cli.prepare('hydrogen',self.api)
+            task=core.normalize({'task':'audit'},'hydrogen')
+            with patch.object(providers.subprocess,'run') as transport:
+                with self.assertRaisesRegex(providers.GeminiInputLimit,'disabled'):
+                    providers.infer(task,[{'role':'user','content':'hello'}],self.out,30)
+                transport.assert_not_called()
+        self.assertFalse(self.api.refs)
+
+    def test_hydrogen_issue_requires_own_terms_limits_and_owner(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        failures=[{'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':''},
+                  {'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':''},
+                  {'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'1'},
+                  {'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'}]
+        with patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True):
+            for override in failures:
+                with self.subTest(override=override),patch.dict(os.environ,{**env,**override}):
+                    with self.assertRaises(ValueError):cli.prepare('hydrogen',self.api)
+                    self.assertFalse(self.api.refs)
+            self.event['issue']['title']='[GEMINI DEV] Task'
+            self.write_event()
+            with patch.dict(os.environ,env),self.assertRaisesRegex(ValueError,'prefix mismatch'):
+                cli.prepare('hydrogen',self.api)
+
+    def test_hydrogen_issue_creates_only_checked_draft(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit a fictional source file','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1,'max_output_tokens':2048})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        calls=[]
+        def infer(task,messages,out,timeout):
+            state=Ledger(self.api,'hydrogen','issue-9').load()
+            self.assertEqual(state['calls'][-1]['status'],'reserved')
+            self.assertEqual(task['model'],'gemini-4-hydrogen')
+            calls.append(task['model'])
+            return response({'status':'complete','files':[{'path':'src/a.ts','content':'export const x = 2;'}]})
+        with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True):
+            cli.prepare('hydrogen',self.api)
+            cli.run_loop('hydrogen',self.api,infer=infer,validator=lambda *_:{'passed':True,'logs':[]})
+            state=Ledger(self.api,'hydrogen','issue-9').load()
+            self.assertEqual(state['status'],'ready_for_review')
+            self.assertEqual(state['calls'][0]['cost']['exact_usd'],None)
+            cli.publish('hydrogen',self.api)
+        self.assertEqual(calls,['gemini-4-hydrogen'])
+        self.assertEqual(len(self.api.prs),1)
+        self.assertTrue(self.api.prs[0]['draft'])
+        self.assertIsNotNone(self.api.ref('hydrogen/issue-9'))
+        self.assertIsNone(self.api.ref('gemini/issue-9'))
+
+    def test_hydrogen_issue_failure_is_uncertain_and_never_retried(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        for error in (providers.GeminiHTTPError(429),providers.GeminiHTTPError(503),TimeoutError('timeout')):
+            with self.subTest(error=type(error).__name__):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                calls=[]
+                def infer(*_):
+                    calls.append(True)
+                    raise error
+                with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True):
+                    cli.prepare('hydrogen',self.api)
+                    cli.run_loop('hydrogen',self.api,infer=infer)
+                    with self.assertRaisesRegex(ValueError,'already durably claimed'):
+                        cli.prepare('hydrogen',self.api)
+                state=Ledger(self.api,'hydrogen','issue-9').load()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertEqual(len(calls),1)
+                if isinstance(error,providers.GeminiHTTPError):
+                    self.assertEqual(state['calls'][0]['http_status'],error.status)
+                self.assertFalse(self.api.prs)
+                self.assertIsNone(self.api.ref('hydrogen/issue-9'))
+
+    def test_hydrogen_issue_transport_uses_google_endpoint_and_no_retry(self):
+        task=core.normalize({'task':'audit','max_calls':1,'max_total_calls':1},'hydrogen')
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        body={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"status":"complete","report":"ok"}'}]}}],
+              'usageMetadata':{'promptTokenCount':15,'candidatesTokenCount':7,'thoughtsTokenCount':4}}
+        def fake_curl(argv,**kwargs):
+            self.assertEqual(argv[argv.index('--retry')+1],'0')
+            self.assertIn(providers.MODELS['gemini-4-hydrogen'].endpoint,argv)
+            self.assertIn('x-goog-api-key: fake-not-sent',argv)
+            Path(argv[argv.index('--output')+1]).write_text(json.dumps(body))
+            return subprocess.CompletedProcess(argv,0,'200','')
+        with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True), \
+             patch.object(providers.subprocess,'run',side_effect=fake_curl) as transport:
+            result=providers.infer(task,[{'role':'user','content':'fictional'}],self.out,30)
+        self.assertEqual(transport.call_count,1)
+        self.assertEqual(result['usage']['completion_tokens'],11)
+        policy.check_raw_response('hydrogen',result,result['raw'])
+        self.assertIsNone(providers.cost('gemini-4-hydrogen',result['usage'],{})['exact_usd'])
+
+    def test_hydrogen_validate_only_cannot_publish(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        reply=response({'status':'complete','files':[{'path':'src/a.ts','content':'export const x = 2;'}]})
+        with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True):
+            cli.prepare('hydrogen',self.api)
+            cli.run_loop('hydrogen',self.api,infer=lambda *_:reply,
+                         validator=lambda *_:{'passed':True,'logs':[]})
+            ledger=Ledger(self.api,'hydrogen','issue-9');ledger.load()
+            self.event['comment'].update(id=226,
+                body='/agent validate '+json.dumps({'checkpoint':ledger.head,'calls':0}))
+            self.write_event()
+            cli.prepare('hydrogen',self.api)
+            with patch.object(sandbox,'validate',return_value={'passed':True,'logs':[]}):
+                cli.validate_only('hydrogen',self.api)
+            with self.assertRaisesRegex(ValueError,'validation-only activation cannot publish'):
+                cli.publish('hydrogen',self.api)
+        self.assertFalse(self.api.prs)
+        self.assertIsNone(self.api.ref('hydrogen/issue-9'))
+
+    def test_hydrogen_issue_rejects_unchecked_responses_before_checkpoint(self):
+        self.event['issue']['title']='[HYDROGEN DEV] Task'
+        self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
+             'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
+        self.write_event()
+        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+             'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
+             'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
+        secret='AIza'+'a1_'*11+'a1'
+        replies=[response('not-json'),response({'status':'complete','files':[
+            {'path':'src/a.ts','content':secret}]})]
+        for reply in replies:
+            with self.subTest(reply=reply['content'][:10]):
+                self.api=FakeAPI()
+                self.api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                self.api.trees['base-tree']=[]
+                with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',True):
+                    cli.prepare('hydrogen',self.api)
+                    cli.run_loop('hydrogen',self.api,infer=lambda *_:reply)
+                state=Ledger(self.api,'hydrogen','issue-9').load()
+                self.assertEqual(state['status'],'uncertain')
+                self.assertNotIn('response',state['calls'][0])
+                self.assertNotIn(secret.encode(),b''.join(self.api.blobs.values()))
+                self.assertFalse(self.api.prs)
 
     def test_gemini_transport_defaults_off_before_claim_and_direct_transport(self):
         self.event['issue']['title']='[GEMINI DEV] Task';self.write_event()

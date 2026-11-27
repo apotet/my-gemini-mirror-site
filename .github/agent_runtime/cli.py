@@ -35,14 +35,14 @@ def authorize(provider):
     event=json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     kind=os.environ['GITHUB_EVENT_NAME']
     if kind=='workflow_dispatch':
-        if provider=='gemini':raise ValueError('Gemini developer requires an owner Issue command')
+        if provider in providers.GOOGLE_PROVIDERS:raise ValueError('Google developer requires an owner Issue command')
         if provider=='kimi' and str(event.get('inputs',{}).get('confirm_paid_api','')).lower()!='true':
             raise ValueError('Explicit owner paid API confirmation required')
         return event,None
     issue=event['issue'];sender=event['sender']
     if issue.get('pull_request') or issue['user']['login']!='apotet' or sender['login']!='apotet' or sender['type']!='User':
         raise ValueError('Unauthorized Issue event')
-    if not issue['title'].startswith({'kimi':'[KIMI] ','zai':'[ZAI] ','gemini':'[GEMINI DEV] '}[provider]):raise ValueError('Provider prefix mismatch')
+    if not issue['title'].startswith({'kimi':'[KIMI] ','zai':'[ZAI] ','gemini':'[GEMINI DEV] ','hydrogen':'[HYDROGEN DEV] '}[provider]):raise ValueError('Provider prefix mismatch')
     if kind=='issues' and event.get('action')=='opened' and provider=='zai':return event,issue
     if kind=='issue_comment' and event.get('action')=='created':
         comment=event['comment']
@@ -106,7 +106,7 @@ def prepare(provider,api=None):
     trusted_repo=source_repo(os.environ['GITHUB_SHA'])
     repo=trusted_repo
     action='work';resume=None
-    is_explicit_start=(provider in ('kimi','gemini') and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
+    is_explicit_start=(provider in ('kimi',*providers.GOOGLE_PROVIDERS) and os.environ['GITHUB_EVENT_NAME']=='issue_comment' and
                        event['comment']['body']=='/agent start confirm-paid-api')
     if os.environ['GITHUB_EVENT_NAME']=='issue_comment' and not is_explicit_start:
         match=re.fullmatch(r'/agent (continue|validate|publish)\s+(\{.*\})\s*',event['comment']['body'],re.S)
@@ -139,7 +139,7 @@ def prepare(provider,api=None):
                 task['context_files']=list(dict.fromkeys([definition['path'],*task['context_files'],
                     'docs/LEARNING_CONTENT_STANDARD.md','docs/DEVELOPMENT_WORKFLOW.md','src/data/questions.json']))
             key='issue-'+str(issue['number']) if issue else 'manual-'+hashlib.sha256((repo.source+json.dumps(task,sort_keys=True,ensure_ascii=False)).encode()).hexdigest()[:24]
-    if provider=='gemini' and action=='work':providers.gemini_request_limits()
+    if provider in providers.GOOGLE_PROVIDERS and action=='work':providers.gemini_request_limits(provider)
     ledger=Ledger(api,provider,key)
     state=ledger.load()
     if resume is None:
@@ -199,7 +199,7 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='work':raise ValueError('This activation cannot call a model')
-    if provider=='gemini':providers.gemini_request_limits()
+    if provider in providers.GOOGLE_PROVIDERS:providers.gemini_request_limits(provider)
     if not os.environ.get('PROVIDER_API_KEY'):raise ValueError('Missing provider credential; no attempt made')
     repo=source_repo(state['sourceSHA'])
     trusted_repo=source_repo(state.get('trustedSHA',state['sourceSHA']))
@@ -261,7 +261,7 @@ def validate_only(provider,api=None):
     api=api or GitHub();plan,ledger,state=load_activation(api)
     if plan['action']!='validate' or state['incomplete_files'] or not state['overlay']:
         raise ValueError('No complete candidate for validation-only activation')
-    if provider=='gemini' and not state.get('candidate_complete'):
+    if provider in providers.GOOGLE_PROVIDERS and not state.get('candidate_complete'):
         raise ValueError('Gemini candidate has not reached a complete response')
     repo=source_repo(state['sourceSHA'])
     result=sandbox.validate(repo,state,Path.cwd()/'node_modules')
@@ -274,7 +274,7 @@ def publish(provider,api=None):
     authorize(provider)
     api=api or GitHub();plan,ledger,state=load_activation(api)
     try:
-        if provider=='gemini' and plan['action']=='validate':
+        if provider in providers.GOOGLE_PROVIDERS and plan['action']=='validate':
             raise ValueError('Gemini validation-only activation cannot publish')
         if state['status']=='ready_for_review':core.publish_candidate(api,ledger,state)
     finally:
@@ -303,7 +303,7 @@ def report(provider,api=None):
     if provider=='kimi':
         metrics['daily_budget']=budget.daily_status(api)
     gemini_status=''
-    if provider=='gemini' and state['calls']:
+    if provider in providers.GOOGLE_PROVIDERS and state['calls']:
         http=state['calls'][-1].get('http_status')
         if http==429:gemini_status='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
         elif http is not None:gemini_status=f'Gemini HTTP {http}. No automatic retry.\n'

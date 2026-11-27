@@ -274,7 +274,7 @@ def check_response_history(state):
 def check_raw_response(provider,response,raw):
     from . import providers
     safe_value(raw)
-    if provider=='gemini':
+    if provider in providers.GOOGLE_PROVIDERS:
         safe_value(strict_json(raw))
         parsed=providers.parse_gemini(raw)
     else:

@@ -58,11 +58,11 @@ def normalize(raw,provider):
             raise ValueError('Kimi input estimate limit must be 1..250000')
         if type(task['max_output_tokens']) is not int or not 1<=task['max_output_tokens']<=65536:
             raise ValueError('Kimi output token limit must be 1..65536')
-    elif provider=='gemini':
+    elif provider in providers.GOOGLE_PROVIDERS:
         if any(k in raw for k in ('budget_usd','max_input_tokens')):
             raise ValueError('Budget fields apply only to Kimi')
         task['max_total_calls']=raw.get('max_total_calls',8)
-        task['max_output_tokens']=raw.get('max_output_tokens',16384)
+        task['max_output_tokens']=raw.get('max_output_tokens',providers.MODELS[providers.DEFAULT[provider]].output)
         if type(task['max_total_calls']) is not int or not 1<=task['max_total_calls']<=8:
             raise ValueError('Gemini allows 1 to 8 total attempts per task')
         if type(task['max_calls']) is not int or not 1<=task['max_calls']<=task['max_total_calls']:
@@ -145,7 +145,7 @@ def initial(task,repo,provider,key,issue=None,trusted_repo=None):
            'calls':[],'overlay':{},'incomplete_files':[],'pending_text':'','reports':[],'summaries':[],
            'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(task_context,ensure_ascii=False)},
                        context_message(task,items)],'consumed_grants':[],'published_head':None,'independent_acceptance':'pending'}
-    if provider in ('kimi','gemini'):
+    if provider in ('kimi',*providers.GOOGLE_PROVIDERS):
         state['work_branch']=f'{provider}/{key}'
     return state
 
@@ -153,7 +153,7 @@ def initial(task,repo,provider,key,issue=None,trusted_repo=None):
 def reserve(state):
     if state['remaining_calls']<1:raise ValueError('Call grant exhausted')
     if state['calls'] and state['calls'][-1]['status']=='reserved':raise ValueError('Uncertain previous attempt; owner acknowledgement required')
-    if state['provider']=='gemini':
+    if state['provider'] in providers.GOOGLE_PROVIDERS:
         limit=state['task'].get('max_total_calls')
         if type(limit) is not int or not 1<=limit<=8 or len(state['calls'])>=limit:
             raise ValueError('Gemini task attempt limit exhausted or missing')
@@ -162,11 +162,11 @@ def reserve(state):
     call={'id':len(state['calls'])+1,'status':'reserved','request_sha256':policy.digest(request_bytes),
           'request_parameters':{k:v for k,v in request.items() if k not in ('messages','contents','systemInstruction')},
           'message_count':len(state['messages'])}
-    if state['provider']=='gemini':
+    if state['provider'] in providers.GOOGLE_PROVIDERS:
         prior=[item.get('request_bytes') for item in state['calls']]
         if any(type(size) is not int or size<1 for size in prior):
             raise providers.GeminiInputLimit('Previous attempt has no durable input-byte reservation')
-        providers.check_gemini_request(len(request_bytes),sum(prior))
+        providers.check_gemini_request(len(request_bytes),sum(prior),state['provider'])
         call['request_bytes']=len(request_bytes)
     state['remaining_calls']-=1
     state['calls'].append(call)
@@ -190,7 +190,7 @@ def process(state,repo,validator,trusted_repo=None):
     call=state['calls'][-1]
     if call['status']!='answered' or call.get('processed'):raise ValueError('Response is not pending')
     response=call['response']
-    if state['provider']=='gemini':state['candidate_complete']=False
+    if state['provider'] in providers.GOOGLE_PROVIDERS:state['candidate_complete']=False
     text=state['pending_text']+response['content']
     envelope,complete=policy.checked_envelope(text,response['finish_reason'])
     if not complete:
@@ -219,7 +219,7 @@ def process(state,repo,validator,trusted_repo=None):
         elif not state['overlay']:
             state['status']='completed_no_changes'
         else:
-            if state['provider']=='gemini':state['candidate_complete']=True
+            if state['provider'] in providers.GOOGLE_PROVIDERS:state['candidate_complete']=True
             result=validator(repo,state)
             state.setdefault('validations',[]).append(result)
             if result['passed']:state['status']='ready_for_review'
@@ -254,7 +254,7 @@ def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_unc
             raise ValueError('Legacy Kimi task has no budget; create a new explicitly authorized task')
         if len(state['calls'])+calls>state['task']['max_total_calls']:
             raise ValueError('Continuation grant exceeds Kimi task call limit')
-    elif state['provider']=='gemini':
+    elif state['provider'] in providers.GOOGLE_PROVIDERS:
         limit=state['task'].get('max_total_calls')
         if type(limit) is not int or not 1<=limit<=8 or len(state['calls'])+calls>limit:
             raise ValueError('Continuation exceeds Gemini task attempt limit or legacy limit is missing')
@@ -267,7 +267,7 @@ def continue_task(state,expected_head,actual_head,grant_id,calls,acknowledge_unc
         state['pending_text']=''
         if state['calls'] and state['calls'][-1]['status']=='answered':state['calls'][-1]['processed']=True
         state['messages'].append({'role':'user','content':'Coordinator explicitly requests a fresh JSON envelope after the previous invalid/partial response.'})
-    if state['provider'] in ('kimi','gemini'):
+    if state['provider'] in ('kimi',*providers.GOOGLE_PROVIDERS):
         state['remaining_calls']=calls
     else:
         state['remaining_calls']+=calls
