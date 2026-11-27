@@ -4,7 +4,7 @@ import { MONITORING_QUESTIONS } from './monitoringCases';
 import { WIFI_QUESTIONS } from './wifiCases';
 import { EXPERT_CASES_177 } from './expertCases177';
 import { EXPERT_QUESTIONS_225 } from './expertCases225';
-import { sharedAssetUrl } from '../config/sharedAssets';
+import { FIBER_END_FACE_PHOTO, sharedAssetUrl } from '../config/sharedAssets';
 import { EXTRA_QUESTIONS } from './questionsExtra';
 import { EXTRA_DIFFICULTY_QUESTIONS } from './questionsExtraDifficulty';
 import { Question, QuizMode, QuizModeId, ExamDifficulty } from '../types/quiz';
@@ -193,6 +193,10 @@ export function resolveImageUrl(imgPath?: string): string {
   if (!imgPath) return '';
   if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
     return imgPath;
+  }
+  const relativePath = imgPath.replace(/^\.?\//, '');
+  if (relativePath === FIBER_END_FACE_PHOTO) {
+    return `${import.meta.env?.BASE_URL ?? '/'}${relativePath}`;
   }
   return sharedAssetUrl(imgPath);
 }

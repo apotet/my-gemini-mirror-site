@@ -12,3 +12,6 @@ export const SHARED_ASSETS_CREDITS_URL = sharedAssetUrl('assets/photos/credits.j
 export const SHARED_ASSETS_CREDITS_SOURCE_URL =
   `https://github.com/${REPOSITORY}/blob/${SHARED_ASSETS_REVISION}/assets/photos/credits.json`;
 export const SHARED_ASSETS_OG_IMAGE_URL = sharedAssetUrl('assets/cheatsheets/l3.webp');
+
+// Immutable, licensed local crop. The previous shared image stays at its pinned revision.
+export const FIBER_END_FACE_PHOTO = 'assets/photos/fiber-end-face-mei-2018-fig13-r1c2-v1.webp';
