@@ -149,6 +149,7 @@ try {
     assert.equal(await socket.getByRole('group', {name:'Стиль объяснения'}).count(), 0);
     await socket.locator('pre code').filter({ hasText: /udp\s+UNCONN/ }).waitFor();
     assert.equal(await socket.locator('pre [data-glossary-term]').count(), 0);
+    if (!mobile) await socket.getByRole('switch', { name: 'Подсказки при наведении' }).click();
     const term = socket.locator('[data-glossary-term]').first();
     if (mobile) await term.tap();
     else await term.hover();

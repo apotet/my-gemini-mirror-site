@@ -2,26 +2,36 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GLOSSARY_TOOLTIPS } from '../data/glossary';
 import { splitGlossaryText } from '../utils/glossaryText';
+import { useGlossaryHover } from '../utils/glossaryHoverPreference';
 import './GlossaryText.css';
 
 const OPEN_EVENT = 'glossary-tooltip-open';
 
 export function GlossaryText({ children, enabled = true, plainTerms = [], scope }: { children: string; enabled?: boolean; plainTerms?: string[]; scope?: "poe" | "poe-formula" | "ipv6" | "http" }) {
   const id = useId();
-  const [active, setActive] = useState<{ term: string; anchor: HTMLButtonElement } | null>(null);
+  const hoverEnabled = useGlossaryHover();
+  const [shown, setShown] = useState<{ term: string; anchor: HTMLButtonElement; automatic: boolean } | null>(null);
+  const active = shown && (hoverEnabled || !shown.automatic) ? shown : null;
   const popup = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const touchWasOpen = useRef(false);
   const cancelClose = () => clearTimeout(timer.current);
-  const close = () => { cancelClose(); setActive(null); };
-  const deferClose = () => { cancelClose(); timer.current = setTimeout(() => setActive(null), 180); };
-  const show = (term: string, anchor: HTMLButtonElement) => {
+  const close = () => { cancelClose(); setShown(null); };
+  const deferClose = () => {
+    if (!active?.automatic) return;
     cancelClose();
+    timer.current = setTimeout(() => setShown(null), 180);
+  };
+  const show = (term: string, anchor: HTMLButtonElement, automatic: boolean) => {
+    cancelClose();
+    if (automatic && active?.anchor === anchor && !active.automatic) return;
     window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: id }));
-    setActive({ term, anchor });
+    setShown({ term, anchor, automatic });
   };
 
   useEffect(() => () => clearTimeout(timer.current), []);
+  useLayoutEffect(() => {
+    if (!hoverEnabled && shown?.automatic) close();
+  }, [hoverEnabled, shown]);
   useLayoutEffect(() => {
     if (!active || !enabled || !popup.current) return;
     const element = popup.current;
@@ -66,15 +76,21 @@ export function GlossaryText({ children, enabled = true, plainTerms = [], scope 
         data-glossary-term={part.term}
         aria-describedby={active?.anchor.dataset.glossaryIndex === `${index}` ? id : undefined}
         data-glossary-index={index}
-        onPointerEnter={event => { if (event.pointerType !== 'touch') show(part.term!, event.currentTarget); }}
-        onPointerLeave={event => { if (event.pointerType !== 'touch') deferClose(); }}
-        onPointerDown={event => { if (event.pointerType === 'touch') touchWasOpen.current = active?.anchor === event.currentTarget; }}
-        onFocus={event => show(part.term!, event.currentTarget)}
+        onPointerEnter={event => {
+          if (hoverEnabled && (event.pointerType === 'mouse' || event.pointerType === 'pen') && event.buttons === 0) {
+            show(part.term!, event.currentTarget, true);
+          }
+        }}
+        onPointerLeave={event => {
+          if (event.pointerType !== 'touch' && active?.anchor === event.currentTarget) deferClose();
+        }}
+        onFocus={event => {
+          if (hoverEnabled && event.currentTarget.matches(':focus-visible')) show(part.term!, event.currentTarget, true);
+        }}
         onBlur={close}
         onClick={event => {
-          if (touchWasOpen.current && active?.anchor === event.currentTarget) close();
-          else show(part.term!, event.currentTarget);
-          touchWasOpen.current = false;
+          if (active?.anchor === event.currentTarget && !active.automatic) close();
+          else show(part.term!, event.currentTarget, false);
         }}
       >{part.text}</button>
     ) : part.text)}

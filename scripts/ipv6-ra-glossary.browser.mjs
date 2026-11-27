@@ -14,7 +14,7 @@ assert.equal(getLessonSectionForQuestion(lesson.id,id),'in-depth-slaac-ra-addres
 const base=process.env.NETOPS_BASE_URL||'http://127.0.0.1:5428/my-gemini-mirror-site/';
 const output='scripts/.cache/in-depth/ipv6-ra-glossary';
 mkdirSync(output,{recursive:true});
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.NETOPS_CHROMIUM_PATH ? { executablePath: process.env.NETOPS_CHROMIUM_PATH } : {});
 try {
   for (const width of [375,1440]) {
     const mobile=width===375, page=await browser.newPage({
@@ -32,6 +32,7 @@ try {
     await review.waitFor({state:'visible'});
     // The question review itself must show the RA PIO Autonomous flag, not DNS A.
     await review.getByRole('button',{name:'Подробный разбор'}).click();
+    if (!mobile) await review.getByRole('switch', { name: 'Подсказки при наведении' }).click();
     for (const mode of ['Простыми словами','По делу']) {
       await button(mode,review).click();
       const term=review.locator('[data-glossary-term="A=1"]').first();
@@ -85,6 +86,7 @@ try {
     await poeReview.waitFor({state:'visible'});
     await poeReview.getByRole('button',{name:'Подробный разбор'}).click();
     await poeButton('Простыми словами',poeReview).click();
+    if (!mobile) await poeReview.getByRole('switch', { name: 'Подсказки при наведении' }).click();
     const poeTerm=poeReview.locator('[data-glossary-term="PoE+"]').first();
     await poeTerm.waitFor({state:'visible'});
     await poeTerm.scrollIntoViewIfNeeded();

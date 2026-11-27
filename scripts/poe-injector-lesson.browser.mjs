@@ -73,6 +73,7 @@ try {
     for(const file of ['poe-injector-splitter-chains.svg','poe-ieee-vs-passive-compare.svg'])assert.equal((await page.request.get(new URL(`lesson-images/${file}`,base).href)).status(),200,`${width}: Pro SVG HTTP 200`);
     await page.screenshot({path:`${out}/poe-accessory-pro-${width}.png`,fullPage:true});
 
+    if (!mobile) await page.getByRole('switch', { name: 'Подсказки при наведении' }).click();
     const term=page.locator('[data-glossary-term="Alternative A"]').first();
     await term.waitFor({state:'visible'});
     await term.scrollIntoViewIfNeeded();

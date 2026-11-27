@@ -8,6 +8,7 @@ import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
 import { FormattedExplanation } from './FormattedExplanation';
 import { PracticeLinkButton } from './PracticeLinkButton';
 import { StudyTextToggle } from './StudyTextToggle';
+import { GlossaryHoverToggle } from './GlossaryHoverToggle';
 
 export interface ExplanationNavigation {
   onOpenLesson?: (lessonId: string, questionId?: string) => void;
@@ -66,6 +67,7 @@ export function EngineeringReview({ question, ...navigation }: ExplanationNaviga
     {canExpand && <details data-explanation-detail className="space-y-2">
       <summary className="cursor-pointer font-bold text-cyan-700 dark:text-cyan-300">Подробный разбор</summary>
       {hasProfessional && deep.deepAnalysis.trim() ? <StudyTextToggle value={mode} onChange={setMode} /> : !hasProfessional && missingProfessional}
+      <GlossaryHoverToggle />
       {professional?.notice && <FormattedExplanation text={professional.notice} glossaryScope={glossaryScope} />}
       <FormattedExplanation text={body} glossaryScope={glossaryScope} />
     </details>}

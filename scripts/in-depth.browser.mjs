@@ -61,6 +61,10 @@ try {
     await button('Простыми словами',detail).click();const plain=await detail.innerText();
     await button('По делу',detail).click();assert.notEqual(await detail.innerText(),plain,q.id+': question style changes');
     assert.ok(normalize(await detail.innerText()).includes(normalize(deep.professional.deep).slice(0,90)),q.id+': actual authored pro');
+    if (!mobile) {
+      const setting = detail.getByRole('switch', {name:'Подсказки при наведении'});
+      if (await setting.getAttribute('aria-checked') === 'false') await setting.click();
+    }
     const term=detail.locator('[data-glossary-term]').first();
     if(await term.count()) {
       // A tooltip deliberately closes on scroll/Escape. If the pointer already
