@@ -56,10 +56,9 @@ def payload(task, messages):
     return result
 
 
-# Keep the new transport dormant even if repository variables were preconfigured.
-# Enabling live requests requires a separately reviewed code change.
+# Keep Flash dormant even if repository variables were preconfigured.
 GEMINI_DEV_TRANSPORT_RELEASED=False
-HYDROGEN_DEV_TRANSPORT_RELEASED=False
+HYDROGEN_DEV_TRANSPORT_RELEASED=True
 
 
 class GeminiInputLimit(ValueError):
@@ -73,6 +72,8 @@ def gemini_request_limits(provider='gemini'):
     elif provider=='hydrogen':
         released=HYDROGEN_DEV_TRANSPORT_RELEASED
         prefix='NETOPS_HYDROGEN_DEV'
+        if os.environ.get(prefix+'_ENABLED')!='true':
+            raise GeminiInputLimit('hydrogen DEV transport disabled by the owner opt-in gate')
     else:
         raise GeminiInputLimit('Unknown Google developer provider')
     if not released:

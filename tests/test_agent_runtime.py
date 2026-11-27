@@ -747,7 +747,7 @@ class Runtime(unittest.TestCase):
     def test_hydrogen_issue_release_gate_blocks_before_claim_and_transport(self):
         self.event['issue']['title']='[HYDROGEN DEV] Task'
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         with patch.dict(os.environ,env),patch.object(providers,'HYDROGEN_DEV_TRANSPORT_RELEASED',False):
@@ -763,10 +763,11 @@ class Runtime(unittest.TestCase):
     def test_hydrogen_issue_requires_own_terms_limits_and_owner(self):
         self.event['issue']['title']='[HYDROGEN DEV] Task'
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
-        failures=[{'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':''},
+        failures=[{'NETOPS_HYDROGEN_DEV_ENABLED':''},
+                  {'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':''},
                   {'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':''},
                   {'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'1'},
                   {'GITHUB_ACTOR':'other'}, {'GITHUB_RUN_ATTEMPT':'2'}]
@@ -785,7 +786,7 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'Edit a fictional source file','mode':'edit',
              'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1,'max_output_tokens':2048})
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         calls=[]
@@ -813,7 +814,7 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
              'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         for error in (providers.GeminiHTTPError(429),providers.GeminiHTTPError(503),TimeoutError('timeout')):
@@ -840,7 +841,7 @@ class Runtime(unittest.TestCase):
 
     def test_hydrogen_issue_transport_uses_google_endpoint_and_no_retry(self):
         task=core.normalize({'task':'audit','max_calls':1,'max_total_calls':1},'hydrogen')
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         body={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"status":"complete","report":"ok"}'}]}}],
@@ -864,7 +865,7 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
              'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         reply=response({'status':'complete','files':[{'path':'src/a.ts','content':'export const x = 2;'}]})
@@ -889,7 +890,7 @@ class Runtime(unittest.TestCase):
         self.event['issue']['body']=json.dumps({'task':'Edit source','mode':'edit',
              'write_paths':['src/a.ts'],'max_calls':1,'max_total_calls':1})
         self.write_event()
-        env={'NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
+        env={'NETOPS_HYDROGEN_DEV_ENABLED':'true','NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED':'true',
              'NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES':'200000',
              'NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES':'400000'}
         secret='AIza'+'a1_'*11+'a1'
