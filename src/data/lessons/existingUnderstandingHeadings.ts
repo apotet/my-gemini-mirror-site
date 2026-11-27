@@ -7,6 +7,12 @@ export interface ExistingHeadingLink {
   afterHeading: {plain: string; professional: string};
 }
 export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
+  { lessonId: 'l3-arp', questionIds: ['l3-03'], anchorId: 'arp-local-or-gateway-mac',
+    afterHeading: { plain: 'Для соседа и для далёкого узла нужны разные получатели', professional: 'Локальный IP или удалённая сеть' } },
+  { lessonId: 'l3-route-selection', questionIds: ['gen-osi-a-8'], anchorId: 'lpm-more-specific-despite-metric',
+    afterHeading: { plain: 'Пример: /25 выигрывает даже с большей метрикой', professional: 'Установленные маршруты: /25 против /24, /16 и default' } },
+  { lessonId: 'l3-route-selection', questionIds: ['gap-pack1-01'], anchorId: 'rib-ad-same-prefix',
+    afterHeading: { plain: 'Два источника предлагают маршрут к одной сети', professional: 'Установка маршрута в RIB: административная дистанция для одного префикса' } },
   { lessonId: 'l3-route-selection', questionIds: ['gap-pack1-02'], anchorId: 'lpm-withdrawal-c-to-b',
     afterHeading: { plain: 'Пример: почему путь к 10.44.6.180 меняется с C на B', professional: 'LPM для 10.44.6.180: /25 через C, затем /24 через B' } },
   { lessonId: 'l3-route-selection', questionIds: ['new-l3-next-hop'], anchorId: 'recursive-ipv4-next-hop-arp',
@@ -28,7 +34,7 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   },
   {
     "lessonId": "l3-route-selection",
-    "questionIds": [],
+    "questionIds": ["l3-05"],
     "anchorId": "in-depth-existing-l3-16",
     "afterHeading": {
       "plain": "Сначала совпадение, затем самая длинная маска",
