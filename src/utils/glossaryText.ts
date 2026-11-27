@@ -78,7 +78,7 @@ const digOwner = new RegExp(String.raw`\bdig\s+${dnsName}\s+$`, 'iu');
 const questionOwner = new RegExp(String.raw`(?:^|[^\p{L}\p{M}\p{N}_.-])${dnsName}\s*,\s*$`, 'iu');
 const rrIpv4Value = /^\s+(?:(?:указан(?:о|а)?|возвращает)\s+)?(\d{1,3}(?:\.\d{1,3}){3})(?![\p{L}\p{N}_]|\.\d)/iu;
 const explicitRecordDescription = /^\s+(?:содержит|задаёт|для|с|указывает\s+на)\s+IPv4[-‐‑ ]адрес(?:а|у|е|ом)?(?!\p{L})/iu;
-const physicalLabelBefore = /(?<!\p{L})(?:колонк\p{L}*|схем\p{L}*|контакт\p{L}*|порт\p{L}*|пар[аеыу]|сеть|сети|LAN|PC|ПК|вариант\p{L}*|режим\p{L}*|метк\p{L}*|выход\p{L}*|вход\p{L}*|(?:Cat\d\w*)\s+без|case|type|mode)\s*[«"'\x60]?\s*$/iu;
+const physicalLabelBefore = /(?<!\p{L})(?:кейс\p{L}*|колонк\p{L}*|схем\p{L}*|контакт\p{L}*|порт\p{L}*|пар[аеыу]|сеть|сети|LAN|PC|ПК|вариант\p{L}*|режим\p{L}*|метк\p{L}*|выход\p{L}*|вход\p{L}*|(?:Cat\d\w*)\s+без|case|type|mode)\s*[«"'\x60]?\s*$/iu;
 const transferNames = new Set(['FTP', 'SFTP', 'TFTP', 'FTPS']);
 
 const dnsTypeMarker = new RegExp(rrType, 'iu');
@@ -94,6 +94,11 @@ function explicitDnsA(textBefore: string, left: string, right: string) {
 function unrelatedA(textBefore: string, left: string, right: string, label: string) {
   if (label !== 'A' || physicalLabelBefore.test(left) || /\d\s+$/u.test(left) ||
       /(?:^|[^\p{L}\p{N}_])[SFXU]\/(?:FTP|UTP)\/$/iu.test(left)) return true;
+  if (/\b(?:TX|RX)\s*\(\s*$/u.test(left) && /^\s*\)/u.test(right)) return true;
+  if (/колонк\p{L}*\s+B\b[^.!?;]{0,50}$/iu.test(textBefore) &&
+      /^\s*[-–—]\s*(?:зел[её]н|оранжев)\p{L}*/iu.test(right)) return true;
+  if (/\b(?:10|100|1000)\s+(?:Half|Full)\s+объявлен\s+только\s*$/iu.test(left)) return true;
+  if (/сервер\s*$/iu.test(left) && /^\s+открывает\s+TCP\b/iu.test(right)) return true;
   const ipValue = rrIpv4Value.exec(right)?.[1];
   if (ipValue && (rrOwner.test(textBefore) || /(?:TXT|AAAA|MX|CNAME)\s+$/u.test(left))) return true;
   if (/[\p{L}\p{N}][-‐‑]$/u.test(left) || /^[‐‑–—-][a-z0-9]/iu.test(right)) return true;

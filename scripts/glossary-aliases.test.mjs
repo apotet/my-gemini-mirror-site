@@ -59,6 +59,21 @@ const anchored = (text, fragment, scope) => {
   assert.equal(at.length, 1, 'preserve genuine DNS A: ' + fragment);
 };
 const live = id => getQuestionDeepDive(ALL_QUESTIONS.find(q => q.id === id));
+const outsideDns = (text, phrase, scope) => {
+  assert.ok(text?.includes(phrase), 'live source must contain: ' + phrase);
+  const offset = text.indexOf(phrase) + phrase.match(/(?<![A-Z])A(?![A-Z])/u).index;
+  let cursor = 0;
+  for (const part of splitGlossaryText(text, scope)) {
+    if (cursor === offset) assert.ok(part.term !== 'A' && part.term !== 'A flag', phrase);
+    cursor += part.text.length;
+  }
+};
+outsideDns(live('l1v2-a-outlet-b').deepAnalysis, 'A — зелёным');
+outsideDns(live('photo-txrx-link').professional.deep, 'TX(A)', undefined);
+outsideDns(live('photo-txrx-link').professional.deep, 'RX(A)', undefined);
+outsideDns(live('l1-05').professional.deep, '100 Full объявлен только A');
+outsideDns(live('gen-transport-5').deepAnalysis, 'сервер A открывает TCP');
+
 const lessonBody = (id, snippet) => {
   const lesson = getLesson(id);
   return [...lesson.blocks, ...(lesson.professional?.blocks ?? [])].find(block => block.body.includes(snippet))?.body;
