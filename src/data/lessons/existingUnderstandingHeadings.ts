@@ -487,4 +487,12 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: "MX: меньший номер предпочтительнее, следующий — резервный", professional: "MX: меньший номер предпочтительнее, следующий — резервный" } },
   { lessonId: "l7-udp-transactions-tftp-ntp-snmp", questionIds: ["gen-port-13"], anchorId: "snmp-getbulk-operations",
     afterHeading: { plain: "Get, GetNext и GetBulk — три разные операции", professional: "GetBulk и лексикографический обход OID" } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-01'], anchorId: 'ospfv2-route-type-preference',
+    afterHeading: { plain: 'Пример: O с cost 80 против O IA 10, E1 5 и E2 1', professional: 'Порядок предпочтения для одного префикса: intra-area, inter-area, external' } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-02'], anchorId: 'ospfv2-e1-e2-asbr-cost-comparison',
+    afterHeading: { plain: 'Пример: один внешний префикс через ASBR A и B — E1 и E2', professional: 'E1 и E2 через ASBR A и B: что именно сравнивается' } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-05'], anchorId: 'ospfv2-ios-network-types-nbma',
+    afterHeading: { plain: 'Пример: broadcast, non-broadcast и point-to-point в Cisco IOS', professional: 'Типы сети OSPF в Cisco IOS: broadcast, NBMA и point-to-point' } },
+  { lessonId: 'l3-ospf', questionIds: ['review-ospf-28'], anchorId: 'ospfv2-drother-2way-broadcast',
+    afterHeading: { plain: 'Пример: два DROTHER на стабильном broadcast-сегменте', professional: '2-Way между двумя DROTHER на broadcast-сегменте' } },
 ];
