@@ -312,6 +312,14 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
         }} />
       ) : (
       <>
+      {studyCatalog && resumeLesson && (
+        <button type="button" aria-label={`Продолжить: ${resumeLesson.title}`}
+          className={`w-full sm:w-auto ${routeButton}`}
+          onClick={() => openNewRoot(resumeLesson.id, { study: true, trackStudy: true, focusHeading: true })}>
+          <span className="block">Продолжить</span>
+          <span className="block break-words text-xs font-normal">{resumeLesson.title}</span>
+        </button>
+      )}
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
@@ -374,14 +382,6 @@ export const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
             </button>
           ))}
         </div>
-      )}
-      {studyCatalog && resumeLesson && (
-        <button type="button" aria-label={`Продолжить: ${resumeLesson.title}`}
-          className={`w-full sm:w-auto ${routeButton}`}
-          onClick={() => openNewRoot(resumeLesson.id, { study: true, trackStudy: true, focusHeading: true })}>
-          <span className="block">Продолжить</span>
-          <span className="block break-words text-xs font-normal">{resumeLesson.title}</span>
-        </button>
       )}
       {difficulty === 'beginner' && <p className="text-xs text-slate-500" role="status">Найдено уроков: {list.length}</p>}
       {list.length === 0 ? (
