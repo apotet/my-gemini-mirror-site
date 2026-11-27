@@ -241,7 +241,8 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
             try:
                 with tempfile.TemporaryDirectory(prefix='agent-call-') as call_dir:
                     response=infer(state['task'],state['messages'],Path(call_dir),max(1,int(deadline-clock()-180)))
-                    with providers.hydrogen_stage(provider,'policy_validation'):
+                    kimi_status = response.pop('_transport_http_status',None) if provider == 'kimi' else None
+                    with providers.hydrogen_stage(provider,'policy_validation'), providers.kimi_stage(provider,'policy_validation',kimi_status):
                         policy.check_response(state,response)
             except Exception as exc:
                 state['status']='uncertain'
@@ -258,6 +259,13 @@ def run_loop(provider,api=None,infer=providers.infer,validator=None,clock=time.m
                     else:
                         call['failure_stage']='unknown'
                         call['problem']='UnclassifiedError'
+                elif provider=='kimi':
+                    structured=isinstance(exc,providers.KimiFailure)
+                    call['problem']='KimiFailure' if structured else 'UnclassifiedError'
+                    call['failure_stage']=providers.kimi_failure_stage(exc.stage if structured else None)
+                    status=providers.kimi_http_status(exc.http_status) if structured else None
+                    if status is not None:
+                        call['http_status']=status
                 else:
                     call['problem']=type(exc).__name__
                     if isinstance(exc,providers.GeminiHTTPError):
@@ -317,17 +325,24 @@ def report(provider,api=None):
     metrics=core.totals(state)
     if provider=='kimi':
         metrics['daily_budget']=budget.daily_status(api)
-    gemini_status=''
+    diagnostic=''
     if provider in providers.GOOGLE_PROVIDERS and state['calls']:
         call=state['calls'][-1]
         http=call.get('http_status')
         if provider=='hydrogen' and not (type(http) is int and 100 <= http <= 599):
             http=None
-        if http==429:gemini_status='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
-        elif http is not None:gemini_status=f'Gemini HTTP {http}. No automatic retry.\n'
+        if http==429:diagnostic='Gemini HTTP 429 (quota or rate limit). No automatic retry.\n'
+        elif http is not None:diagnostic=f'Gemini HTTP {http}. No automatic retry.\n'
         if provider=='hydrogen' and state['status']=='uncertain':
             stage=providers.hydrogen_failure_stage(call.get('failure_stage'))
-            gemini_status+=f'Hydrogen failure stage: `{stage}`.\n'
+            diagnostic+=f'Hydrogen failure stage: `{stage}`.\n'
+    if provider=='kimi' and state['calls'] and state['status']=='uncertain':
+        call=state['calls'][-1]
+        stage=providers.kimi_failure_stage(call.get('failure_stage'))
+        diagnostic=f'Kimi failure stage: `{stage}`. No automatic retry.\n'
+        status=providers.kimi_http_status(call.get('http_status'))
+        if status is not None:
+            diagnostic+=f'Kimi HTTP {status}.\n'
     failures=[json.loads(p.read_text()) for p in sorted(OUT.glob('failure-*.json'))]
     run='https://github.com/'+REPOSITORY+'/actions/runs/'+os.environ['GITHUB_RUN_ID']
     artifact=os.environ.get('ARTIFACT_URL') or run+'#artifacts'
@@ -337,7 +352,7 @@ Trusted standards `{state.get('trustedSHA',state['sourceSHA'])}`.
 Checkpoint `{plan['head']}`; remaining authorized calls: {state['remaining_calls']}.
 Phase failures: {json.dumps(failures,ensure_ascii=False)}.
 Budget status: {state.get('budget_problem','not blocked')}.
-{gemini_status}Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
+{diagnostic}Independent review by another agent and owner acceptance: **PENDING**. Draft PR: {state.get('pr_url','none')}.
 
 Usage/calls/spend (before tax; unknown calls are NOT zero):
 ```json

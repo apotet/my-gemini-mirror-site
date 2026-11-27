@@ -152,11 +152,136 @@ class Runtime(unittest.TestCase):
             cli.run_loop('kimi',self.api,infer=providers.infer)
         state=self.state_after();self.assertEqual(len(attempts),1)
         self.assertEqual(state['status'],'uncertain');self.assertEqual(len(state['calls']),1)
-        self.assertEqual(state['calls'][0]['problem'],'ValueError')
+        self.assertEqual(state['calls'][0]['problem'],'KimiFailure')
+        self.assertEqual(state['calls'][0]['failure_stage'],'transport')
+        self.assertEqual(state['calls'][0]['http_status'],200)
         ledger=Ledger(self.api,'kimi','issue-9');ledger.load();ledger.materialize(state,self.out)
         self.assertNotIn('partial_artifacts',state['calls'][0])
         self.assertNotIn(raw,b''.join(self.api.blobs.values()))
         with self.assertRaises(ValueError):core.continue_task(state,ledger.head,ledger.head,'new',1)
+    def test_kimi_diagnostics_use_verified_status_without_saving_rejected_data(self):
+        marker='rejected-response-marker'
+        key='fake-not-sent'
+        header='discarded-header-marker'
+        stderr='discarded-stderr-marker'
+        usage={'prompt_tokens':13,'completion_tokens':5}
+        def stream(content,finish='stop',done=True):
+            return ('data: '+json.dumps({'choices':[{'index':0,'delta':{'content':content},
+                         'finish_reason':finish}]})+'\n'+'data: '+json.dumps({'choices':[],
+                         'usage':usage})+'\n'+('data: [DONE]\n' if done else '')).encode()
+        good=json.dumps({'status':'complete','report':'checked fixture'})
+        fixtures=[
+            ('http-401',0,'401',marker.encode(),'transport',401),
+            ('http-429',0,'429',marker.encode(),'transport',429),
+            ('http-503',0,'503',marker.encode(),'transport',503),
+            ('curl-timeout',28,'000',marker.encode(),'transport',None),
+            ('subprocess-timeout',None,None,None,'transport',None),
+            ('bad-status',0,stderr,marker.encode(),'transport',None),
+            ('missing-done',0,'200',stream(marker,done=False),'response_decode',200),
+            ('bad-utf8',0,'200',b'\xff','response_decode',200),
+            ('policy-raw',0,'200',stream(key),'policy_validation',200),
+            ('policy-envelope',0,'200',stream(json.dumps({'status':'complete','files':[
+                {'path':'src/a.ts','content':marker}]})),'policy_validation',200),
+            ('stop',0,'200',stream(good),None,None),
+            ('unsafe-length',0,'200',stream('{"report":"'+marker,'length'),'policy_validation',200),
+            ('length',0,'200',stream('{"status":"complete","report":','length'),None,None),
+        ]
+        self.event['issue']['body']=json.dumps({'task':'Audit source','mode':'audit-only',
+                'max_calls':1,'max_total_calls':1,'max_input_tokens':50000,'max_output_tokens':1600,
+                'budget_usd':'0.25'})
+        self.write_event()
+        for case,exit_code,status,body,stage,expected_http in fixtures:
+            with self.subTest(case=case),patch.object(cli,'OUT',self.out/case):
+                api=FakeAPI()
+                api.commits[self.source]={'tree':{'sha':'base-tree'},'parents':[]}
+                api.trees['base-tree']=[]
+                seen=[]
+                def curl(argv,**kwargs):
+                    seen.append(True)
+                    self.assertEqual(argv[argv.index('--retry')+1],'0')
+                    self.assertEqual(argv[argv.index('--write-out')+1],'%{http_code}')
+                    self.assertIn(providers.MODELS['kimi-k3.1-pro'].endpoint,argv)
+                    saved=Ledger(api,'kimi','issue-9').load()
+                    self.assertEqual(saved['status'],'request_reserved')
+                    self.assertEqual(saved['calls'][-1]['status'],'reserved')
+                    self.assertTrue(saved['calls'][-1]['budget_reservation'])
+                    if exit_code is None:
+                        raise subprocess.TimeoutExpired(argv,1,output=marker,stderr=stderr)
+                    Path(argv[argv.index('--dump-header')+1]).write_text('X-Mock: '+header)
+                    Path(argv[argv.index('--output')+1]).write_bytes(body)
+                    return subprocess.CompletedProcess(argv,exit_code,status,stderr)
+                def offline_infer(*args):
+                    with patch.object(providers.subprocess,'run',side_effect=curl):
+                        return providers.infer(*args)
+                cli.prepare('kimi',api)
+                cli.run_loop('kimi',api,infer=offline_infer)
+                cli.run_loop('kimi',api,infer=offline_infer)
+                cli.report('kimi',api)
+                self.assertEqual(seen,[True])
+                self.assertFalse(api.prs)
+                state=Ledger(api,'kimi','issue-9').load()
+                self.assertEqual(state['remaining_calls'],0)
+                self.assertEqual(len(state['calls']),1)
+                call=state['calls'][0]
+                metrics=core.totals(state)
+                note=api.notes[-1]['body']
+                self.assertEqual(metrics['api_calls'],1)
+                if stage is not None:
+                    self.assertEqual(state['status'],'uncertain')
+                    self.assertEqual(call['status'],'reserved')
+                    self.assertEqual(call['problem'],'KimiFailure')
+                    self.assertEqual(call['failure_stage'],stage)
+                    if expected_http is None:
+                        self.assertNotIn('http_status',call)
+                        self.assertNotIn('Kimi HTTP ',note)
+                    else:
+                        self.assertEqual(call['http_status'],expected_http)
+                        self.assertIn(f'Kimi HTTP {expected_http}.',note)
+                    self.assertIn(f'Kimi failure stage: `{stage}`.',note)
+                    self.assertNotIn('response',call)
+                    self.assertFalse(any(m['role']=='assistant' for m in state['messages']))
+                    self.assertFalse(list(cli.OUT.rglob('response-*')))
+                    self.assertEqual(metrics['confirmed_responses'],0)
+                    self.assertEqual(metrics['usage_unknown_calls'],1)
+                    self.assertEqual(metrics['cost_unknown_calls'],1)
+                    self.assertIsNone(metrics['exact_cost_usd'])
+                else:
+                    self.assertEqual(state['status'],'completed' if case=='stop' else 'paused')
+                    self.assertEqual(call['status'],'answered')
+                    self.assertEqual(call['response']['finish_reason'],case)
+                    self.assertEqual(call['response']['usage'],usage)
+                    self.assertNotIn('_transport_http_status',call['response'])
+                    self.assertNotIn('failure_stage',call)
+                    self.assertNotIn('Kimi failure stage',note)
+                    self.assertEqual(metrics['confirmed_responses'],1)
+                    self.assertEqual(metrics['usage_unknown_calls'],0)
+                persisted=b'\n'.join(list(api.blobs.values())+[note.encode()]+[
+                    p.read_bytes() for p in cli.OUT.rglob('*') if p.is_file()])
+                for private in (marker,key,header,stderr):
+                    self.assertNotIn(private.encode(),persisted)
+
+    def test_kimi_report_ignores_untrusted_or_legacy_diagnostic_fields(self):
+        marker='untrusted-report-marker'
+        self.prepare()
+        self.loop([ValueError(marker)])
+        state=self.state_after()
+        call=state['calls'][0]
+        self.assertEqual(call['failure_stage'],'unknown')
+        self.assertEqual(call['problem'],'UnclassifiedError')
+        self.assertNotIn(marker.encode(),b''.join(self.api.blobs.values()))
+        for fields in ({},{'failure_stage':marker,'http_status':marker},
+                       {'http_status':True},{'http_status':99},{'http_status':600}):
+            with self.subTest(fields=fields):
+                updated=copy.deepcopy(state)
+                updated['calls'][0].pop('failure_stage')
+                updated['calls'][0].update(fields)
+                cli.save('state.json',updated)
+                cli.report('kimi',self.api)
+                note=self.api.notes[-1]['body']
+                self.assertIn('Kimi failure stage: `unknown`.',note)
+                self.assertNotIn('Kimi HTTP ',note)
+                self.assertNotIn(marker,note)
+
     def test_base64_text_and_assembled_chunks_cannot_bypass_credential_guard(self):
         secret='ghp_'+('abc123'*6)
         for encoding in ['utf-8','base64']:

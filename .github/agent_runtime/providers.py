@@ -192,6 +192,36 @@ def hydrogen_stage(provider, stage):
         raise HydrogenFailure(stage) from None
 
 
+KIMI_FAILURE_STAGES = ('transport', 'response_decode', 'policy_validation')
+
+
+def kimi_failure_stage(value):
+    return value if type(value) is str and value in KIMI_FAILURE_STAGES else 'unknown'
+
+
+def kimi_http_status(value):
+    return value if type(value) is int and 100 <= value <= 599 else None
+
+
+class KimiFailure(ValueError):
+    def __init__(self, stage, http_status=None):
+        self.stage = kimi_failure_stage(stage)
+        self.http_status = kimi_http_status(http_status)
+        super().__init__('Kimi attempt failed')
+
+
+@contextmanager
+def kimi_stage(provider, stage, http_status=None):
+    try:
+        yield
+    except KimiFailure:
+        raise
+    except Exception:
+        if provider != 'kimi':
+            raise
+        raise KimiFailure(stage, http_status) from None
+
+
 def infer(task, messages, output_dir, timeout):
     """Exactly one transport attempt; caller must durably reserve it first."""
     key = os.environ.get('PROVIDER_API_KEY','').strip()
@@ -201,7 +231,7 @@ def infer(task, messages, output_dir, timeout):
     data=request_bytes(request)
     model=MODELS[task['model']]
     if model.provider in GOOGLE_PROVIDERS:check_gemini_request(len(data),provider=model.provider)
-    with hydrogen_stage(model.provider,'transport'), tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
+    with hydrogen_stage(model.provider,'transport'), kimi_stage(model.provider,'transport'), tempfile.TemporaryDirectory(prefix='agent-transport-') as temp:
         temp=Path(temp)
         request_file=temp/'request.json'
         request_file.write_bytes(data)
@@ -213,22 +243,28 @@ def infer(task, messages, output_dir, timeout):
             '--header',auth,'--header','Content-Type: application/json',
             '--data-binary','@'+str(request_file)],capture_output=True,text=True,timeout=timeout+15)
         status = result.stdout
-        billing = {}
-        if headers.exists():
-            for line in headers.read_text(errors='replace').splitlines():
-                name, _, value = line.partition(':')
-                if name.lower() in ('msh-usage-cache-write-tokens-5m','msh-usage-cache-write-tokens-1h') and value.strip().isdigit():
-                    billing[name.lower()] = int(value.strip())
-        if result.returncode or status != '200':
-            if model.provider in GOOGLE_PROVIDERS and not result.returncode and status.isascii() and status.isdecimal():
-                raise GeminiHTTPError(status)
-            raise ValueError('Transport failed; attempted request must not be silently repeated')
-        with hydrogen_stage(model.provider,'response_decode'):
+        kimi_status = (kimi_http_status(int(status)) if model.provider == 'kimi' and
+                       len(status) == 3 and status.isascii() and status.isdecimal() else None)
+        with kimi_stage(model.provider,'transport',kimi_status):
+            billing = {}
+            if headers.exists():
+                for line in headers.read_text(errors='replace').splitlines():
+                    name, _, value = line.partition(':')
+                    if name.lower() in ('msh-usage-cache-write-tokens-5m','msh-usage-cache-write-tokens-1h') and value.strip().isdigit():
+                        billing[name.lower()] = int(value.strip())
+            if result.returncode or status != '200':
+                if model.provider in GOOGLE_PROVIDERS and not result.returncode and status.isascii() and status.isdecimal():
+                    raise GeminiHTTPError(status)
+                raise ValueError('Transport failed; attempted request must not be silently repeated')
+        with hydrogen_stage(model.provider,'response_decode'), kimi_stage(model.provider,'response_decode',kimi_status):
             raw_text=raw.read_text(encoding='utf-8')
-        with hydrogen_stage(model.provider,'policy_validation'):
+        with hydrogen_stage(model.provider,'policy_validation'), kimi_stage(model.provider,'policy_validation',kimi_status):
             policy.safe_value(raw_text)
-        with hydrogen_stage(model.provider,'response_decode'):
+        with hydrogen_stage(model.provider,'response_decode'), kimi_stage(model.provider,'response_decode',kimi_status):
             parsed = (parse_gemini if model.provider in GOOGLE_PROVIDERS else parse_stream)(raw_text)
+        if model.provider == 'kimi':
+            # Consumed by run_loop before any response is stored; not model-supplied.
+            parsed['_transport_http_status'] = kimi_status
         parsed['billing'] = billing
         parsed['raw'] = raw_text
         return parsed
