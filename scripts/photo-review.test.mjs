@@ -112,12 +112,12 @@ console.log('PASS: five photo levels, four options/one key, unchanged photo revi
 
 // Figure 13 replacement is exactly one question; keys, families, and all earlier
 // question history remain intact. Verify photos independently of any live CDN.
-const { previousFiberEndFace, bankBeforeFiberEndFaceChange } = await import('./copper-photo-history-fixtures.mjs');
+const { previousFiberEndFace, bankBeforeFiberEndFaceChange, bankBeforeWiremapLimitRetirement } = await import('./copper-photo-history-fixtures.mjs');
 const { createProgressStore } = await bundleEntry('src/utils/userProgress.ts', 'fiber-photo-progress.mjs');
 const { reviewRows } = await bundleEntry('src/utils/examReview.ts', 'fiber-photo-review.mjs');
 const activeFiber = byId['photo-cleaning'];
-assert.equal(ALL_QUESTIONS.length, 861);
-assert.equal(hash(questions.filter(q => q.id !== activeFiber.id)), '95e547b43249034fe0e41f4d90df794100ff62a5b4b579a189a7a8303fcbea24');
+assert.equal(ALL_QUESTIONS.length, 860);
+assert.equal(hash(bankBeforeWiremapLimitRetirement(questions).filter(q => q.id !== activeFiber.id)), '95e547b43249034fe0e41f4d90df794100ff62a5b4b579a189a7a8303fcbea24');
 assert.equal(hash(bankBeforeFiberEndFaceChange(questions)), '481e9eb3fc7ca890727689810b25b686eb26a853d5133571c19a913e9a759a2f');
 assert.deepEqual(questions.filter(q => q.image === previousFiberEndFace.image).map(q => q.id),
   ['photo-dirty-end', 'photo-dirty-safety', 'l1v2-b-ferrule-dirty']);

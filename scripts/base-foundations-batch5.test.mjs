@@ -103,8 +103,8 @@ const expected = {
 const ids=Object.keys(expected);
 assert.equal(ids.length,19,'exact remaining scope');
 assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH5).sort(),ids.sort(),'19 remaining authored keys only');
-assert.equal(ALL_QUESTIONS.length,861,'861 active questions after one approved retirement');
-assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,861,'no ID collision');
+assert.equal(ALL_QUESTIONS.length,860,'860 active questions after two approved retirements');
+assert.equal(new Set(ALL_QUESTIONS.map(q=>q.id)).size,860,'no ID collision');
 for(const id of ids){
  const [correct,image,lessonId]=expected[id];
  const q=ALL_QUESTIONS.find(q=>q.id===id);

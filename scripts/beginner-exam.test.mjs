@@ -36,7 +36,7 @@ const bankBeforeExpert = priorBank.filter(q => !q.id.startsWith('expert177-'));
 reportFingerprint(hash(bankBeforeExpert), before.expertPack225.bankSHA256, 'the prior staging bank is intact');
 reportFingerprint(hash(bankBeforeExpert.filter(q => !q.id.startsWith('diag177-') && !q.id.startsWith('mon-') && !q.id.startsWith('wifi-') && !q.id.startsWith('exp225-'))), quality.bankSHA256,
   'all questions from the previous revision keep their content and order');
-assert.equal(ALL_QUESTIONS.length, 861);
+assert.equal(ALL_QUESTIONS.length, 860);
 
 function verify(chosen, pool, count) {
   const unique = [...new Map(pool.filter(q => q.difficulty === 'beginner').map(q => [q.id, q])).values()];

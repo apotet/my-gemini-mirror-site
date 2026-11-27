@@ -1,6 +1,6 @@
 import { PREVIOUS_IN_DEPTH_QUESTIONS, previousInDepthSnapshot } from '../data/inDepth/previousQuestions';
 import { PREVIOUS_DIAGNOSTIC_QUESTIONS } from '../data/previousDiagnosticQuestions';
-import { hasPhotoQuestionHistory, RETIRED_PVC_PHOTO, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
+import { getRetiredPhotoQuestion, hasPhotoQuestionHistory, RETIRED_PHOTO_QUESTIONS, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 import { EXAM_DIFFICULTIES, TRIAL_DIFFICULTIES } from '../types/quiz';
 import type { QuizSession, Question, QuizModeId } from '../types/quiz';
 import { isLearningLevel } from '../types/learningLevel';
@@ -52,7 +52,7 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
     const saved = JSON.parse(raw);
     const modes: QuizModeId[] = ['mixed', 'l1-l2', 'l3', 'l4', 'l5-l7', 'tcpip', 'troubleshooting', 'visual-l1'];
     const object = (value: unknown) => value && typeof value === 'object' && !Array.isArray(value);
-    const limit = bank.length + Number(!bank.some(q => q.id === RETIRED_PVC_PHOTO.id));
+    const limit = bank.length + RETIRED_PHOTO_QUESTIONS.filter(retired => !bank.some(q => q.id === retired.id)).length;
     if (!saved || !Array.isArray(saved.questions) || !saved.questions.length || saved.questions.length > limit ||
         !Number.isInteger(saved.currentIndex) || saved.currentIndex < 0 || saved.currentIndex >= saved.questions.length ||
         !object(saved.userAnswers) || !object(saved.submittedQuestions) || typeof saved.isCompleted !== 'boolean' ||
@@ -69,7 +69,7 @@ export function restoreSession(raw: string, bank: readonly Question[], now = Dat
     const questions: Question[] = [];
     for (const item of saved.questions as Array<{ id?: unknown; text?: unknown; image?: unknown; answers?: unknown; correct?: unknown } | null>) {
       const active = bank.find(q => q.id === item?.id);
-      const current = active ?? (item?.id === RETIRED_PVC_PHOTO.id ? RETIRED_PVC_PHOTO : undefined);
+      const current = active ?? getRetiredPhotoQuestion(item?.id);
       if (!current) return null;
       if (hasPhotoQuestionHistory(current.id)) {
         const order = saved.answerOrders?.[current.id];

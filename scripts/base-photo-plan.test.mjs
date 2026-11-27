@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { bundleEntry } from './load-bank.mjs';
+import { bankBeforeWiremapLimitRetirement, retiredWiremapLimitPhoto } from './copper-photo-history-fixtures.mjs';
 
 const m = await bundleEntry('scripts/learning-level-exam-entry.ts', 'base-photo-plan.mjs');
 const { isBeginnerPhoto, selectFamilyQuestions } = await bundleEntry('src/data/beginnerExam.ts', 'base-photo-predicate.mjs');
@@ -9,8 +10,12 @@ const distinctFamilies = qs => new Set(qs.map(family)).size;
 const base = m.getTestingPool('mixed', 'beginner');
 const photos = base.filter(isBeginnerPhoto);
 const text = base.filter(q => !isBeginnerPhoto(q));
-assert.equal(base.length, 215);
-assert.equal(photos.length, 113);
+assert.equal(base.length, 214);
+assert.equal(photos.length, 112);
+const historicalBase = bankBeforeWiremapLimitRetirement(m.ALL_QUESTIONS)
+  .filter(q => q.id === retiredWiremapLimitPhoto.id || m.QUESTION_LEARNING_LEVELS[q.id].learningLevel === 1);
+const historicalOrdinary = (count, random) => selectFamilyQuestions(historicalBase, count, random);
+const historicalBasic = random => selectFamilyQuestions(historicalOrdinary(20, random), 20, random);
 assert.ok(base.every(q => isBeginnerPhoto(q) === Boolean(m.resolveImageUrl(q.image))),
   'supported photo predicate agrees with actual rendered image paths');
 
@@ -37,7 +42,7 @@ for (const [count, min, max] of plan) {
   baseline[count] = { overCap: 0, adjacent: 0 };
   for (let seed = 1; seed <= 1000; seed++) {
     // Original ordinary branch used this unchanged low-level sampler.
-    const old = shape(m.getLearningLevelQuestions('mixed', count, seeded(seed), 1));
+    const old = shape(historicalOrdinary(count, seeded(seed)));
     baseline[count].overCap += old.photos > max;
     baseline[count].adjacent += old.adjacent;
     const picked = m.getTestingQuestions('mixed', count, seeded(seed), 'beginner');
@@ -56,7 +61,7 @@ assert.deepEqual(baseline[10], { overCap: 949, adjacent: 866 });
 
 const baselineBasic = { overCap: 0, adjacent: 0 };
 for (let seed = 1; seed <= 1000; seed++) {
-  const old = shape(oldTrial('basic', seeded(seed)));
+  const old = shape(historicalBasic(seeded(seed)));
   baselineBasic.overCap += old.photos > 4;
   baselineBasic.adjacent += old.adjacent;
   const trial = m.getTrialExamQuestions('basic', seeded(seed));
@@ -137,9 +142,9 @@ for (let seed = 1; seed <= 100; seed++) {
 }
 
 // Winning new quotas never retroactively reshape an ordinary or a trial attempt.
-const legacyOrdinary = m.getLearningLevelQuestions('mixed', 10, seeded(1), 1);
+const legacyOrdinary = historicalOrdinary(10, seeded(1));
 assert.deepEqual(legacyOrdinary.flatMap((q, i) => isBeginnerPhoto(q) ? [i + 1] : []), [1, 2, 4, 9]);
-const legacyBasic = oldTrial('basic', seeded(1));
+const legacyBasic = historicalBasic(seeded(1));
 assert.ok(shape(legacyBasic).photos > 4);
 const now = 1_800_000_000_000;
 for (const [source, trial] of [[legacyOrdinary, false], [legacyBasic, true]]) {

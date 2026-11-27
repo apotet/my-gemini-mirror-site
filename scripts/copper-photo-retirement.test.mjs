@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { bundleEntry } from './load-bank.mjs';
-import { bankBeforeCopperPhotoChanges, bankBeforeOpticalWordingChange, previousOpticalInspection, previousCopperUtp, retiredPvcPhoto as retired } from './copper-photo-history-fixtures.mjs';
+import { bankBeforeCopperPhotoChanges, bankBeforeOpticalWordingChange, registryBeforeWiremapLimitRetirement, previousOpticalInspection, previousCopperUtp, retiredPvcPhoto as retired } from './copper-photo-history-fixtures.mjs';
 
 const runtime = await bundleEntry('scripts/learning-level-exam-entry.ts', 'retired-pvc-photo-runtime.mjs');
 const { BASE_FOUNDATIONS_BATCH5 } = await bundleEntry('src/data/baseFoundationsBatch5.ts', 'retired-pvc-photo-overlays.mjs');
@@ -12,7 +12,7 @@ const id = 'l1v2-a-pvc-read';
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 // Exact post-filter projections derived independently from staging 3da4d9c, not today's candidate.
-assert.equal(bank.length, 861);
+assert.equal(bank.length, 860);
 const copperEraBank = bankBeforeOpticalWordingChange(bank);
 assert.equal(hash(copperEraBank.filter(q => q.id !== previousCopperUtp.id)), 'e82c26e7f46fdca5a529347fc5489f720be6d53807b3bbab442f36e4ae9b0553');
 assert.equal(hash(copperEraBank), 'e16e9241a6c47173fcd05ad5109e1faa490bcba762cf51fc9b517c2842bff335');
@@ -23,7 +23,7 @@ assert.equal(currentUtp.text, 'Какое обозначение экранир�
 assert.deepEqual(currentUtp.answers, ['F/UTP', 'S/FTP', 'F/FTP', 'U/UTP']);
 assert.deepEqual(currentUtp.correct, [3]);
 const oldUtp = { ...currentUtp, ...previousCopperUtp };
-assert.equal(hash(registry), '7947d3faf8b94d7f4ad1074d8be01d8ecc1d0290da67720e33c5ddc0902ff5a6');
+assert.equal(hash(registryBeforeWiremapLimitRetirement(registry)), '7947d3faf8b94d7f4ad1074d8be01d8ecc1d0290da67720e33c5ddc0902ff5a6');
 assert.equal(hash(retired), '9c2dc555dd1819b7561115e54ede3734cf1a373995a275eff35c50747eb2672f');
 assert.equal(retired.id, id);
 assert.equal(retired.image, 'assets/photos/copper-pvc-label.webp');
@@ -41,8 +41,8 @@ for (const { id: mode } of QUIZ_MODES) {
   for (const difficulty of ['beginner', 'in-depth', 'applied', 'mixed']) clean(runtime.getTestingPool(mode, difficulty));
   for (const level of [1, 2, 3, 4, 5]) clean(runtime.getLearningLevelPool(mode, level));
 }
-assert.equal(runtime.getTestingPool('mixed', 'beginner').length, 215);
-assert.equal(runtime.getTestingPool('visual-l1', 'mixed').length, 192);
+assert.equal(runtime.getTestingPool('mixed', 'beginner').length, 214);
+assert.equal(runtime.getTestingPool('visual-l1', 'mixed').length, 191);
 for (const difficulty of ['basic', 'advanced', 'mixed']) for (let seed = 1; seed <= 100; seed++) {
   let state = seed;
   const random = () => (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 2 ** 32;
@@ -114,7 +114,7 @@ const oldRaw = storage.getItem(PROGRESS_KEY);
 const after = createProgressStore(bank, () => storage, () => now, [retired]);
 assert.equal(after.summary().answeredCount, 1, 'historic answer remains visible');
 assert.equal(after.summary().levels['visual-l1'].total, 1, 'historic photo statistics stay counted');
-assert.equal(after.summary().visualTotal, 192, 'active photo coverage does not count retired items');
+assert.equal(after.summary().visualTotal, 191, 'active photo coverage does not count retired items');
 assert.deepEqual(after.mistakes(), [], 'retired mistakes cannot start new questions');
 assert.equal(storage.getItem(PROGRESS_KEY), oldRaw, 'startup/review do not rewrite history');
 const active = { ...restored, progressEpoch: old.epoch };

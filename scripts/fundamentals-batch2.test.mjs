@@ -14,8 +14,8 @@ const ids = [
   'tcpip-x10', 'tcpip-x12',
 ];
 assert.deepEqual(Object.keys(BASE_FOUNDATION_UPGRADES).sort(), [...ids].sort(), 'batch is precisely scoped');
-assert.equal(ALL_QUESTIONS.length, 861, 'bank size unchanged');
-assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 861, 'unique IDs');
+assert.equal(ALL_QUESTIONS.length, 860, 'bank size unchanged');
+assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 860, 'unique IDs');
 const exactLesson = {
   'l3-12': 'l3-private-ipv4',
   'l5-01': 'osi-session-presentation',

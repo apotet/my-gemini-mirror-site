@@ -339,7 +339,6 @@ export const FOUNDATION_ADDITIONAL_LESSONS: Lesson[] = [
       "l1v2-a-cutters-error",
       "l1v2-a-outlet-a",
       "l1v2-a-untwist",
-      "l1v2-a-wiremap-limit",
       "l1v2-a-contact-damage",
       "l1v2-a-panel-untwist",
       "l1v2-a-panel-rating",

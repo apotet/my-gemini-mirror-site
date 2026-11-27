@@ -9,8 +9,8 @@ const foundations = ALL_QUESTIONS.filter(q => {
   const meta = QUESTION_LEARNING_LEVELS[q.id];
   return meta.status === 'ASSIGNED' && meta.learningLevel === 1;
 });
-assert.equal(ALL_QUESTIONS.length, 861, 'only the approved photo question is retired');
-assert.equal(foundations.length, 215, 'canonical L1 after Issue #257 semantic review');
+assert.equal(ALL_QUESTIONS.length, 860, 'only the two approved photo questions are retired');
+assert.equal(foundations.length, 214, 'canonical L1 after Issue #257 semantic review');
 const lessonsById = new Map(LESSONS.map(lesson => [lesson.id, lesson]));
 assert.equal(lessonsById.size, LESSONS.length, 'lesson IDs must remain unique');
 
@@ -31,11 +31,11 @@ for (const [lessonId, questionIds] of Object.entries(FOUNDATION_EXISTING_LESSON_
     newLinks.set(id, lessonId);
   }
 }
-// Accepted registry now has 59 authored-lesson links and 30 existing-lesson links.
+// Accepted registry now has 58 authored-lesson links and 30 existing-lesson links.
 // Keep exact totals and resolver targets; do not replace this with a lower-bound check.
-assert.equal(FOUNDATION_ADDITIONAL_LESSONS.reduce((n,l)=>n+l.relatedQuestionIds.length,0),59,'exact authored-lesson link count');
+assert.equal(FOUNDATION_ADDITIONAL_LESSONS.reduce((n,l)=>n+l.relatedQuestionIds.length,0),58,'exact authored-lesson link count');
 assert.equal(Object.values(FOUNDATION_EXISTING_LESSON_LINKS).flat().length,30,'exact existing-lesson link count');
-assert.equal(newLinks.size,89,'89 current explicit lesson links, each exact target checked below');
+assert.equal(newLinks.size,88,'88 current explicit lesson links, each exact target checked below');
 for (const [id, lessonId] of newLinks) {
   const question = ALL_QUESTIONS.find(q => q.id === id);
   assert.ok(question, 'only bank IDs permitted: ' + id);
@@ -44,7 +44,7 @@ for (const [id, lessonId] of newLinks) {
   assert.ok(resolved.relatedQuestionIds.includes(id), 'lesson must display related ID ' + id);
 }
 const uncovered = foundations.filter(q => !getLessonForQuestion(q.id)).map(q => q.id);
-assert.deepEqual(uncovered, [], 'all 215 current L1 questions must have linked lessons');
+assert.deepEqual(uncovered, [], 'all 214 current L1 questions must have linked lessons');
 const incompleteLessonStyles = foundations
   .map(q => ({ id: q.id, lesson: getLessonForQuestion(q.id) }))
   .filter(({lesson}) => lesson && (!lesson.blocks?.length || !lesson.professional?.blocks?.length))
@@ -67,4 +67,4 @@ assert.equal(getLessonForQuestion('l1v2-a-mark-frequency')?.id, 'l1-copper-mark-
 assert.equal(getLessonForQuestion('photo-patch-caps')?.id, 'l1-optical-panel-photo', 'optical endface caps tutorial');
 assert.equal(getLessonForQuestion('l4-d05')?.id, 'l4-tcp-sack', 'SACK selective acknowledgment gets dedicated dual-style lesson');
 assert.equal(getLessonForQuestion('this-question-does-not-exist'), undefined, 'never infer a lesson for unknown ID');
-console.log('PASS: all 215 current L1 questions have exact lesson links; four accepted copper routes plain-only, all others two-style; 89 explicit links verified');
+console.log('PASS: all 214 current L1 questions have exact lesson links; four accepted copper routes plain-only, all others two-style; 88 explicit links verified');

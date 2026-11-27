@@ -33,8 +33,8 @@ const exactLesson = {
 const ids = Object.keys(exactLesson);
 assert.equal(ids.length, 20, 'exact batch scope');
 assert.deepEqual(Object.keys(BASE_FOUNDATIONS_BATCH3).sort(), ids.sort(), 'no unreviewed content outside batch');
-assert.equal(ALL_QUESTIONS.length, 861, 'original bank count');
-assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 861, 'bank IDs are unique');
+assert.equal(ALL_QUESTIONS.length, 860, 'original bank count');
+assert.equal(new Set(ALL_QUESTIONS.map(q => q.id)).size, 860, 'bank IDs are unique');
 
 for (const id of ids) {
   const question = ALL_QUESTIONS.find(q => q.id === id);

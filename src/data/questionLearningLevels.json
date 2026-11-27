@@ -2666,13 +2666,6 @@
     "confidence": "high",
     "auditRationale": "Применить правило (L1 · Фото и практика): Подключают к противоположным концам одной линии"
   },
-  "l1v2-a-wiremap-limit": {
-    "status": "ASSIGNED",
-    "auditAction": "RELABEL",
-    "learningLevel": 1,
-    "confidence": "high",
-    "auditRationale": "Распознать (L1 · Фото и практика): Результат не отображается: экран на фото пуст"
-  },
   "l1v2-a-tester-safe": {
     "status": "ASSIGNED",
     "auditAction": "KEEP",

@@ -1,6 +1,6 @@
 import { ALL_QUESTIONS } from '../data/questionsData';
 import type { Question } from '../types/quiz';
-import { hasPhotoQuestionHistory, RETIRED_PVC_PHOTO, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
+import { hasPhotoQuestionHistory, RETIRED_PHOTO_QUESTIONS, restoreHistoricalPhotoQuestion } from './copperPhotoQuestionHistory';
 
 export const PROGRESS_KEY = 'osi_user_progress_v4';
 const LEGACY_KEYS = ['osi_user_progress_v3', 'osi_last_mistakes', 'osi_exam_history', 'osi_active_session'];
@@ -193,7 +193,7 @@ export function createProgressStore(bank: readonly Question[], storage: () => St
   }, refresh: notify, export: () => JSON.stringify(load(), null, 2) };
 }
 const store = createProgressStore(ALL_QUESTIONS, () => { try { return localStorage; } catch { return null; } },
-  Date.now, [RETIRED_PVC_PHOTO]);
+  Date.now, RETIRED_PHOTO_QUESTIONS);
 if (typeof window !== 'undefined') window.addEventListener('storage', event => {
   if (event.key === PROGRESS_KEY || event.key === null) store.refresh();
 });
