@@ -109,3 +109,57 @@ const review = restoreReview(serializeReview(completed), snapshot.progressEpoch)
 assert.ok(review);
 assert.deepEqual(review.questions, snapshot.questions, 'completed review keeps the historical content/key');
 console.log('PASS: five photo levels, four options/one key, unchanged photo review scope, cable family sampling, safe old-attempt rejection and historical review');
+
+// Figure 13 replacement is exactly one question; keys, families, and all earlier
+// question history remain intact. Verify photos independently of any live CDN.
+const { previousFiberEndFace, bankBeforeFiberEndFaceChange } = await import('./copper-photo-history-fixtures.mjs');
+const { createProgressStore } = await bundleEntry('src/utils/userProgress.ts', 'fiber-photo-progress.mjs');
+const { reviewRows } = await bundleEntry('src/utils/examReview.ts', 'fiber-photo-review.mjs');
+const activeFiber = byId['photo-cleaning'];
+assert.equal(ALL_QUESTIONS.length, 861);
+assert.equal(hash(questions.filter(q => q.id !== activeFiber.id)), '95e547b43249034fe0e41f4d90df794100ff62a5b4b579a189a7a8303fcbea24');
+assert.equal(hash(bankBeforeFiberEndFaceChange(questions)), '481e9eb3fc7ca890727689810b25b686eb26a853d5133571c19a913e9a759a2f');
+assert.deepEqual(questions.filter(q => q.image === previousFiberEndFace.image).map(q => q.id),
+  ['photo-dirty-end', 'photo-dirty-safety', 'l1v2-b-ferrule-dirty']);
+for (const field of ['id', 'group', 'topic', 'template', 'family', 'difficulty', 'correct']) {
+  assert.deepEqual(activeFiber[field], previousFiberEndFace[field]);
+}
+assert.deepEqual(activeFiber.correct, [1]);
+assert.doesNotMatch(activeFiber.text + activeFiber.imageAlt, /след|царапин|ядро|сердцевин/i);
+assert.match(activeFiber.answers[1], /несколько тонких вытянутых следов/);
+assert.doesNotMatch(activeFiber.explanation, /пересека(?:ет|ют)|сердцевин|однозначн/i);
+assert.equal(createHash('sha256').update(readFileSync('public/' + activeFiber.image)).digest('hex'),
+  '1cdc61555016dde64802a077ea10dabd20d99fb3925615ad780844778762e177');
+assert.match(readFileSync('src/components/PhotoCredits.tsx', 'utf8'), /Shuang Mei, Yudan Wang, Guojun Wen, Yang Hu/);
+assert.match(readFileSync('docs/LOCAL-PHOTO-CREDITS.md', 'utf8'), /10\.3390\/s18051408/);
+for (const fiber of [previousFiberEndFace, activeFiber]) {
+  for (const saved of [{ questions: [fiber] }, prepareAttemptQuestions([fiber], () => 0.25)]) {
+    const id = fiber.id;
+    const { correct } = saved.questions[0];
+    const session = { ...snapshot, ...saved, userAnswers: { [id]: correct }, submittedQuestions: { [id]: true } };
+    if (!saved.answerOrders) delete session.answerOrders;
+    const restoredFiber = restoreSession(JSON.stringify(session), ALL_QUESTIONS, now);
+    assert.deepEqual(restoredFiber?.questions, saved.questions);
+    assert.deepEqual(restoredFiber?.userAnswers, session.userAnswers);
+    const completedFiber = { ...restoredFiber, isCompleted: true, endTime: now };
+    const reviewFiber = restoreReview(serializeReview(completedFiber), session.progressEpoch);
+    assert.deepEqual(reviewFiber?.questions, saved.questions);
+    assert.equal(reviewRows(reviewFiber)[0].status, 'correct');
+    const raw = JSON.stringify(session);
+    const storage = { getItem: key => key === 'osi_active_session' ? raw : null, setItem: () => {} };
+    const progress = createProgressStore(ALL_QUESTIONS, () => storage, () => now);
+    assert.equal(progress.summary().answeredCount, 1);
+    assert.equal(progress.summary().correctCount, 1);
+  }
+}
+for (const corrupted of [
+  { ...previousFiberEndFace, image: activeFiber.image },
+  { ...previousFiberEndFace, text: activeFiber.text },
+  { ...previousFiberEndFace, correct: [2] },
+  { ...activeFiber, image: previousFiberEndFace.image },
+  { ...activeFiber, answers: previousFiberEndFace.answers },
+]) {
+  const session = { ...snapshot, answerOrders: undefined, questions: [corrupted] };
+  assert.equal(restoreSession(JSON.stringify(session), ALL_QUESTIONS, now), null);
+}
+console.log('PASS: exact one-ticket fiber photo scope, unchanged old URL and grading, old/current unshuffled + shuffled snapshots, review and progress');

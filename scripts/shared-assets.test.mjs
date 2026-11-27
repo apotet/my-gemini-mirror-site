@@ -13,14 +13,21 @@ assert.equal(config.SHARED_ASSETS_REVISION, revision);
 assert.equal(config.SHARED_ASSETS_BASE_URL, base);
 
 const photos = ALL_QUESTIONS.filter(q => q.image);
-const paths = [...new Set(photos.map(q => q.image))];
-assert.equal(photos.length, 195);
-assert.equal(paths.length, 90);
+const localPhoto = photos.filter(q => q.image === config.FIBER_END_FACE_PHOTO);
+assert.deepEqual(localPhoto.map(q => q.id), ['photo-cleaning']);
+const paths = [...new Set(photos.map(q => q.image))].filter(path => path !== config.FIBER_END_FACE_PHOTO);
+assert.equal(photos.length, 194);
+assert.equal(paths.length, 89);
 for (const path of paths) {
   assert.equal(resolveImageUrl(path), `${base}/${path}`);
   assert.equal(resolveImageUrl(`./${path}`), `${base}/${path}`);
   assert.equal(resolveImageUrl(`/${path}`), `${base}/${path}`);
 }
+assert.equal(resolveImageUrl(config.FIBER_END_FACE_PHOTO), `/${config.FIBER_END_FACE_PHOTO}`);
+assert.equal(resolveImageUrl(`./${config.FIBER_END_FACE_PHOTO}`), `/${config.FIBER_END_FACE_PHOTO}`);
+assert.equal(resolveImageUrl(`/${config.FIBER_END_FACE_PHOTO}`), `/${config.FIBER_END_FACE_PHOTO}`);
+assert.equal(readFileSync(`public/${config.FIBER_END_FACE_PHOTO}`).subarray(8, 12).toString(), 'WEBP');
+assert.equal(resolveImageUrl('assets/photos/dirty-fiber-end.webp'), `${base}/assets/photos/dirty-fiber-end.webp`);
 assert.equal(resolveImageUrl(), '');
 assert.equal(resolveImageUrl(''), '');
 for (const url of ['https://example.test/photo.png', 'http://example.test/photo.jpg']) {
@@ -59,4 +66,4 @@ function checkSources(dir) {
   }
 }
 checkSources('src');
-console.log('PASS: 195 photo questions / 90 URLs, external URLs, credits, 14 cheatsheets, both Vite HTML transforms, no mutable source URLs');
+console.log('PASS: 194 photo questions / 89 pinned shared URLs and one local crop, external URLs, credits, 14 cheatsheets, both Vite HTML transforms, no mutable source URLs');

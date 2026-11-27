@@ -2,13 +2,16 @@ import type { Question } from '../types/quiz';
 import retiredPvcPhoto from '../data/retiredPvcPhotoQuestion.json';
 import previousCopperUtp from '../data/previousCopperUtpPhotoQuestion.json';
 import previousOpticalInspection from '../data/previousOpticalInspectionQuestion.json';
+import previousFiberEndFace from '../data/previousFiberEndFaceQuestion.json';
 
 /** Allowlisted history only. Never use this snapshot for a new question selection. */
 export const RETIRED_PVC_PHOTO = retiredPvcPhoto as Question;
+export const PREVIOUS_FIBER_END_FACE = previousFiberEndFace as Question;
 
 const previousById = new Map([
   [previousCopperUtp.id, previousCopperUtp],
   [previousOpticalInspection.id, previousOpticalInspection],
+  [previousFiberEndFace.id, previousFiberEndFace],
 ]);
 
 export function hasPhotoQuestionHistory(id: string): boolean {
@@ -19,10 +22,10 @@ type SavedQuestion = { id?: unknown; text?: unknown; image?: unknown; answers?: 
 
 /** Only allowlisted photo questions reach this check. */
 export function restoreHistoricalPhotoQuestion(saved: SavedQuestion | null | undefined, order: unknown, current: Question): Question | null {
-  if (saved?.id !== current.id || saved.image !== current.image) return null;
+  if (saved?.id !== current.id) return null;
   const previous = previousById.get(current.id);
   const original = previous && saved.text === previous.text ? { ...current, ...previous } : current;
-  if (saved.text !== original.text) return null;
+  if (saved.text !== original.text || saved.image !== original.image) return null;
   if (order !== undefined && (!Array.isArray(order) || order.length !== original.answers.length ||
       new Set(order).size !== original.answers.length ||
       order.some(i => !Number.isInteger(i) || i < 0 || i >= original.answers.length))) return null;

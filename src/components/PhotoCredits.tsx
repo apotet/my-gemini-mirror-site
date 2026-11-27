@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, ExternalLink, Image as ImageIcon } from 'lucide-react';
-import { SHARED_ASSETS_CREDITS_URL, SHARED_ASSETS_CREDITS_SOURCE_URL } from '../config/sharedAssets';
+import { SHARED_ASSETS_CREDITS_URL, SHARED_ASSETS_CREDITS_SOURCE_URL, FIBER_END_FACE_PHOTO } from '../config/sharedAssets';
 
 type Credit = {
   slug: string;
@@ -71,9 +71,20 @@ export const PhotoCredits: React.FC<PhotoCreditsProps> = ({ onClose }) => {
         <div className="overflow-y-auto p-4 sm:p-5 space-y-3 text-xs text-slate-700 dark:text-slate-300">
           <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
             Фотографии оборудования используются в вопросах L1. Они не перелицензируются этим сайтом и
-            остаются под исходными лицензиями Wikimedia Commons (обычно CC BY / CC BY-SA). При
+            остаются под исходными лицензиями. При
             переиспользовании укажите автора и лицензию.
           </p>
+
+          <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-1">
+            <div className="font-semibold text-slate-900 dark:text-slate-100">Торец оптического волокна</div>
+            <p>Shuang Mei, Yudan Wang, Guojun Wen, Yang Hu. Sensors, 2018, 18(5), 1408.</p>
+            <p>Рис. 13: кадрирование второй панели верхнего ряда, без разметки и ретуши.</p>
+            <div className="flex flex-wrap gap-3 text-[11px]">
+              <a className="underline" href={`${import.meta.env.BASE_URL}${FIBER_END_FACE_PHOTO}`} target="_blank" rel="noopener noreferrer">Микроснимок</a>
+              <a className="underline" href="https://doi.org/10.3390/s18051408" target="_blank" rel="noopener noreferrer">Источник (DOI)</a>
+              <a className="underline" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>
+            </div>
+          </div>
 
           {loading && <p className="text-slate-500">Загрузка списка…</p>}
           {error && (
