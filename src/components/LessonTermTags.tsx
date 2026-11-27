@@ -2,6 +2,7 @@ import React, { useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { GLOSSARY } from '../data/glossary';
 import { getLesson } from '../data/lessons';
+import { useGlossaryHover } from '../utils/glossaryHoverPreference';
 
 interface Props {
   terms: string[];
@@ -12,6 +13,7 @@ interface Props {
 
 /** Inline card: opening a definition keeps the reader in the current lesson. */
 export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, currentLessonId }: Props) {
+  const hoverEnabled = useGlossaryHover();
   const cardId = useId();
   const titleId = useId();
   const [selected, setSelected] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function LessonTermTags({ terms, onOpenLesson, showLessonLink = true, cur
               trigger.current = event.currentTarget;
               setSelected(selected === term ? null : term);
             }}
-            className="px-2 py-1 rounded-lg text-[11px] bg-slate-100 dark:bg-slate-800 text-cyan-800 dark:text-cyan-200 underline decoration-dotted underline-offset-2 cursor-pointer hover:bg-cyan-100 dark:hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-cyan-500"
+            className={`px-2 py-1 rounded-lg text-[11px] bg-slate-100 dark:bg-slate-800 text-cyan-800 dark:text-cyan-200 cursor-pointer hover:bg-cyan-100 dark:hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-cyan-500${hoverEnabled ? ' underline decoration-dotted underline-offset-2' : ''}`}
           >
             {term}
           </button>

@@ -7,9 +7,12 @@
   font: inherit;
   line-height: inherit;
   text-align: inherit;
+  text-decoration: none;
+  cursor: help;
+}
+.glossary-trigger[data-glossary-hover="on"] {
   text-decoration: underline dotted;
   text-underline-offset: 3px;
-  cursor: help;
 }
 .glossary-trigger:focus-visible { outline: 2px solid #0891b2; outline-offset: 2px; border-radius: 2px; }
 .glossary-tooltip {

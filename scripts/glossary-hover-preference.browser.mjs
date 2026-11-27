@@ -98,6 +98,15 @@ const dismiss = async page => {
   await page.keyboard.press('Escape');
   await tooltip(page).waitFor({ state: 'hidden' });
 };
+const decoration = locator => locator.evaluate(el => {
+  const style = getComputedStyle(el);
+  return [style.textDecorationLine, style.textDecorationStyle];
+});
+const assertUnderline = async (locator, expected) => {
+  const [line, style] = await decoration(locator);
+  assert.equal(line, expected ? 'underline' : 'none');
+  if (expected) assert.equal(style, 'dotted');
+};
 
 try {
   for (const width of [390, 1440]) {
@@ -114,6 +123,7 @@ try {
     const box = await toggle.boundingBox();
     assert.ok(box.height >= 44 && box.x >= 0 && box.x + box.width <= width);
     const term = await termIn(detail);
+    await assertUnderline(term, false);
     if (mobile) {
       await term.tap();
       await shown(page, term);
@@ -128,6 +138,7 @@ try {
       await noTooltip(page);
       await page.keyboard.press('Tab');
       await term.focus();
+      assert.equal(await term.evaluate(el => getComputedStyle(el).outlineStyle), 'solid', 'keep the keyboard focus ring while OFF');
       await noTooltip(page);
       await term.press('Enter');
       await shown(page, term);
@@ -142,6 +153,7 @@ try {
     }
     await toggle.click();
     await state(toggle, true);
+    await assertUnderline(term, true);
     assert.equal(await page.evaluate(key => localStorage.getItem(key), key), '1');
     await termIn(detail);
     await page.mouse.move(0, 0);
@@ -171,16 +183,44 @@ try {
     }
     await same(review, /^Перейти к уроку:/).click();
     await state(setting(page), true);
-    const lessonTerm = await termIn(page.locator('article').filter({ has: setting(page) }));
+    const lesson = page.locator('article').filter({ has: setting(page) });
+    let lessonTerm = await termIn(lesson);
+    const chip = same(lesson, 'subnet').and(lesson.locator('button[aria-expanded]'));
+    await assertUnderline(lessonTerm, true);
+    await assertUnderline(chip, true);
+    const chipShape = await chip.evaluate(el => {
+      const style = getComputedStyle(el);
+      return [style.backgroundColor, style.borderRadius, style.padding];
+    });
+    await setting(lesson).click();
+    await state(setting(lesson), false);
+    await assertUnderline(lessonTerm, false);
+    await assertUnderline(chip, false);
+    assert.deepEqual(await chip.evaluate(el => {
+      const style = getComputedStyle(el);
+      return [style.backgroundColor, style.borderRadius, style.padding];
+    }), chipShape);
+    if (mobile) await chip.tap(); else await chip.press('Enter');
+    await lesson.getByRole('region', { name: 'subnet', exact: true }).waitFor();
+    await same(lesson, 'Закрыть карточку термина').click();
+    await same(lesson, 'По делу').click();
+    lessonTerm = await termIn(lesson);
+    await assertUnderline(lessonTerm, false);
+    await assertUnderline(chip, false);
     if (mobile) await lessonTerm.tap(); else await lessonTerm.click();
     await shown(page, lessonTerm);
     await dismiss(page);
+    await setting(lesson).click();
+    await state(setting(lesson), true);
+    await assertUnderline(lessonTerm, true);
+    await assertUnderline(chip, true);
     await page.reload();
     const afterReload = await openTheory(page, mobile);
     await state(setting(afterReload.detail), true);
     await setting(afterReload.detail).click();
     await state(setting(afterReload.detail), false);
     const after = await termIn(afterReload.detail);
+    await assertUnderline(after, false);
     if (!mobile) {
       await after.hover();
       await noTooltip(page);
@@ -206,11 +246,23 @@ try {
     await state(setting(savedDetail), true);
     await setting(savedDetail).click();
     await state(setting(savedDetail), false);
+    await same(page, mobile ? 'Теория' : 'Теория и разборы').click();
+    await same(page, 'База знаний').click();
+    const ports = 'TCP/UDP-порты: как найти нужную службу';
+    await page.getByPlaceholder('Поиск: SNI, TLS, сертификат…').fill(ports);
+    await page.getByText(ports, { exact: true }).click();
+    const portsLesson = page.locator('article').filter({ has: setting(page) });
+    await same(portsLesson, 'Telnet').and(portsLesson.locator('button[aria-expanded]')).click();
+    const ordinaryLink = portsLesson.getByRole('link', { name: /^разобрать в теме/ });
+    assert.deepEqual(await decoration(ordinaryLink), ['underline', 'solid'], 'ordinary link stays visibly underlined while OFF');
+    await setting(portsLesson).click();
+    await state(setting(portsLesson), true);
+    assert.deepEqual(await decoration(ordinaryLink), ['underline', 'solid'], 'ordinary link does not follow glossary decoration');
     assert.equal(await page.evaluate(() => localStorage.getItem('glossary-unrelated-setting')), 'untouched');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     assert.deepEqual(errors, []);
     await c.close();
-    console.log(`PASS: ${width}px default OFF, manual interactions, opt-in, shared across theory/lesson/live+saved exam, reload`);
+    console.log(`PASS: ${width}px computed decoration and unchanged manual access/focus, chips and ordinary links; synced across theory/lesson/live+saved exam and reload`);
   }
   {
     const c = await context(1440);
@@ -222,10 +274,12 @@ try {
     await setting(firstDetail).click();
     await second.waitForFunction(() => document.querySelector('[role="switch"]')?.getAttribute('aria-checked') === 'true');
     const term = await termIn(secondDetail);
+    await assertUnderline(term, true);
     await term.hover();
     await shown(second, term);
     await setting(firstDetail).evaluate(node => node.click());
     await second.waitForFunction(() => document.querySelector('[role="switch"]')?.getAttribute('aria-checked') === 'false');
+    await assertUnderline(term, false);
     await noTooltip(second);
     await c.close();
     console.log('PASS: another tab receives the setting and dismisses its open automatic tooltip');
