@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded Gemini Issue agent. One paid call after durable claim. Standard library only.
+"""Bounded Gemini Issue agent. Paid calls after durable claim. Standard library only.
 Edit mode is disabled until integration with the unified runtime (#365)."""
 import json
 import os
@@ -208,11 +208,11 @@ def run():
         accounting['api_calls'] = n
         accounting['model'] = model
         record = {'n': n, 'model': model}
+        attempts.append(record)
         try:
             with opener.open(req, timeout=180) as resp:
                 data = json.loads(resp.read().decode())
             record['http'] = 200
-            attempts.append(record)
             accounting['status'] = 'response received'
             accounting['raw_keys'] = list(data.keys())
             if 'usage' in data:
@@ -238,7 +238,6 @@ def run():
                 except Exception:
                     body = ''
             record['error'] = str(exc).replace(key, '[REDACTED]')[:200]
-            attempts.append(record)
             accounting['httpStatus'] = code
             accounting['httpErrorBody'] = body[:2000]
             accounting['errorType'] = type(exc).__name__
@@ -257,7 +256,6 @@ def run():
             # Timeout, connection error, incomplete body: uncertain. Do not retry.
             last_exc = exc
             record['error'] = str(exc).replace(key, '[REDACTED]')[:200]
-            attempts.append(record)
             accounting['errorType'] = type(exc).__name__
             accounting['error'] = record['error']
             accounting['status'] = 'incomplete' if isinstance(exc, RuntimeError) else 'error'
