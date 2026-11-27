@@ -29,6 +29,7 @@ class Pilot:
     key: str
     target: str
     prompt: str
+    provider: str
     model: str
     branch: str
     enabled: str
@@ -36,7 +37,7 @@ class Pilot:
     confirmation: str
 
 
-FLASH = Pilot(KEY, TARGET, PROMPT, 'gemini-3.8-flash', 'gemini/synthetic-pilot',
+FLASH = Pilot(KEY, TARGET, PROMPT, 'gemini', 'gemini-3.8-flash', 'gemini/synthetic-pilot',
               'NETOPS_GEMINI_PILOT_ENABLED', 'NETOPS_GEMINI_DEV_PROVIDER_VERIFIED',
               'one-synthetic-request')
 HYDROGEN_TARGET = 'docs/hydrogen-dev-pilot.md'
@@ -46,7 +47,7 @@ HYDROGEN = Pilot(
      'Write a short Markdown note about checking their connection. Return ONLY a JSON object '
      'with status "complete" and files containing exactly one write operation: '
      '{"path":"docs/hydrogen-dev-pilot.md","content":"<Markdown>"}; no other fields.'),
-    'gemini-4-hydrogen', 'gemini/hydrogen-synthetic-pilot',
+    'hydrogen', 'gemini-4-hydrogen', 'hydrogen/synthetic-pilot',
     'NETOPS_HYDROGEN_PILOT_ENABLED', 'NETOPS_HYDROGEN_PROVIDER_VERIFIED',
     'one-hydrogen-synthetic-request')
 
@@ -116,21 +117,20 @@ def run(api, repo, infer=None, validator=None, profile=FLASH):
         raise ValueError('Provider credential unavailable')
     if profile.target in repo.entries:
         raise ValueError('Pilot target already exists')
-    ledger = Ledger(api, 'gemini', profile.key)
+    ledger = Ledger(api, profile.provider, profile.key)
     if ledger.load() is not None:
         raise ValueError('Pilot already reserved; no repeat permitted')
     task = core.normalize({'task': profile.prompt, 'mode': 'edit',
                            'model': profile.model, 'write_paths': [profile.target],
                            'max_calls': 1, 'max_total_calls': 1,
-                           'max_output_tokens': MAX_OUTPUT_TOKENS}, 'gemini',
-                          allow_pilot_model=profile is HYDROGEN)
+                           'max_output_tokens': MAX_OUTPUT_TOKENS}, profile.provider)
     messages = [{'role': 'user', 'content': profile.prompt}]
     request = providers.payload(task, messages)
     request_bytes = providers.request_bytes(request)
     if len(request_bytes) > MAX_REQUEST_BYTES:
         raise ValueError('Pilot request exceeds byte limit')
     policy.safe_value(request)
-    state = {'kind': 'netops-agent-v2', 'version': 2, 'provider': 'gemini',
+    state = {'kind': 'netops-agent-v2', 'version': 2, 'provider': profile.provider,
              'key': profile.key, 'issue': None, 'task': task, 'sourceSHA': repo.source,
              'trustedSHA': repo.source, 'source_files': core.source_manifest(repo),
              'file_modes': {}, 'status': 'request_reserved', 'remaining_calls': 0,
@@ -194,7 +194,7 @@ def main():
     except Exception as exc:
         print('Pilot failed:', type(exc).__name__)
         try:
-            ledger = Ledger(GitHub(), 'gemini', profile.key)
+            ledger = Ledger(GitHub(), profile.provider, profile.key)
             state = ledger.load()
             if state is not None:
                 print(json.dumps({'checkpoint': ledger.head, 'status': state['status'],

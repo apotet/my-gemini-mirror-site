@@ -28,6 +28,9 @@ jobs:
       NETOPS_GEMINI_DEV_PROVIDER_VERIFIED: ${{ vars.NETOPS_GEMINI_DEV_PROVIDER_VERIFIED }}
       NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_REQUEST_BYTES }}
       NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES: ${{ vars.NETOPS_GEMINI_DEV_MAX_TOTAL_REQUEST_BYTES }}
+      NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED: ${{ vars.NETOPS_HYDROGEN_DEV_PROVIDER_VERIFIED }}
+      NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES: ${{ vars.NETOPS_HYDROGEN_DEV_MAX_REQUEST_BYTES }}
+      NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES: ${{ vars.NETOPS_HYDROGEN_DEV_MAX_TOTAL_REQUEST_BYTES }}
       PYTHONPATH: .github
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +65,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m agent_runtime.cli validate
       - name: Publish only checked candidates to own branch and Draft PR
-        if: success() && (inputs.provider != 'gemini' || steps.prepare.outputs.action != 'validate')
+        if: success() && ((inputs.provider != 'gemini' && inputs.provider != 'hydrogen') || steps.prepare.outputs.action != 'validate')
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m agent_runtime.cli publish
