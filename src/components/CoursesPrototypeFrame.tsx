@@ -3,7 +3,7 @@ export function CoursesPrototypeFrame() {
   return (
     <iframe
       title="Макет Курсы — три интерактивные концепции"
-      src={`${import.meta.env.BASE_URL}courses-prototypes.html?v=toolbar-single-row`}
+      src={`${import.meta.env.BASE_URL}courses-prototypes.html?v=academy-18-directions`}
       className="block w-full border-0 h-[calc(100dvh-9rem)] lg:h-[calc(100dvh-4rem)] min-h-[560px]"
     />
   );
