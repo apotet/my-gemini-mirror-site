@@ -538,4 +538,6 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: 'Пример: broadcast, non-broadcast и point-to-point в Cisco IOS', professional: 'Типы сети OSPF в Cisco IOS: broadcast, NBMA и point-to-point' } },
   { lessonId: 'l3-ospf', questionIds: ['review-ospf-28'], anchorId: 'ospfv2-drother-2way-broadcast',
     afterHeading: { plain: 'Пример: два DROTHER на стабильном broadcast-сегменте', professional: '2-Way между двумя DROTHER на broadcast-сегменте' } },
+  { lessonId: "l3-nat", questionIds: ["l3-15"], anchorId: "pat-two-sessions-shared-address",
+    afterHeading: { plain: "Пример: два компьютера, один внешний адрес, разные порты", professional: "PAT двух сеансов: запись трансляции и обратный путь (RFC 3022 §2.2)" } },
 ];
