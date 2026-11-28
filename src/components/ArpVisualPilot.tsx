@@ -43,8 +43,8 @@ function DiagramSegment({ tone, children }: { tone: keyof typeof routeSegment; c
 }
 
 /** Compact rendering of the approved prototype: the entire ARP path stays in the labelled local zone. */
-function NetworkFigure({ signal, destination = SERVER_A, cache = false, diagnostics = false }: {
-  signal: Signal; destination?: string; cache?: boolean; diagnostics?: boolean;
+function NetworkFigure({ signal, destination = SERVER_A, cache = false, diagnostics = false, predict = false }: {
+  signal: Signal; destination?: string; cache?: boolean; diagnostics?: boolean; predict?: boolean;
 }) {
   const isLocal = signal === 'neighbor' || destination === NEIGHBOR;
   const arrived = signal === 'gateway';
@@ -57,7 +57,7 @@ function NetworkFigure({ signal, destination = SERVER_A, cache = false, diagnost
     'no-arp': 'ARP Reply не пришёл',
     'no-echo': 'Echo Reply не вернулся',
   }[signal];
-  const route = isLocal ? 'Сосед ' + NEIGHBOR : 'Шлюз ' + GATEWAY + ' → ' + destination;
+  const route = predict ? '?' : isLocal ? 'Сосед ' + NEIGHBOR : 'Шлюз ' + GATEWAY + ' → ' + destination;
   return (
     <figure data-arp-network-figure aria-label="Схема ARP: локальная и удалённая сети"
       className="m-0 space-y-1.5 rounded-xl border border-[#344861] bg-[#101a2a] p-2 leading-tight text-slate-100">
@@ -65,7 +65,7 @@ function NetworkFigure({ signal, destination = SERVER_A, cache = false, diagnost
         <strong>{cue}</strong><span className="block text-[11px] text-[#c3d0e2]">ПК → коммутатор → {route}</span>
       </figcaption>
       <div className={diagramZone}>
-        <p className={diagramTitle}>{cache ? 'Локальная сеть · интерфейс eth0 у ПК' : 'Локальная подсеть 192.168.1.0/24 · область ARP'}</p>
+        <p className={diagramTitle}>{cache ? 'Локальная сеть · интерфейс eth0 у ПК' : predict ? 'Локальная подсеть 192.168.1.0/24' : 'Локальная подсеть 192.168.1.0/24 · область ARP'}</p>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1">
           <DiagramNode name="Твой ПК" address={PC} mac={!cache ? ':01:10' : undefined}
             status={cache && signal === 'request' ? 'Пакет №1 ждёт' : undefined} active />
@@ -75,22 +75,23 @@ function NetworkFigure({ signal, destination = SERVER_A, cache = false, diagnost
           <DiagramNode name="Коммутатор" address="L2 · VLAN" />
         </div>
         <DiagramSegment tone={signal === 'no-arp' ? 'missing' : hasPacket ? 'local' : 'idle'}>
-          {signal === 'no-arp' ? '× ARP Reply не получен' : signal === 'request' ? '↓ поиск MAC шлюза' : isLocal ? '← к соседу' : cache || diagnostics ? '↓ к шлюзу' : 'к шлюзу →'}
+          {predict ? '↓ MAC ?' : signal === 'no-arp' ? '× ARP Reply не получен' : signal === 'request' ? '↓ поиск MAC шлюза' : isLocal ? '← к соседу' : cache || diagnostics ? '↓ к шлюзу' : 'к шлюзу →'}
         </DiagramSegment>
         <div className={cache || diagnostics ? '' : 'grid grid-cols-2 gap-1.5'}>
-          {!cache && !diagnostics && <DiagramNode name="Сосед" address={NEIGHBOR} mac=":01:20" active={isLocal && hasPacket} />}
-          <DiagramNode name="Шлюз (L3)" address={GATEWAY} mac=":01:01" active={hasPacket && !isLocal} />
+          {!cache && !diagnostics && <DiagramNode name="Сосед" address={NEIGHBOR} mac={predict ? undefined : ':01:20'} active={isLocal && hasPacket} />}
+          <DiagramNode name="Шлюз (L3)" address={GATEWAY} mac={predict ? undefined : ':01:01'} active={hasPacket && !isLocal} />
         </div>
       </div>
       <div className={diagramZone}>
-        <p className={diagramTitle}>{cache ? 'Два удалённых IP за тем же шлюзом' : 'Удалённая сеть · ARP сюда не доходит'}</p>
+        <p className={diagramTitle}>{cache ? 'Два удалённых IP за тем же шлюзом' : predict ? 'Удалённая сеть' : 'Удалённая сеть · ARP сюда не доходит'}</p>
         <DiagramSegment tone={diagnostics ? (signal === 'no-echo' ? 'missing' : 'idle') : arrived ? 'forwarded' : 'idle'}>
-          {diagnostics && signal === 'no-echo' ? 'Echo Reply не виден на ПК · где потеря, неизвестно'
+          {predict ? (isLocal ? 'Сервер A · другая сеть' : 'Адресат пакета — сервер A')
+            : diagnostics && signal === 'no-echo' ? 'Echo Reply не виден на ПК · где потеря, неизвестно'
             : signal === 'no-arp' ? 'Кадр с Echo Request не ушёл с ПК'
             : arrived ? 'Шлюз переслал пакет →' : isLocal ? 'Этот кадр не идёт через шлюз' : 'Путь через шлюз →'}
         </DiagramSegment>
         <div className={cache ? 'grid grid-cols-2 gap-1.5' : ''}>
-          <DiagramNode name="Сервер A" address={SERVER_A} mac={!cache && !diagnostics ? ':02:20' : undefined}
+          <DiagramNode name="Сервер A" address={SERVER_A} mac={!cache && !diagnostics && !predict ? ':02:20' : undefined}
             active={arrived && destination === SERVER_A} />
           {cache && <DiagramNode name="Сервер B" address={SERVER_B} active={arrived && destination === SERVER_B} />}
         </div>
@@ -122,21 +123,67 @@ function AddressStrip({ mac, ip }: { mac: string; ip: string }) {
   );
 }
 
+type EnvelopeMove = {
+  destination: string; answer: string; mac: string; signal: Signal; prompt: string;
+  hints: Record<string, string>; result: ReactNode; next: string;
+};
+
+const RECIPIENTS = [
+  { node: NEIGHBOR, label: 'MAC соседа ' + NEIGHBOR },
+  { node: GATEWAY, label: 'MAC шлюза ' + GATEWAY },
+  { node: SERVER_A, label: 'MAC сервера ' + SERVER_A },
+];
+
+const ENVELOPE_MOVES: EnvelopeMove[] = [
+  {
+    destination: SERVER_A, answer: GATEWAY, mac: GATEWAY_MAC, signal: 'gateway',
+    prompt: `ПК отправляет пакет серверу ${SERVER_A} за шлюзом ${GATEWAY}. Чей MAC поставить в первый кадр?`,
+    hints: {
+      [NEIGHBOR]: 'Сосед — не адресат и не шлюз: чужой пакет он не пересылает, а отбросит.',
+      [SERVER_A]: 'Сервер в другой сети: ARP-запрос до него не доходит, и его MAC ПК не узнает.',
+    },
+    result: <>Верно: ПК ищет MAC <strong>шлюза</strong>, но IP в пакете остаётся адресом <strong>сервера</strong>. ARP нужен в своей сети: пока записи для шлюза нет, ПК спрашивает его MAC.</>,
+    next: 'Далее: отправить соседу',
+  },
+  {
+    destination: NEIGHBOR, answer: NEIGHBOR, mac: NEIGHBOR_MAC, signal: 'neighbor',
+    prompt: `Теперь ПК отправляет пакет соседу ${NEIGHBOR} в той же подсети. Чей MAC поставить в кадр?`,
+    hints: {
+      [GATEWAY]: 'Не шлюз: сосед в той же подсети, и кадр к нему идёт напрямую.',
+      [SERVER_A]: 'Не сервер: адресат пакета — сосед, и кадр нужно адресовать ему.',
+    },
+    result: <>Верно, и это не шлюз: сосед в той же подсети, и IP пакета, и MAC кадра принадлежат <strong>соседу</strong>.</>,
+    next: 'Далее: кэш соседей',
+  },
+];
+
 function Envelope({ advance }: { advance: () => void }) {
-  const [stage, setStage] = useState(0);
-  const actions = [
-    { label: 'Отправить соседу', run: () => setStage(1) },
-    { label: 'Сравнить: отправить серверу', run: () => setStage(2) },
-    { label: 'Далее: кэш соседей', run: advance },
-  ];
+  const [move, setMove] = useState(0);
+  const [solved, setSolved] = useState(false);
+  const [wrong, setWrong] = useState('');
+  const next = useRef<HTMLButtonElement>(null);
+  const question = useRef<HTMLHeadingElement>(null);
+  const current = ENVELOPE_MOVES[move];
+  function choose(node: string) {
+    if (node !== current.answer) { setWrong(node); return; }
+    setSolved(true);
+    setWrong('');
+    requestAnimationFrame(() => next.current?.focus());
+  }
   return (
     <>
-      <NetworkFigure signal={stage === 0 ? 'preview' : stage === 1 ? 'neighbor' : 'gateway'} destination={stage === 2 ? SERVER_A : NEIGHBOR} />
-      <div role="status"><AddressStrip mac={stage === 0 ? 'Кого искать?' : stage === 1 ? NEIGHBOR_MAC : GATEWAY_MAC} ip={stage === 2 ? SERVER_A : NEIGHBOR} /></div>
-      <MainAction action={actions[stage]} />
-      <p role="status">{stage === 0 ? 'Пакет к соседу в своей сети. Какой MAC нужен для кадра?'
-        : stage === 1 ? <>Сосед в той же подсети: и IP пакета, и MAC кадра принадлежат <strong>соседу</strong>.</>
-          : <>ПК ищет MAC <strong>шлюза</strong>, но IP в пакете остаётся адресом <strong>сервера</strong>.</>}</p>
+      <NetworkFigure signal={solved ? current.signal : 'preview'} destination={current.destination} predict={!solved} />
+      <div role="status"><AddressStrip mac={solved ? current.mac : '?'} ip={current.destination} /></div>
+      {solved
+        ? <MainAction actionRef={next} action={{ label: current.next, run: () => {
+          if (move === 0) { setMove(1); setSolved(false); requestAnimationFrame(() => question.current?.focus({ preventScroll: true })); }
+          else advance();
+        } }} />
+        : <div className="space-y-2">
+          <h5 ref={question} tabIndex={-1} className="font-semibold focus-visible:outline-2 focus-visible:outline-cyan-600">{current.prompt}</h5>
+          <div className="grid gap-1.5">{RECIPIENTS.map(({ node, label }) => <button type="button" key={node} className={choice} onClick={() => choose(node)}>{label}</button>)}</div>
+        </div>}
+      <p role="status">{solved ? current.result : wrong && current.hints[wrong]}</p>
     </>
   );
 }
