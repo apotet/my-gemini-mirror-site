@@ -7,10 +7,17 @@ const ISSUE = 591;
 const ISSUE_ID = 6662809692;
 const PROBE = '/gennady check';
 const SMOKE = '/gennady smoke';
+const RETRY = '/gennady retry-503';
 const ATTEST = '/gennady attest same-key-project-is-free-tier';
 const REVOKE = '/gennady revoke';
 const PROOF_MAX_AGE_MS = 30 * 60 * 1000;
 const CLAIM = '<!-- gemini-designer-free:arp-smoke-v1:reserved -->';
+const RETRY_CLAIM = '<!-- gemini-designer-free:arp-retry-503-v1:reserved -->';
+
+function botClaim(entry, body) {
+  return entry.user?.login === 'github-actions[bot]' && entry.user.id === 41898282 &&
+    entry.user.type === 'Bot' && entry.body === body;
+}
 
 function owner(user) {
   return user?.login === OWNER && user.id === OWNER_ID && user.type === 'User';
@@ -36,11 +43,15 @@ function authorize(context, attempt, triggeringActor) {
       !owner(i.user) || !owner(p.sender) || !owner(c?.user) || !original(c)) return null;
   if (c.body === PROBE) return 'probe';
   if (c.body === SMOKE) return 'smoke';
+  if (c.body === RETRY) return 'retry-503';
   return null;
 }
 
 async function reserveSmoke(github, context, attempt, triggeringActor, now = Date.now()) {
-  if (authorize(context, attempt, triggeringActor) !== 'smoke') return false;
+  const mode = authorize(context, attempt, triggeringActor);
+  if (!['smoke', 'retry-503'].includes(mode)) return false;
+  const retry = mode === 'retry-503';
+  const marker = retry ? RETRY_CLAIM : CLAIM;
   const c = context.payload.comment;
   const params = { owner: OWNER, repo: 'my-gemini-mirror-site', issue_number: ISSUE };
   const { data: issue } = await github.rest.issues.get(params);
@@ -48,10 +59,11 @@ async function reserveSmoke(github, context, attempt, triggeringActor, now = Dat
       issue.state !== 'open' || issue.pull_request) return false;
   const comments = await github.paginate(github.rest.issues.listComments, { ...params, per_page: 100 });
   const matching = comments.find(entry => entry.id === c.id);
-  if (!owner(matching?.user) || !original(matching) || matching.body !== SMOKE ||
+  if (!owner(matching?.user) || !original(matching) || matching.body !== (retry ? RETRY : SMOKE) ||
       matching.created_at !== c.created_at) return false;
-  if (comments.some(entry => entry.user?.login === 'github-actions[bot]' &&
-      entry.user.id === 41898282 && entry.user.type === 'Bot' && entry.body === CLAIM)) return false;
+  if (comments.some(entry => botClaim(entry, marker))) return false;
+  // This explicit recovery slot is for the one reviewed original 503 attempt only.
+  if (retry && !comments.some(entry => entry.id === 7237486212 && botClaim(entry, CLAIM))) return false;
   const ownerSignals = comments.filter(entry => owner(entry.user)).flatMap(entry => {
     if (entry.body === REVOKE && dated(entry, 'updated_at')) return [{ ...entry, at: entry.updated_at }];
     if (entry.body === ATTEST && original(entry)) return [{ ...entry, at: entry.created_at }];
@@ -65,12 +77,11 @@ async function reserveSmoke(github, context, attempt, triggeringActor, now = Dat
       proofAge > PROOF_MAX_AGE_MS || last.at > c.created_at ||
       (last.at === c.created_at && last.id >= c.id)) return false;
   // The workflow serializes this job. Never remove the claim or retry after uncertain writes.
-  const { data: claim } = await github.rest.issues.createComment({ ...params, body: CLAIM });
-  if (claim.body !== CLAIM || claim.user?.login !== 'github-actions[bot]' ||
-      claim.user.id !== 41898282 || claim.user.type !== 'Bot') {
+  const { data: claim } = await github.rest.issues.createComment({ ...params, body: marker });
+  if (!botClaim(claim, marker)) {
     throw new Error('Unexpected reservation identity');
   }
   return true;
 }
 
-module.exports = { authorize, reserveSmoke, PROBE, SMOKE, ATTEST, REVOKE, CLAIM };
+module.exports = { authorize, reserveSmoke, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM };
