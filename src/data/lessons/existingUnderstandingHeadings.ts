@@ -29,6 +29,12 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: 'Пересечение подсетей после смены маски', professional: 'Вложенные connected-подсети: /24 и /25' } },
   { lessonId: 'l3-subnets', questionIds: ['gen-bc-26-1'], anchorId: 'ipv4-26-on-link-gateway',
     afterHeading: { plain: 'Пример: подходит ли шлюз 192.168.60.190 для хоста с /26', professional: '192.168.60.128/26: on-link шлюз и выбор MAC' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-ndp-1'], anchorId: 'ipv6-ndp-ns-solicited-node-multicast',
+    afterHeading: { plain: 'Пример: ПК 2001:db8:120::10 ищет соседа 2001:db8:120::20', professional: 'NS на solicited-node ff02::1:ff00:20: поиск MAC для 2001:db8:120::20' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-ndp-3'], anchorId: 'ipv6-dad-tentative-na-duplicate',
+    afterHeading: { plain: 'Пример: DAD для 2001:db8:120::25 — ответ пришёл от другого узла', professional: 'DAD (RFC 4862 §5.4): NA для tentative 2001:db8:120::25 — дубликат' } },
+  { lessonId: 'l3-ipv6', questionIds: ['review-slaac-5'], anchorId: 'ipv6-ra-prefix-onlink-no-slaac',
+    afterHeading: { plain: 'Пример: RA объявил 2001:db8:120::/64 с L=1 и A=0', professional: 'Prefix Information 2001:db8:120::/64 с L=1, A=0: on-link без SLAAC-адреса' } },
   { lessonId: 'l7-http-status-basics', questionIds: ['l57-x03'], anchorId: 'http-301-permanent',
     afterHeading: { plain: '301 Moved Permanently', professional: '301 и Location' } },
   {
@@ -198,6 +204,39 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     "afterHeading": {
       "plain": "Достигнуть следующего узла и не принять петлю",
       "professional": "NEXT_HOP и AS_PATH: разные условия пригодности"
+    }
+  },
+  {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-01"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-01",
+    "afterHeading": {
+      "plain": "Пример: OPEN соседа принят, а его KEEPALIVE ещё нет",
+      "professional": "OpenSent → OpenConfirm → Established по RFC 4271 §8.2.2"
+    }
+  },
+  {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-04"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-04",
+    "afterHeading": {
+      "plain": "Пример: кому RR отдаст путь, полученный от клиента C1",
+      "professional": "Отражение пути клиента C1 клиентам C2 и non-client N (RFC 4456 §6, §8)"
+    }
+  },
+  {
+    "lessonId": "l3-bgp",
+    "questionIds": [
+      "l3-bgp-07"
+    ],
+    "anchorId": "in-depth-existing-l3-bgp-07",
+    "afterHeading": {
+      "plain": "Пример: Weight 200 у пути A против Weight 0 у пути B",
+      "professional": "Best path на Cisco IOS: Weight 200 у пути A против Weight 0 у пути B"
     }
   },
   {
@@ -491,4 +530,12 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: "MX: меньший номер предпочтительнее, следующий — резервный", professional: "MX: меньший номер предпочтительнее, следующий — резервный" } },
   { lessonId: "l7-udp-transactions-tftp-ntp-snmp", questionIds: ["gen-port-13"], anchorId: "snmp-getbulk-operations",
     afterHeading: { plain: "Get, GetNext и GetBulk — три разные операции", professional: "GetBulk и лексикографический обход OID" } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-01'], anchorId: 'ospfv2-route-type-preference',
+    afterHeading: { plain: 'Пример: O с cost 80 против O IA 10, E1 5 и E2 1', professional: 'Порядок предпочтения для одного префикса: intra-area, inter-area, external' } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-02'], anchorId: 'ospfv2-e1-e2-asbr-cost-comparison',
+    afterHeading: { plain: 'Пример: один внешний префикс через ASBR A и B — E1 и E2', professional: 'E1 и E2 через ASBR A и B: что именно сравнивается' } },
+  { lessonId: 'l3-ospf', questionIds: ['l3-ospf-05'], anchorId: 'ospfv2-ios-network-types-nbma',
+    afterHeading: { plain: 'Пример: broadcast, non-broadcast и point-to-point в Cisco IOS', professional: 'Типы сети OSPF в Cisco IOS: broadcast, NBMA и point-to-point' } },
+  { lessonId: 'l3-ospf', questionIds: ['review-ospf-28'], anchorId: 'ospfv2-drother-2way-broadcast',
+    afterHeading: { plain: 'Пример: два DROTHER на стабильном broadcast-сегменте', professional: '2-Way между двумя DROTHER на broadcast-сегменте' } },
 ];
