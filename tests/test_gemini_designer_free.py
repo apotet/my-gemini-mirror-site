@@ -104,11 +104,17 @@ class FreeDesigner(unittest.TestCase):
                 d.run('smoke',p/'none.json',env=dict(env,GEMINI_API_KEY=''),send=no_key)
             no_key.assert_not_called()
             event.write_text(json.dumps(dict(EVENT,inputs=dict(EVENT['inputs'],mode='pilot'))))
-            full_labels=['arp-mobile','arp-desktop','poe-connected','poe-budget','poe-splitter']
+            full_labels=[f'tcpip-{device}-{theme}-{mode}' for device in ('mobile','desktop')
+                         for theme in ('light','dark') for mode in ('plain','pro')] + [
+                             'tcpip-mobile-dark-diagram','tcpip-desktop-light-diagram',
+                             'poe-connected','poe-budget','poe-splitter']
             full=Mock(return_value=mock_response(dict(RESULT,image_observations=[
                 dict(label=l,observation='Наблюдение по материалу.') for l in full_labels])))
             pilot=d.run('pilot',p/'pilot.json',env=env,send=full)
             self.assertEqual([x['label'] for x in pilot['image_provenance']],full_labels)
             request=json.loads(full.call_args.args[0])
             self.assertNotIn('maxOutputTokens',request['generationConfig'])
-            self.assertEqual(len([p for p in request['contents'][0]['parts'] if 'inlineData' in p]),5)
+            combined=' '.join(x.get('text','') for x in request['contents'][0]['parts'])
+            self.assertIn('src/data/lessons/tcpip-model.ts',combined)
+            self.assertNotIn('src/data/lessons/l3-arp.ts',combined)
+            self.assertEqual(len([p for p in request['contents'][0]['parts'] if 'inlineData' in p]),13)

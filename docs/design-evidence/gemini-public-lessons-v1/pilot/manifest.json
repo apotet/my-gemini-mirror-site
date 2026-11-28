@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "task_id": "netops-public-tcpip-design",
+  "round_id": "tcpip-pilot-v1",
+  "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c",
+  "brief": "Independent UX and teaching-design review of public TCP/IP lesson.",
+  "context": [],
+  "images": [
+    {
+      "label": "tcpip-mobile-light-plain",
+      "path": "tcpip-mobile-light-plain.png",
+      "mime_type": "image/png",
+      "sha256": "1e884696405b62ae043eaa02caaf326cd32d6a5ab3ce6621c67f48ed72fa88bf",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-mobile-light-pro",
+      "path": "tcpip-mobile-light-pro.png",
+      "mime_type": "image/png",
+      "sha256": "1707b05d6665a036e6120fa324402627ed5b65a248870b47ad09fecef5c3f523",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-mobile-dark-plain",
+      "path": "tcpip-mobile-dark-plain.png",
+      "mime_type": "image/png",
+      "sha256": "20b2c6e8464eae095f8e65a79748ed0db1bfb574efb00d38476da133aa35922f",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-mobile-dark-pro",
+      "path": "tcpip-mobile-dark-pro.png",
+      "mime_type": "image/png",
+      "sha256": "4f2b4a5dbe3a1177374032bda2d94c1fbd12e66007e1990792346ec2e07d9991",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-desktop-light-plain",
+      "path": "tcpip-desktop-light-plain.png",
+      "mime_type": "image/png",
+      "sha256": "5efe8aa6e72f5676e45f0055628d352bf80764cb93e099195fb547ba14019e2b",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-desktop-light-pro",
+      "path": "tcpip-desktop-light-pro.png",
+      "mime_type": "image/png",
+      "sha256": "22c8c644b267eb6a58c2775ecbdc3b8c1a27b5e654a2da26f6ba5f3c8c63952a",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-desktop-dark-plain",
+      "path": "tcpip-desktop-dark-plain.png",
+      "mime_type": "image/png",
+      "sha256": "a67b1341d53626a6a993ebcb0ee60567e71c30df22b7bc5ef667bbd874c6bf1d",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-desktop-dark-pro",
+      "path": "tcpip-desktop-dark-pro.png",
+      "mime_type": "image/png",
+      "sha256": "cb982a52fbee0eed9fae28787acba5100e0ad0ebacc37ff889f67252a7d47682",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-mobile-dark-diagram",
+      "path": "tcpip-mobile-dark-diagram.png",
+      "mime_type": "image/png",
+      "sha256": "d5ce97751facd1d0327f2f02a9f72ad95f40a579069b4107ae5b3baadcd5d209",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-desktop-light-diagram",
+      "path": "tcpip-desktop-light-diagram.png",
+      "mime_type": "image/png",
+      "sha256": "0b42ffd2d84ba80819b21602a421dbfcc370bb6ab3f4acb012bda7c97605c7f4",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-connected",
+      "path": "poe-connected.png",
+      "mime_type": "image/png",
+      "sha256": "8c13f0b61646c4b3010ac7162555acc7c586bc7cb2e43d4f43308040a04ed621",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-budget",
+      "path": "poe-budget.png",
+      "mime_type": "image/png",
+      "sha256": "ae1addb010c36604159ba0af50573970c68fbbc25389fd93c12f7522f6d96b77",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-splitter",
+      "path": "poe-splitter.png",
+      "mime_type": "image/png",
+      "sha256": "bb212d5deba44d62980b087d15ea90f9de71f3ecdc1373da6efad4ec3ade3620",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    }
+  ]
+}

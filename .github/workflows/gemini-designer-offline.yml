@@ -6,7 +6,7 @@ on:
       - '.github/agent/gemini-designer-requirements.lock'
       - '.github/workflows/gemini-designer-*.yml'
       - 'tests/test_gemini_designer*.py'
-      - 'docs/design-evidence/gemini-arp-v1/**'
+      - 'docs/design-evidence/gemini-public-lessons-v1/**'
 permissions:
   contents: read
 jobs:
