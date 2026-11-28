@@ -214,16 +214,21 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
   };
 
   const tcpipReading = lesson.id === 'tcpip-model';
-  const [jumpToPacketDetails, setJumpToPacketDetails] = useState(false);
+  const [tcpipJump, setTcpipJump] = useState<'details' | 'practice' | null>(null);
   const packetDetailsSection = useRef<HTMLElement | null>(null);
+  const packetPracticeSection = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    if (!jumpToPacketDetails || textMode !== 'professional' || !tcpipReading) return;
-    const section = packetDetailsSection.current;
+    if (!tcpipJump || textMode !== 'professional' || !tcpipReading) return;
+    const section = (tcpipJump === 'details' ? packetDetailsSection : packetPracticeSection).current;
     if (!section) return;
     section.focus({ preventScroll: true });
     section.scrollIntoView({ block: 'start', behavior: 'instant' });
-    setJumpToPacketDetails(false);
-  }, [jumpToPacketDetails, textMode, tcpipReading]);
+    setTcpipJump(null);
+  }, [tcpipJump, textMode, tcpipReading]);
+  const openTcpIpPro = (section: 'details' | 'practice') => {
+    setTcpipJump(section);
+    (courseReading?.onChange ?? setTextMode)('professional');
+  };
   const terms = <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} currentLessonId={lesson.id}
     onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />;
   const related = useMemo(() => lesson.relatedQuestionIds, [lesson]);
@@ -318,14 +323,16 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
       <div className={tcpipReading ? 'space-y-4 tcpip-reading__sections' : 'space-y-4'}>
         {blocks.map((b) => {
           const tcpipPacketDetails = tcpipReading && textMode === 'professional' && b.heading === 'Wireshark: как увидеть вложения';
+          const tcpipPacketPractice = tcpipReading && textMode === 'professional' && b.practiceLink === 'packet';
           return <section
             key={b.anchorId ?? b.heading}
             ref={element => {
               if (b.anchorId) anchorElements.current[b.anchorId] = element;
               if (tcpipPacketDetails) packetDetailsSection.current = element;
+              if (tcpipPacketPractice) packetPracticeSection.current = element;
             }}
             data-lesson-section-anchor={b.anchorId}
-            tabIndex={tcpipPacketDetails || b.anchorId === targetAnchor ? -1 : undefined}
+            tabIndex={tcpipPacketDetails || tcpipPacketPractice || b.anchorId === targetAnchor ? -1 : undefined}
             className={`rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 scroll-mt-24 motion-safe:transition-shadow motion-safe:duration-300 ${b.anchorId && highlightedAnchor === b.anchorId ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''}`}
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
@@ -411,7 +418,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
               </button>
             )}
             {tcpipReading && textMode === 'meaning' && b.heading === 'Кому доставлять на каждом шаге' &&
-              <TcpIpHopPrediction onOpenPractice={onOpenPractice} />}
+              <TcpIpHopPrediction onExplorePractice={() => openTcpIpPro('practice')} />}
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
           </section>;
         })}
@@ -440,7 +447,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
 
       {tcpipReading && textMode === 'meaning' && (
         <button type="button" data-tcpip-open-packet-details className="tcpip-mode-link"
-          onClick={() => { setJumpToPacketDetails(true); (courseReading?.onChange ?? setTextMode)('professional'); }}>
+          onClick={() => openTcpIpPro('details')}>
           Посмотреть дерево пакета Wireshark в режиме «По делу»
         </button>
       )}

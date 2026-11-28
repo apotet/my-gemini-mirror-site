@@ -40,6 +40,8 @@ const layouts = [
   { id: 'pro', label: 'По делу', stored: 'professional' },
 ];
 const matchedVisuals = ['layers', 'osi', 'pack', 'unpack', 'addresses'];
+const lessonSource = candidate ? await readFile(new URL('../src/data/lessons/tcpip-model.ts', import.meta.url), 'utf8') : null;
+const lessonData = lessonSource ? JSON.parse(lessonSource.slice(lessonSource.indexOf('{', lessonSource.indexOf(' = ')), lessonSource.lastIndexOf('}') + 1)) : null;
 const matchedAnchors = ['in-depth-four-five-layer-link', 'in-depth-application-protocol-semantics', 'tcpip-end-to-end-fields'];
 assert(candidate || baseline, 'A local candidate or read-only published baseline is required');
 for (const address of [candidate, baseline].filter(Boolean)) {
@@ -262,6 +264,8 @@ async function preparePrediction(page, lesson, folder, prefix) {
   const condition=await task.innerText();
   assert.match(condition,/напрямую/);
   assert.match(condition,/NAT и прокси нет/);
+  assert.match(condition,/ARP уже отработал/);
+  assert.match(condition,/TCP-соединение установлено/);
   const radios=task.getByRole('radio');
   assert.equal(await radios.count(),3);
   assert.equal(await task.locator('input:checked').count(),0);
@@ -292,37 +296,74 @@ async function preparePrediction(page, lesson, folder, prefix) {
   return result;
 }
 
+async function solveKnowledgeCheck(page,root,mode,folder,prefix) {
+  const check=mode.id==='plain'?lessonData.plainKnowledgeCheck:lessonData.knowledgeCheck;
+  assert(check?.questions.length,'authored self-check present');
+  const before=await protectedStorage(page);
+  for(const [index,question] of check.questions.entries()){
+    await root.getByText(`Вопрос ${index+1} из ${check.questions.length}`,{exact:true}).waitFor();
+    const answer = question.choices.find(choice=>choice.id===question.correctChoiceId);
+    await openButton(root,`${answer.id}.${answer.label}`).click();
+    await root.getByText('Верно',{exact:true}).waitFor();
+    await openButton(root,index+1===check.questions.length?'Посмотреть результат':'Следующий вопрос').click();
+  }
+  await root.getByText(`Результат: ${check.questions.length} из ${check.questions.length}`,{exact:true}).waitFor();
+  assert.deepEqual(await protectedStorage(page),before,'in-lesson knowledge check is not an exam record');
+  if(folder) {
+    await settle(root);
+    await page.screenshot({path:join(folder,`${prefix}-quiz-result.png`),animations:'disabled'});
+  }
+  await openButton(root,'Пройти ещё раз').press('Enter');
+  await root.getByText(`Вопрос 1 из ${check.questions.length}`,{exact:true}).waitFor();
+}
+
 async function validateReading(page,lesson,mode,reading,width,folder,prefix) {
   assert.equal(await lesson.getAttribute('data-lesson-reading'),'tcpip');
   assert.equal(reading.reviewStatus,'needs-review','owner status remains pending');
   assert.equal(await page.locator('[data-theory-catalog-header]:visible').count(),0,'catalog chrome hidden only inside TCP/IP');
-  for(const image of reading.images)fit(image,width);
+  for(const image of reading.images) {
+    fit(image,width);
+    const figure=lesson.locator(`[data-lesson-visual="${image.name}"]`);
+    const caption=figure.locator('[data-lesson-visual-description] details');
+    assert.equal(await caption.getAttribute('open'),null,'text equivalent is discoverable and initially folded');
+    await caption.locator(':scope > summary').press('Enter');
+    assert.equal(await caption.getAttribute('open'),'');
+    assert((await caption.ariaSnapshot()).length>100,'equivalent is exposed to assistive browsers');
+    await caption.locator(':scope > summary').press('Enter');
+    await zoom(page,figure,folder&&image.name==='tcpip-layers.svg' && join(folder,`${prefix}-zoom.png`));
+  }
   const visibleText=await lesson.innerText();
   assert.doesNotMatch(visibleText,/CAP_NET_RAW|В этой среде недоступен захват/);
   for(const id of matchedAnchors)assert(reading.anchors.includes(id),`exact anchor preserved: ${id}`);
   assert.equal(new Set(reading.anchors).size,reading.anchors.length,'no duplicate DOM anchors');
   const lessonCheck=lesson.locator('[data-lesson-knowledge-check]');
   await lessonCheck.waitFor();
+  if(prefix.startsWith('375-light') || prefix.startsWith('1440-dark')) await solveKnowledgeCheck(page,lessonCheck,mode,folder,prefix);
   if(mode.id==='plain'){
     assert(reading.images.length>=4,'plain retains illustrated mental models');
     assert.equal(reading.sheets.filter(sheet=>sheet.visible).length,0,'bitfield sheets absent from the simple visual flow');
     assert.equal(await packetTree(lesson).count(),0,'packet details belongs to professional mode');
     assert.doesNotMatch(visibleText,/Начни захват|Decode As|Wireshark.*системные права/);
     for(const id of matchedVisuals)await keyVisual(lesson,id).waitFor();
-    await zoom(page,keyVisual(lesson,'layers'),folder&&join(folder,`${prefix}-zoom.png`));
     await verifyTooltip(page,lesson);
     const before=await protectedStorage(page);
     const result=await preparePrediction(page,lesson,folder,prefix);
     assert.deepEqual(await protectedStorage(page),before,'lesson prediction cannot change a persisted record');
-    const practice=openButton(result,'Попробовать в „Пути пакета“');
-    if(await practice.count()) {
-      await practice.click();
-      await page.getByRole('region',{name:'Путь пакета',exact:true}).waitFor();
-      await openButton(page,'Вернуться к уроку').click();
-      await result.waitFor();
-      await page.waitForFunction(el=>document.activeElement===el,await practice.elementHandle());
-      assert.equal(await openButton(lesson,mode.label).getAttribute('aria-pressed'),'true');
-    }
+    assert.equal(await openButton(result,'Открыть стенд').count(),0,'practice stays in the professional mode');
+    const practiceLink=result.locator('[data-tcpip-open-packet-practice]');
+    await practiceLink.press('Enter');
+    assert.equal(await openButton(lesson,'По делу').getAttribute('aria-pressed'),'true');
+    const hop=lesson.locator('section').filter({has:page.getByRole('heading',{name:'Путь пакета через маршрутизатор',exact:true})});
+    await hop.waitFor();
+    await page.waitForFunction(element=>{const rect=element.getBoundingClientRect();return rect.top<innerHeight&&rect.bottom>0;},await hop.elementHandle());
+    const practice=openButton(hop,'Открыть стенд');
+    await practice.click();
+    await page.getByRole('region',{name:'Путь пакета',exact:true}).waitFor();
+    await openButton(page,'Вернуться к уроку').click();
+    await practice.waitFor();
+    await page.waitForFunction(el=>document.activeElement===el,await practice.elementHandle());
+    assert.equal(await openButton(lesson,'По делу').getAttribute('aria-pressed'),'true');
+    await selectMode(lesson,mode);
     const deepLink=lesson.locator('[data-tcpip-open-packet-details]');
     await deepLink.press('Enter');
     const tree=packetTree(lesson);
@@ -344,6 +385,8 @@ async function validateReading(page,lesson,mode,reading,width,folder,prefix) {
       assert.equal((await item.locator('summary').innerText()).trim(),labels[i]);
       await item.locator('summary').press('Enter');
       assert.equal(await item.getAttribute('open'),'');
+      if(i===0)await item.getByText(/Type: IPv4 \(0x0800\)/).waitFor();
+      if(i===1)await item.getByText(/Protocol: TCP \(6\)/).waitFor();
       if(i===2)await item.getByText(/Src Port: 51514 · Dst Port: 80/).waitFor();
     }
     if(folder) {

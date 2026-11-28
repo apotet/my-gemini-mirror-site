@@ -1,5 +1,4 @@
 import { useId, useState } from 'react';
-import { PracticeLinkButton, type PracticeButtonAction } from './PracticeLinkButton';
 
 const choices = [
   { id: 'ip', label: 'Меняются IP-адрес сервера и порт службы.',
@@ -10,7 +9,7 @@ const choices = [
     feedback: 'Кадр действительно новый. А что маршрутизатор делает со счётчиком переходов IPv4?' },
 ] as const;
 
-export function TcpIpHopPrediction({ onOpenPractice }: { onOpenPractice?: PracticeButtonAction }) {
+export function TcpIpHopPrediction({ onExplorePractice }: { onExplorePractice: () => void }) {
   const groupId = useId();
   const [selected, setSelected] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<string | null>(null);
@@ -19,7 +18,7 @@ export function TcpIpHopPrediction({ onOpenPractice }: { onOpenPractice?: Practi
   return (
     <div data-tcpip-prediction className="tcpip-exercise">
       <h4>Предскажи: что изменится на маршрутизаторе?</h4>
-      <p>Клиент <code>192.0.2.10:51514</code> отправил HTTP-запрос серверу <code>198.51.100.20:80</code>. Сервер подключён к выходной сети маршрутизатора напрямую. NAT и прокси нет.</p>
+      <p>Клиент <code>192.0.2.10:51514</code> отправил HTTP-запрос серверу <code>198.51.100.20:80</code>. Сервер подключён к выходной сети маршрутизатора напрямую. NAT и прокси нет. ARP уже отработал, TCP-соединение установлено.</p>
       <form onSubmit={event => { event.preventDefault(); if (selected) setSubmitted(selected); }}>
         <fieldset>
           <legend>Сравни кадр на входе и кадр на выходе.</legend>
@@ -42,7 +41,9 @@ export function TcpIpHopPrediction({ onOpenPractice }: { onOpenPractice?: Practi
             <div><dt>Пакет IPv4</dt><dd>TTL: 64 → 63. Контрольная сумма заголовка IPv4 пересчитывается.</dd></div>
             <div><dt>Сквозные поля</dt><dd>IP-адреса клиента и сервера и порты <code>51514 → 80</code> не меняются.</dd></div>
           </dl>
-          <PracticeLinkButton link="packet" onOpenPractice={onOpenPractice} label="Попробовать в „Пути пакета“" />
+          <button type="button" data-tcpip-open-packet-practice className="tcpip-mode-link" onClick={onExplorePractice}>
+            Перейти к практике в режиме „По делу“
+          </button>
         </div>
       )}
     </div>
@@ -50,8 +51,8 @@ export function TcpIpHopPrediction({ onOpenPractice }: { onOpenPractice?: Practi
 }
 
 const packetRows = [
-  ['link', 'Ethernet II', 'Source: MAC клиента · Destination: MAC входного интерфейса маршрутизатора'],
-  ['internet', 'Internet Protocol Version 4', 'Src: 192.0.2.10 · Dst: 198.51.100.20 · TTL: 64'],
+  ['link', 'Ethernet II', 'Source: MAC клиента · Destination: MAC входного интерфейса маршрутизатора · Type: IPv4 (0x0800)'],
+  ['internet', 'Internet Protocol Version 4', 'Src: 192.0.2.10 · Dst: 198.51.100.20 · TTL: 64 · Protocol: TCP (6)'],
   ['transport', 'Transmission Control Protocol', 'Src Port: 51514 · Dst Port: 80'],
   ['application', 'Hypertext Transfer Protocol', 'GET / HTTP/1.1 · Host: lesson.test'],
 ] as const;
