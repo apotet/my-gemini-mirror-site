@@ -18,7 +18,12 @@ const CALCULATOR_EXAMPLES: Readonly<Record<string, { prefix: number; address?: s
   'gen-bin-dec-252': { prefix: 22, address: '172.20.6.14' },
   'gen-bc-25-3': null, // Requires comparing two hosts while choosing a common prefix.
   'gen-bc-25-4': null, // Requires comparing two concurrently configured prefixes.
+  'gen-net-25-2': null, // Requires comparing two host addresses.
+  'gen-bc-25-2': null, // Each host makes its own on-link decision with a different prefix.
+  'gen-net-25-4': null, // The CIDR slider cannot validate an arbitrary non-contiguous mask.
   'gen-net-25-3': null, // Requires comparing the on-link decision for two destinations.
+  'gen-bc-26-1': { prefix: 26, address: '192.168.60.130' },
+  'gen-net-26-4': { prefix: 26, address: '192.168.70.96' },
   'gen-bc-26-4': { prefix: 26, address: '10.60.0.128' },
   'gen-hosts-27': { prefix: 26 }, // A /27 has only 30 usable addresses, not the required 32.
 };

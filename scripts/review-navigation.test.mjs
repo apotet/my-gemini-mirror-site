@@ -100,6 +100,8 @@ for (const [id, prefix, address] of [
   ['l3-11', 28, '10.0.0.32'],
   ['new-l3-23', 23, '192.168.10.0'],
   ['gen-bin-dec-252', 22, '172.20.6.14'],
+  ['gen-bc-26-1', 26, '192.168.60.130'],
+  ['gen-net-26-4', 26, '192.168.70.96'],
   ['gen-bc-26-4', 26, '10.60.0.128'],
   ['gen-hosts-27', 26, undefined],
 ]) {
@@ -107,12 +109,15 @@ for (const [id, prefix, address] of [
   for (const surface of [render, renderTheory]) assert.ok(surface(question).includes('Открыть IPv4-тренажёр'), id);
   assert.deepEqual([route?.targetMode, route?.targetPrefix, route?.targetAddress], ['calc', prefix, address], id);
 }
-for (const id of ['gen-bc-25-3', 'gen-bc-25-4', 'gen-net-25-3', 'l3-15', 'review-ndp-1']) {
+const unsupportedIpv4 = [
+  'gen-net-25-2', 'gen-bc-25-2', 'gen-bc-25-3', 'gen-bc-25-4', 'gen-net-25-3', 'gen-net-25-4',
+];
+for (const id of [...unsupportedIpv4, 'l3-15', 'review-ndp-1']) {
   const { question, deep } = find(id);
   assert.equal(deep.ipv4Practice, undefined, id);
   for (const surface of [render, renderTheory]) assert.ok(!surface(question).includes('Открыть IPv4-тренажёр'), id);
 }
-for (const id of ['gen-bc-25-3', 'gen-bc-25-4', 'gen-net-25-3']) {
+for (const id of unsupportedIpv4) {
   assert.equal(getLessonForQuestion(id)?.id, 'l3-subnets', 'practice filtering must not remove lesson links');
 }
 const audit = { baseCommit: '0eb8f5b11b62f949b48554236664ab33f2de3957', totalQuestions: ALL_QUESTIONS.length,
