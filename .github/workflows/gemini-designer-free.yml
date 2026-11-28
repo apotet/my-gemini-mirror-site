@@ -1,5 +1,7 @@
 name: Gemini Designer Free tier
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       mode:
@@ -17,14 +19,75 @@ on:
 permissions:
   contents: read
 jobs:
-  public-arp:
+  comment-gate:
     if: >-
+      github.event_name == 'issue_comment' &&
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '332418397' && github.run_attempt == 1 &&
+      github.event.issue.number == 591 && !github.event.issue.pull_request &&
+      (github.event.comment.body == '/gennady check' ||
+       github.event.comment.body == '/gennady smoke')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      mode: ${{ steps.guard.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        id: guard
+        env:
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+        with:
+          script: |
+            const { authorize } = require('./scripts/gemini_designer_comment.cjs');
+            const mode = authorize(context, process.env.GITHUB_RUN_ATTEMPT, process.env.TRIGGERING_ACTOR);
+            if (!mode) throw new Error('Command rejected');
+            core.setOutput('mode', mode);
+            if (mode === 'probe') core.notice('GitHub command verified. No Google request or provider secret.');
+
+  comment-reservation:
+    needs: comment-gate
+    if: needs.comment-gate.outputs.mode == 'smoke'
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: gemini-designer-free-smoke-reservation
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        env:
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+        with:
+          script: |
+            const { reserveSmoke } = require('./scripts/gemini_designer_comment.cjs');
+            if (!await reserveSmoke(github, context, process.env.GITHUB_RUN_ATTEMPT, process.env.TRIGGERING_ACTOR))
+              throw new Error('No valid Free-tier attestation or smoke was already reserved');
+
+  public-arp:
+    needs: [comment-gate, comment-reservation]
+    if: >-
+      always() && !cancelled() &&
       github.repository == 'apotet/my-gemini-mirror-site' &&
       github.ref == 'refs/heads/main' &&
       github.actor == 'apotet' && github.triggering_actor == 'apotet' &&
       github.actor_id == '332418397' && github.run_attempt == 1 &&
-      inputs.free_project == 'same-key-project-is-free-tier' &&
-      (inputs.mode == 'smoke' || inputs.mode == 'pilot')
+      ((github.event_name == 'workflow_dispatch' &&
+        inputs.free_project == 'same-key-project-is-free-tier' &&
+        (inputs.mode == 'smoke' || inputs.mode == 'pilot')) ||
+       (github.event_name == 'issue_comment' &&
+        needs.comment-gate.outputs.mode == 'smoke' &&
+        needs.comment-reservation.result == 'success'))
     concurrency:
       group: gemini-designer-free
       cancel-in-progress: false
@@ -45,7 +108,7 @@ jobs:
       - name: Analyze checked-in public screenshots with fixed Free-tier model
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          DESIGN_MODE: ${{ inputs.mode }}
+          DESIGN_MODE: ${{ github.event_name == 'issue_comment' && 'smoke' || inputs.mode }}
           PYTHONPATH: .github
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
