@@ -1,0 +1,182 @@
+/* Opt-in to the TCP/IP model only. The catalog, glossary settings, zoom
+   dialog and common lesson renderer keep their existing styles. */
+[data-lesson-reading="tcpip"] {
+  --tcpip-copy-size: clamp(1rem, 0.955rem + 0.2vw, 1.125rem);
+  --tcpip-measure: 66ch;
+  --tcpip-copy: #253449;
+  --tcpip-caption: #475569;
+  --tcpip-divider: #cbd5e1;
+  --tcpip-application: #18498d;
+  --tcpip-transport: #17643b;
+  --tcpip-internet: #85401b;
+  --tcpip-link: #643c88;
+  --tcpip-note: #164e63;
+  --tcpip-note-bg: #ecf8fb;
+  --tcpip-note-border: #0891b2;
+}
+
+.dark [data-lesson-reading="tcpip"] {
+  --tcpip-copy: #e2e8f0;
+  --tcpip-caption: #b8c7dc;
+  --tcpip-divider: #41536a;
+  --tcpip-application: #aed0ff;
+  --tcpip-transport: #ace8bf;
+  --tcpip-internet: #ffc6a0;
+  --tcpip-link: #dcc2fa;
+  --tcpip-note: #bfeef7;
+  --tcpip-note-bg: #0e2937;
+  --tcpip-note-border: #4eb5c6;
+}
+
+.tcpip-reading__sections {
+  max-inline-size: 64rem;
+}
+
+.tcpip-reading__sections > section {
+  padding: clamp(0.75rem, 0.65rem + 0.65vw, 1.25rem);
+  color: var(--tcpip-copy);
+}
+
+.tcpip-reading__sections > section > h3 {
+  align-items: baseline;
+  font-size: clamp(1.125rem, 1.03rem + 0.3vw, 1.3125rem);
+  line-height: 1.25;
+}
+
+.tcpip-reading__sections > section > h3 > svg {
+  flex: none;
+  align-self: start;
+  margin-block-start: 0.2em;
+}
+
+.tcpip-reading__prose,
+.tcpip-reading__takeaway {
+  min-inline-size: 0;
+  max-inline-size: var(--tcpip-measure);
+  color: var(--tcpip-copy);
+  font-size: var(--tcpip-copy-size);
+  line-height: 1.58;
+}
+
+.tcpip-reading__prose > div > :not(:last-child) {
+  margin-block-end: 0.72em;
+}
+
+.tcpip-reading__prose li:not(:last-child) {
+  margin-block-end: 0.35em;
+}
+
+.tcpip-reading__visual {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.875rem;
+  margin-block: 0.875rem;
+}
+
+.tcpip-reading__preview {
+  justify-self: center;
+  width: min(100%, 20rem);
+  min-inline-size: 0;
+}
+
+.tcpip-reading__preview > button {
+  display: block;
+}
+
+.tcpip-reading__caption,
+.tcpip-reading__sections [data-lesson-cheatsheet] [data-lesson-visual-description] {
+  min-inline-size: 0;
+  max-inline-size: var(--tcpip-measure);
+  color: var(--tcpip-caption);
+  font-size: 0.9375rem;
+  line-height: 1.52;
+  overflow-wrap: anywhere;
+}
+
+.tcpip-reading__caption {
+  border-block-start: 1px solid var(--tcpip-divider);
+  padding-block-start: 0.625rem;
+}
+
+.tcpip-reading__caption > p + p {
+  margin-block-start: 0.5em;
+}
+
+.tcpip-reading__caption-label {
+  display: block;
+  margin-block-end: 0.35rem;
+  color: var(--tcpip-copy);
+  font-weight: 650;
+}
+
+.tcpip-reading__sections [data-lesson-cheatsheet] > summary {
+  font-size: var(--tcpip-copy-size);
+}
+
+.tcpip-reading__sections [data-lesson-cheatsheet] > div > p {
+  max-inline-size: var(--tcpip-measure);
+  color: var(--tcpip-caption);
+  font-size: 0.9375rem;
+  line-height: 1.52;
+}
+
+.tcpip-reading__takeaway {
+  margin-block-start: 0.875rem;
+  border-inline-start: 3px solid var(--tcpip-note-border);
+  border-start-end-radius: 0.5rem;
+  border-end-end-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--tcpip-note-bg);
+  color: var(--tcpip-note);
+}
+
+.tcpip-reading__takeaway strong {
+  font-weight: 700;
+}
+
+/* Opt-in weight and color only. Existing glossary buttons still decide
+   whether a tooltip or underline is on; visible meaning never relies on color. */
+.tcpip-reading__sections :is(.tcpip-reading__prose, .tcpip-reading__takeaway) .glossary-trigger:is(
+  [data-glossary-term="TCP/IP"], [data-glossary-term="OSI"],
+  [data-glossary-term="инкапсуляция"], [data-glossary-term="декапсуляция"]
+) {
+  font-weight: 650;
+}
+
+.tcpip-reading__sections :is(.tcpip-reading__prose, .tcpip-reading__takeaway) .glossary-trigger:is([data-glossary-term="HTTP"], [data-glossary-term="Application"]),
+.tcpip-reading__caption [data-tcpip-level="application"] {
+  color: var(--tcpip-application);
+  font-weight: 650;
+}
+
+.tcpip-reading__sections :is(.tcpip-reading__prose, .tcpip-reading__takeaway) .glossary-trigger:is([data-glossary-term="TCP"], [data-glossary-term="UDP"], [data-glossary-term="Transport"]),
+.tcpip-reading__caption [data-tcpip-level="transport"] {
+  color: var(--tcpip-transport);
+  font-weight: 650;
+}
+
+.tcpip-reading__sections :is(.tcpip-reading__prose, .tcpip-reading__takeaway) .glossary-trigger:is([data-glossary-term="IP"], [data-glossary-term="IPv4"], [data-glossary-term="IPv6"], [data-glossary-term="Internet"]),
+.tcpip-reading__caption [data-tcpip-level="internet"] {
+  color: var(--tcpip-internet);
+  font-weight: 650;
+}
+
+.tcpip-reading__sections :is(.tcpip-reading__prose, .tcpip-reading__takeaway) .glossary-trigger:is([data-glossary-term="MAC"], [data-glossary-term="Ethernet"], [data-glossary-term="Link"]),
+.tcpip-reading__caption [data-tcpip-level="link"] {
+  color: var(--tcpip-link);
+  font-weight: 650;
+}
+
+@media (min-width: 64rem) {
+  .tcpip-reading__visual[data-layout="split"] {
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    column-gap: clamp(1.25rem, 3vw, 2.5rem);
+  }
+
+  .tcpip-reading__visual[data-layout="split"] > .tcpip-reading__preview {
+    grid-row: span 2;
+  }
+
+}

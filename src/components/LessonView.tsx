@@ -17,6 +17,7 @@ import { getLessonReviewStatus } from '../data/lessons/reviewStatus';
 import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
 import { ArpVisualPilot } from './ArpVisualPilot';
+import { TcpIpReadingBlock } from './TcpIpReadingBlock';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
 interface LessonViewProps {
@@ -211,10 +212,11 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
     }
   };
 
+  const tcpipReading = lesson.id === 'tcpip-model';
   const related = useMemo(() => lesson.relatedQuestionIds, [lesson]);
 
   return (
-    <article className="space-y-5">
+    <article className="space-y-5" data-lesson-reading={tcpipReading ? 'tcpip' : undefined}>
       <div className="flex flex-wrap items-center gap-2">
         {onReturnToLesson && (
           <button type="button" onClick={onReturnToLesson}
@@ -298,7 +300,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
       )}
       {lesson.diagram === 'sni' && <SniDiagram />}
 
-      <div className="space-y-4">
+      <div className={tcpipReading ? 'space-y-4 tcpip-reading__sections' : 'space-y-4'}>
         {blocks.map((b) => (
           <section
             key={b.anchorId ?? b.heading}
@@ -311,6 +313,9 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
+            {tcpipReading && !b.image && !b.pinout ? (
+              <TcpIpReadingBlock body={b.body} visual={b.visual} glossaryScope={glossaryScope} />
+            ) : <>
             {b.visual && (
               <figure className="mx-auto w-full max-w-[30rem] space-y-2" data-lesson-visual={b.visual.file} aria-label={b.visual.title}>
                 <ZoomableImage src={`${import.meta.env.BASE_URL}lesson-images/${b.visual.file}`}
@@ -322,6 +327,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
               <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} glossaryScope={glossaryScope} />{b.pinout === 't568' && <EthernetPinout />}</div>
               {b.image && !b.imageCollapsible && <LessonPhoto image={b.image} />}
             </div>
+            </>}
             {b.image && b.imageCollapsible && (
               <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40" data-lesson-secondary-photo>
                 <summary className="cursor-pointer text-xs font-medium text-slate-600 underline decoration-dotted underline-offset-2 dark:text-slate-300">{b.imageDisclosureLabel ?? 'Показать дополнительное фото'}</summary>
