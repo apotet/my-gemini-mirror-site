@@ -172,18 +172,17 @@ function Envelope({ advance }: { advance: () => void }) {
   }
   return (
     <>
+      {!solved && <h5 ref={question} tabIndex={-1} className="font-semibold focus-visible:outline-2 focus-visible:outline-cyan-600">{current.prompt}</h5>}
+      <AddressStrip mac={solved ? current.mac : '?'} ip={current.destination} />
+      {!solved && (
+        <div className="grid gap-1.5 sm:grid-cols-3">{RECIPIENTS.map(({ node, label }) => <button type="button" key={node} className={choice} onClick={() => choose(node)}>{label}</button>)}</div>
+      )}
+      <p role="status" aria-atomic="true">{solved ? current.result : wrong && current.hints[wrong]}</p>
+      {solved && <MainAction actionRef={next} action={{ label: current.next, run: () => {
+        if (move === 0) { setMove(1); setSolved(false); requestAnimationFrame(() => question.current?.focus()); }
+        else advance();
+      } }} />}
       <NetworkFigure signal={solved ? current.signal : 'preview'} destination={current.destination} predict={!solved} />
-      <div role="status"><AddressStrip mac={solved ? current.mac : '?'} ip={current.destination} /></div>
-      {solved
-        ? <MainAction actionRef={next} action={{ label: current.next, run: () => {
-          if (move === 0) { setMove(1); setSolved(false); requestAnimationFrame(() => question.current?.focus({ preventScroll: true })); }
-          else advance();
-        } }} />
-        : <div className="space-y-2">
-          <h5 ref={question} tabIndex={-1} className="font-semibold focus-visible:outline-2 focus-visible:outline-cyan-600">{current.prompt}</h5>
-          <div className="grid gap-1.5">{RECIPIENTS.map(({ node, label }) => <button type="button" key={node} className={choice} onClick={() => choose(node)}>{label}</button>)}</div>
-        </div>}
-      <p role="status">{solved ? current.result : wrong && current.hints[wrong]}</p>
     </>
   );
 }
