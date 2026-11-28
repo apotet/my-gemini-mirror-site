@@ -50,7 +50,10 @@ try {
   await button(screens,'Курс IP').click();
   await f.getByRole('button',{name:/Тренажёр IPv4 · Маски и подсети/}).click();
   assert.ok((await f.locator('body').innerText()).includes('Вернуться'));
-  const zip=await p.request.get(new URL('netops-courses-prototypes.zip',base).href);assert.equal(zip.status(),200);assert.equal((await zip.body()).length,2145339);
+  const {readFileSync}=await import('node:fs');
+  const {createHash}=await import('node:crypto');
+  const expectedZip=createHash('sha256').update(readFileSync(new URL('../public/netops-courses-prototypes.zip',import.meta.url))).digest('hex');
+  const zip=await p.evaluate(async url=>{const r=await fetch(url);const data=await r.arrayBuffer();return {status:r.status,sha:[...new Uint8Array(await crypto.subtle.digest('SHA-256',data))].map(x=>x.toString(16).padStart(2,'0')).join('')};},new URL('netops-courses-prototypes.zip',base).href);assert.equal(zip.status,200);assert.equal(zip.sha,expectedZip);
   const after=await p.evaluate(()=>({...localStorage}));
   for(const [k,v] of Object.entries(before)) assert.equal(after[k],v,`unchanged storage ${k}`);
   await button(p,'Тестирование').click();assert.equal(new URL(p.url()).searchParams.get('mock'),null);

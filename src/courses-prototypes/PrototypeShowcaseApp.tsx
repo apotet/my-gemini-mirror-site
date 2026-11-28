@@ -43,7 +43,7 @@ const SCREEN_TABS: Array<{ id: ScreenId; label: string; shortLabel: string }> = 
 ];
 
 export const PrototypeShowcaseApp: React.FC = () => {
-  const [concept, setConcept] = useState<ConceptId>('studio');
+  const [concept, setConcept] = useState<ConceptId>('academy');
   const [screen, setScreen] = useState<ScreenId>('catalog');
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
   const [isNarrowWindow, setIsNarrowWindow] = useState<boolean>(() =>
@@ -282,6 +282,9 @@ export const PrototypeShowcaseApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-[#050912] text-slate-900 dark:text-slate-100 transition-colors">
+      <p role="note" className="px-4 py-2 text-center text-xs bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        Демонстрационный макет AI Studio. Профили, маршруты и подтверждённые компетенции — демонстрационные данные, а не достижения вашего аккаунта NetOps.
+      </p>
       {/* Showcase controls wrap as separate groups; mobile uses a collapsible drawer */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0b1220]/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
         {!isNarrowWindow ? (
