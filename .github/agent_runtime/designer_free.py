@@ -14,6 +14,7 @@ from .designer_intake import IntakeError, load_package
 
 REPO = 'apotet/my-gemini-mirror-site'
 MODEL = 'gemini-4-hydrogen'
+VISUAL_FLASH_MODEL = 'gemini-3.8-flash'
 URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent'
 CONFIRM = 'same-key-project-is-free-tier'
 ROOT = Path(__file__).resolve().parents[2]
@@ -66,7 +67,8 @@ def audit_env(env, event, expected_mode):
         cid = comment.get('id')
         allowed = {'smoke': ('/gennady smoke', '/gennady retry-503'),
                    'pilot': ('/gennady pilot-tcpip',),
-                   'acceptance': ('/gennady accept-tcpip', '/gennady retry-visual-503', '/gennady accept-tcpip-structured')}
+                   'acceptance': ('/gennady accept-tcpip', '/gennady retry-visual-503', '/gennady accept-tcpip-structured',
+                                  '/gennady accept-tcpip-flash')}
         if (event.get('action') == 'created' and issue.get('number') == 591 and
                 issue.get('id') == 6662809692 and issue.get('state') == 'open' and
                 'pull_request' not in issue and
@@ -142,11 +144,14 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def post(raw,key,opener=None):
+def post(raw,key,opener=None,*,model=MODEL):
     if not key:
         raise Stop('existing_gemini_api_key_missing')
     default = lambda: urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
-    req = urllib.request.Request(URL, data=raw, method='POST',
+    if model not in (MODEL,VISUAL_FLASH_MODEL):
+        raise Stop('unknown_fixed_model')
+    endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent'
+    req = urllib.request.Request(endpoint, data=raw, method='POST',
         headers={'x-goog-api-key':key,'Content-Type':'application/json','Accept':'application/json'})
     try:
         with (opener or default()).open(req,timeout=240) as resp:
@@ -251,6 +256,8 @@ def run(mode,report,env=os.environ,send=post,root=ROOT,sleep=time.sleep):
     recovery = (env.get('GITHUB_EVENT_NAME') == 'issue_comment' and
                 ((mode == 'smoke' and event['comment']['body'] == '/gennady retry-503') or
                  (mode == 'acceptance' and event['comment']['body'] in ('/gennady retry-visual-503','/gennady accept-tcpip-structured'))))
+    model = (VISUAL_FLASH_MODEL if mode == 'acceptance' and env.get('GITHUB_EVENT_NAME') == 'issue_comment'
+             and event['comment']['body'] == '/gennady accept-tcpip-flash' else MODEL)
     image_root=root/EVIDENCE.relative_to(ROOT)/mode
     # Manifests and public screenshots are part of the reviewed, default-branch-only workflow checkout.
     manifest_hash=hashlib.sha256((image_root/'manifest.json').read_bytes()).hexdigest()
@@ -273,9 +280,10 @@ def run(mode,report,env=os.environ,send=post,root=ROOT,sleep=time.sleep):
     delays = (15, 45) if recovery else ()
     for attempt in range(len(delays) + 1):
         try:
-            body = send(raw,key)
+            body = send(raw,key,model=model) if model == VISUAL_FLASH_MODEL else send(raw,key)
             break
         except Stop as exc:
+            exc.model = model
             if (exc.status != 503 or exc.reason != 'provider_http_error_no_retry' or
                     attempt == len(delays)):
                 raise
@@ -289,8 +297,12 @@ def run(mode,report,env=os.environ,send=post,root=ROOT,sleep=time.sleep):
             print(json.dumps({'status':'recovery_wait', 'http_status':503,
                               'attempt':attempt + 1, 'next_delay_seconds':wait}), flush=True)
             sleep(wait)
-    design,usage=decode(body,[a.label for a in pkg.images],key,visual=mode=='acceptance')
-    result=dict(status='answered',mode=mode,model=MODEL,http_status=200,usage=usage,
+    try:
+        design,usage=decode(body,[a.label for a in pkg.images],key,visual=mode=='acceptance')
+    except Stop as exc:
+        exc.model = model
+        raise
+    result=dict(status='answered',mode=mode,model=model,http_status=200,usage=usage,
         cost_usd=0, cost_basis='official Free tier, same-project confirmation by owner; not invoice data',
         run_url=f'https://github.com/{REPO}/actions/runs/'+env['GITHUB_RUN_ID'],source_sha=pkg.source_sha,
         image_provenance=[dict(label=a.label,sha256=a.sha256,source_sha=a.source_sha,
@@ -310,7 +322,7 @@ def main():
                          ensure_ascii=False))
     except Stop as e:
         # Never print response bodies, exceptions containing paths, credentials or input bytes.
-        print(json.dumps({'status':'stopped','model':MODEL,'reason':e.reason,'http_status':e.status,
+        print(json.dumps({'status':'stopped','model':getattr(e,'model',MODEL),'reason':e.reason,'http_status':e.status,
                           'cost_usd':None,'usage':e.usage}))
         return 1
     except (ValueError,OSError,IntakeError,TypeError):

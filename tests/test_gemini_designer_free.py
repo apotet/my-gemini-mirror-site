@@ -347,4 +347,22 @@ class CommentDesigner(unittest.TestCase):
                 schema=json.loads(sender.call_args.args[0])['generationConfig']['responseJsonSchema']
                 self.assertEqual(schema['properties']['visual_verdict']['enum'],['PASS','FIX'])
                 self.assertIn('visual_verdict',schema['required'])
+                report.unlink()
+                event['comment']['body']='/gennady accept-tcpip-flash'
+                event_path.write_text(json.dumps(event))
+                sender, sleeper = Mock(side_effect=d.Stop('provider_http_error_no_retry',503)), Mock()
+                with self.assertRaises(d.Stop) as stopped:
+                    d.run('acceptance',report,env=env,send=sender,root=root,sleep=sleeper)
+                self.assertEqual(stopped.exception.model,d.VISUAL_FLASH_MODEL)
+                self.assertEqual(sender.call_args.kwargs,{'model':d.VISUAL_FLASH_MODEL})
+                sender.assert_called_once()
+                sleeper.assert_not_called()
+                self.assertFalse(report.exists())
+                sender=Mock(return_value=mock_response(accepted))
+                self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root)['model'],d.VISUAL_FLASH_MODEL)
+                fake=Mock()
+                target=d.URL.replace(d.MODEL,d.VISUAL_FLASH_MODEL)
+                fake.open.side_effect=urllib.error.HTTPError(target,503,'x',{},io.BytesIO(b''))
+                with self.assertRaises(d.Stop): d.post(b'{}',KEY,opener=fake,model=d.VISUAL_FLASH_MODEL)
+                self.assertEqual(fake.open.call_args.args[0].full_url,target)
 
