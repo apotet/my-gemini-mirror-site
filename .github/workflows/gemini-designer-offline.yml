@@ -6,6 +6,8 @@ on:
       - '.github/agent/gemini-designer-requirements.lock'
       - '.github/workflows/gemini-designer-*.yml'
       - 'tests/test_gemini_designer*.py'
+      - 'scripts/gemini_designer_comment.cjs'
+      - 'tests/test_gemini_designer_comment.cjs'
       - 'docs/design-evidence/gemini-public-lessons-v1/**'
 permissions:
   contents: read
@@ -31,3 +33,5 @@ jobs:
         run: |
           python -c 'import PIL; assert PIL.__version__ == "13.0.0"'
           python -m unittest discover -s tests -p 'test_gemini_designer*.py' -v
+      - name: Owner comment and single-use reservation tests
+        run: node --test tests/test_gemini_designer_comment.cjs

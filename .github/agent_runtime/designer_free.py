@@ -32,20 +32,44 @@ class Stop(ValueError):
 
 
 def audit_env(env, event, expected_mode):
-    if not (env.get('GITHUB_ACTIONS') == 'true' and
-            env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and
-            env.get('GITHUB_REPOSITORY') == REPO and event.get('repository', {}).get('full_name') == REPO and
-            env.get('GITHUB_WORKFLOW_REF') == REPO+'/.github/workflows/gemini-designer-free.yml@refs/heads/main' and
-            env.get('GITHUB_REF') == 'refs/heads/main' and event.get('ref') in ('main','refs/heads/main') and
-            env.get('GITHUB_ACTOR') == env.get('GITHUB_TRIGGERING_ACTOR') == 'apotet' and
-            event.get('sender', {}).get('login') == 'apotet' and
-            env.get('GITHUB_ACTOR_ID') == '332418397' and event.get('sender', {}).get('id') == 332418397 and
-            env.get('GITHUB_RUN_ATTEMPT') == '1' and
-            event.get('inputs',{}).get('free_project') == CONFIRM and
-            event.get('inputs',{}).get('mode') == expected_mode and
-            re.fullmatch(r'[0-9]+', env.get('GITHUB_RUN_ID','')) and
-            re.fullmatch(r'[0-9a-f]{40}', env.get('GITHUB_SHA',''))):
-        raise Stop('owner_free_project_dispatch_required')
+    def obj(d, k):
+        v = d.get(k) if isinstance(d, dict) else None
+        return v if isinstance(v, dict) else {}
+
+    def owner(u):
+        return u.get('login') == 'apotet' and u.get('id') == 332418397
+
+    run_id = env.get('GITHUB_RUN_ID', '')
+    common = (
+        env.get('GITHUB_ACTIONS') == 'true' and
+        env.get('GITHUB_REPOSITORY') == REPO and obj(event, 'repository').get('full_name') == REPO and
+        env.get('GITHUB_WORKFLOW_REF') == REPO+'/.github/workflows/gemini-designer-free.yml@refs/heads/main' and
+        env.get('GITHUB_REF') == 'refs/heads/main' and
+        env.get('GITHUB_ACTOR') == env.get('GITHUB_TRIGGERING_ACTOR') == 'apotet' and
+        env.get('GITHUB_ACTOR_ID') == '332418397' and owner(obj(event, 'sender')) and
+        env.get('GITHUB_RUN_ATTEMPT') == '1' and
+        re.fullmatch(r'[0-9]+', run_id) and re.fullmatch(r'[0-9a-f]{40}', env.get('GITHUB_SHA', ''))
+    )
+    event_name = env.get('GITHUB_EVENT_NAME')
+    if common and event_name == 'workflow_dispatch':
+        inputs = obj(event, 'inputs')
+        if (event.get('ref') in ('main','refs/heads/main') and
+                inputs.get('free_project') == CONFIRM and inputs.get('mode') == expected_mode):
+            return
+    if common and event_name == 'issue_comment' and expected_mode == 'smoke':
+        issue, comment = obj(event, 'issue'), obj(event, 'comment')
+        cid = comment.get('id')
+        if (event.get('action') == 'created' and issue.get('number') == 591 and
+                issue.get('id') == 6662809692 and issue.get('state') == 'open' and
+                'pull_request' not in issue and
+                all(owner(u) and u.get('type') == 'User' for u in
+                    (obj(event, 'sender'), obj(issue, 'user'), obj(comment, 'user'))) and
+                comment.get('body') == '/gennady smoke' and type(cid) is int and cid > 0 and
+                isinstance(comment.get('created_at'), str) and
+                comment.get('created_at') == comment.get('updated_at') and
+                env.get('DESIGNER_COMMENT_RESERVATION') == f'{run_id}:{cid}'):
+            return
+    raise Stop('owner_free_project_dispatch_required')
 
 
 def make_payload(pkg, mode, source=()):
