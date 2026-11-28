@@ -52,6 +52,18 @@
 - **L4 (на паузе):** в исторической инвентаризации намечен пакет, 10 вопросов про STP и прохождение VLAN. ID: `stp-new-08`, `stp-new-10`, `l2-sec-01`–`04`, `l12-d01`, `ts-pack1-08`, `ts-pack1-18`, `exp225-l2-trunk-pruning-02`. Два без собственного подробного простого объяснения и урока. Подготовка и запуск L4 остановлены. Открытые Draft #352, паузы #383 и #396 не возобновлять без отдельного решения. Не считать отсутствие ссылки признаком необходимости нового тренажёра; не выдавать CST либо выборочный VLAN за полноценную модель PVST+/MST.
 - **Courses:** узкий [IP-пилот #561](https://github.com/apotet/my-gemini-mirror-site/pull/561) и [оформление TCP/IP #562](https://github.com/apotet/my-gemini-mirror-site/pull/562) опубликованы на зеркале. Облако и production не изменены. Публикация урока не заменяет личную приёмку.
 
+### Последовательная вычитка Базы
+
+По [решению владельца #563](https://github.com/apotet/my-gemini-mirror-site/issues/563#issuecomment-7235096136) проверяем один урок и его канонически связанные вопросы Базы за раз. Подтверждённые дефекты исправляем отдельно, с независимой приёмкой и проверкой зеркала. Не ждём личной приёмки TCP/IP и OSI, но не меняем статус ни одного урока.
+
+| Урок | Что проверено и выпущено |
+| --- | --- |
+| TCP/IP | Визуальная переделка [#570](https://github.com/apotet/my-gemini-mirror-site/pull/570), независимая проверка на 375/768/1440 и 32 перехода. Это не полный аудит всех связанных вопросов Базы. |
+| OSI | [#569](https://github.com/apotet/my-gemini-mirror-site/issues/569): оба режима и три вопроса Базы. [#572](https://github.com/apotet/my-gemini-mirror-site/pull/572): FCS, размер кадра и порты TCP/UDP, выложено на зеркале. |
+| Ethernet | [#574](https://github.com/apotet/my-gemini-mirror-site/issues/574): оба режима и 7 из 7 канонических вопросов Базы, ключи подтверждены без изменений. [#576](https://github.com/apotet/my-gemini-mirror-site/pull/576): пояснены минимальный кадр, дуплекс и обучение MAC; [точный CI](https://github.com/apotet/my-gemini-mirror-site/actions/runs/46117181262) и 28 независимых проверок переходов на 375/1440. [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/46117286283), опубликованный коммит: [`543a871`](https://github.com/apotet/my-gemini-mirror-site/commit/543a871c3f27aaddd40e28b4b743edd1490301d5). |
+
+В первой очереди остаются выбор маршрута (`tcpip-x17`), ARP (`tcpip-x10`) и ICMP (`tcp-07`, `gen-osi-a-9`, `tcpip-x09`). Дальнейший остаток сверять с актуальным каноническим реестром: уже проверенные и лично принятые уроки не запускать заново. Тайм-аут #564 и отменённый до начала #573 в покрытие не входят. Production и учебные L2–L5 остаются вне очереди.
+
 ## 27.11.2026 — подтверждённые изменения на зеркале
 
 - [#464](https://github.com/apotet/my-gemini-mirror-site/pull/464) · `2a2f61bfac63e0b42c05506ddab04d370e6ef888`: вторая пятёрка Applied (PRP, TLS/ALPN, SMTP, GRE/VXLAN, SSH); 10 точных переходов, независимый PASS, [Fast PR gate](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45904042993) и [Pages](https://github.com/apotet/my-gemini-mirror-site/actions/runs/45908553679). Тяжёлые задания, помеченные skipped, не считать пройденными.
