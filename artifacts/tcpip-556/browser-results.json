@@ -1,0 +1,32 @@
+[
+  {
+    "width": 375,
+    "theme": "light",
+    "sections": 18,
+    "checks": "7/7, restart, tooltip, disclosure, zoom, styles, no overflow, no page errors"
+  },
+  {
+    "width": 375,
+    "theme": "dark",
+    "sections": 18,
+    "checks": "7/7, restart, tooltip, disclosure, zoom, styles, no overflow, no page errors"
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "sections": 18,
+    "checks": "7/7, restart, tooltip, disclosure, zoom, styles, no overflow, no page errors"
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "sections": 18,
+    "checks": "7/7, restart, tooltip, disclosure, zoom, styles, no overflow, no page errors"
+  },
+  {
+    "routes": 16,
+    "modes": 2,
+    "roundTrips": 32,
+    "favorite": "toggle on/off"
+  }
+]
