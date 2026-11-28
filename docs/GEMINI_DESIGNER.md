@@ -20,11 +20,14 @@ repository owner. Edits, unrelated comments, PRs, forks and reruns cannot launch
 Before the fixed ARP smoke, the owner must verify that the AI Studio project of the
 currently stored `GEMINI_API_KEY` is Free tier. The exact owner attestation is
 `/gennady attest same-key-project-is-free-tier`. This attestation is not an
-independent billing check. If there is doubt or the key/project changes, post
+independent billing check and expires after 30 minutes. If there is doubt or the key/project changes, post
 `/gennady revoke` before running; never post a key or project credential.
 After attestation, `/gennady smoke` reserves one attempt on the dedicated issue,
 then runs the same fixed screenshot through the existing Free-only runner. A
 failed, cancelled or uncertain request is not retried by posting again.
 The reservation job has no Google secret; the runner has read-only permissions.
+Do not edit or remove the attestation, revocation or reservation comments. To
+withdraw consent, post a new revoke before reservation; once reserved, cancel
+the workflow to stop queued work (a request already sent cannot be withdrawn).
 The separate owner-only manual dispatch is unchanged. Do not launch the same
 smoke through both entry points. This comment route cannot start the full pilot.
