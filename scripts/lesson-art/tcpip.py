@@ -3,10 +3,46 @@ from pathlib import Path
 from html import escape as e
 P=Path('public/lesson-images'); P.mkdir(exist_ok=True)
 C=['#60b5ff','#9ddb70','#ffbd61','#c3a2ff']
+ACCENTS={
+ '#60b5ff':'application', '#9ddb70':'transport',
+ '#ffbd61':'internet', '#c3a2ff':'link',
+}
+# Labels/lines and their pale chips are different roles, not one inverted color.
+# The embedded SVG inherits prefers-color-scheme from the host <img>/zoom.
+PALETTE={
+ 'ink':('#192d43','#eaf1ff'),
+ 'panel':('#edf3fa','#13273e'),
+ 'route-panel':('#fff3dc','#272d3b'),
+ 'line':('#506781','#a5bbd3'),
+ 'rule':('#657c95','#597491'),
+ 'chip-ink':('#142438','#142438'),
+ 'application':('#205a98','#80c2ff'),
+ 'transport':('#355e23','#a7df82'),
+ 'internet':('#7c4607','#ffc776'),
+ 'link':('#624292','#cfb4ff'),
+ 'application-chip':('#c2dfff','#60b5ff'),
+ 'transport-chip':('#d1ebba','#9ddb70'),
+ 'internet-chip':('#ffe4b4','#ffbd61'),
+ 'link-chip':('#e4d7ff','#c3a2ff'),
+}
+def scheme(index):
+ return ''.join(f'--tcpip-{role}:{pair[index]};' for role,pair in PALETTE.items())
+THEME=f'<style>:root{{{scheme(0)}}}@media (prefers-color-scheme: dark){{:root{{{scheme(1)}}}}}</style>'
+def paint(color, chip=False):
+ role={
+  '#eaf1ff':'ink','#13273e':'panel','#272d3b':'route-panel',
+  '#a5bbd3':'line','#314863':'rule','#091728':'chip-ink',
+ }.get(color)
+ if color in ACCENTS:
+  role=ACCENTS[color]+('-chip' if chip else '')
+ if role is None:
+  raise ValueError(f'unknown TCP/IP art paint: {color}')
+ return f'var(--tcpip-{role},{PALETTE[role][0]})'
 def text(x,y,s,size=16,color='#eaf1ff',bold=False):
- return f'<text x="{x}" y="{y}" font-size="{size}" fill="{color}" font-weight="{700 if bold else 400}">{e(s)}</text>'
-def rect(x,y,w,h,c='#13273e',r=12):
- return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{c}"/>'
+ return f'<text x="{x}" y="{y}" font-size="{size}" fill="{paint(color)}" font-weight="{700 if bold else 400}">{e(s)}</text>'
+def rect(x,y,w,h,c='#13273e',r=12,*,accent_marker=False):
+ # Thin color markers use the same contrast role as their nearby labels.
+ return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{paint(c, chip=not accent_marker)}"/>'
 def icon(kind,x,y,c):
  shapes={
  'pc':'<rect x="2" y="2" width="58" height="39" rx="4"/><path d="M22 43v8h20v-8M12 54h40"/><path d="m12 26 10-10 8 8 8-12 12 14"/>',
@@ -17,10 +53,10 @@ def icon(kind,x,y,c):
  'cable':'<path d="M0 48h18q12 0 12-12V22h20V6H30v16m5-14v10m5-10v10m5-10v10"/>',
  'wifi':'<path d="M3 18q28-28 56 0M12 28q19-19 38 0M22 38q9-9 18 0"/><circle cx="31" cy="47" r="3"/>',
  }
- return f'<g transform="translate({x} {y})" stroke="{c}" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">{shapes[kind]}</g>'
+ return f'<g transform="translate({x} {y})" stroke="{paint(c)}" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">{shapes[kind]}</g>'
 def save_diagram(name,title,width,height,body):
- height+=32  # Keep the zoom affordance below the labels at both widths.
- svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img" aria-labelledby="t"><title id="t">{e(title)}</title><rect width="{width}" height="{height}" rx="18" fill="#091728"/><g font-family="Arial, sans-serif">{body}</g></svg>'
+ # Zoom controls are outside the image; leave only drawing insets, not a second plate.
+ svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img" aria-labelledby="t"><title id="t">{e(title)}</title>{THEME}<g font-family="Arial, sans-serif">{body}</g></svg>'
  (P/f'tcpip-{name}.svg').write_text(svg, encoding='utf-8')
 
 # Five responsive illustrations for the plain TCP/IP lesson. The short labels
@@ -29,7 +65,7 @@ def core_middle(x, y, label, size=16, color='#eaf1ff', bold=False):
  return text(x,y,label,size,color,bold).replace('<text ', '<text text-anchor="middle" ', 1)
 
 def core_line(x1,y1,x2,y2,c='#a5bbd3'):
- return f'<path d="M{x1} {y1}L{x2} {y2}" stroke="{c}" stroke-width="2" stroke-linecap="round" fill="none"/>'
+ return f'<path d="M{x1} {y1}L{x2} {y2}" stroke="{paint(c)}" stroke-width="2" stroke-linecap="round" fill="none"/>'
 
 def core_out(width,name,title,height,body):
  suffix='-wide' if width==640 else ''
@@ -79,7 +115,7 @@ def core_osi(width):
   c=C[i]; rh=(54 if len(left)==3 else 38) if wide else max(46,len(left)*21+9)
   my=y+rh//2; size=17 if wide else 16
   body+=rect(lx,y,lw,rh)+rect(rx,y,rw,rh)
-  body+=rect(lx,y,4,rh,c,2)+rect(rx,y,4,rh,c,2)
+  body+=rect(lx,y,4,rh,c,2,accent_marker=True)+rect(rx,y,4,rh,c,2,accent_marker=True)
   for j,label in enumerate(left):
    if wide:
     tx=lx+9+(j%2)*132
@@ -188,7 +224,7 @@ for wide in (False, True):
  xmid=width/2
  s=icon('pc',22,21,C[0])+icon('server',x2,21,C[0])
  s+=text(37,102,'ПК',18,C[0],True)+text(x2-2,102,'Сервер',18,C[0],True)
- s+=f'<path d="M98 48H{width-96}m-8 -6 8 6 -8 6 M{width-96} 75H98m8 -6 -8 6 8 6" fill="none" stroke="#a5bbd3" stroke-width="2"/>'
+ s+=f'<path d="M98 48H{width-96}m-8 -6 8 6 -8 6 M{width-96} 75H98m8 -6 -8 6 8 6" fill="none" stroke="{paint("#a5bbd3")}" stroke-width="2"/>'
  s+=text(xmid-40,40,'Запрос',17)+text(xmid-39,100,'Ответ',17)
  save_diagram('why'+suffix,'Запрос и ответ между компьютером и сервером',width,121,s)
 
@@ -199,7 +235,7 @@ for wide in (False, True):
  middle=width//2
  s=icon('pc',19,12,C[0])+icon('router',middle-32,12,C[2])+icon('server',width-80,12,C[0])
  s+=text(36,85,'ПК',17,C[0],True)+text(middle-26,85,'Шлюз',17,C[2],True)+text(width-77,85,'Сервер',17,C[0],True)
- s+=f'<path d="M90 39H{middle-39}m-6 -4 6 4 -6 4 M{middle+41} 39H{width-88}m-6 -4 6 4 -6 4" fill="none" stroke="#a5bbd3" stroke-width="2"/>'
+ s+=f'<path d="M90 39H{middle-39}m-6 -4 6 4 -6 4 M{middle+41} 39H{width-88}m-6 -4 6 4 -6 4" fill="none" stroke="{paint("#a5bbd3")}" stroke-width="2"/>'
  s+=rect(10,102,width-20,48,'#272d3b')+text(22,131,'IPv4: 192.0.2.10 → 198.51.100.20',17,C[2],True)
  cards=[('Кадр 1 · TTL 64','MAC: ПК → вход шлюза'),('Кадр 2 · TTL 63','MAC: выход шлюза → сервер')]
  for n,(label,detail) in enumerate(cards):
@@ -253,7 +289,7 @@ for name,(title,c,fields) in field_sheets.items():
    y=69+row*35
    s+=text(x,y,key,17)+text(x+181,y,value,17,c,True)
    if row<rows-1:
-    s+=f'<path d="M{x} {y+10}h278" stroke="#314863" stroke-width="1"/>'
+    s+=f'<path d="M{x} {y+10}h278" stroke="{paint("#314863")}" stroke-width="1"/>'
   save_diagram(name+suffix,title,width,61+rows*35,s)
 
 # Summary is a recall prompt, not the four-layer diagram a second time.

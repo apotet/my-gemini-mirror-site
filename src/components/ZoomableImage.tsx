@@ -7,6 +7,8 @@ interface ZoomableImageProps {
   caption?: string;
   className?: string;
   imgClassName?: string;
+  viewerClassName?: string;
+  manageDialogFocus?: boolean;
   /** Open fullscreen viewer on click (default true) */
   fullscreenOnClick?: boolean;
   /** Keep tall lesson cheat sheets fully visible before opening the viewer. */
@@ -23,10 +25,15 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
   caption,
   className = '',
   imgClassName = '',
+  viewerClassName = '',
+  manageDialogFocus = false,
   fullscreenOnClick = true,
   previewFullHeight = false,
 }) => {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [scale, setScale] = useState(1);
@@ -72,6 +79,29 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
   useEffect(() => {
     resetTransform();
   }, [src, open, resetTransform]);
+
+  useEffect(() => {
+    if (!open || !manageDialogFocus) return;
+    const dialog = dialogRef.current;
+    const opener = triggerRef.current;
+    closeRef.current?.focus();
+    const contain = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !dialog) return;
+      const focusables = [...dialog.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];
+      const first = focusables[0];
+      const last = focusables.at(-1);
+      if (!first || !last) return;
+      if ((e.shiftKey && document.activeElement === first) || (!e.shiftKey && document.activeElement === last)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
+    };
+    dialog?.addEventListener('keydown', contain);
+    return () => {
+      dialog?.removeEventListener('keydown', contain);
+      opener?.focus({ preventScroll: true });
+    };
+  }, [open, manageDialogFocus]);
 
   // Lock body scroll while fullscreen is open
   useEffect(() => {
@@ -213,6 +243,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
         <button
           type="button"
           onClick={openViewer}
+          ref={triggerRef}
           className="relative block w-full overflow-hidden rounded-xl cursor-zoom-in group text-left"
           aria-label={`Открыть ${alt} на весь экран`}
         >
@@ -240,7 +271,8 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
 
       {open && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+          ref={dialogRef}
+          className={`fixed inset-0 z-[100] bg-black/95 flex flex-col ${viewerClassName}`}
           role="dialog"
           aria-modal="true"
           aria-label={alt}
@@ -263,6 +295,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
+                ref={closeRef}
                 className="p-1.5 rounded-lg text-white hover:bg-white/10 cursor-pointer"
                 aria-label="Закрыть"
               >
