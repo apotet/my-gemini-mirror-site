@@ -11,9 +11,10 @@ const shots = process.env.NETOPS_ARP_SCREENSHOT_DIR;
 if (shots) await mkdir(shots, { recursive: true });
 
 try {
-  for (const [width, height] of [[375, 667], [390, 844], [1440, 900]]) {
+  for (const [width, height] of [[375, 667], [390, 844], [1440, 900]]) for (const theme of ['light', 'dark']) {
     const mobile = width < 500;
-    const context = await browser.newContext({ viewport: { width, height }, isMobile: mobile, hasTouch: mobile, reducedMotion: 'reduce', colorScheme: 'dark' });
+    const context = await browser.newContext({ viewport: { width, height }, isMobile: mobile, hasTouch: mobile, reducedMotion: 'reduce', colorScheme: theme });
+    await context.addInitScript(value => localStorage.setItem('osi_theme_dark', value === 'dark' ? '1' : '0'), theme);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', err => errors.push(err.message));
@@ -28,7 +29,7 @@ try {
       else await button.press('Enter');
     };
     const shot = async name => {
-      if (shots) await page.screenshot({ path: join(shots, `arp-${width}-${name}.png`), animations: 'disabled' });
+      if (shots) await page.screenshot({ path: join(shots, `arp-${width}-${theme}-${name}.png`), animations: 'disabled' });
     };
     const atScene = async (index, name, maxButtons, primaryExpected = true) => {
       const heading = pilot.getByRole('heading', { name, level: 4 });
@@ -63,22 +64,46 @@ try {
     await pilot.waitFor();
     assert.equal(await diagram.count(), 0);
     await select('Открыть визуальный разбор');
-    await atScene(1, 'Чей MAC нужен?', 2);
-    for (const line of ['Твой ПК', 'Коммутатор', 'Сосед', 'Шлюз (L3)', 'Сервер A', /Локальная подсеть.*область ARP/, /Удалённая сеть.*ARP сюда не доходит/])
-      await visibleText(line, diagram).waitFor();
-    await visibleText('Кадр L2 · внешняя наклейка').waitFor();
-    await visibleText('Пакет L3 · письмо внутри').waitFor();
-    await shot('entry');
-    await select('Отправить соседу');
-    await visibleText('MAC: 02:00:00:00:01:20').waitFor();
-    await visibleText('IP: 192.168.1.20').waitFor();
-    await visibleText('Шлюз (L3)', diagram).waitFor();
-    await select('Сравнить: отправить серверу');
+    const predict = async ip => {
+      await pilot.getByRole('img', { name: 'Шаг 1 из 4', exact: true }).waitFor();
+      const question = pilot.getByRole('heading', { level: 5, name: /Чей MAC поставить/ });
+      await question.waitFor();
+      await visibleText('MAC: ?').waitFor();
+      await visibleText('IP: ' + ip).waitFor();
+      assert.doesNotMatch(await pilot.ariaSnapshot(), /02:00:00:00:01:(?:20|01)/, 'no MAC answer in accessibility tree before choice');
+      assert.doesNotMatch(await diagram.innerText(), /(?:к шлюзу|к соседу|поиск MAC шлюза|:01:20|:01:01)/i, 'no matching path or MAC revealed in prediction diagram');
+      assert.equal(await pilot.locator('[data-arp-main-action]:visible').count(), 0);
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      const controls = pilot.getByRole('button', { name: /^MAC / });
+      assert.equal(await controls.count(), 3);
+      const box = await controls.last().boundingBox();
+      const fig = await diagram.boundingBox();
+      const nav = mobile ? await b(page, 'Теория').locator('xpath=ancestor::nav[1]').boundingBox() : null;
+      assert(box && fig && box.y + box.height < fig.y, 'make choices available before the longer diagram');
+      if (mobile) assert(nav && box.y + box.height < nav.y, 'all choices appear above the bottom nav when the scene opens');
+      if (mobile) assert(box.height >= 44, 'touch target');
+    };
+    await predict('192.168.2.20');
+    await shot('predict-remote');
+    await select('MAC сервера 192.168.2.20');
+    await visibleText(/Сервер в другой сети/).waitFor();
+    await visibleText('MAC: ?').waitFor();
+    await select('MAC шлюза 192.168.1.1');
     await visibleText('MAC: 02:00:00:00:01:01').waitFor();
     await visibleText('IP: 192.168.2.20').waitFor();
-    await visibleText('Сосед', diagram).waitFor();
     await visibleText('Шлюз переслал пакет →', diagram).waitFor();
+    await page.waitForFunction(() => document.activeElement?.textContent?.trim() === 'Далее: отправить соседу');
     await shot('remote');
+    await select('Далее: отправить соседу');
+    await predict('192.168.1.20');
+    await page.waitForFunction(() => document.activeElement?.matches('h5[tabindex="-1"]'));
+    await select('MAC шлюза 192.168.1.1');
+    await visibleText(/Не шлюз/).waitFor();
+    await visibleText('MAC: ?').waitFor();
+    await select('MAC соседа 192.168.1.20');
+    await visibleText('MAC: 02:00:00:00:01:20').waitFor();
+    await visibleText('IP: 192.168.1.20').waitFor();
+    await shot('local');
     await select('Далее: кэш соседей');
     await atScene(2, 'Один запрос на два пакета', 3);
     await visibleText('ARP-запросов: 0').waitFor();
@@ -122,17 +147,18 @@ try {
     await select('Проследить кадр к соседу');
     await visibleText(/Для 192\.168\.1\.20 ПК выбирает MAC/).waitFor();
     await select('Проверить себя');
+    await page.waitForFunction(() => document.activeElement?.textContent?.startsWith('Какой IP ПК ищет через ARP'));
     await select('192.168.2.20');
     await visibleText(/Не этот IP/).waitFor();
     await select('192.168.1.1');
     await visibleText(/ПК ищет MAC шлюза 192\.168\.1\.1/).waitFor();
+    await page.waitForFunction(() => document.activeElement?.textContent?.trim() === 'Начать заново и сбросить ответы');
     await select('Назад к сцене');
     await pilot.getByRole('heading', { name: 'Диагностика по захвату', level: 4 }).waitFor();
     await visibleText(/Где потерялся пакет, этот захват не показывает/).waitFor();
     await select('Далее: две таблицы');
     await select('Начать заново и сбросить ответы');
-    await atScene(1, 'Чей MAC нужен?', 2);
-    await visibleText('MAC: Кого искать?').waitFor();
+    await predict('192.168.2.20');
     await select('Закрыть разбор');
     await page.waitForFunction(() => document.activeElement?.textContent?.trim() === 'Открыть визуальный разбор');
     assert.equal(await b(pilot, 'Открыть визуальный разбор').getAttribute('aria-expanded'), 'false');
