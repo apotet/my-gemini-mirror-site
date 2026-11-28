@@ -3,7 +3,7 @@ import { GlossaryText } from './GlossaryText';
 import { ZoomableImage } from './ZoomableImage';
 import { PracticeLinkButton, type PracticeButtonAction } from './PracticeLinkButton';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Lesson, type LessonIllustration } from '../data/lessons/types';
+import { Lesson, type LessonCheatsheet, type LessonIllustration } from '../data/lessons/types';
 import { getLessonBlocksWithSections, getLessonSectionForQuestion } from '../data/lessons/lessonSectionLinks';
 import { StudyTextToggle } from './StudyTextToggle';
 import { GlossaryHoverToggle } from './GlossaryHoverToggle';
@@ -34,6 +34,14 @@ interface LessonViewProps {
   studyBefore?: React.ReactNode;
   studyNavigation?: React.ReactNode;
   studyNextId?: string;
+}
+
+function LessonVisualCaption({ visual }: { visual: LessonCheatsheet }) {
+  if (!visual.textEquivalent?.length) return null;
+  return <figcaption data-lesson-visual-description={visual.file}
+    className="space-y-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+    {visual.textEquivalent.map(text => <p key={text}>{text}</p>)}
+  </figcaption>;
 }
 
 /** Native, mobile-readable PoE cheat sheet: no tiny SVG columns or cached image. */
@@ -300,9 +308,10 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
             {b.visual && (
-              <figure className="mx-auto w-full max-w-[30rem]" data-lesson-visual={b.visual.file}>
+              <figure className="mx-auto w-full max-w-[30rem] space-y-2" data-lesson-visual={b.visual.file} aria-label={b.visual.title}>
                 <ZoomableImage src={`${import.meta.env.BASE_URL}lesson-images/${b.visual.file}`}
                   alt={b.visual.alt} previewFullHeight className="w-full" />
+                <LessonVisualCaption visual={b.visual} />
               </figure>
             )}
             <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
@@ -336,6 +345,20 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
                 <div className="space-y-3 border-t border-cyan-300/40 p-3">
                   {b.cheatsheet.file === 'poe-standards-cheatsheet.svg' ? (
                     <PoEStandardsChart />
+                  ) : b.cheatsheet.textEquivalent?.length ? (
+                    <figure aria-label={b.cheatsheet.title}
+                      className={b.cheatsheet.compactDesktop
+                        ? "space-y-2 lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-4 lg:space-y-0"
+                        : "space-y-2"}>
+                      <ZoomableImage
+                        src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}
+                        alt={b.cheatsheet.alt}
+                        previewFullHeight
+                        className="w-full"
+                        imgClassName={b.cheatsheet.compactDesktop ? "lg:max-h-[min(70vh,38rem)]" : undefined}
+                      />
+                      <LessonVisualCaption visual={b.cheatsheet} />
+                    </figure>
                   ) : (
                     <ZoomableImage
                       src={`${import.meta.env.BASE_URL}lesson-images/${b.cheatsheet.file}`}

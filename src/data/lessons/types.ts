@@ -18,6 +18,10 @@ export interface LessonCheatsheet {
   title: string;
   alt: string;
   note: string;
+  /** Visible HTML equivalent of the essential information in a complex image. */
+  textEquivalent?: readonly string[];
+  /** Bound a tall desktop preview; the mobile and full-screen views stay intact. */
+  compactDesktop?: boolean;
 }
 
 export interface LessonBlock {

@@ -32,8 +32,13 @@ interface LessonPracticeOrigin {
 }
 
 export function App() {
+  const [entryLessonId] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    const requested = new URLSearchParams(window.location.search).getAll('lesson');
+    return requested.length === 1 && requested[0] === 'tcpip-model' ? 'tcpip-model' : null;
+  });
   const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin; variant?: PracticeVariant } | null>(null);
-  const [activeTab, setActiveTab] = useState<NavTab>('exam');
+  const [activeTab, setActiveTab] = useState<NavTab>(entryLessonId ? 'theory' : 'exam');
   const pendingLessonReturn = useRef<LessonPracticeOrigin | null>(null);
   const [theoryInstance, setTheoryInstance] = useState(0);
   const isTheoryTab = activeTab === 'theory' || activeTab === 'osi';
@@ -44,7 +49,7 @@ export function App() {
   const [showCredits, setShowCredits] = useState<boolean>(false);
 
   const [theoryQuestionId, setTheoryQuestionId] = useState<string | null>(null);
-  const [theoryLessonId, setTheoryLessonId] = useState<string | null>(null);
+  const [theoryLessonId, setTheoryLessonId] = useState<string | null>(entryLessonId);
   const [theoryFromExam, setTheoryFromExam] = useState<boolean>(false);
   const [ipv4InitialAddress, setIpv4InitialAddress] = useState<string>();
   const [ipv4InitialPrefix, setIpv4InitialPrefix] = useState<number | undefined>(undefined);

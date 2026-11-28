@@ -51,7 +51,7 @@ save('osi','Условное соответствие семи уровней OS
 # Fully visible nesting: one row per header avoids unreadably small horizontal fields.
 for reverse in [False,True]:
  s=text(20,30,'Приём: снаружи внутрь' if reverse else 'Отправка: изнутри наружу',19,bold=True)
- stages=[('1 · Данные HTTP',['GET / HTTP/1.1','Host: lesson.test'],0),('2 · TCP-сегмент',['TCP: 51514 → 80','Внутри: данные HTTP'],1),('3 · IPv4-пакет',['IP: 192.0.2.10 → 198.51.100.20','Внутри: TCP + HTTP'],2),('4 · Ethernet-кадр',['MAC: компьютер → шлюз','Внутри: IP + TCP + HTTP','В конце: FCS — проверка кадра'],3),('5 · Физическая передача',['Биты кадра → сигналы','Кабель или радиоволны'],3)]
+ stages=[('1 · Данные HTTP',['GET / HTTP/1.1','Host: lesson.test'],0),('2 · TCP-сегмент',['TCP: 51514 → 80','Внутри: данные HTTP'],1),('3 · IPv4-пакет',['IP: 192.0.2.10 → 198.51.100.20','Внутри: TCP + HTTP'],2),('4 · Ethernet-кадр',['MAC: компьютер → шлюз','Внутри: IP + TCP + HTTP','В конце: FCS — проверка кадра'],3),('5 · Физическая передача',['Биты кадра → сигналы','По кабелю Ethernet'],3)]
  if reverse:stages=list(reversed(stages));stages[0]=('1 · Принимаем сигналы',['Сигналы → биты кадра'],3);stages[-1]=('5 · Приложение читает HTTP',['GET / HTTP/1.1','Host: lesson.test'],0)
  y=50
  for n,(title,lines,ci) in enumerate(stages):
