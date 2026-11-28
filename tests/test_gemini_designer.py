@@ -150,18 +150,73 @@ class Designer(unittest.TestCase):
                 self.assertEqual(self.api.blobs, {})
                 self.assertEqual(self.calls, [])
 
+    def test_full_cli_release_gate_and_positive_round_with_mock_network(self):
+        key = 'MockGeminiProtectedCLIKeyNotReal'
+        release_data = d.data_json(dict(kind=d.designer_release.KIND, main_sha='1'*40,
+            source_sha=self.pkg.source_sha, project_binding=self.p['project_binding'],
+            profile_sha256=self.profile_sha, manifest_sha256=self.pkg.metadata.manifest_sha256,
+            provider_key_sha256=d.digest(key.encode()), expires_utc='2026-12-01T00:00:00Z'))
+        release_path = self.path/'approval.json'
+        release_path.write_bytes(release_data)
+        release_path.chmod(0o600)
+        args = ['--package', str(self.path), '--profile', str(self.path/'profile.json'),
+                '--report', str(self.path/'private.json'), '--manifest-sha256', self.pkg.metadata.manifest_sha256,
+                '--release', str(release_path)]
+        env = {'NETOPS_GEMINI_DESIGNER_ENABLED':'true',
+               'NETOPS_GEMINI_DESIGNER_RELEASE_SHA256':d.digest(release_data),
+               'GH_TOKEN':'MockScopedLedgerCredential'}
+        run_round = d.run_round
+        load_profile = d.load_profile
+        load_release = d.designer_release.load_release
+        with patch.dict(os.environ, env), patch.object(d, 'DESIGNER_TRANSPORT_RELEASED', True), \
+             patch.object(d, 'load_profile', side_effect=lambda *a: load_profile(*a, now=self.now)), \
+             patch.object(d.designer_release, 'load_release', side_effect=lambda *a: load_release(*a, now=self.now)), \
+             patch.object(d.designer_release, 'verify_checkout') as verify, \
+             patch.object(d.designer_release, 'LedgerGitHub', return_value=self.api) as ledger, \
+             patch.object(d, 'Transport', return_value=self) as transport, \
+             patch.object(d, 'run_round', side_effect=lambda *a, **kw: run_round(*a, clock=lambda:self.now, **kw)), \
+             patch('sys.stdout', new_callable=io.StringIO) as output:
+            with patch.dict(os.environ, {'GEMINI_API_KEY':'wrong-key'}):
+                self.assertEqual(d.main(args), 1)
+            self.assertEqual(output.getvalue(), 'release_profile_project_key_or_media_mismatch\n')
+            verify.assert_not_called()
+            ledger.assert_not_called()
+            transport.assert_not_called()
+            self.assertEqual(self.calls, [])
+            with patch.dict(os.environ, {'GEMINI_API_KEY':key}), \
+                 patch.object(d.designer_release, 'verify_checkout', side_effect=d.designer_release.ReleaseError(
+                     'trusted_main_checkout_mismatch')):
+                self.assertEqual(d.main(args), 1)
+            ledger.assert_not_called()
+            transport.assert_not_called()
+            with patch.dict(os.environ, {'GEMINI_API_KEY':key}):
+                self.assertEqual(d.main(args), 0)
+            verify.assert_called_once()
+            self.assertEqual(verify.call_args.args[1], '1'*40)
+            ledger.assert_called_once_with(env['GH_TOKEN'])
+            transport.assert_called_once_with(key)
+        self.assertEqual([x[0] for x in self.calls], list(d.METHODS))
+        saved = self.path/'private.json'
+        self.assertEqual(saved.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(json.loads(saved.read_bytes())['report'], self.report)
+        self.assertNotIn(key, saved.read_text())
+
     def test_entry_screens_both_credentials_before_recording(self):
         package_id = 'SyntheticAdministrativeCredentialForStorage'
         args = ['--package', str(self.path), '--profile', str(self.path/'profile.json'),
-                '--report', str(self.path/'private.json'), '--manifest-sha256', self.pkg.metadata.manifest_sha256]
+                '--report', str(self.path/'private.json'), '--manifest-sha256', self.pkg.metadata.manifest_sha256,
+                '--release', str(self.path/'approved.json')]
         env = {'NETOPS_GEMINI_DESIGNER_ENABLED':'true',
-               'NETOPS_GEMINI_DESIGNER_VERIFIED_PROFILE_SHA256':self.profile_sha,
-               'NETOPS_GEMINI_DESIGNER_APPROVED_MANIFEST_SHA256':self.pkg.metadata.manifest_sha256,
                'GEMINI_API_KEY':'DifferentSyntheticKeyForProvider', 'GH_TOKEN':package_id}
+        release = {'profile_sha256':self.profile_sha,'manifest_sha256':self.pkg.metadata.manifest_sha256,
+                   'main_sha':'1'*40}
         with patch.dict(os.environ, env), patch.object(d, 'DESIGNER_TRANSPORT_RELEASED', True), \
+             patch.object(d.designer_release, 'load_release', return_value=release), \
+             patch.object(d.designer_release, 'verify_round'), \
+             patch.object(d.designer_release, 'verify_checkout'), \
              patch.object(d, 'load_profile', return_value=self.p), \
              patch.object(d, 'load_package', return_value=replace(self.pkg, task_id=package_id)), \
-             patch.object(d.storage, 'GitHub', return_value=self.api), \
+             patch.object(d.designer_release, 'LedgerGitHub', return_value=self.api), \
              patch.object(d, 'Transport', return_value=self), \
              patch('sys.stdout', new_callable=io.StringIO) as output:
             # Patch run_round's clock argument here; its default function was bound at import.

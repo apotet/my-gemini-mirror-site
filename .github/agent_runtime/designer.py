@@ -12,7 +12,7 @@ import tempfile
 import urllib.error
 import urllib.request
 
-from . import budget, policy, storage
+from . import budget, designer_release, policy
 from .designer_intake import IntakeError, load_package
 
 DESIGNER_TRANSPORT_RELEASED = False
@@ -376,29 +376,37 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Guarded Gemini designer; reviewed local package only')
     for flag in ('package', 'manifest-sha256', 'profile', 'report'):
         parser.add_argument('--'+flag, required=True)
+    parser.add_argument('--release')
     args = parser.parse_args(argv)
     try:
         if not DESIGNER_TRANSPORT_RELEASED or os.getenv('NETOPS_GEMINI_DESIGNER_ENABLED') != 'true':
             raise DesignerError('designer_transport_disabled')
-        profile_sha = os.getenv('NETOPS_GEMINI_DESIGNER_VERIFIED_PROFILE_SHA256', '')
+        if not args.release:
+            raise DesignerError('private_release_missing')
+        release = designer_release.load_release(args.release,
+            os.getenv('NETOPS_GEMINI_DESIGNER_RELEASE_SHA256', ''))
+        profile_sha = release['profile_sha256']
         profile = load_profile(args.profile, profile_sha)
-        if args.manifest_sha256 != os.getenv('NETOPS_GEMINI_DESIGNER_APPROVED_MANIFEST_SHA256'):
+        if args.manifest_sha256 != release['manifest_sha256']:
             raise DesignerError('designer_media_approval_missing')
         pkg = load_package(args.package, args.manifest_sha256, profile['max_raw_file_bytes'],
                            profile['max_image_pixels'], profile['max_request_bytes'])
         target = Path(args.report)
-        if os.path.lexists(target) or not target.parent.is_dir():
+        designer_release.private_directory(target.parent)
+        if os.path.lexists(target):
             raise DesignerError('report_destination_not_new_local_file')
         ledger_token = os.getenv('GH_TOKEN', '')
         if not ledger_token:
             raise DesignerError('shared_reservation_ledger_credential_unavailable')
         secret = os.getenv('GEMINI_API_KEY', '')
-        result = run_round(pkg, profile, profile_sha, storage.GitHub(), Transport(secret),
+        designer_release.verify_round(release, profile, pkg, profile_sha, args.manifest_sha256, secret)
+        designer_release.verify_checkout(Path(__file__).resolve().parents[2], release['main_sha'])
+        result = run_round(pkg, profile, profile_sha, designer_release.LedgerGitHub(ledger_token), Transport(secret),
                            credentials=(secret, ledger_token))
         write_private_report(target, result)
         print('designer_report_ready_for_independent_review')
         return 0
-    except DesignerError as exc:
+    except (DesignerError, designer_release.ReleaseError) as exc:
         print(str(exc))
     except IntakeError:
         print('designer_intake_rejected')
