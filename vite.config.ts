@@ -17,6 +17,10 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       rollupOptions: {
+        input: {
+          main: path.resolve(process.cwd(), 'index.html'),
+          courses: path.resolve(process.cwd(), 'courses-prototypes.html'),
+        },
         output: {
           manualChunks(id) {
             if (id.includes('questions.json')) return 'questions-data';
