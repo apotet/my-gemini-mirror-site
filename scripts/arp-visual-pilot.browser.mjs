@@ -147,10 +147,12 @@ try {
     await select('Проследить кадр к соседу');
     await visibleText(/Для 192\.168\.1\.20 ПК выбирает MAC/).waitFor();
     await select('Проверить себя');
+    await page.waitForFunction(() => document.activeElement?.textContent?.startsWith('Какой IP ПК ищет через ARP'));
     await select('192.168.2.20');
     await visibleText(/Не этот IP/).waitFor();
     await select('192.168.1.1');
     await visibleText(/ПК ищет MAC шлюза 192\.168\.1\.1/).waitFor();
+    await page.waitForFunction(() => document.activeElement?.textContent?.trim() === 'Начать заново и сбросить ответы');
     await select('Назад к сцене');
     await pilot.getByRole('heading', { name: 'Диагностика по захвату', level: 4 }).waitFor();
     await visibleText(/Где потерялся пакет, этот захват не показывает/).waitFor();
