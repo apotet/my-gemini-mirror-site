@@ -31,8 +31,20 @@ assert.ok([...plain,...professional].every(b=>!b.body.includes('CAP_NET_RAW')),'
 const oldChecks=new Map(before.plainKnowledgeCheck.questions.map(q=>[q.id,q]));
 const plainIds=['roles','osi','pack','gateway','unpack'].map(id=>'tcpip-visual-'+id);
 assert.deepEqual(lesson.plainKnowledgeCheck.questions.map(q=>q.id),plainIds);
-for(const q of lesson.plainKnowledgeCheck.questions)assert.deepEqual(q,oldChecks.get(q.id),
- 'original correct choice, distractors and explanation of '+q.id);
+for(const q of lesson.plainKnowledgeCheck.questions){
+ const old=oldChecks.get(q.id);
+ assert.equal(q.correctChoiceId,old.correctChoiceId,'retain exact answer key '+q.id);
+ assert.deepEqual(q.choices,old.choices,'retain exact choice IDs and choices '+q.id);
+ if(q.id==='tcpip-visual-pack'){
+  assert.equal(q.prompt,old.prompt);
+  assert.match(q.explanation,/В показанном примере.*несколько сегментов/);
+ }else if(q.id==='tcpip-visual-gateway'){
+  assert.match(q.prompt,/в кадре с HTTP-запросом/);
+  assert.equal(q.explanation,old.explanation);
+ }else{
+  assert.deepEqual(q,old);
+ }
+}
 const professionalQuestions=lesson.knowledgeCheck.questions;
 assert.deepEqual(professionalQuestions.map(q=>q.id),['hop','loss','packet-details'].map(id=>'tcpip-visual-'+id));
 for(const q of professionalQuestions){
