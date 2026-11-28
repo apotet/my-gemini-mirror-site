@@ -13,7 +13,6 @@ function subscribeToWidth(onChange: () => void) {
   return () => media.removeEventListener('change', onChange);
 }
 
-const leadBeforeVisual = new Set(['tcpip-why.svg', 'tcpip-osi.svg', 'tcpip-addresses.svg', 'tcpip-transport.svg']);
 const levels = [
   ['Прикладной', 'application'],
   ['Транспортный', 'transport'],
@@ -36,7 +35,8 @@ export function TcpIpDiagram({ visual, cheatsheet = false }: { visual: LessonChe
     data-tcpip-diagram={visual.file}
     data-tcpip-variant={wide ? 'wide' : 'narrow'} aria-label={visual.title}>
     <ZoomableImage src={`${import.meta.env.BASE_URL}lesson-images/${file}`}
-      alt={visual.alt} previewFullHeight className="tcpip-reading__preview" />
+      alt={visual.alt} previewFullHeight className="tcpip-reading__preview"
+      viewerClassName="tcpip-reading__viewer" manageDialogFocus />
     {!!visual.textEquivalent?.length && (
       <figcaption className="tcpip-reading__caption" data-lesson-visual-description={visual.file}>
         <details className="tcpip-reading__description">
@@ -60,13 +60,11 @@ export function TcpIpReadingBlock({ body, visual, glossaryScope }: {
   const prose = text ? <div className="tcpip-reading__prose">
     <FormattedExplanation text={text} glossaryScope={glossaryScope} />
   </div> : null;
-  const lead = !visual || leadBeforeVisual.has(visual.file);
 
   return (
     <>
-      {lead && prose}
+      {prose}
       {visual && <TcpIpDiagram visual={visual} />}
-      {!lead && prose}
       {takeaway && <p className="tcpip-reading__takeaway">
         <strong>{takeaway[1]}</strong>{' '}<FormattedExplanation text={takeaway[2]} glossaryScope={glossaryScope} inline />
       </p>}

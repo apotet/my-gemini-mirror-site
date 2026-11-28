@@ -18,6 +18,7 @@ import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
 import { ArpVisualPilot } from './ArpVisualPilot';
 import { TcpIpDiagram, TcpIpReadingBlock } from './TcpIpReadingBlock';
+import { TcpIpHopPrediction, TcpIpPacketDetails } from './TcpIpLessonExercises';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
 interface LessonViewProps {
@@ -213,6 +214,23 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
   };
 
   const tcpipReading = lesson.id === 'tcpip-model';
+  const [tcpipJump, setTcpipJump] = useState<'details' | 'practice' | null>(null);
+  const packetDetailsSection = useRef<HTMLElement | null>(null);
+  const packetPracticeSection = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!tcpipJump || textMode !== 'professional' || !tcpipReading) return;
+    const section = (tcpipJump === 'details' ? packetDetailsSection : packetPracticeSection).current;
+    if (!section) return;
+    section.focus({ preventScroll: true });
+    section.scrollIntoView({ block: 'start', behavior: 'instant' });
+    setTcpipJump(null);
+  }, [tcpipJump, textMode, tcpipReading]);
+  const openTcpIpPro = (section: 'details' | 'practice') => {
+    setTcpipJump(section);
+    (courseReading?.onChange ?? setTextMode)('professional');
+  };
+  const terms = <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} currentLessonId={lesson.id}
+    onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />;
   const related = useMemo(() => lesson.relatedQuestionIds, [lesson]);
 
   return (
@@ -259,7 +277,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
         </div>
         {lesson.professional && <StudyTextToggle value={textMode} onChange={courseReading?.onChange ?? setTextMode} />}
         <GlossaryHoverToggle />
-        {lesson.id === 'l1-poe-injectors-splitters' ? <p className="whitespace-pre-line">{content.summary}</p> : lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
+        {tcpipReading ? <p className="tcpip-summary">{content.summary}</p> : lesson.id === 'l1-poe-injectors-splitters' ? <p className="whitespace-pre-line">{content.summary}</p> : lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
           <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
             <p className="whitespace-pre-line">
               <GlossaryText>{content.summary.split('IEEE 802.3af/at/bt')[0]}</GlossaryText>
@@ -268,7 +286,9 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
             </p>
           </div>
         ) : <FormattedExplanation text={content.summary} glossaryScope={glossaryScope} />}
-        <LessonTermTags key={`${lesson.id}-${textMode}`} terms={content.terms} currentLessonId={lesson.id} onOpenLesson={onOpenLesson} showLessonLink={!['l1-copper-fault-poe', 'l1-poe-budget', 'l1-poe-injectors-splitters', 'cli-poe-diagnostics', 'l1-poe-screen-reading'].includes(lesson.id)} />
+        {tcpipReading ? <details data-tcpip-terms className="tcpip-terms">
+          <summary>Ключевые термины ({content.terms.length})</summary>{terms}
+        </details> : terms}
       </header>
 
       {studyBefore}
@@ -301,18 +321,25 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
       {lesson.diagram === 'sni' && <SniDiagram />}
 
       <div className={tcpipReading ? 'space-y-4 tcpip-reading__sections' : 'space-y-4'}>
-        {blocks.map((b) => (
-          <section
+        {blocks.map((b) => {
+          const tcpipPacketDetails = tcpipReading && textMode === 'professional' && b.heading === 'Wireshark: как увидеть вложения';
+          const tcpipPacketPractice = tcpipReading && textMode === 'professional' && b.practiceLink === 'packet';
+          return <section
             key={b.anchorId ?? b.heading}
-            ref={element => { if (b.anchorId) anchorElements.current[b.anchorId] = element; }}
+            ref={element => {
+              if (b.anchorId) anchorElements.current[b.anchorId] = element;
+              if (tcpipPacketDetails) packetDetailsSection.current = element;
+              if (tcpipPacketPractice) packetPracticeSection.current = element;
+            }}
             data-lesson-section-anchor={b.anchorId}
-            tabIndex={b.anchorId === targetAnchor ? -1 : undefined}
+            tabIndex={tcpipPacketDetails || tcpipPacketPractice || b.anchorId === targetAnchor ? -1 : undefined}
             className={`rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#091524] p-4 space-y-2 scroll-mt-24 motion-safe:transition-shadow motion-safe:duration-300 ${b.anchorId && highlightedAnchor === b.anchorId ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''}`}
           >
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
+            {tcpipPacketDetails && <TcpIpPacketDetails />}
             {tcpipReading && !b.image && !b.pinout ? (
               <TcpIpReadingBlock body={b.body} visual={b.visual} glossaryScope={glossaryScope} />
             ) : <>
@@ -390,9 +417,11 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
                 <BookOpen className="h-4 w-4" aria-hidden="true" />{b.relatedLesson.label}
               </button>
             )}
+            {tcpipReading && textMode === 'meaning' && b.heading === 'Кому доставлять на каждом шаге' &&
+              <TcpIpHopPrediction onExplorePractice={() => openTcpIpPro('practice')} />}
             <PracticeLinkButton link={b.practiceLink} onOpenPractice={onOpenPractice} />
-          </section>
-        ))}
+          </section>;
+        })}
       </div>
 
       {content.commands && content.commands.length > 0 && (
@@ -414,6 +443,13 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
             </div>
           ))}
         </section>
+      )}
+
+      {tcpipReading && textMode === 'meaning' && (
+        <button type="button" data-tcpip-open-packet-details className="tcpip-mode-link"
+          onClick={() => openTcpIpPro('details')}>
+          Посмотреть дерево пакета Wireshark в режиме «По делу»
+        </button>
       )}
 
       {activeKnowledgeCheck && (

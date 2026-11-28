@@ -175,3 +175,173 @@
   color: var(--tcpip-link);
   font-weight: 650;
 }
+
+/* Catalog remains unchanged when the TCP/IP article is not open. */
+[data-theory-view]:has([data-lesson-reading="tcpip"]) > [data-theory-catalog-header] {
+  display: none;
+}
+
+[data-lesson-reading="tcpip"] {
+  color-scheme: light;
+}
+
+.dark [data-lesson-reading="tcpip"] {
+  color-scheme: dark;
+}
+
+.tcpip-reading__viewer.tcpip-reading__viewer {
+  color-scheme: inherit;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.tcpip-reading__viewer button:not(:disabled) {
+  color: inherit;
+}
+
+.tcpip-reading__viewer :is(div, span):not([data-photo-viewer-pan]) {
+  color: inherit;
+}
+
+.dark .tcpip-reading__viewer.tcpip-reading__viewer {
+  background: #091728;
+  color: #e2e8f0;
+}
+
+.tcpip-summary {
+  max-inline-size: var(--tcpip-measure);
+  color: var(--tcpip-copy);
+  font-size: var(--tcpip-copy-size);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.tcpip-terms summary,
+.tcpip-mode-link {
+  width: fit-content;
+  min-block-size: 2.5rem;
+  padding-block: 0.45rem;
+  color: var(--tcpip-application);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.tcpip-terms summary:focus-visible,
+.tcpip-mode-link:focus-visible,
+.tcpip-exercise :is(button, input, summary):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
+.tcpip-reading__visual,
+.tcpip-reading__visual[data-tcpip-variant="wide"] {
+  width: 100%;
+}
+
+.tcpip-reading__preview.tcpip-reading__preview {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.tcpip-exercise {
+  max-inline-size: 62ch;
+  margin-block: 0.9rem;
+  padding: 0.85rem;
+  border: 1px solid var(--tcpip-divider);
+  border-radius: 0.65rem;
+  color: var(--tcpip-copy);
+}
+
+.tcpip-exercise h4,
+.tcpip-exercise legend {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.tcpip-exercise p,
+.tcpip-exercise form {
+  margin-block: 0.55rem;
+}
+
+.tcpip-exercise code {
+  overflow-wrap: anywhere;
+}
+
+.tcpip-exercise__choice {
+  display: flex;
+  align-items: baseline;
+  min-block-size: 2.75rem;
+  gap: 0.65rem;
+  padding: 0.45rem 0;
+  cursor: pointer;
+}
+
+.tcpip-exercise__choice input {
+  flex: none;
+  accent-color: var(--tcpip-application);
+}
+
+.tcpip-exercise__submit {
+  min-block-size: 2.75rem;
+  padding-inline: 0.8rem;
+  border: 1px solid var(--tcpip-note-border);
+  border-radius: 0.5rem;
+  background: var(--tcpip-note-bg);
+  color: var(--tcpip-note);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tcpip-exercise__feedback {
+  padding: 0.45rem 0.6rem;
+  border-inline-start: 3px solid var(--tcpip-note-border);
+}
+
+.tcpip-exercise__comparison dl > div {
+  display: grid;
+  gap: 0.15rem 0.65rem;
+  padding-block: 0.45rem;
+  border-block-end: 1px solid var(--tcpip-divider);
+}
+
+.tcpip-exercise__comparison dt {
+  font-weight: 700;
+}
+
+.tcpip-exercise__layer {
+  border-inline-start: 3px solid currentColor;
+  padding-inline: 0.55rem;
+  margin-block: 0.3rem;
+}
+
+.tcpip-exercise__layer summary {
+  padding-block: 0.4rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.tcpip-exercise__layer[data-tcpip-level="link"] { color: var(--tcpip-link); }
+.tcpip-exercise__layer[data-tcpip-level="internet"] { color: var(--tcpip-internet); }
+.tcpip-exercise__layer[data-tcpip-level="transport"] { color: var(--tcpip-transport); }
+.tcpip-exercise__layer[data-tcpip-level="application"] { color: var(--tcpip-application); }
+
+@media (min-width: 38rem) {
+  .tcpip-exercise__comparison dl > div {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+}
+
+.tcpip-reading__preview > button > span {
+  position: static;
+  margin-block-start: 0.3rem;
+  min-block-size: 2rem;
+  background: transparent;
+  color: var(--tcpip-application);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
