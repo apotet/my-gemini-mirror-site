@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "task_id": "netops-arp-public-design",
+  "round_id": "smoke-v1",
+  "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c",
+  "brief": "Internal review of public NetOps learning interface. Use only visible evidence.",
+  "context": [],
+  "images": [
+    {
+      "label": "arp-mobile",
+      "path": "arp-mobile.png",
+      "mime_type": "image/png",
+      "sha256": "639d534de24da82a658bdce8e35480ce5ecd1bb7bd4a28128797cd47f59be3fc",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    }
+  ]
+}
