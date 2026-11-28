@@ -487,4 +487,6 @@ export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
     afterHeading: { plain: "MX: меньший номер предпочтительнее, следующий — резервный", professional: "MX: меньший номер предпочтительнее, следующий — резервный" } },
   { lessonId: "l7-udp-transactions-tftp-ntp-snmp", questionIds: ["gen-port-13"], anchorId: "snmp-getbulk-operations",
     afterHeading: { plain: "Get, GetNext и GetBulk — три разные операции", professional: "GetBulk и лексикографический обход OID" } },
+  { lessonId: "l3-nat", questionIds: ["l3-15"], anchorId: "pat-two-sessions-shared-address",
+    afterHeading: { plain: "Пример: два компьютера, один внешний адрес, разные порты", professional: "PAT двух сеансов: запись трансляции и обратный путь (RFC 3022 §2.2)" } },
 ];
