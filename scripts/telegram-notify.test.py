@@ -5,6 +5,7 @@ from pathlib import Path
 import unittest
 from unittest.mock import Mock
 from urllib.error import HTTPError
+from urllib.parse import parse_qs
 
 spec = importlib.util.spec_from_file_location('telegram_notify', Path(__file__).with_name('telegram-notify.py'))
 m = importlib.util.module_from_spec(spec)
@@ -29,6 +30,28 @@ class DeliveryTests(unittest.TestCase):
         self.assertIn('message_id=42', logs[-1])
         self.assertNotIn('FAKE_TOKEN', str(logs))
         self.assertNotIn('12345', str(logs))
+
+    def test_disables_link_preview_without_changing_message_or_target(self):
+        run_url = 'https://github.com/example/netops/actions/runs/42'
+        for event, expected in [
+            ({'workflow_run': {'name': 'Deploy to GitHub Pages', 'conclusion': 'success',
+                               'head_sha': '12345678abcd', 'html_url': run_url}},
+             '✅ NetOps staging опубликован\nSHA: 12345678\n'
+             'https://apotet.github.io/my-gemini-mirror-site/\n' + run_url),
+            ({'workflow_run': {'name': 'NetOps checks', 'conclusion': 'failure', 'html_url': run_url}},
+             '❌ NetOps staging: NetOps checks — failure\n' + run_url),
+            ({}, '✅ NetOps: проверка доставки Telegram.'),
+        ]:
+            with self.subTest(expected=expected):
+                call = Mock(return_value=success())
+                m.deliver(event, 'FAKE_TOKEN', '12345', open_url=call, log=lambda _: None)
+                call.assert_called_once()
+                form = parse_qs(call.call_args.kwargs['data'].decode(), strict_parsing=True)
+                self.assertEqual(set(form), {'chat_id', 'text', 'link_preview_options'})
+                self.assertEqual(form['chat_id'], ['12345'])
+                self.assertEqual(form['text'], [expected])
+                self.assertEqual(len(form['link_preview_options']), 1)
+                self.assertIs(json.loads(form['link_preview_options'][0])['is_disabled'], True)
 
     def test_respects_telegram_retry_after(self):
         call = Mock(side_effect=[rate_limit(7), success()])

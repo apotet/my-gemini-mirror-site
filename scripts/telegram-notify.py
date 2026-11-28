@@ -52,7 +52,11 @@ def deliver(event, token, chat, *, open_url=urllib.request.urlopen, sleep=time.s
         expected_chat = int(chat)
     except ValueError:
         raise SystemExit('Telegram chat ID must be numeric') from None
-    data = urllib.parse.urlencode({'chat_id': chat, 'text': message}).encode()
+    data = urllib.parse.urlencode({
+        'chat_id': chat,
+        'text': message,
+        'link_preview_options': json.dumps({'is_disabled': True}),
+    }).encode()
     for attempt in range(3):
         delay = 3 * (attempt + 1)
         try:
