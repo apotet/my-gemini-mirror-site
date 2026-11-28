@@ -32,7 +32,8 @@ jobs:
        github.event.comment.body == '/gennady pilot-tcpip' ||
        github.event.comment.body == '/gennady accept-tcpip' ||
        github.event.comment.body == '/gennady retry-visual-503' ||
-       github.event.comment.body == '/gennady accept-tcpip-structured')
+       github.event.comment.body == '/gennady accept-tcpip-structured' ||
+       github.event.comment.body == '/gennady accept-tcpip-flash')
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
@@ -56,7 +57,7 @@ jobs:
 
   comment-reservation:
     needs: comment-gate
-    if: needs.comment-gate.outputs.mode == 'smoke' || needs.comment-gate.outputs.mode == 'retry-503' || (needs.comment-gate.outputs.mode == 'pilot' || (needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual'))
+    if: needs.comment-gate.outputs.mode == 'smoke' || needs.comment-gate.outputs.mode == 'retry-503' || (needs.comment-gate.outputs.mode == 'pilot' || (needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual' || needs.comment-gate.outputs.mode == 'flash-visual'))
     permissions:
       contents: read
       issues: write
@@ -95,7 +96,7 @@ jobs:
         inputs.free_project == 'same-key-project-is-free-tier' &&
         (inputs.mode == 'smoke' || inputs.mode == 'pilot')) ||
        (github.event_name == 'issue_comment' &&
-        (needs.comment-gate.outputs.mode == 'smoke' || needs.comment-gate.outputs.mode == 'retry-503' || (needs.comment-gate.outputs.mode == 'pilot' || (needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual'))) &&
+        (needs.comment-gate.outputs.mode == 'smoke' || needs.comment-gate.outputs.mode == 'retry-503' || (needs.comment-gate.outputs.mode == 'pilot' || (needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual' || needs.comment-gate.outputs.mode == 'flash-visual'))) &&
         needs.comment-reservation.result == 'success' &&
         needs.comment-reservation.outputs.receipt != ''))
     concurrency:
@@ -119,7 +120,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DESIGNER_COMMENT_RESERVATION: ${{ needs.comment-reservation.outputs.receipt }}
-          DESIGN_MODE: ${{ github.event_name == 'issue_comment' && ((needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual') && 'acceptance' || needs.comment-gate.outputs.mode == 'pilot' && 'pilot' || 'smoke') || inputs.mode }}
+          DESIGN_MODE: ${{ github.event_name == 'issue_comment' && ((needs.comment-gate.outputs.mode == 'acceptance' || needs.comment-gate.outputs.mode == 'retry-visual' || needs.comment-gate.outputs.mode == 'structured-visual' || needs.comment-gate.outputs.mode == 'flash-visual') && 'acceptance' || needs.comment-gate.outputs.mode == 'pilot' && 'pilot' || 'smoke') || inputs.mode }}
           PYTHONPATH: .github
           PYTHONDONTWRITEBYTECODE: '1'
         run: |

@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM, VISUAL_STRUCT, VISUAL_STRUCT_CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM, VISUAL_STRUCT, VISUAL_STRUCT_CLAIM, VISUAL_FLASH, VISUAL_FLASH_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -206,6 +206,19 @@ test('visual format repair has one slot only after the trusted prior recovery', 
   const bad=api(c,[a,{...original,user:outsider},c.payload.comment],undefined,bot,VISUAL_STRUCT_CLAIM);
   assert.equal(await reserveSmoke(bad,c,'1','apotet'),false);
   const g=api(c,[a,original,c.payload.comment],undefined,bot,VISUAL_STRUCT_CLAIM);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+  assert.equal(g.writeCount(),1);
+});
+
+test('visual FLASH has a separate single-use owner reservation after exact prior claim', async () => {
+  const c=context(VISUAL_FLASH);
+  assert.equal(authorize(c,'1','apotet'),'flash-visual');
+  const a=comment(10,ATTEST);
+  const previous=comment(7238431379,VISUAL_STRUCT_CLAIM,bot);
+  const bad=api(c,[a,comment(3,VISUAL_STRUCT_CLAIM,bot),c.payload.comment],undefined,bot,VISUAL_FLASH_CLAIM);
+  assert.equal(await reserveSmoke(bad,c,'1','apotet'),false);
+  const g=api(c,[a,previous,c.payload.comment],undefined,bot,VISUAL_FLASH_CLAIM);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
   assert.equal(g.writeCount(),1);

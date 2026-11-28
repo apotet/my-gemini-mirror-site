@@ -77,3 +77,11 @@ Free tier and model, asks for a native JSON schema with required enum
 `visual_verdict` (PASS/FIX), also strictly validates it locally, and never
 turns an absent or invalid value into PASS. Only definite 503 may use the
 existing bounded waits; valid FIX is terminal and never triggers deployment.
+
+After the three definite HTTP 503 responses in Hydrogen run 46138986290,
+`/gennady accept-tcpip-flash` accepts only the same Free-tier project and
+the same pinned acceptance package. It is a distinct, once-only owner
+command requiring the exact prior bot claim, not automatic fallback.
+The single fixed `gemini-3.8-flash` request uses Standard Free tier;
+images and structured outputs are supported. No retries and no paid tier
+or endpoint choice. Verdict and release policy are unchanged.

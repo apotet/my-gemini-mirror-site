@@ -12,10 +12,12 @@ const PILOT = '/gennady pilot-tcpip';
 const VISUAL = '/gennady accept-tcpip';
 const VISUAL_RETRY = '/gennady retry-visual-503';
 const VISUAL_STRUCT = '/gennady accept-tcpip-structured';
+const VISUAL_FLASH = '/gennady accept-tcpip-flash';
 const ATTEST = '/gennady attest same-key-project-is-free-tier';
 const REVOKE = '/gennady revoke';
 const PROOF_MAX_AGE_MS = 30 * 60 * 1000;
 const CLAIM = '<!-- gemini-designer-free:arp-smoke-v1:reserved -->';
+const VISUAL_FLASH_CLAIM = '<!-- gemini-designer-free:tcpip-visual-flash-v1:reserved -->';
 const VISUAL_STRUCT_CLAIM = '<!-- gemini-designer-free:tcpip-visual-structured-v1:reserved -->';
 const VISUAL_RETRY_CLAIM = '<!-- gemini-designer-free:tcpip-visual-retry-503-v1:reserved -->';
 const VISUAL_CLAIM = '<!-- gemini-designer-free:tcpip-visual-v1:reserved -->';
@@ -56,18 +58,20 @@ function authorize(context, attempt, triggeringActor) {
   if (c.body === VISUAL) return 'acceptance';
   if (c.body === VISUAL_RETRY) return 'retry-visual';
   if (c.body === VISUAL_STRUCT) return 'structured-visual';
+  if (c.body === VISUAL_FLASH) return 'flash-visual';
   return null;
 }
 
 async function reserveSmoke(github, context, attempt, triggeringActor, now = Date.now()) {
   const mode = authorize(context, attempt, triggeringActor);
-  if (!['smoke', 'retry-503', 'pilot', 'acceptance', 'retry-visual', 'structured-visual'].includes(mode)) return false;
+  if (!['smoke', 'retry-503', 'pilot', 'acceptance', 'retry-visual', 'structured-visual', 'flash-visual'].includes(mode)) return false;
   const retry = mode === 'retry-503';
   const pilot = mode === 'pilot';
   const visual = mode === 'acceptance';
   const visualRetry = mode === 'retry-visual';
   const visualStructured = mode === 'structured-visual';
-  const marker = visualStructured ? VISUAL_STRUCT_CLAIM : visualRetry ? VISUAL_RETRY_CLAIM : visual ? VISUAL_CLAIM : pilot ? PILOT_CLAIM : retry ? RETRY_CLAIM : CLAIM;
+  const visualFlash = mode === 'flash-visual';
+  const marker = visualFlash ? VISUAL_FLASH_CLAIM : visualStructured ? VISUAL_STRUCT_CLAIM : visualRetry ? VISUAL_RETRY_CLAIM : visual ? VISUAL_CLAIM : pilot ? PILOT_CLAIM : retry ? RETRY_CLAIM : CLAIM;
   const c = context.payload.comment;
   const params = { owner: OWNER, repo: 'my-gemini-mirror-site', issue_number: ISSUE };
   const { data: issue } = await github.rest.issues.get(params);
@@ -75,7 +79,7 @@ async function reserveSmoke(github, context, attempt, triggeringActor, now = Dat
       issue.state !== 'open' || issue.pull_request) return false;
   const comments = await github.paginate(github.rest.issues.listComments, { ...params, per_page: 100 });
   const matching = comments.find(entry => entry.id === c.id);
-  if (!owner(matching?.user) || !original(matching) || matching.body !== (visualStructured ? VISUAL_STRUCT : visualRetry ? VISUAL_RETRY : visual ? VISUAL : pilot ? PILOT : retry ? RETRY : SMOKE) ||
+  if (!owner(matching?.user) || !original(matching) || matching.body !== (visualFlash ? VISUAL_FLASH : visualStructured ? VISUAL_STRUCT : visualRetry ? VISUAL_RETRY : visual ? VISUAL : pilot ? PILOT : retry ? RETRY : SMOKE) ||
       matching.created_at !== c.created_at) return false;
   if (comments.some(entry => botClaim(entry, marker))) return false;
   // This explicit recovery slot is for the one reviewed original 503 attempt only.
@@ -86,6 +90,7 @@ async function reserveSmoke(github, context, attempt, triggeringActor, now = Dat
   if (visual && !comments.some(entry => entry.id === 7237907673 && botClaim(entry, PILOT_CLAIM))) return false;
   if (visualRetry && !comments.some(entry => entry.id === 7238286113 && botClaim(entry, VISUAL_CLAIM))) return false;
   if (visualStructured && !comments.some(entry => entry.id === 7238354225 && botClaim(entry, VISUAL_RETRY_CLAIM))) return false;
+  if (visualFlash && !comments.some(entry => entry.id === 7238431379 && botClaim(entry, VISUAL_STRUCT_CLAIM))) return false;
   const ownerSignals = comments.filter(entry => owner(entry.user)).flatMap(entry => {
     if (entry.body === REVOKE && dated(entry, 'updated_at')) return [{ ...entry, at: entry.updated_at }];
     if (entry.body === ATTEST && original(entry)) return [{ ...entry, at: entry.created_at }];
@@ -106,4 +111,4 @@ async function reserveSmoke(github, context, attempt, triggeringActor, now = Dat
   return true;
 }
 
-module.exports = { authorize, reserveSmoke, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM, VISUAL_STRUCT, VISUAL_STRUCT_CLAIM };
+module.exports = { authorize, reserveSmoke, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM, VISUAL_STRUCT, VISUAL_STRUCT_CLAIM, VISUAL_FLASH, VISUAL_FLASH_CLAIM };
