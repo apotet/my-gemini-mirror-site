@@ -9,17 +9,20 @@ const PROBE = '/gennady check';
 const SMOKE = '/gennady smoke';
 const ATTEST = '/gennady attest same-key-project-is-free-tier';
 const REVOKE = '/gennady revoke';
+const PROOF_MAX_AGE_MS = 30 * 60 * 1000;
 const CLAIM = '<!-- gemini-designer-free:arp-smoke-v1:reserved -->';
 
 function owner(user) {
   return user?.login === OWNER && user.id === OWNER_ID && user.type === 'User';
 }
 
-function original(comment) {
+function dated(comment, field) {
   return Number.isSafeInteger(comment?.id) && comment.id > 0 &&
-    typeof comment.created_at === 'string' &&
-    Number.isFinite(Date.parse(comment.created_at)) &&
-    comment.created_at === comment.updated_at;
+    typeof comment[field] === 'string' && Number.isFinite(Date.parse(comment[field]));
+}
+
+function original(comment) {
+  return dated(comment, 'created_at') && comment.created_at === comment.updated_at;
 }
 
 function authorize(context, attempt, triggeringActor) {
@@ -36,7 +39,7 @@ function authorize(context, attempt, triggeringActor) {
   return null;
 }
 
-async function reserveSmoke(github, context, attempt, triggeringActor) {
+async function reserveSmoke(github, context, attempt, triggeringActor, now = Date.now()) {
   if (authorize(context, attempt, triggeringActor) !== 'smoke') return false;
   const c = context.payload.comment;
   const params = { owner: OWNER, repo: 'my-gemini-mirror-site', issue_number: ISSUE };
@@ -49,13 +52,18 @@ async function reserveSmoke(github, context, attempt, triggeringActor) {
       matching.created_at !== c.created_at) return false;
   if (comments.some(entry => entry.user?.login === 'github-actions[bot]' &&
       entry.user.id === 41898282 && entry.user.type === 'Bot' && entry.body === CLAIM)) return false;
-  const ownerSignals = comments.filter(entry => owner(entry.user) && original(entry) &&
-    (entry.body === ATTEST || entry.body === REVOKE))
-    .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id);
+  const ownerSignals = comments.filter(entry => owner(entry.user)).flatMap(entry => {
+    if (entry.body === REVOKE && dated(entry, 'updated_at')) return [{ ...entry, at: entry.updated_at }];
+    if (entry.body === ATTEST && original(entry)) return [{ ...entry, at: entry.created_at }];
+    return [];
+  }).sort((a, b) => a.at.localeCompare(b.at) ||
+    Number(a.body === REVOKE) - Number(b.body === REVOKE) || a.id - b.id);
   const last = ownerSignals.at(-1);
-  // Check current consent as well as that it predates the command. Revoke never launches Actions.
-  if (last?.body !== ATTEST || last.created_at > c.created_at ||
-      (last.created_at === c.created_at && last.id >= c.id)) return false;
+  // A valid signal must precede this request and still be current. An edited revoke can only deny.
+  const proofAge = now - Date.parse(last?.at);
+  if (last?.body !== ATTEST || !Number.isFinite(proofAge) || proofAge < 0 ||
+      proofAge > PROOF_MAX_AGE_MS || last.at > c.created_at ||
+      (last.at === c.created_at && last.id >= c.id)) return false;
   // The workflow serializes this job. Never remove the claim or retry after uncertain writes.
   const { data: claim } = await github.rest.issues.createComment({ ...params, body: CLAIM });
   if (claim.body !== CLAIM || claim.user?.login !== 'github-actions[bot]' ||
