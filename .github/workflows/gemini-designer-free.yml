@@ -1,0 +1,59 @@
+name: Gemini Designer Free tier
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Use smoke first. Pilot: only after verifying visual smoke.'
+        type: choice
+        required: true
+        default: smoke
+        options:
+          - smoke
+          - pilot
+      free_project:
+        description: 'If AI Studio shows Free tier for the project behind this same GEMINI_API_KEY, type same-key-project-is-free-tier'
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  public-arp:
+    if: >-
+      github.repository == 'apotet/my-gemini-mirror-site' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'apotet' && github.triggering_actor == 'apotet' &&
+      github.actor_id == '332418397' && github.run_attempt == 1 &&
+      inputs.free_project == 'same-key-project-is-free-tier' &&
+      (inputs.mode == 'smoke' || inputs.mode == 'pilot')
+    concurrency:
+      group: gemini-designer-free
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install hash-locked binary dependency without provider key
+        run: >-
+          python -m pip --isolated install --require-hashes --only-binary=:all:
+          --no-deps -r .github/agent/gemini-designer-requirements.lock
+      - name: Analyze checked-in public screenshots with fixed Free-tier model
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DESIGN_MODE: ${{ inputs.mode }}
+          PYTHONPATH: .github
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          umask 077
+          python -m agent_runtime.designer_free --mode "$DESIGN_MODE" --report "$RUNNER_TEMP/gemini-designer-result.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemini-designer-public-result
+          path: ${{ runner.temp }}/gemini-designer-result.json
+          if-no-files-found: error
+          retention-days: 7

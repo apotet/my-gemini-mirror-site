@@ -61,13 +61,9 @@ def estimate(state):
 
 
 class DailyLedger:
-    namespace = 'kimi'
-    ledger_kind = 'kimi-daily-budget-v1'
-    ledger_label = 'Kimi daily budget '
-
     def __init__(self, api, day):
         self.api, self.day = api, day
-        self.branch = f'agents/budgets/{self.namespace}-{day}'
+        self.branch = f'agents/budgets/kimi-{day}'
         self.head = api.ref(self.branch)
         if self.head:
             commit = api.request('GET', '/git/commits/'+self.head)
@@ -75,10 +71,10 @@ class DailyLedger:
             entry = next(e for e in entries if e['path'] == 'budget.json')
             blob = api.request('GET', '/git/blobs/'+entry['sha'])
             self.data = json.loads(base64.b64decode(blob['content']))
-            if self.data.get('day') != day or self.data.get('kind') != self.ledger_kind:
+            if self.data.get('day') != day or self.data.get('kind') != 'kimi-daily-budget-v1':
                 raise ValueError('Invalid shared daily budget ledger')
         else:
-            self.data = {'kind':self.ledger_kind, 'day':day, 'reservations':{}}
+            self.data = {'kind':'kimi-daily-budget-v1', 'day':day, 'reservations':{}}
 
     def save(self):
         if self.api.ref(self.branch) != self.head:
@@ -86,7 +82,7 @@ class DailyLedger:
         blob = self.api.blob(json.dumps(self.data, sort_keys=True).encode())
         tree = self.api.request('POST','/git/trees',{'tree':[
             {'path':'budget.json','mode':'100644','type':'blob','sha':blob}]})['sha']
-        commit = self.api.request('POST','/git/commits',{'message':self.ledger_label+self.day,
+        commit = self.api.request('POST','/git/commits',{'message':'Kimi daily budget '+self.day,
             'tree':tree,'parents':[] if self.head is None else [self.head]})['sha']
         if self.head is None:
             self.api.request('POST','/git/refs',{'ref':'refs/heads/'+self.branch,'sha':commit})

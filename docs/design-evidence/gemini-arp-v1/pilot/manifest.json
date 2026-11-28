@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "task_id": "netops-arp-public-design",
+  "round_id": "pilot-v1",
+  "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c",
+  "brief": "Internal review of public NetOps learning interface. Use only visible evidence.",
+  "context": [],
+  "images": [
+    {
+      "label": "arp-mobile",
+      "path": "arp-mobile.png",
+      "mime_type": "image/png",
+      "sha256": "639d534de24da82a658bdce8e35480ce5ecd1bb7bd4a28128797cd47f59be3fc",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "arp-desktop",
+      "path": "arp-desktop.png",
+      "mime_type": "image/png",
+      "sha256": "5964e6d22f0bc724c6f6940242f30f768842fbecf43d1a3e8fa9348f89e1744b",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-connected",
+      "path": "poe-connected.png",
+      "mime_type": "image/png",
+      "sha256": "8c13f0b61646c4b3010ac7162555acc7c586bc7cb2e43d4f43308040a04ed621",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-budget",
+      "path": "poe-budget.png",
+      "mime_type": "image/png",
+      "sha256": "ae1addb010c36604159ba0af50573970c68fbbc25389fd93c12f7522f6d96b77",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "poe-splitter",
+      "path": "poe-splitter.png",
+      "mime_type": "image/png",
+      "sha256": "bb212d5deba44d62980b087d15ea90f9de71f3ecdc1373da6efad4ec3ade3620",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    }
+  ]
+}

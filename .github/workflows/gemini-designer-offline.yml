@@ -4,8 +4,9 @@ on:
     paths:
       - '.github/agent_runtime/**'
       - '.github/agent/gemini-designer-requirements.lock'
-      - '.github/workflows/gemini-designer-offline.yml'
+      - '.github/workflows/gemini-designer-*.yml'
       - 'tests/test_gemini_designer*.py'
+      - 'docs/design-evidence/gemini-arp-v1/**'
 permissions:
   contents: read
 jobs:
