@@ -9,6 +9,9 @@ import tempfile
 from . import policy
 
 IMAGE = 'netops-agent-checks:local'
+# Explicit tracked HTML entry required by Vite's second app. Only the
+# credential-free validation tree gets it; model read/write policy stays unchanged.
+BUILD_ONLY_HTML = 'courses-prototypes.html'
 
 
 def docker_args(work, tools, command, network='none'):
@@ -45,6 +48,13 @@ def validate(repo, state, tools, runner=subprocess.run):
             try: policy.safe_text(data.decode())
             except UnicodeDecodeError: pass
             target=work/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data);target.chmod(int(repo.entries[name]['mode'],8)&0o777)
+        build_html = repo.entries.get(BUILD_ONLY_HTML)
+        if build_html and build_html['mode'] == '100644':
+            data = repo.read(BUILD_ONLY_HTML)
+            policy.checked_text_bytes(data)
+            target = work / BUILD_ONLY_HTML
+            target.write_bytes(data)
+            target.chmod(0o644)
         clean_env={'PATH':os.environ.get('PATH',os.defpath),'LANG':'C.UTF-8'}
         for args in [('init','-q'),('add','.'),('-c','core.hooksPath=/dev/null','-c','user.name=agent-checks','-c','user.email=checks@example.invalid','commit','-qm','sanitized baseline')]:
             runner(['git',*args],cwd=work,env=clean_env,check=True,capture_output=True,text=True)
