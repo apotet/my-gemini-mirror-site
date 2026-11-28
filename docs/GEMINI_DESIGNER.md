@@ -51,3 +51,13 @@ reservation. Pilot never retries automatically and cannot edit any lesson.
 The evidence includes actual 375, 768 and 1440 px views, both color themes and
 reading modes, two extra diagram views and the three personally accepted
 benchmarks. All observations and design suggestions are for review only.
+
+After the first independent design report, a distinct owner command
+`/gennady accept-tcpip` on #591 can assess one exact lesson candidate.
+The attached package consists exclusively of fixed public-topic
+candidate/baseline screenshots approved for transmission, not pull-request
+code, event-supplied URLs, earlier verdicts or personal data. It requires
+a current same-key Free-tier attestation, the existing pilot reservation
+and a new one-time visual reservation. This command makes one request,
+returns evidence and PASS/FIX, and cannot publish or edit the lesson.
+Interactions and publication are verified separately.

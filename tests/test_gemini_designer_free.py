@@ -283,3 +283,44 @@ class CommentDesigner(unittest.TestCase):
             sender.assert_called_once()
             sleep.assert_not_called()
             self.assertFalse(report.exists())
+
+    def test_acceptance_is_owner_comment_only_and_requires_exact_visual_verdict(self):
+        owner = {'login':'apotet','id':332418397,'type':'User'}
+        event = {'action':'created','repository':{'full_name':d.REPO},'sender':owner.copy(),
+                 'issue':{'number':591,'id':6662809692,'state':'open','user':owner.copy()},
+                 'comment':{'id':6789,'body':'/gennady accept-tcpip','user':owner.copy(),
+                            'created_at':'2026-11-28T10:00:00Z','updated_at':'2026-11-28T10:00:00Z'}}
+        with self.assertRaises(d.Stop):
+            d.audit_env(ENV,dict(EVENT,inputs=dict(EVENT['inputs'],mode='acceptance')),'acceptance')
+        with TemporaryDirectory() as name:
+            root = Path(name)
+            event_path, report = root/'event.json', root/'report.json'
+            env = dict(ENV,GITHUB_EVENT_NAME='issue_comment',GITHUB_EVENT_PATH=str(event_path),
+                       DESIGNER_COMMENT_RESERVATION='1234:6789')
+            event_path.write_text(json.dumps(event))
+            image_dir = root / d.EVIDENCE.relative_to(d.ROOT) / 'acceptance'
+            image_dir.mkdir(parents=True)
+            (image_dir/'manifest.json').write_text('{}')
+            with self.assertRaises(d.Stop):
+                d.audit_env(env,event,'pilot')
+            img = SimpleNamespace(label='entry-before',data=b'image',sha256='a'*64,
+                                  source_sha='b'*40,width=375,height=667)
+            package_dir = d.EVIDENCE / 'acceptance'
+            package = d.load_package(package_dir,d.VISUAL_MANIFEST,3_000_000,20_000_000,d.MAX_INLINE)
+            self.assertEqual(len(package.images),26)
+            self.assertEqual(package.source_sha,d.VISUAL_CANDIDATE)
+            pkg = SimpleNamespace(images=[img] * 26,source_sha=d.VISUAL_CANDIDATE,context=())
+            accepted = dict(RESULT,image_observations=[dict(label=img.label,observation='Заголовок виден.')] * 26)
+            with self.assertRaisesRegex(d.Stop,'visual_evidence_digest_mismatch'):
+                d.run('acceptance',report,env=env,send=Mock(),root=root)
+            from hashlib import sha256
+            with patch.object(d,'load_package',return_value=pkg), patch.object(d,'VISUAL_MANIFEST',sha256(b'{}').hexdigest()):
+                sender = Mock(return_value=mock_response(accepted))
+                with self.assertRaisesRegex(d.Stop,'visual_verdict_missing_no_retry'):
+                    d.run('acceptance',report,env=env,send=sender,root=root)
+                self.assertFalse(report.exists())
+                sender.assert_called_once()
+                accepted['next_iteration']='VISUAL_VERDICT: PASS\nСохранить заголовок.'
+                sender = Mock(return_value=mock_response(accepted))
+                self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root)['source_sha'],d.VISUAL_CANDIDATE)
+                sender.assert_called_once()
