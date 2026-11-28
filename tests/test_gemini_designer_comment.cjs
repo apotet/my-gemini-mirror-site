@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -165,6 +165,22 @@ test('TCP/IP pilot has its own one-shot claim and demands reviewed visual smoke'
     assert.equal(g.writeCount(),0);
   }
   const g = api(c,[a,reserved,result,c.payload.comment],undefined,bot,PILOT_CLAIM);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+  assert.equal(g.writeCount(),1);
+});
+
+test('visual acceptance is one owner-only slot, distinct from pilot', async () => {
+  const c = context(VISUAL);
+  assert.equal(authorize(c, '1', 'apotet'), 'acceptance');
+  assert.equal(authorize(c, '2', 'apotet'), null);
+  const a = comment(10, ATTEST);
+  for (const initial of [[], [comment(7237907673, PILOT_CLAIM, outsider)]]) {
+    const g = api(c, [a,...initial,c.payload.comment],undefined,bot,VISUAL_CLAIM);
+    assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+    assert.equal(g.writeCount(),0);
+  }
+  const g = api(c, [a,comment(7237907673,PILOT_CLAIM,bot),c.payload.comment],undefined,bot,VISUAL_CLAIM);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
   assert.equal(g.writeCount(),1);

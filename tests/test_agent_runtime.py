@@ -1673,6 +1673,31 @@ class Runtime(unittest.TestCase):
         self.assertTrue(result['passed']);self.assertEqual([x['check'] for x in result['logs']],['dependencies','typecheck','build','questions','tests/feature.test.mjs'])
         runs=[a for a,_ in calls if a[0]=='docker'];self.assertEqual(runs[0][runs[0].index('--network')+1],'bridge')
         self.assertIn('--ignore-scripts',runs[0]);self.assertTrue(all(a[a.index('--network')+1]=='none' for a in runs[1:]))
+    def test_sandbox_preserves_fixed_vite_entry_without_granting_model_scope(self):
+        html = '<!doctype html><html lang="ru"><title>Courses</title></html>'
+        entry = 'courses-prototypes.html'
+        (self.root/entry).write_text(html, encoding='utf-8')
+        subprocess.run(['git','add',entry],check=True,capture_output=True)
+        subprocess.run(['git','-c','user.name=test','-c','user.email=test@example.invalid',
+                        'commit','-qm','vite multi-page entry'],check=True,capture_output=True)
+        head = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+        self.repo = Repository(self.root,head)
+        state = self.state()
+        self.assertNotIn(entry,state['source_files'])
+        for write in (False,True):
+            with self.assertRaises(ValueError):policy.path(entry,write=write)
+        seen = []
+        def runner(args,**kwargs):
+            if args[0]=='docker':
+                work_arg=next(x for x in args if x.startswith('type=bind,src=') and x.endswith(',dst=/work'))
+                work=Path(work_arg.removeprefix('type=bind,src=').removesuffix(',dst=/work'))
+                self.assertEqual((work/entry).read_text(encoding='utf-8'),html)
+                self.assertFalse((work/'.env').exists())
+                seen.append(args[args.index('--network')+1])
+            return subprocess.CompletedProcess(args,0,'','')
+        self.assertTrue(sandbox.validate(self.repo,state,self.root/'trusted-tools',runner)['passed'])
+        self.assertEqual(seen,['bridge','none','none','none'])
+
     def test_report_links_full_outputs_instead_of_slicing(self):
         self.prepare();self.loop([response({'status':'complete','files':[{'path':'src/a.ts','content':'new'}],'report':'r'*100000})]);cli.report('kimi',self.api)
         self.assertEqual((self.out/'report.md').read_text(),'r'*100000)
