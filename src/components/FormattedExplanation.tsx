@@ -22,8 +22,9 @@ function InlineExplanation({ text, plainGlossaryTerms, glossaryScope }: { text: 
   });
 }
 
-export function FormattedExplanation({ text, command = false, plainGlossaryTerms, glossaryScope }: { text: string; command?: boolean; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" | "http" }) {
+export function FormattedExplanation({ text, command = false, inline = false, plainGlossaryTerms, glossaryScope }: { text: string; command?: boolean; inline?: boolean; plainGlossaryTerms?: string[]; glossaryScope?: "poe" | "ipv6" | "http" }) {
   if (command) return <pre className={codeClass}><code>{text}</code></pre>;
+  if (inline) return <InlineExplanation text={text} plainGlossaryTerms={plainGlossaryTerms} glossaryScope={glossaryScope} />;
   return <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
     {formatExplanation(text).map((block, index) => {
       if (block.kind === 'code') return <pre key={index} className={codeClass}><code>{block.text}</code></pre>;
