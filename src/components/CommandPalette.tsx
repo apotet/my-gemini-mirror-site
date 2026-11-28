@@ -5,6 +5,7 @@ import {
   Search,
   Layers,
   BookOpen,
+  GraduationCap,
   Calculator,
   Terminal,
   Moon,
@@ -63,6 +64,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       shortcut: '2',
       icon: <BookOpen className="w-4 h-4 text-indigo-400" />,
       action: () => onSelectTab('theory'),
+    },
+    {
+      id: 'tab-courses',
+      title: 'Курсы — IP-адресация',
+      category: 'Навигация',
+      icon: <GraduationCap className="w-4 h-4 text-emerald-500" />,
+      action: () => onSelectTab('courses'),
     },
     {
       id: 'tab-ipv4',

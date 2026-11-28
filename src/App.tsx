@@ -1,3 +1,4 @@
+import { AddressingCourse } from './components/AddressingCourse';
 import type { PracticeVariant } from './components/PracticeLinkButton';
 import type { PracticeLink } from './data/practiceLinks';
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
@@ -38,7 +39,25 @@ export function App() {
     return requested.length === 1 && requested[0] === 'tcpip-model' ? 'tcpip-model' : null;
   });
   const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin; variant?: PracticeVariant } | null>(null);
-  const [activeTab, setActiveTab] = useState<NavTab>(entryLessonId ? 'theory' : 'exam');
+  const [activeTab, setActiveTab] = useState<NavTab>(() => {
+    if (typeof window !== 'undefined') {
+      const courses = new URLSearchParams(window.location.search).getAll('course');
+      if (courses.length === 1 && courses[0] === 'addressing') return 'courses';
+    }
+    return entryLessonId ? 'theory' : 'exam';
+  });
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const courses = url.searchParams.getAll('course');
+    const isCourseLink = courses.length === 1 && courses[0] === 'addressing';
+    if (activeTab === 'courses' && !isCourseLink) {
+      url.searchParams.set('course', 'addressing');
+      window.history.replaceState(window.history.state, '', url);
+    } else if (activeTab !== 'courses' && isCourseLink) {
+      url.searchParams.delete('course');
+      window.history.replaceState(window.history.state, '', url);
+    }
+  }, [activeTab]);
   const pendingLessonReturn = useRef<LessonPracticeOrigin | null>(null);
   const [theoryInstance, setTheoryInstance] = useState(0);
   const isTheoryTab = activeTab === 'theory' || activeTab === 'osi';
@@ -196,6 +215,7 @@ export function App() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
+        {activeTab === 'courses' && <AddressingCourse />}
         {activeTab === 'exam' && (
           <ExamView onOpenLesson={handleOpenLesson} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
             setTheoryLessonId(null);
