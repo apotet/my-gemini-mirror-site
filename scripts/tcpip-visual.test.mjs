@@ -22,15 +22,18 @@ for(const q of lesson.plainKnowledgeCheck.questions){assert(q.choices.some(c=>c.
 const art = after.blocks.flatMap(b=>[b.visual,b.cheatsheet].filter(Boolean));
 assert.equal(art.length,13);
 const assetNames = new Set();
+const direction = 'Отправка: 4 → 3 → 2 → 1. Приём: 1 → 2 → 3 → 4.';
+const comparableText = lines => lines.filter(line => line !== direction).map(text =>
+  text.replace(/^([^:]+): уровень [1-4]\. /u, '$1: ')
+    .replace(/^([^:]+): ([А-ЯЁ])/u, (_, title, first) => title + ': ' + first.toLowerCase()));
+
 for(const v of art){
  const counterpart=before.blocks.flatMap(b=>[b.visual,b.cheatsheet].filter(Boolean)).find(old=>old.file===v.file);
  assert(counterpart);
  assert.equal(v.alt,counterpart.alt);
- assert.deepEqual(v.textEquivalent.slice(0,counterpart.textEquivalent.length).map(text=>text.replace(/уровень [1-4]\. /,'')
-  .replace(/^([^:]+): ([А-ЯЁ])/u,(_,a,b)=>a+': '+b.toLowerCase())),
- counterpart.textEquivalent.map(text=>text.replace(/^([^:]+): ([А-ЯЁ])/u,(_,a,b)=>a+': '+b.toLowerCase())));
- const additional=v.textEquivalent.slice(counterpart.textEquivalent.length);
- assert.deepEqual(additional,v.file==='tcpip-layers.svg'?['Отправка: 4 → 3 → 2 → 1. Приём: 1 → 2 → 3 → 4.']:[]);
+ assert.deepEqual(comparableText(v.textEquivalent), comparableText(counterpart.textEquivalent));
+ assert.equal(v.textEquivalent.filter(line => line === direction).length,
+  v.file==='tcpip-layers.svg' ? 1 : 0, 'show the reading order once in the layers equivalent');
  for(const [file,width] of [[v.file,320],[v.file.replace(/\.svg$/,'-wide.svg'),640]]){
   assert(existsSync(`public/lesson-images/${file}`));
   const svg=readFileSync(`public/lesson-images/${file}`,'utf8');
