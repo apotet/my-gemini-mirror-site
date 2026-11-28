@@ -96,14 +96,18 @@ interface Task {
   e: string;
 }
 
-function makeTask(mode: Mode): Task {
-  const pair = COMPRESS_PAIRS[Math.floor(Math.random() * COMPRESS_PAIRS.length)];
+type WritingMode = 'compress' | 'expand';
+
+function makeWritingTask(mode: WritingMode, pair: [string, string]): Task {
   if (mode === 'compress') {
     return { q: `Запиши адрес в канонической сокращённой форме: ${pair[0]}`, answer: pair[1], input: true, e: 'Сначала убираем ведущие нули в группах, затем самую длинную последовательность нулевых групп заменяем на ::. При равной длине берём первую слева. Одиночный ноль не сжимаем.' };
   }
-  if (mode === 'expand') {
-    return { q: `Разверни до восьми групп по 4 hex-цифры: ${pair[1]}`, answer: pair[0], input: true, e: 'На месте :: возвращаем столько групп 0000, чтобы снова стало восемь групп.' };
-  }
+  return { q: `Разверни до восьми групп по 4 hex-цифры: ${pair[1]}`, answer: pair[0], input: true, e: 'На месте :: возвращаем столько групп 0000, чтобы снова стало восемь групп.' };
+}
+
+function makeTask(mode: Mode): Task {
+  const pair = COMPRESS_PAIRS[Math.floor(Math.random() * COMPRESS_PAIRS.length)];
+  if (mode === 'compress' || mode === 'expand') return makeWritingTask(mode, pair);
   if (mode === 'type') {
     const pool: [string, string][] = [
       ['2001:db8:1234::10', 'Global Unicast'],
@@ -132,22 +136,28 @@ function makePracticeTask(mode: Mode, exercise?: Ipv6ConceptExerciseId): Task {
   return { q: preset.q, answer: preset.answer, opts: shuffled([...preset.opts]), e: preset.e };
 }
 
-export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6ConceptExerciseId }> = ({
-  initialMode = 'compress',
-  initialExercise,
-}) => {
-  const [mode, setMode] = useState<Mode>(initialMode);
+export const Ipv6Trainer: React.FC<{
+  initialMode?: Mode;
+  initialExercise?: Ipv6ConceptExerciseId;
+  courseWriting?: { mode: WritingMode; onCorrect: () => Promise<boolean> };
+}> = ({ initialMode = 'compress', initialExercise, courseWriting }) => {
+  const [mode, setMode] = useState<Mode>(courseWriting?.mode ?? initialMode);
+  const getTask = (next: Mode, id?: Ipv6ConceptExerciseId) => courseWriting
+    ? makeWritingTask(courseWriting.mode, COMPRESS_PAIRS[courseWriting.mode === 'compress' ? 0 : 1])
+    : makePracticeTask(next, id);
   const [exercise, setExercise] = useState(initialExercise);
   const [index, setIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [task, setTask] = useState<Task>(() => makePracticeTask(initialMode, initialExercise));
+  const [task, setTask] = useState<Task>(() => getTask(mode, initialExercise));
   const [answer, setAnswer] = useState('');
   const [picked, setPicked] = useState('');
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
+  const pending = useRef(false);
+  const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const practiceHeading = useRef<HTMLHeadingElement>(null);
-  const total = exercise ? 1 : TOTAL;
+  const total = exercise || courseWriting ? 1 : TOTAL;
 
   const progress = useMemo(() => (done ? 100 : (index / total) * 100), [done, index, total]);
 
@@ -166,14 +176,24 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
     setChecked(false);
     setAnswer('');
     setPicked('');
-    setTask(makePracticeTask(next, nextExercise));
+    setTask(getTask(next, nextExercise));
   };
 
-  const check = () => {
-    if (checked) return;
+  const check = async () => {
+    if (checked || pending.current) return;
     const given = task.input ? answer : picked;
     if (!given.trim()) return;
     const good = mode === 'prefix' ? samePrefix64(given, task.answer) : given.trim().toLowerCase() === task.answer.toLowerCase();
+    if (good && courseWriting) {
+      pending.current = true;
+      setSaving(true);
+      try {
+        if (!await courseWriting.onCorrect()) return;
+      } finally {
+        pending.current = false;
+        setSaving(false);
+      }
+    }
     setOk(good);
     setChecked(true);
     if (good) setCorrect((n) => n + 1);
@@ -193,6 +213,7 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
 
   return (
     <div className="font-sans max-w-5xl mx-auto space-y-5">
+      {!courseWriting && <>
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-5 sm:p-6">
         <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">Продолжение после IPv4</p>
         <h1 className="text-2xl sm:text-3xl text-slate-900 dark:text-white mt-2 font-sans font-bold">Не учи IPv6 как стену из цифр</h1>
@@ -267,13 +288,14 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
         </section>
       </div>
 
+      </>}
       <div>
-        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">{exercise ? 'Практика по вопросу · 1 задание' : 'Тренировка · 10 заданий'}</p>
+        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">{courseWriting ? 'Курс · 1 задание' : exercise ? 'Практика по вопросу · 1 задание' : 'Тренировка · 10 заданий'}</p>
         <h2 ref={practiceHeading} tabIndex={exercise ? -1 : undefined}
-          className="scroll-mt-24 text-xl text-slate-900 dark:text-white font-sans font-bold">{exercise ? IPV6_CONCEPT_EXERCISES[exercise].title : 'Закрепим без зубрёжки'}</h2>
+          className="scroll-mt-24 text-xl text-slate-900 dark:text-white font-sans font-bold">{courseWriting ? (mode === 'compress' ? 'Сжатая запись IPv6' : 'Полная запись IPv6') : exercise ? IPV6_CONCEPT_EXERCISES[exercise].title : 'Закрепим без зубрёжки'}</h2>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      {!courseWriting && <div className="flex flex-wrap gap-1.5">
         {MODES.map((item) => (
           <button
             key={item.id}
@@ -285,7 +307,7 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
             {item.label}
           </button>
         ))}
-      </div>
+      </div>}
 
       <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
         <div className="h-full bg-cyan-400 transition-all" style={{ width: `${progress}%` }} />
@@ -300,11 +322,11 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
         {done ? (
           <div className="space-y-3">
             <p className="text-lg font-bold text-slate-900 dark:text-white">{correct} из {total}</p>
-            {!exercise && <p className="text-sm text-slate-500 dark:text-slate-400">
+            {!exercise && !courseWriting && <p className="text-sm text-slate-500 dark:text-slate-400">
               {correct >= 8 ? 'Основные конструкции IPv6 уже читаются.' : 'Вернись к сжатию и /64 и сделай ещё один подход.'}
             </p>}
             <button type="button" onClick={() => startMode(mode, exercise)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">
-              <RotateCcw className="w-4 h-4" /> {exercise ? 'Повторить задание' : 'Ещё 10'}
+              <RotateCcw className="w-4 h-4" /> {exercise || courseWriting ? 'Повторить задание' : 'Ещё 10'}
             </button>
           </div>
         ) : (
@@ -315,7 +337,8 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') check(); }}
-                disabled={checked}
+                disabled={checked || saving}
+                aria-label={courseWriting ? 'Ответ IPv6' : undefined}
                 placeholder="введи ответ"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm font-mono"
               />
@@ -348,9 +371,9 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6C
 
             <div className="flex gap-2">
               {!checked ? (
-                <button type="button" onClick={check} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">Проверить</button>
+                <button type="button" onClick={check} disabled={saving} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">Проверить</button>
               ) : (
-                <button type="button" onClick={next} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">Дальше</button>
+                <button type="button" onClick={courseWriting && !ok ? () => startMode(mode) : next} className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">{courseWriting && !ok ? 'Попробовать снова' : 'Дальше'}</button>
               )}
             </div>
           </>

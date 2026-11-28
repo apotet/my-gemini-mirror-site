@@ -22,6 +22,7 @@ import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
+  courseReading?: { mode: StudyTextMode; onChange: (value: StudyTextMode) => void; sectionId?: string };
   onOpenLesson?: (lessonId: string, trigger: HTMLElement) => void;
   onOpenPathLesson?: (lessonId: string, trigger: HTMLElement) => void;
   onReturnToLesson?: () => void;
@@ -114,16 +115,19 @@ const LessonPhoto: React.FC<{ image: LessonIllustration }> = ({ image }) => (
                 </figure>
 );
 
-export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId, favoriteAction, studyBefore, studyNavigation, studyNextId }) => {
+export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseReading, onOpenLesson, onOpenPathLesson, onReturnToLesson, pausedTextMode, focusPathHeading, onOpenQuestion, onOpenPractice, returnQuestionId, favoriteAction, studyBefore, studyNavigation, studyNextId }) => {
   const [preferredTextMode, setTextMode] = useStudyTextMode();
-  const textMode = pausedTextMode ?? preferredTextMode;
+  const textMode = courseReading?.mode ?? pausedTextMode ?? preferredTextMode;
   const content = textMode === 'professional' && lesson.professional ? lesson.professional : lesson;
   const glossaryScope = getLessonGlossaryScope(lesson.id);
   const activeKnowledgeCheck = textMode === 'professional'
     ? lesson.knowledgeCheck
     : (lesson.plainKnowledgeCheck ?? lesson.knowledgeCheck);
   const blocks = getLessonBlocksWithSections(lesson, textMode === 'professional' && lesson.professional ? 'professional' : 'plain');
-  const targetAnchor = getLessonSectionForQuestion(lesson.id, returnQuestionId);
+  const courseSection = courseReading?.sectionId;
+  const targetAnchor = courseSection && blocks.some(block => block.anchorId === courseSection)
+    ? courseSection
+    : getLessonSectionForQuestion(lesson.id, returnQuestionId);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     // A question's exact section anchor, when present, still takes precedence.
@@ -225,7 +229,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          К каталогу уроков
+          {courseReading ? 'К оглавлению курса' : 'К каталогу уроков'}
         </button>
         {returnQuestionId && onOpenQuestion && (
           <button
@@ -251,7 +255,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
           <LessonReviewBadge lessonId={lesson.id} />
           {favoriteAction}
         </div>
-        {lesson.professional && <StudyTextToggle value={textMode} onChange={setTextMode} />}
+        {lesson.professional && <StudyTextToggle value={textMode} onChange={courseReading?.onChange ?? setTextMode} />}
         <GlossaryHoverToggle />
         {lesson.id === 'l1-poe-injectors-splitters' ? <p className="whitespace-pre-line">{content.summary}</p> : lesson.id === 'l1-poe-budget' && textMode === 'professional' && content.summary.includes('IEEE 802.3af/at/bt') ? (
           <div className="min-w-0 max-w-full space-y-2 wrap-anywhere">
@@ -412,7 +416,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
         />
       )}
 
-      {related.length > 0 && (
+      {related.length > 0 && (!courseReading || onOpenQuestion) && (
         <section className="space-y-2">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Связанные вопросы</h3>
           <div className="flex flex-wrap gap-2">

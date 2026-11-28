@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Layers,
+  GraduationCap,
   Sun,
   Moon,
   Menu,
@@ -14,7 +15,7 @@ import {
 import { NetOpsLogo } from './NetOpsLogo';
 import { LanguageControl } from './LanguageControl';
 
-export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'practice-mock' | 'exam-mock' | 'osi';
+export type NavTab = 'exam' | 'theory' | 'ipv4' | 'ipv6' | 'practice' | 'practice-mock' | 'exam-mock' | 'osi' | 'courses';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const tabs: Array<{ id: NavTab; label: string; icon: React.ReactNode }> = [
     { id: 'exam', label: 'Тестирование', icon: <Layers className="w-4 h-4" /> },
     { id: 'theory', label: 'Теория и разборы', icon: <BookOpen className="w-4 h-4 text-cyan-400" /> },
+    { id: 'courses', label: 'Курсы', icon: <GraduationCap className="w-4 h-4 text-emerald-500" /> },
     { id: 'ipv4', label: 'IPv4 Тренажёр', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
     { id: 'ipv6', label: 'IPv6 Тренажёр', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
     { id: 'practice', label: 'Практика', icon: <FlaskConical className="w-4 h-4 text-indigo-400" /> },
@@ -68,6 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
+                aria-current={isActive ? "page" : undefined}
                 type="button"
                 className={`flex items-center gap-1 xl:gap-1.5 px-1 xl:px-3.5 py-2 rounded-xl text-[11px] xl:text-xs font-bold transition-all min-h-[38px] cursor-pointer ${
                   isActive
@@ -131,6 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
+                  aria-current={isActive ? "page" : undefined}
                   type="button"
                   className={`w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold transition-all min-h-[44px] cursor-pointer ${
                     isActive
