@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
+import { IPV6_CONCEPT_EXERCISES, type Ipv6ConceptExerciseId } from '../data/ipv6Practice';
 
 type Mode = 'compress' | 'expand' | 'type' | 'prefix' | 'concept';
 
@@ -125,28 +126,47 @@ function makeTask(mode: Mode): Task {
 
 const TOTAL = 10;
 
-export const Ipv6Trainer: React.FC<{ initialMode?: Mode }> = ({ initialMode = 'compress' }) => {
+function makePracticeTask(mode: Mode, exercise?: Ipv6ConceptExerciseId): Task {
+  if (!exercise) return makeTask(mode);
+  const preset = IPV6_CONCEPT_EXERCISES[exercise];
+  return { q: preset.q, answer: preset.answer, opts: shuffled([...preset.opts]), e: preset.e };
+}
+
+export const Ipv6Trainer: React.FC<{ initialMode?: Mode; initialExercise?: Ipv6ConceptExerciseId }> = ({
+  initialMode = 'compress',
+  initialExercise,
+}) => {
   const [mode, setMode] = useState<Mode>(initialMode);
+  const [exercise, setExercise] = useState(initialExercise);
   const [index, setIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [task, setTask] = useState<Task>(() => makeTask(initialMode));
+  const [task, setTask] = useState<Task>(() => makePracticeTask(initialMode, initialExercise));
   const [answer, setAnswer] = useState('');
   const [picked, setPicked] = useState('');
   const [checked, setChecked] = useState(false);
   const [ok, setOk] = useState(false);
   const [done, setDone] = useState(false);
+  const practiceHeading = useRef<HTMLHeadingElement>(null);
+  const total = exercise ? 1 : TOTAL;
 
-  const progress = useMemo(() => (done ? 100 : (index / TOTAL) * 100), [done, index]);
+  const progress = useMemo(() => (done ? 100 : (index / total) * 100), [done, index, total]);
 
-  const startMode = (next: Mode) => {
+  useLayoutEffect(() => {
+    if (!initialExercise) return;
+    practiceHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    practiceHeading.current?.focus({ preventScroll: true });
+  }, [initialExercise]);
+
+  const startMode = (next: Mode, nextExercise?: Ipv6ConceptExerciseId) => {
     setMode(next);
+    setExercise(nextExercise);
     setIndex(0);
     setCorrect(0);
     setDone(false);
     setChecked(false);
     setAnswer('');
     setPicked('');
-    setTask(makeTask(next));
+    setTask(makePracticeTask(next, nextExercise));
   };
 
   const check = () => {
@@ -160,7 +180,7 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode }> = ({ initialMode = 'c
   };
 
   const next = () => {
-    if (index + 1 >= TOTAL) {
+    if (index + 1 >= total) {
       setDone(true);
       return;
     }
@@ -248,8 +268,9 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode }> = ({ initialMode = 'c
       </div>
 
       <div>
-        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">Тренировка · 10 заданий</p>
-        <h2 className="text-xl text-slate-900 dark:text-white font-sans font-bold">Закрепим без зубрёжки</h2>
+        <p className="text-xs font-bold tracking-widest text-cyan-400 uppercase">{exercise ? 'Практика по вопросу · 1 задание' : 'Тренировка · 10 заданий'}</p>
+        <h2 ref={practiceHeading} tabIndex={exercise ? -1 : undefined}
+          className="scroll-mt-24 text-xl text-slate-900 dark:text-white font-sans font-bold">{exercise ? IPV6_CONCEPT_EXERCISES[exercise].title : 'Закрепим без зубрёжки'}</h2>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -272,23 +293,23 @@ export const Ipv6Trainer: React.FC<{ initialMode?: Mode }> = ({ initialMode = 'c
 
       <div className="rounded-2xl border border-slate-200 dark:border-cyan-500/20 bg-white dark:bg-slate-900/40 p-4 sm:p-5 space-y-4">
         <div className="flex justify-between text-xs text-slate-500 font-bold">
-          <span>{done ? 'Подход завершён' : `Задание ${index + 1} из ${TOTAL}`}</span>
+          <span>{done ? 'Подход завершён' : `Задание ${index + 1} из ${total}`}</span>
           <span>{correct} верно</span>
         </div>
 
         {done ? (
           <div className="space-y-3">
-            <p className="text-lg font-bold text-slate-900 dark:text-white">{correct} из {TOTAL}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-lg font-bold text-slate-900 dark:text-white">{correct} из {total}</p>
+            {!exercise && <p className="text-sm text-slate-500 dark:text-slate-400">
               {correct >= 8 ? 'Основные конструкции IPv6 уже читаются.' : 'Вернись к сжатию и /64 и сделай ещё один подход.'}
-            </p>
-            <button type="button" onClick={() => startMode(mode)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">
-              <RotateCcw className="w-4 h-4" /> Ещё 10
+            </p>}
+            <button type="button" onClick={() => startMode(mode, exercise)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm">
+              <RotateCcw className="w-4 h-4" /> {exercise ? 'Повторить задание' : 'Ещё 10'}
             </button>
           </div>
         ) : (
           <>
-            <p className="text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-relaxed break-all">{task.q}</p>
+            <p className={`text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-relaxed ${exercise ? 'wrap-anywhere' : 'break-all'}`}>{task.q}</p>
             {task.input ? (
               <input
                 value={answer}

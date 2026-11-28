@@ -2,6 +2,7 @@ import { BookOpen } from 'lucide-react';
 import { getLessonForQuestion } from '../data/lessons';
 import { getQuestionDeepDive, type QuestionDeepDive } from '../data/questionExplanations';
 import type { PracticeLink } from '../data/practiceLinks';
+import type { Ipv6PracticeTarget } from '../data/ipv6Practice';
 import type { Question } from '../types/quiz';
 import { useStudyTextMode } from '../utils/studyTextMode';
 import { getLessonGlossaryScope } from '../utils/lessonGlossaryScope';
@@ -14,8 +15,8 @@ export interface ExplanationNavigation {
   onOpenLesson?: (lessonId: string, questionId?: string) => void;
   onNavigateToTheory?: (questionId: string) => void;
   onOpenPractice?: (link: PracticeLink) => void;
-  onNavigateToIpv4?: (prefix?: number, mode?: 'calc' | 'trainer') => void;
-  onNavigateToIpv6?: (mode: NonNullable<QuestionDeepDive['ipv6Practice']>['targetMode']) => void;
+  onNavigateToIpv4?: (prefix?: number, mode?: 'calc' | 'trainer', address?: string) => void;
+  onNavigateToIpv6?: (target: Ipv6PracticeTarget) => void;
 }
 
 export function ExplanationPractice({ deep, onOpenPractice, onNavigateToIpv4, onNavigateToIpv6 }:
@@ -27,9 +28,9 @@ export function ExplanationPractice({ deep, onOpenPractice, onNavigateToIpv4, on
   return <div className="flex flex-wrap gap-2">
     <PracticeLinkButton link={deep.practiceLink} onOpenPractice={onOpenPractice} />
     {ipv4?.enabled && onNavigateToIpv4 && <button type="button" className={buttonClass}
-      onClick={() => onNavigateToIpv4(ipv4.targetPrefix, ipv4.targetMode)}>Открыть IPv4-тренажёр</button>}
+      onClick={() => onNavigateToIpv4(ipv4.targetPrefix, ipv4.targetMode, ipv4.targetAddress)}>Открыть IPv4-тренажёр</button>}
     {ipv6 && onNavigateToIpv6 && <button type="button" className={buttonClass}
-      onClick={() => onNavigateToIpv6(ipv6.targetMode)}>Открыть IPv6-тренажёр</button>}
+      onClick={() => onNavigateToIpv6(ipv6)}>Открыть IPv6-тренажёр</button>}
   </div>;
 }
 

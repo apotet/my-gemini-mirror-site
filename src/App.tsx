@@ -5,6 +5,7 @@ import { Navbar, NavTab } from './components/Navbar';
 import { ExamView, type ExamViewHandle } from './components/ExamView';
 import { Ipv4Trainer, Ipv4SubTab } from './components/Ipv4Trainer';
 import { Ipv6Trainer } from './components/Ipv6Trainer';
+import type { Ipv6PracticeTarget } from './data/ipv6Practice';
 import { PracticeHub } from './components/PracticeHub';
 import { MockPracticeHub } from './components/MockPracticeHub';
 import { MockTestingHub } from './components/MockTestingHub';
@@ -45,6 +46,7 @@ export function App() {
   const [theoryQuestionId, setTheoryQuestionId] = useState<string | null>(null);
   const [theoryLessonId, setTheoryLessonId] = useState<string | null>(null);
   const [theoryFromExam, setTheoryFromExam] = useState<boolean>(false);
+  const [ipv4InitialAddress, setIpv4InitialAddress] = useState<string>();
   const [ipv4InitialPrefix, setIpv4InitialPrefix] = useState<number | undefined>(undefined);
   const [ipv4InitialSubTab, setIpv4InitialSubTab] = useState<Ipv4SubTab | undefined>(undefined);
 
@@ -138,8 +140,9 @@ export function App() {
   const handleTabChange = (tab: NavTab) => {
     discardLessonPracticeOrigin(tab);
     setTheoryLessonId(null);
-    if (tab === 'ipv6') setIpv6InitialMode(undefined);
+    if (tab === 'ipv6') setIpv6PracticeTarget(undefined);
     if (tab === 'practice') setPracticeRequest(null);
+    if (tab === 'ipv4') resetIpv4Entry();
     if (tab === 'exam' && activeTab === 'exam') examViewRef.current?.returnToParameters();
     setActiveTab(tab);
     if (tab !== 'theory') {
@@ -156,18 +159,25 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const [ipv6InitialMode, setIpv6InitialMode] = useState<'concept' | 'type'>();
-  const handleNavigateToIpv6 = (mode: 'concept' | 'type') => {
-    setIpv6InitialMode(mode);
+  const [ipv6PracticeTarget, setIpv6PracticeTarget] = useState<Ipv6PracticeTarget>();
+  const handleNavigateToIpv6 = (target: Ipv6PracticeTarget) => {
+    setIpv6PracticeTarget(target);
     setActiveTab('ipv6');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (target.targetMode === 'type') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavigateToIpv4 = (prefix?: number, mode?: 'calc' | 'trainer') => {
+  const resetIpv4Entry = () => {
+    setIpv4InitialAddress(undefined);
+    setIpv4InitialPrefix(undefined);
+    setIpv4InitialSubTab(undefined);
+  };
+
+  const handleNavigateToIpv4 = (prefix?: number, mode?: 'calc' | 'trainer', address?: string) => {
+    setIpv4InitialAddress(address);
     setIpv4InitialPrefix(prefix);
     setIpv4InitialSubTab(mode === 'calc' ? 'calculator' : mode === 'trainer' ? 'practice' : undefined);
     setActiveTab('ipv4');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mode !== 'calc') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -210,10 +220,14 @@ export function App() {
             />
           </div>
         )}
-        {activeTab === 'ipv6' && <Ipv6Trainer key={ipv6InitialMode} initialMode={ipv6InitialMode} />}
+        {activeTab === 'ipv6' && <Ipv6Trainer
+          key={ipv6PracticeTarget?.targetMode === 'concept' ? ipv6PracticeTarget.exercise : ipv6PracticeTarget?.targetMode}
+          initialMode={ipv6PracticeTarget?.targetMode}
+          initialExercise={ipv6PracticeTarget?.targetMode === 'concept' ? ipv6PracticeTarget.exercise : undefined} />}
         {activeTab === 'ipv4' && (
           <Ipv4Trainer
             initialPrefix={ipv4InitialPrefix}
+            initialAddress={ipv4InitialAddress}
             initialSubTab={ipv4InitialSubTab}
           />
         )}
@@ -235,8 +249,9 @@ export function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
           discardLessonPracticeOrigin(tab);
-          if (tab === 'ipv6') setIpv6InitialMode(undefined);
+          if (tab === 'ipv6') setIpv6PracticeTarget(undefined);
           if (tab === 'practice') setPracticeRequest(null);
+          if (tab === 'ipv4') resetIpv4Entry();
           setActiveTab(tab);
           if (tab !== 'theory') {
             setTheoryQuestionId(null);

@@ -1,4 +1,5 @@
 import type { PracticeLink } from '../data/practiceLinks';
+import type { Ipv6PracticeTarget } from '../data/ipv6Practice';
 import React, { useEffect, useState } from 'react';
 import { BookOpen, Layers, FileText, Table2, Library } from 'lucide-react';
 import { TheoryModels } from './TheoryModels';
@@ -16,8 +17,8 @@ interface TheoryViewProps {
   initialQuestionId?: string | null;
   fromExam?: boolean;
   onReturnToExam?: () => void;
-  onNavigateToIpv6: (mode: 'concept' | 'type') => void;
-  onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer') => void;
+  onNavigateToIpv6: (target: Ipv6PracticeTarget) => void;
+  onNavigateToIpv4: (prefix?: number, mode?: 'calc' | 'trainer', address?: string) => void;
   onClearInitialQuestion?: () => void;
 }
 

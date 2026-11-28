@@ -13,6 +13,28 @@ export function ipv4CalculationPrefix(questionId: string): number | undefined {
   return generated ? Number(generated[1] ?? generated[2]) : BASE_CALCULATIONS[questionId];
 }
 
+const CALCULATOR_EXAMPLES: Readonly<Record<string, { prefix: number; address?: string } | null>> = {
+  'l3-11': { prefix: 28, address: '10.0.0.32' },
+  'gen-bin-dec-252': { prefix: 22, address: '172.20.6.14' },
+  'gen-bc-25-3': null, // Requires comparing two hosts while choosing a common prefix.
+  'gen-bc-25-4': null, // Requires comparing two concurrently configured prefixes.
+  'gen-net-25-3': null, // Requires comparing the on-link decision for two destinations.
+  'gen-bc-26-4': { prefix: 26, address: '10.60.0.128' },
+  'gen-hosts-27': { prefix: 26 }, // A /27 has only 30 usable addresses, not the required 32.
+};
+
+/** Keep calculator suggestions distinct from the established lesson fallback. */
+export function getIpv4CalculatorExample(question: { id: string; text: string }) {
+  if (Object.hasOwn(CALCULATOR_EXAMPLES, question.id)) return CALCULATOR_EXAMPLES[question.id] ?? undefined;
+  const prefix = ipv4CalculationPrefix(question.id);
+  if (prefix === undefined) return undefined;
+  const cidr = [...question.text.matchAll(/\b((?:[0-9]{1,3}\.){3}[0-9]{1,3})\s*\/\s*([0-9]{1,2})\b/g)];
+  const address = cidr.length === 1 && Number(cidr[0][2]) === prefix &&
+    cidr[0][1].split('.').every(octet => Number(octet) <= 255)
+    ? cidr[0][1] : undefined;
+  return { prefix, address };
+}
+
 export function explainGeneratedMask(questionId: string) {
   if (!questionId.startsWith('gen-mask-')) return;
   const prefix = ipv4CalculationPrefix(questionId);
