@@ -11,7 +11,11 @@ try {
     await f.getByRole('button',{name:/Студия/}).waitFor();
     for(const dark of [false,true]) {
       await f.locator('html').evaluate((e,dark)=>e.classList.toggle('dark',dark),dark);
-      const rects=await f.locator('header button, header a').evaluateAll(nodes=>nodes.map(e=>({text:e.textContent.trim()||e.getAttribute('aria-label')||e.title,rect:e.getBoundingClientRect().toJSON()})).filter(e=>e.rect.width>0 && e.rect.height>0));
+      const rects=await f.locator('header').first().locator('button, a').evaluateAll(nodes=>nodes.map(e=>({text:e.textContent.trim()||e.getAttribute('aria-label')||e.title,rect:e.getBoundingClientRect().toJSON()})).filter(e=>e.rect.width>0 && e.rect.height>0));
+      if(width>=1280) {
+        const centers=rects.map(e=>e.rect.y+e.rect.height/2);
+        assert.ok(Math.max(...centers)-Math.min(...centers)<2,`${width}px controls must fit one row`);
+      }
       for(let i=0;i<rects.length;i++) for(let j=i+1;j<rects.length;j++) {
         const a=rects[i],b=rects[j];
         assert.ok(Math.min(a.rect.right,b.rect.right)-Math.max(a.rect.left,b.rect.left)<=1 || Math.min(a.rect.bottom,b.rect.bottom)-Math.max(a.rect.top,b.rect.top)<=1,`${width}px overlap: ${a.text} / ${b.text}`);

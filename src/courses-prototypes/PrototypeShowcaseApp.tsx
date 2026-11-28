@@ -285,16 +285,14 @@ export const PrototypeShowcaseApp: React.FC = () => {
       {/* Showcase controls wrap as separate groups; mobile uses a collapsible drawer */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0b1220]/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
         {!isNarrowWindow ? (
-          <div className="max-w-[1440px] mx-auto px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="max-w-[1440px] mx-auto px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-3">
             {/* Left: Identity + Concept Switcher */}
-            <div className="flex flex-wrap items-center gap-4 w-full">
+            <div className="flex items-center gap-3 shrink-0">
               <div className="flex items-center gap-2 shrink-0 pr-2 border-r border-slate-200 dark:border-slate-800">
                 <span className="font-mono-tech text-xs font-bold tracking-tight px-2 py-1 rounded bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950">
                   NetOps
                 </span>
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden xl:inline whitespace-nowrap">
-                  Концепции «Курсы»
-                </span>
+
               </div>
 
               <nav
@@ -306,6 +304,8 @@ export const PrototypeShowcaseApp: React.FC = () => {
                   return (
                     <button
                       key={tab.id}
+                      title={tab.label}
+                      aria-label={tab.label}
                       type="button"
                       onClick={() => {
                         setConcept(tab.id);
@@ -317,7 +317,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                       }`}
                     >
-                      {tab.label}
+                      {tab.shortLabel}
                     </button>
                   );
                 })}
