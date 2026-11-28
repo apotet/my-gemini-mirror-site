@@ -9,7 +9,7 @@ import { Ipv6Trainer } from './components/Ipv6Trainer';
 import type { Ipv6PracticeTarget } from './data/ipv6Practice';
 import { PracticeHub } from './components/PracticeHub';
 import { MockPracticeHub } from './components/MockPracticeHub';
-import { MockTestingHub } from './components/MockTestingHub';
+import { CoursesPrototypeFrame } from './components/CoursesPrototypeFrame';
 import { TheoryView } from './components/TheoryView';
 import { MobileTabBar } from './components/MobileTabBar';
 import { CommandPalette } from './components/CommandPalette';
@@ -41,6 +41,8 @@ export function App() {
   const [practiceRequest, setPracticeRequest] = useState<{ link: PracticeLink; id: number; origin?: LessonPracticeOrigin; variant?: PracticeVariant } | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     if (typeof window !== 'undefined') {
+      const mocks = new URLSearchParams(window.location.search).getAll('mock');
+      if (mocks.length === 1 && mocks[0] === 'courses') return 'courses-mock';
       const courses = new URLSearchParams(window.location.search).getAll('course');
       if (courses.length === 1 && courses[0] === 'addressing') return 'courses';
     }
@@ -48,6 +50,14 @@ export function App() {
   });
   useEffect(() => {
     const url = new URL(window.location.href);
+    const mocks = url.searchParams.getAll('mock');
+    if (activeTab === 'courses-mock') {
+      url.searchParams.set('mock', 'courses');
+      window.history.replaceState(window.history.state, '', url);
+    } else if (mocks.length === 1 && mocks[0] === 'courses') {
+      url.searchParams.delete('mock');
+      window.history.replaceState(window.history.state, '', url);
+    }
     const courses = url.searchParams.getAll('course');
     const isCourseLink = courses.length === 1 && courses[0] === 'addressing';
     if (activeTab === 'courses' && !isCourseLink) {
@@ -214,7 +224,7 @@ export function App() {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8">
+      <main className={activeTab === 'courses-mock' ? "flex-1 w-full pb-20 lg:pb-0" : "flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-8"}>
         {activeTab === 'courses' && <AddressingCourse />}
         {activeTab === 'exam' && (
           <ExamView onOpenLesson={handleOpenLesson} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} ref={examViewRef} onNavigateToTheory={handleNavigateToTheory} onNavigateToLearning={() => {
@@ -261,7 +271,7 @@ export function App() {
           variant={practiceRequest?.variant}
           onReturnToLesson={lessonPracticeOrigin ? handleReturnToLesson : undefined} />}
         {activeTab === 'practice-mock' && <MockPracticeHub />}
-        {activeTab === 'exam-mock' && <MockTestingHub onOpenLesson={handleOpenLesson} onNavigateToTheory={handleNavigateToTheory} onOpenPractice={handleOpenPractice} onNavigateToIpv4={handleNavigateToIpv4} onNavigateToIpv6={handleNavigateToIpv6} />}
+        {activeTab === 'courses-mock' && <CoursesPrototypeFrame />}
       </main>
 
       <MobileTabBar

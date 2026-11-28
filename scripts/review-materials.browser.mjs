@@ -112,11 +112,6 @@ try {
         await wrongAnswer().click();
         await button('Подтвердить').click();
       };
-      const mock = async () => {
-        if (width===375) await button('Открыть меню').click();
-        await button('Макет тестирования').click();
-        await button('Продолжить').click();
-      };
       await page.goto(base);
       // Historical completed attempts are read-only even after styles and lesson navigation.
       await button('Посмотреть разбор последней попытки').click();
@@ -146,18 +141,9 @@ try {
       await submitWrong();
       await verify('mistakes');
       assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')),completed);
-      await mock();
-      await wrongAnswer().click();
-      await button('Ответить').click();
-      await verify('mock-instant');
-      if (fixture.lessonId) await mock();
-      await button('Завершить').click();
-      await button('Разобрать ошибки').click();
-      await openReviewCard();
-      await verify('mock-result');
-      assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')),completed);
+      // Retired mock coverage lives in courses-prototypes.browser.mjs.
       assert.deepEqual(errors,[]);
-      console.log(`PASS matrix ${width}px ${q.id}: seven screens, stable brief, styles, exact lesson and immutable snapshots`);
+      console.log(`PASS matrix ${width}px ${q.id}: five screens, stable brief, styles, exact lesson and immutable snapshots`);
       await page.close();
     }
   }
@@ -171,4 +157,4 @@ try {
   writeFileSync(`${output}/matrix-evidence.json`,JSON.stringify(evidence,null,2)+'\n');
   await browser.close();
 }
-assert.equal(evidence.length, reviewMaterialFixtures.length*2*7);
+assert.equal(evidence.length, reviewMaterialFixtures.length*2*5);

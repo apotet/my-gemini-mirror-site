@@ -206,29 +206,7 @@ try {
     await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
     await home();
 
-    if (mobile) await button('Открыть меню').click();
-    await button('Макет тестирования').click();
-    await button('Продолжить').click();
-    await button(get('ts-x05').answers[0]).click();
-    await button('Ответить').click();
-    await openDetail(page);
-    await page.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();
-    await page.getByText('Профессиональный разбор пока не подготовлен', {exact:true}).waitFor();
-    await button(/^Перейти к уроку:/).click();
-    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
-    if (mobile) await button('Открыть меню').click();
-    await button('Макет тестирования').click();
-    await button('Продолжить').click();
-    await button('Завершить').click();
-    await button('Посмотреть ответы').click();
-    const mock = await openRow(get('ts-x05').text);
-    await openDetail(mock);
-    await mock.locator('pre code').filter({ hasText: /show ip interface brief/ }).waitFor();
-    await noPageOverflow();
-    await button(/^Перейти к уроку:/, mock).click();
-    await page.getByRole('heading', {name:'Cisco IOS: show, TAB и ? — диагностика без угадайки', exact:true}).waitFor();
-    assert.equal(await page.evaluate(() => localStorage.getItem('osi_last_exam_review_v1')), lastSnapshot, 'saved completed attempt remains byte-identical');
-    await home();
+    // Retired testing mock is replaced by courses-prototypes.browser.mjs.
     // This cross-level fixture intentionally replays a diagnostic L2/L3 mistake.
     // The new Base must exclude it, so choose the mixed level for the all-level replay.
     if (mobile) await page.getByRole('combobox', { name: /Выбери свой уровень/ }).selectOption('mixed');
