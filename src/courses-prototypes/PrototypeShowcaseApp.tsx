@@ -29,10 +29,10 @@ const ACTIVE_DEFAULT_COMPLETED = [
   'mod-subnets-hosts',
 ];
 
-const CONCEPT_TABS: Array<{ id: ConceptId; number: string; label: string; shortLabel: string }> = [
-  { id: 'studio', number: '1', label: 'Студия NetOps', shortLabel: '1. Студия' },
-  { id: 'academy', number: '2', label: 'Инженерная академия', shortLabel: '2. Академия' },
-  { id: 'textbook', number: '3', label: 'Интерактивный учебник', shortLabel: '3. Учебник' },
+const CONCEPT_TABS: Array<{ id: ConceptId; label: string; shortLabel: string }> = [
+  { id: 'studio', label: 'Студия NetOps', shortLabel: 'Студия' },
+  { id: 'academy', label: 'Инженерная академия', shortLabel: 'Академия' },
+  { id: 'textbook', label: 'Интерактивный учебник', shortLabel: 'Учебник' },
 ];
 
 const SCREEN_TABS: Array<{ id: ScreenId; label: string; shortLabel: string }> = [
@@ -282,12 +282,12 @@ export const PrototypeShowcaseApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-[#050912] text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Showcase Control Bar — compact single bar on desktop, collapsible drawer on narrow mobile */}
+      {/* Showcase controls wrap as separate groups; mobile uses a collapsible drawer */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0b1220]/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
         {!isNarrowWindow ? (
-          <div className="max-w-[1440px] mx-auto px-4 h-[56px] flex items-center justify-between gap-3">
+          <div className="max-w-[1440px] mx-auto px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3">
             {/* Left: Identity + Concept Switcher */}
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex flex-wrap items-center gap-4 w-full">
               <div className="flex items-center gap-2 shrink-0 pr-2 border-r border-slate-200 dark:border-slate-800">
                 <span className="font-mono-tech text-xs font-bold tracking-tight px-2 py-1 rounded bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950">
                   NetOps
@@ -299,7 +299,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
 
               <nav
                 aria-label="Выбор дизайн-концепции"
-                className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800"
+                className="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800"
               >
                 {CONCEPT_TABS.map((tab) => {
                   const active = concept === tab.id;
@@ -317,10 +317,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                       }`}
                     >
-                      <span className="hidden 2xl:inline">
-                        {tab.number}. {tab.label}
-                      </span>
-                      <span className="2xl:hidden">{tab.shortLabel}</span>
+                      {tab.label}
                     </button>
                   );
                 })}
@@ -330,7 +327,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
             {/* Center: Screen Switcher */}
             <nav
               aria-label="Экраны прототипа"
-              className="flex items-center gap-1"
+              className="flex flex-wrap items-center gap-2 shrink-0"
             >
               {SCREEN_TABS.map((tab) => {
                 const active = !externalResource && screen === tab.id;
@@ -353,7 +350,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
             </nav>
 
             {/* Right: State, Viewport & Theme Controls */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 ml-auto">
               {/* Learner Profile Switcher */}
               <div
                 role="group"
@@ -442,9 +439,9 @@ export const PrototypeShowcaseApp: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Compact Mobile Showcase Bar (strictly single-row 48px to respect mobile sticky budget) */
-          <div className="px-3 h-12 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 overflow-x-auto">
+          /* Compact mobile controls can wrap on very narrow screens */
+          <div className="px-3 py-2 min-h-12 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap max-w-full items-center gap-1 bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
               {CONCEPT_TABS.map((tab) => {
                 const active = concept === tab.id;
                 return (
@@ -467,7 +464,7 @@ export const PrototypeShowcaseApp: React.FC = () => {
               })}
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
               <button
                 type="button"
                 onClick={() => setIsDark((prev) => !prev)}

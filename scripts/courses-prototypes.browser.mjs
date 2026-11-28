@@ -17,7 +17,7 @@ try {
   await f.getByRole('navigation',{name:'Выбор дизайн-концепции'}).waitFor();
   const parentTheme=await p.locator('html').getAttribute('class');
   const screens=f.getByRole('navigation',{name:'Экраны прототипа'});
-  for (const concept of [/1\. Студия/,/2\. Академия/,/3\. Учебник/]) {
+  for (const concept of [/Студия/,/Инженерная академия/,/Интерактивный учебник/]) {
     console.log('Checking',String(concept));
     await f.getByRole('navigation',{name:'Выбор дизайн-концепции'}).getByRole('button',{name:concept}).click();
     for (const theme of ['light','dark']) {
@@ -46,7 +46,7 @@ try {
     assert.ok(await f.locator('html').evaluate(e=>e.scrollWidth<=innerWidth+1));
     await f.getByTitle('Компьютерная версия').click();
   }
-  await f.getByRole('navigation',{name:'Выбор дизайн-концепции'}).getByRole('button',{name:/1\. Студия/}).click();
+  await f.getByRole('navigation',{name:'Выбор дизайн-концепции'}).getByRole('button',{name:/Студия/}).click();
   await button(screens,'Курс IP').click();
   await f.getByRole('button',{name:/Тренажёр IPv4 · Маски и подсети/}).click();
   assert.ok((await f.locator('body').innerText()).includes('Вернуться'));
@@ -58,7 +58,7 @@ try {
   for(const width of [390,768]) {
     await p.setViewportSize({width,height:844});await p.goto(base+'?mock=courses');
     await button(f,'Параметры прототипа').waitFor();
-    for(const concept of ['1. Студия','2. Академия','3. Учебник']) {
+    for(const concept of ['Студия','Академия','Учебник']) {
       await button(f,concept).click();
       for(const screen of ['Каталог','Курс IP','Урок','Тест']) {
         await button(f,'Параметры прототипа').click();
