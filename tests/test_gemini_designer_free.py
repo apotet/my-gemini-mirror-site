@@ -316,11 +316,12 @@ class CommentDesigner(unittest.TestCase):
             from hashlib import sha256
             with patch.object(d,'load_package',return_value=pkg), patch.object(d,'VISUAL_MANIFEST',sha256(b'{}').hexdigest()):
                 sender = Mock(return_value=mock_response(accepted))
-                with self.assertRaisesRegex(d.Stop,'visual_verdict_missing_no_retry'):
+                with self.assertRaisesRegex(d.Stop,'invalid_or_sensitive_response_no_retry'):
                     d.run('acceptance',report,env=env,send=sender,root=root)
                 self.assertFalse(report.exists())
                 sender.assert_called_once()
-                accepted['next_iteration']='VISUAL_VERDICT: PASS\nСохранить заголовок.'
+                accepted['visual_verdict']='PASS'
+                accepted['next_iteration']='Сохранить заголовок.'
                 sender = Mock(return_value=mock_response(accepted))
                 self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root)['source_sha'],d.VISUAL_CANDIDATE)
                 sender.assert_called_once()
@@ -335,3 +336,15 @@ class CommentDesigner(unittest.TestCase):
                 self.assertEqual(sender.call_count,3)
                 self.assertEqual([p.args[0] for p in sleep.call_args_list],[15,45])
                 self.assertTrue(all(p.args==sender.call_args_list[0].args for p in sender.call_args_list))
+                report.unlink()
+                event['comment']['body'] = '/gennady accept-tcpip-structured'
+                event_path.write_text(json.dumps(event))
+                accepted['visual_verdict']='FIX'
+                sender = Mock(return_value=mock_response(accepted))
+                self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root,sleep=Mock())
+                                 ['observation']['visual_verdict'],'FIX')
+                sender.assert_called_once()
+                schema=json.loads(sender.call_args.args[0])['generationConfig']['responseJsonSchema']
+                self.assertEqual(schema['properties']['visual_verdict']['enum'],['PASS','FIX'])
+                self.assertIn('visual_verdict',schema['required'])
+

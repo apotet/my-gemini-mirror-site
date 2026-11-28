@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM, VISUAL_STRUCT, VISUAL_STRUCT_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -193,6 +193,19 @@ test('exact visual 503 recovery consumes its own slot only after original claim'
   const noPrior = api(c,[a,c.payload.comment],undefined,bot,VISUAL_RETRY_CLAIM);
   assert.equal(await reserveSmoke(noPrior,c,'1','apotet'),false);
   const g = api(c,[a,comment(7238286113,VISUAL_CLAIM,bot),c.payload.comment],undefined,bot,VISUAL_RETRY_CLAIM);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+  assert.equal(g.writeCount(),1);
+});
+
+test('visual format repair has one slot only after the trusted prior recovery', async () => {
+  const c=context(VISUAL_STRUCT);
+  assert.equal(authorize(c,'1','apotet'),'structured-visual');
+  const a=comment(10,ATTEST);
+  const original=comment(7238354225,VISUAL_RETRY_CLAIM,bot);
+  const bad=api(c,[a,{...original,user:outsider},c.payload.comment],undefined,bot,VISUAL_STRUCT_CLAIM);
+  assert.equal(await reserveSmoke(bad,c,'1','apotet'),false);
+  const g=api(c,[a,original,c.payload.comment],undefined,bot,VISUAL_STRUCT_CLAIM);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
   assert.equal(g.writeCount(),1);

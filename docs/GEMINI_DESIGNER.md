@@ -69,3 +69,11 @@ candidate evidence. Only this recovery may retry 503 with the existing bounded
 15/45-second strategy. It does not switch models, retry any other failure, or
 publish. A successful response with visual FIX is not a release pass and is
 never retried automatically.
+
+Recovery 46138439394 got HTTP 200 without a valid exact text verdict prefix.
+The single owner format-repair command `/gennady accept-tcpip-structured`
+requires that exact prior bot reservation. It uses the unchanged package,
+Free tier and model, asks for a native JSON schema with required enum
+`visual_verdict` (PASS/FIX), also strictly validates it locally, and never
+turns an absent or invalid value into PASS. Only definite 503 may use the
+existing bounded waits; valid FIX is terminal and never triggers deployment.
