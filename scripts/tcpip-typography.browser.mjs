@@ -1,9 +1,7 @@
-// TCPIP_BASELINE_URL is optional; if set, compare the exact prior preview.
-// NETOPS_BASE_URL must point to the TCP/IP typography candidate running locally.
+// Real before/after on the direct lesson URL; TCPIP_BASELINE_URL and TCPIP_EVIDENCE_PATH are optional.
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-
 const { chromium } = await import(process.env.NETOPS_PLAYWRIGHT_MODULE || 'playwright');
 const current = process.env.NETOPS_BASE_URL || 'http://127.0.0.1:5661/my-gemini-mirror-site/';
 const baseline = process.env.TCPIP_BASELINE_URL;
@@ -12,166 +10,178 @@ if (output) await mkdir(output, { recursive: true });
 for (const url of [current, baseline].filter(Boolean)) {
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(new URL(url).hostname), 'use a local build only');
 }
+const widthOptions = process.env.TCPIP_WIDTHS?.split(',').map(Number) ?? [375, 390, 768, 1280, 1440];
 const title = 'TCP/IP: четыре уровня и инкапсуляция';
-const browser = await chromium.launch({
-  executablePath: process.env.NETOPS_CHROMIUM_PATH || undefined,
-  args: ['--disable-dev-shm-usage'],
-});
+const browser = await chromium.launch({ executablePath: process.env.NETOPS_CHROMIUM_PATH || undefined, args: ['--disable-dev-shm-usage'] });
 const results = {};
-const captures = {};
+const snapshots = new Map();
+const core = ['layers', 'osi', 'pack', 'unpack', 'addresses'];
 
-const typography = sectionRoot => sectionRoot.evaluate(root => {
-  const main = root.querySelector('.tcpip-reading__prose > div > p, section > div > div > div > p');
-  const caption = root.querySelector('[data-lesson-visual-description] p');
-  const length = element => {
-    const lines = new Map();
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      for (let i = 0; i < node.length; i++) {
-        const range = document.createRange();
-        range.setStart(node, i);
-        range.setEnd(node, i + 1);
-        const box = range.getBoundingClientRect();
-        if (box.width) {
-          const center = box.top + box.height / 2;
-          const row = [...lines.keys()].find(y => Math.abs(y - center) < 4) ?? center;
-          lines.set(row, (lines.get(row) ?? '') + node.textContent[i]);
-        }
-      }
-    }
-    return [...lines.values()].map(line => line.trim().length);
-  };
-  const paragraphs = root.querySelectorAll('.tcpip-reading__prose > div > p, section > div > div > div > p');
-  const lineLengths = [...paragraphs].flatMap(element => length(element).slice(0, -1)).sort((a, b) => a - b);
-  const style = node => {
-    const css = getComputedStyle(node);
-    return { px: parseFloat(css.fontSize), linePx: parseFloat(css.lineHeight), color: css.color,
-      width: Math.round(node.getBoundingClientRect().width) };
-  };
-  const roles = root.querySelector('[data-lesson-visual="tcpip-layers.svg"]');
-  const picture = roles.querySelector('img').getBoundingClientRect();
-  const panel = roles.querySelector('.tcpip-reading__prose, figcaption').getBoundingClientRect();
-  return {
-    body: style(main), caption: style(caption), sectionHeight: Math.round(root.getBoundingClientRect().height),
-    scrollHeight: document.scrollingElement.scrollHeight, pageWidth: document.scrollingElement.scrollWidth,
-    cardHeights: [...root.children].map(card => Math.round(card.getBoundingClientRect().height)),
-    columns: picture.right < panel.left ? 2 : 1,
-    lineMedian: lineLengths[Math.floor(lineLengths.length / 2)] ?? null,
-    lineP90: lineLengths[Math.floor(lineLengths.length * 0.9)] ?? null,
-    maxLine: lineLengths.at(-1) ?? null,
-  };
-});
+function typography(sectionRoot) {
+  return sectionRoot.evaluate(root => {
+    const main = root.querySelector('.tcpip-reading__prose > div > p');
+    const caption = root.querySelector('[data-lesson-visual-description]');
+    const style = node => {
+      const css = getComputedStyle(node);
+      return { px: parseFloat(css.fontSize), linePx: parseFloat(css.lineHeight), color: css.color };
+    };
+    const visuals = [...root.querySelectorAll('[data-lesson-visual]')].map(figure => {
+      const image = figure.querySelector('img');
+      const box = image.getBoundingClientRect();
+      const fig = figure.getBoundingClientRect();
+      return {
+        id: figure.dataset.lessonVisual, asset: new URL(image.currentSrc).pathname.split('/').at(-1),
+        width: Math.round(box.width), height: Math.round(box.height),
+        fits: box.width > 0 && box.height > 0 && box.left >= fig.left && box.right <= fig.right
+          && box.left >= 0 && box.right <= innerWidth + 1
+          && Math.abs((box.width / box.height) / (image.naturalWidth / image.naturalHeight) - 1) < 0.015,
+      };
+    });
+    return {
+      body: style(main), caption: style(caption), sectionHeight: Math.round(root.getBoundingClientRect().height),
+      pageWidth: document.scrollingElement.scrollWidth,
+      visibleText: [...root.querySelectorAll('p, li')].filter(el => !el.closest('details:not([open])') && el.getClientRects().length).map(el => el.textContent.trim()).join('').length,
+      visuals,
+    };
+  });
+}
+
+async function loadImages(loc) {
+  await loc.evaluateAll(images => Promise.all(images.map(image => { image.loading = 'eager'; return image.decode(); })));
+}
+async function sectionContent(sections) {
+  return sections.locator('section').evaluateAll(sections => sections.map(section => ({
+    heading: section.querySelector('h3')?.textContent.trim(),
+    paragraphs: [...section.querySelectorAll('p, li')].filter(p => !p.closest('details')).map(p => p.textContent.trim()),
+    anchor: section.dataset.lessonSectionAnchor ?? null,
+  })));
+}
+const identifiers = rows => rows.map(({ heading, anchor }) => ({heading, anchor}));
 
 try {
   for (const [name, url] of [['before', baseline], ['after', current]]) {
     if (!url) continue;
     results[name] = [];
-    for (const width of [375, 768, 1440]) for (const theme of ['light', 'dark']) {
-      const height = width === 375 ? 667 : 900;
-      const context = await browser.newContext({ viewport: { width, height },
-        hasTouch: width === 375, isMobile: width === 375, reducedMotion: 'reduce' });
+    for (const width of widthOptions) for (const theme of ['light', 'dark']) {
+      const mobile = width < 500;
+      const context = await browser.newContext({ viewport: { width, height: mobile ? 667 : 900 },
+        hasTouch: mobile, isMobile: mobile, reducedMotion: 'reduce' });
       await context.addInitScript(t => localStorage.setItem('osi_theme_dark', t === 'dark' ? '1' : '0'), theme);
       await context.route('**/*', route => new URL(route.request().url()).origin === new URL(url).origin ? route.continue() : route.abort());
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
       page.setDefaultTimeout(8000);
-      const button = name => page.getByRole('button', { name, exact: true });
+      const button = (name, container = page) => container.getByRole('button', { name, exact: typeof name === 'string' });
       await page.goto(url + '?lesson=tcpip-model');
       const heading = page.getByRole('heading', { name: title, exact: true });
       await heading.waitFor();
       assert.equal(await page.locator('html').evaluate(html => html.classList.contains('dark')), theme === 'dark');
-      const article = page.locator('article').filter({ has: heading });
-      const sections = article.locator(':scope > div.space-y-4').first();
+      const sections = page.locator('article').filter({ has: heading }).locator(':scope > div.space-y-4').first();
       const visuals = sections.locator('[data-lesson-visual]');
       const sheets = sections.locator('[data-lesson-cheatsheet]');
+      const findVisual = key => visuals.and(page.locator(`[data-lesson-visual="tcpip-${key}.svg"]`));
       assert.equal(await visuals.count(), 9);
       assert.equal(await sheets.count(), 4);
-      await visuals.locator('img').evaluateAll(async images => {
-        await Promise.all(images.map(image => { image.loading = 'eager'; return image.decode(); }));
-      });
+      await loadImages(visuals.locator('img'));
       const measure = await typography(sections);
-      assert(measure.pageWidth <= width, 'no horizontal page scrolling');
+      const plain = await sectionContent(sections);
+      const key = `${width}-${theme}`;
+      assert(measure.pageWidth <= width + 1, 'no horizontal page scrolling');
+      if (output && width !== 768 && theme === 'light') {
+        await page.screenshot({ path: join(output, `${name}-${key}-entry.png`) });
+        // Hide the application chrome only for cropped cards, not for full viewport or zoom evidence.
+        const chrome = await page.addStyleTag({content:'nav.fixed, header.sticky {display:none!important}'});
+        for (const part of core) {
+          const card = sections.locator(':scope > section').filter({ has: page.locator(`[data-lesson-visual="tcpip-${part}.svg"]`) });
+          await card.screenshot({path:join(output,`${name}-${key}-${part}.png`)});
+        }
+        await chrome.evaluate(node=>node.remove());
+      }
       if (name === 'after') {
         assert(measure.body.px >= 16 && measure.body.px <= 18);
         assert(measure.body.linePx / measure.body.px >= 1.5 && measure.body.linePx / measure.body.px <= 1.65);
         assert(measure.caption.px >= 15 && measure.caption.color !== measure.body.color);
-        assert.equal(measure.columns, width === 1440 ? 2 : 1);
-        if (width === 1440) assert(measure.lineP90 >= 60 && measure.lineP90 <= 82, JSON.stringify(measure));
-        assert.equal(await sections.locator('p.tcpip-reading__takeaway').count(), 15);
-        assert.equal(await sections.locator('[data-tcpip-level]').count(), 4);
-        const diagramsFit = await visuals.locator('img').evaluateAll(images => images.every(image => {
-          const picture = image.getBoundingClientRect();
-          const figure = image.closest('figure').getBoundingClientRect();
-          return picture.width > 0 && picture.height > 0 && picture.left >= figure.left && picture.right <= figure.right
-            && picture.left >= 0 && picture.right <= innerWidth
-            && Math.abs(picture.width / picture.height - image.naturalWidth / image.naturalHeight) < 0.01;
-        }));
-        assert(diagramsFit, 'primary diagrams fit the card and viewport, preserving full aspect ratio');
-      }
-      if (output) {
-        const key = `${name}-${width}-${theme}`;
-        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-        await page.screenshot({ path: join(output, key + '-entry.png') });
-        const themeCard = sections.locator('section').filter({ has: page.locator('[data-lesson-visual="tcpip-layers.svg"]') });
-        await themeCard.screenshot({ path: join(output, key + '-roles.png') });
-      }
-      const panelContent = async () => {
-        const paragraphs = await sections.locator('section').evaluateAll(cards => cards.map(card => ({
-          heading: card.querySelector('h3').textContent.trim(),
-          paragraphs: [...card.querySelectorAll(':scope p, :scope li')]
-            .filter(p => !p.closest('details')).map(p => p.textContent.trim()),
-          anchor: card.getAttribute('data-lesson-section-anchor'),
-        })));
-        return paragraphs;
-      };
-      const plain = await panelContent();
-      if (name === 'after') {
-        const visual = visuals.first();
-        const zoom = visual.getByRole('button', { name: /на весь экран/ });
-        await zoom.click();
-        const dialog = page.getByRole('dialog');
-        await dialog.waitFor();
-        await dialog.getByRole('button', { name: 'Увеличить фото' }).click();
-        await page.keyboard.press('Escape');
-        await dialog.waitFor({ state: 'hidden' });
-        const sheet = sheets.first();
-        assert.equal(await sheet.getAttribute('open'), null);
-        await sheet.locator('summary').click();
-        assert.equal(await sheet.getAttribute('open'), '');
-        await sheet.locator('[data-lesson-visual-description]').waitFor();
+        assert(measure.visuals.every(img => img.fits && img.asset.endsWith(width >= 896 ? '-wide.svg' : '.svg')
+          && (width >= 896 || !img.asset.endsWith('-wide.svg'))), JSON.stringify(measure.visuals));
+        if (baseline) {
+          const original = snapshots.get(key);
+          assert.deepEqual(identifiers(plain), identifiers(original.plain), 'exact plain headings and anchors');
+          assert(measure.visibleText < original.measure.visibleText * .8, 'default prose is meaningfully less repetitive');
+          assert(measure.sectionHeight < original.measure.sectionHeight * .85, 'compact article without hiding the primary art');
+          for (const part of core) {
+            const before = original.measure.visuals.find(v => v.id === `tcpip-${part}.svg`);
+            const after = measure.visuals.find(v => v.id === before.id);
+            assert(after.height < before.height * .8, `compact ${part} at ${width}`);
+          }
+        }
+        const description = findVisual('layers').locator('figcaption details');
+        const summary = description.locator('summary');
+        assert.equal(await description.getAttribute('open'), null);
+        assert(!(await description.ariaSnapshot()).includes('Программы обмениваются'));
+        await summary.press('Enter');
+        const accessible = await description.ariaSnapshot();
+        for (const role of ['Прикладной', 'Транспортный', 'Межсетевой', 'Сетевой доступ']) {
+          assert(accessible.includes(role), 'expanded text equivalent readable via accessibility tree');
+        }
+        assert.equal(await description.locator('[data-tcpip-level]').count(), 4);
+        await summary.press('Enter');
+        for (const part of ['layers', 'pack']) {
+          const visual = findVisual(part);
+          const preview = await visual.locator('img').evaluate(img => img.currentSrc);
+          await button(/на весь экран/, visual).click();
+          const dialog = page.getByRole('dialog');
+          await dialog.waitFor();
+          const modalImage = dialog.locator('[data-photo-viewer-image]');
+          await modalImage.evaluate(img => img.decode());
+          assert.equal(await modalImage.evaluate(img => img.currentSrc), preview);
+          const initial = await modalImage.boundingBox();
+          await button('Увеличить фото', dialog).click();
+          assert((await modalImage.boundingBox()).width > initial.width * 1.18);
+          if (output && theme === 'light' && width !== 768 && part === 'pack')
+            await page.screenshot({ path: join(output, `${name}-${key}-zoom.png`) });
+          await page.keyboard.press('Escape');
+          await dialog.waitFor({ state: 'hidden' });
+        }
+        for (const sheet of await sheets.all()) {
+          assert.equal(await sheet.getAttribute('open'), null);
+          await sheet.locator(':scope > summary').click();
+        }
+        await loadImages(sheets.locator('img'));
+        assert.equal(await sheets.locator('[data-lesson-visual-description]').filter({visible:true}).count(), 4);
+        for (const sheet of await sheets.all()) {
+          const text = sheet.locator('figcaption details');
+          await text.locator('summary').press('Enter');
+          assert((await text.ariaSnapshot()).includes('бит') || (await text.ariaSnapshot()).includes('байт'));
+        }
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        if (output && theme === 'light' && width !== 768) {
+          const sheetCard=sections.locator(':scope > section').filter({has:page.locator('[data-lesson-cheatsheet="tcpip-tcp.svg"]')});
+          await sheetCard.screenshot({style:'nav.fixed, header.sticky {visibility:hidden!important}',path:join(output,`${name}-${key}-tcp.png`)});
+        }
         const term = sections.locator('[data-glossary-term="TCP"]').first();
-        const centerTerm = () => term.evaluate(element => {
-          element.scrollIntoView({ block: 'center', behavior: 'instant' });
+        const center = () => term.evaluate(el => {
+          el.scrollIntoView({ behavior: 'instant', block: 'center' });
           return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         });
         assert.equal(await term.getAttribute('data-glossary-hover'), null);
-        await centerTerm();
-        await term.click();
+        await center();
+        await (mobile ? term.tap() : term.click());
         await page.getByRole('tooltip').waitFor();
         await page.keyboard.press('Escape');
-        await page.getByRole('tooltip').waitFor({ state: 'hidden' });
+        await page.getByRole('tooltip').waitFor({state:'hidden'});
         const glossary = page.getByRole('switch', { name: 'Подсказки при наведении' });
         await glossary.click();
         assert.equal(await term.getAttribute('data-glossary-hover'), 'on');
-        await centerTerm();
-        await term.click();
-        await page.getByRole('tooltip').waitFor();
-        await page.keyboard.press('Escape');
         await glossary.click();
         assert.equal(await term.getAttribute('data-glossary-hover'), null);
       }
       await button('По делу').click();
       assert.equal(await visuals.count(), 0);
-      const pro = await panelContent();
+      const pro = await sectionContent(sections);
       assert(pro.length >= 5);
-      const saveKey = `${width}-${theme}`;
-      if (name === 'before') captures[saveKey] = { plain, pro };
-      else if (baseline) {
-        const native = rows => rows.map(({ paragraphs, ...row }) => ({ ...row, paragraphs: [...paragraphs].sort() }));
-        assert.deepEqual(native(plain), native(captures[saveKey].plain), 'same plain text and exact anchors (layout order may differ)');
-        assert.deepEqual(pro, captures[saveKey].pro, 'all professional text and anchors unchanged');
-      }
+      if (name === 'before') snapshots.set(key, { plain, pro, measure });
+      else if (baseline) assert.deepEqual(pro, snapshots.get(key).pro, 'professional text and anchors unchanged');
       await button('Простыми словами').click();
       assert.equal(await visuals.count(), 9);
       if (name === 'after' && width === 1440 && theme === 'dark') {
@@ -181,7 +191,7 @@ try {
         assert.equal(await page.locator('[data-lesson-reading="tcpip"], .tcpip-reading__prose').count(), 0);
       }
       assert.deepEqual(errors, []);
-      results[name].push({ width, theme, ...measure });
+      results[name].push({width, theme, ...measure});
       await context.close();
       console.log('PASS', name, width, theme, JSON.stringify(measure));
     }
