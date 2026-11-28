@@ -9,6 +9,12 @@ export interface ExistingHeadingLink {
 export const EXISTING_HEADING_LINKS: ExistingHeadingLink[] = [
   { lessonId: 'l3-arp', questionIds: ['l3-03'], anchorId: 'arp-local-or-gateway-mac',
     afterHeading: { plain: 'Для соседа и для далёкого узла нужны разные получатели', professional: 'Локальный IP или удалённая сеть' } },
+  { lessonId: 'l3-arp', questionIds: ['l2-10'], anchorId: 'arp-stale-first-packet',
+    afterHeading: { plain: 'Linux: известный MAC в записи STALE', professional: 'Linux NUD: первый кадр при STALE' } },
+  { lessonId: 'l3-arp', questionIds: ['l2-11'], anchorId: 'arp-proxy-reply-sender-fields',
+    afterHeading: { plain: 'Proxy ARP: ответ за другой узел', professional: 'Proxy ARP в захвате: Sender IP и Sender MAC' } },
+  { lessonId: 'l3-rpki', questionIds: ['l3-rpki01'], anchorId: 'rpki-four-announcements-origin-validation',
+    afterHeading: { plain: 'Проверяем четыре анонса по двум разрешениям', professional: 'Четыре результата RPKI: покрытие, origin ASN и maxLength' } },
   { lessonId: 'l3-route-selection', questionIds: ['gen-osi-a-8'], anchorId: 'lpm-more-specific-despite-metric',
     afterHeading: { plain: 'Пример: /25 выигрывает даже с большей метрикой', professional: 'Установленные маршруты: /25 против /24, /16 и default' } },
   { lessonId: 'l3-route-selection', questionIds: ['gap-pack1-01'], anchorId: 'rib-ad-same-prefix',
