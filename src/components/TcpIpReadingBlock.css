@@ -67,24 +67,25 @@
 }
 
 .tcpip-reading__visual {
-  display: grid;
   min-inline-size: 0;
-  gap: 0.875rem;
+  width: min(100%, 22rem);
   margin-block: 0.875rem;
 }
 
+.tcpip-reading__visual[data-tcpip-variant="wide"] {
+  width: min(100%, 44rem);
+}
+
 .tcpip-reading__preview {
-  justify-self: center;
-  width: min(100%, 20rem);
   min-inline-size: 0;
+  width: 100%;
 }
 
 .tcpip-reading__preview > button {
   display: block;
 }
 
-.tcpip-reading__caption,
-.tcpip-reading__sections [data-lesson-cheatsheet] [data-lesson-visual-description] {
+.tcpip-reading__caption {
   min-inline-size: 0;
   max-inline-size: var(--tcpip-measure);
   color: var(--tcpip-caption);
@@ -93,20 +94,28 @@
   overflow-wrap: anywhere;
 }
 
-.tcpip-reading__caption {
-  border-block-start: 1px solid var(--tcpip-divider);
-  padding-block-start: 0.625rem;
-}
-
-.tcpip-reading__caption > p + p {
-  margin-block-start: 0.5em;
-}
-
-.tcpip-reading__caption-label {
-  display: block;
-  margin-block-end: 0.35rem;
-  color: var(--tcpip-copy);
+.tcpip-reading__description > summary {
+  width: fit-content;
+  min-block-size: 2rem;
+  padding-block: 0.28rem;
+  color: var(--tcpip-application);
   font-weight: 650;
+  cursor: pointer;
+}
+
+.tcpip-reading__description > summary:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.tcpip-reading__description-body {
+  border-inline-start: 2px solid var(--tcpip-divider);
+  padding: 0.25rem 0 0.125rem 0.75rem;
+}
+
+.tcpip-reading__description-body > p + p {
+  margin-block-start: 0.5em;
 }
 
 .tcpip-reading__sections [data-lesson-cheatsheet] > summary {
@@ -165,18 +174,4 @@
 .tcpip-reading__caption [data-tcpip-level="link"] {
   color: var(--tcpip-link);
   font-weight: 650;
-}
-
-@media (min-width: 64rem) {
-  .tcpip-reading__visual[data-layout="split"] {
-    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    align-items: start;
-    column-gap: clamp(1.25rem, 3vw, 2.5rem);
-  }
-
-  .tcpip-reading__visual[data-layout="split"] > .tcpip-reading__preview {
-    grid-row: span 2;
-  }
-
 }

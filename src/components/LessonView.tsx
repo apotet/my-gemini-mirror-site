@@ -17,7 +17,7 @@ import { getLessonReviewStatus } from '../data/lessons/reviewStatus';
 import { EthernetPinout } from './EthernetPinout';
 import { SniDiagram } from './SniDiagram';
 import { ArpVisualPilot } from './ArpVisualPilot';
-import { TcpIpReadingBlock } from './TcpIpReadingBlock';
+import { TcpIpDiagram, TcpIpReadingBlock } from './TcpIpReadingBlock';
 import { ArrowLeft, Copy, Check, BookOpen } from 'lucide-react';
 
 interface LessonViewProps {
@@ -355,6 +355,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, courseRe
                 <div className="space-y-3 border-t border-cyan-300/40 p-3">
                   {b.cheatsheet.file === 'poe-standards-cheatsheet.svg' ? (
                     <PoEStandardsChart />
+                  ) : tcpipReading ? (
+                    <TcpIpDiagram visual={b.cheatsheet} cheatsheet />
                   ) : b.cheatsheet.textEquivalent?.length ? (
                     <figure aria-label={b.cheatsheet.title}
                       className={b.cheatsheet.compactDesktop
