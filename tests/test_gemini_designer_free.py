@@ -324,3 +324,14 @@ class CommentDesigner(unittest.TestCase):
                 sender = Mock(return_value=mock_response(accepted))
                 self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root)['source_sha'],d.VISUAL_CANDIDATE)
                 sender.assert_called_once()
+                report.unlink()
+                event['comment']['body'] = '/gennady retry-visual-503'
+                event_path.write_text(json.dumps(event))
+                failure = d.Stop('provider_http_error_no_retry',503)
+                sender = Mock(side_effect=[failure,failure,mock_response(accepted)])
+                sleep = Mock()
+                with patch('sys.stdout', new_callable=io.StringIO):
+                    self.assertEqual(d.run('acceptance',report,env=env,send=sender,root=root,sleep=sleep)['http_status'],200)
+                self.assertEqual(sender.call_count,3)
+                self.assertEqual([p.args[0] for p in sleep.call_args_list],[15,45])
+                self.assertTrue(all(p.args==sender.call_args_list[0].args for p in sender.call_args_list))

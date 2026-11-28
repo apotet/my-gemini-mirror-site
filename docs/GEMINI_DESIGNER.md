@@ -61,3 +61,11 @@ a current same-key Free-tier attestation, the existing pilot reservation
 and a new one-time visual reservation. This command makes one request,
 returns evidence and PASS/FIX, and cannot publish or edit the lesson.
 Interactions and publication are verified separately.
+
+The first exact candidate acceptance (46137942140) returned a definite HTTP
+503 and no result. The one-use `/gennady retry-visual-503` command requires
+that original bot reservation, fresh Free-tier attestation and the same pinned
+candidate evidence. Only this recovery may retry 503 with the existing bounded
+15/45-second strategy. It does not switch models, retry any other failure, or
+publish. A successful response with visual FIX is not a release pass and is
+never retried automatically.

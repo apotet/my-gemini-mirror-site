@@ -66,7 +66,7 @@ def audit_env(env, event, expected_mode):
         cid = comment.get('id')
         allowed = {'smoke': ('/gennady smoke', '/gennady retry-503'),
                    'pilot': ('/gennady pilot-tcpip',),
-                   'acceptance': ('/gennady accept-tcpip',)}
+                   'acceptance': ('/gennady accept-tcpip', '/gennady retry-visual-503')}
         if (event.get('action') == 'created' and issue.get('number') == 591 and
                 issue.get('id') == 6662809692 and issue.get('state') == 'open' and
                 'pull_request' not in issue and
@@ -232,8 +232,9 @@ def write_report(path,result):
 def run(mode,report,env=os.environ,send=post,root=ROOT,sleep=time.sleep):
     event = json.loads(Path(env.get('GITHUB_EVENT_PATH','')).read_text())
     audit_env(env,event,mode)
-    recovery = (mode == 'smoke' and env.get('GITHUB_EVENT_NAME') == 'issue_comment' and
-                event['comment']['body'] == '/gennady retry-503')
+    recovery = (env.get('GITHUB_EVENT_NAME') == 'issue_comment' and
+                ((mode == 'smoke' and event['comment']['body'] == '/gennady retry-503') or
+                 (mode == 'acceptance' and event['comment']['body'] == '/gennady retry-visual-503')))
     image_root=root/EVIDENCE.relative_to(ROOT)/mode
     # Manifests and public screenshots are part of the reviewed, default-branch-only workflow checkout.
     manifest_hash=hashlib.sha256((image_root/'manifest.json').read_bytes()).hexdigest()
