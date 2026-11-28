@@ -31,3 +31,14 @@ withdraw consent, post a new revoke before reservation; once reserved, cancel
 the workflow to stop queued work (a request already sent cannot be withdrawn).
 The separate owner-only manual dispatch is unchanged. Do not launch the same
 smoke through both entry points. This comment route cannot start the full pilot.
+
+For the reviewed ARP smoke HTTP 503 in run 46132217797, the owner separately
+authorized one recovery window via `/gennady retry-503` and the same current
+Free-tier attestation on #591. It requires the original bot reservation and
+writes a separate single-use reservation. Only this fixed entry point may send
+up to three sequential ARP requests: 15 and 45 seconds between retries, only
+after a definite HTTP 503. A numeric Retry-After can extend a pause to at most
+60 seconds; other or larger Retry-After values stop recovery. 429, invalid or
+incomplete responses, uncertain transport, reruns, paid fallback and the full
+pilot are not retried by this command. The original and manual paths remain
+single-request.

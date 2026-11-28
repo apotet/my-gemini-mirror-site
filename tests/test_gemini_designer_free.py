@@ -213,3 +213,51 @@ class CommentDesigner(unittest.TestCase):
                     d.run(mode, report, env=state, send=sender)
                 sender.assert_not_called()
                 self.assertFalse(report.exists())
+
+    def test_bounded_recovery_only_repeats_definite_503(self):
+        owner = {'login':'apotet','id':332418397,'type':'User'}
+        event = {'action':'created', 'repository':{'full_name':d.REPO}, 'sender':owner.copy(),
+                 'issue':{'number':591,'id':6662809692,'state':'open','user':owner.copy()},
+                 'comment':{'id':6789,'body':'/gennady retry-503','user':owner.copy(),
+                            'created_at':'2026-11-28T10:00:00Z','updated_at':'2026-11-28T10:00:00Z'}}
+        fail = lambda after=None: d.Stop('provider_http_error_no_retry',503,retry_after=after)
+        with TemporaryDirectory() as dname:
+            p = Path(dname)
+            event_path, report = p/'event.json', p/'report.json'
+            env = dict(ENV, GITHUB_EVENT_NAME='issue_comment', GITHUB_EVENT_PATH=str(event_path),
+                       DESIGNER_COMMENT_RESERVATION='1234:6789')
+            event_path.write_text(json.dumps(event))
+            cases = [
+                ([fail(), mock_response()], [15], 2, None),
+                ([fail('22'), fail('60'), mock_response()], [22,60], 3, None),
+                ([fail(), fail(), fail(), mock_response()], [15,45], 3, 'provider_http_error_no_retry'),
+                ([fail('61'), mock_response()], [], 1, 'provider_http_error_no_retry'),
+                ([fail('Wed, 21 Oct 2026 07:28:00 GMT'), mock_response()], [], 1, 'provider_http_error_no_retry'),
+                ([d.Stop('quota_or_rate_limit_no_retry',429), mock_response()], [], 1, 'quota_or_rate_limit_no_retry'),
+                ([d.Stop('provider_transport_uncertain_no_retry'), mock_response()], [], 1,
+                 'provider_transport_uncertain_no_retry'),
+                ([mock_response(finish='MAX_TOKENS'), mock_response()], [], 1, 'nonfinal_response_no_retry'),
+                ([fail(), d.Stop('provider_http_error_no_retry',401), mock_response()], [15], 2,
+                 'provider_http_error_no_retry')]
+            for effects, waits, calls, reason in cases:
+                with self.subTest(reason=reason, waits=waits):
+                    sleep, send = Mock(), Mock(side_effect=effects)
+                    with patch('sys.stdout', new_callable=io.StringIO) as stream:
+                        if reason:
+                            with self.assertRaisesRegex(d.Stop, reason):
+                                d.run('smoke',report,env=env,send=send,sleep=sleep)
+                            self.assertFalse(report.exists())
+                        else:
+                            self.assertEqual(d.run('smoke',report,env=env,send=send,sleep=sleep)['http_status'], 200)
+                            report.unlink()
+                    self.assertEqual(send.call_count,calls)
+                    self.assertEqual([c.args[0] for c in sleep.call_args_list],waits)
+                    self.assertTrue(all(c.args == send.call_args_list[0].args for c in send.call_args_list))
+                    self.assertNotIn(KEY,stream.getvalue())
+            event['comment']['body'] = '/gennady smoke'
+            event_path.write_text(json.dumps(event))
+            sleep, send = Mock(), Mock(side_effect=[fail(), mock_response()])
+            with self.assertRaises(d.Stop):
+                d.run('smoke',report,env=env,send=send,sleep=sleep)
+            send.assert_called_once()
+            sleep.assert_not_called()

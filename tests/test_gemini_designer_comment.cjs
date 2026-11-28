@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -24,14 +24,14 @@ function context(body = SMOKE) {
 function reserveSmoke(g, c, attempt, actor) {
   return reserve(g, c, attempt, actor, Date.parse('2026-11-28T10:00:40Z'));
 }
-function api(c, comments, issue = c.payload.issue, claimAuthor = bot) {
+function api(c, comments, issue = c.payload.issue, claimAuthor = bot, marker = CLAIM) {
   let writes = 0;
   const fixed = { owner: 'apotet', repo: 'my-gemini-mirror-site', issue_number: 591 };
   const rest = { issues: {
     get: async p => { assert.deepEqual(p, fixed); return { data: issue }; },
     listComments: Symbol('pagination method'),
     createComment: async p => {
-      assert.deepEqual(p, { ...fixed, body: CLAIM });
+      assert.deepEqual(p, { ...fixed, body: marker });
       writes++;
       const data = comment(99, p.body, claimAuthor, '35');
       comments.push(data);
@@ -131,4 +131,24 @@ test('expired proof cannot authorize a fresh or queued request', async () => {
   const g = api(c, [comment(10, ATTEST), c.payload.comment]);
   assert.equal(await reserve(g, c, '1', 'apotet', Date.parse('2026-11-28T10:30:01Z')), false);
   assert.equal(g.writeCount(), 0);
+});
+
+test('recovery needs the exact prior bot claim, fresh proof and its own one-shot reservation', async () => {
+  const c = context(RETRY);
+  assert.equal(authorize(c, '1', 'apotet'), 'retry-503');
+  assert.equal(authorize(c, '2', 'apotet'), null);
+  assert.equal(authorize(context(RETRY + ' '), '1', 'apotet'), null);
+  const a = comment(10, ATTEST);
+  const expected = comment(7237486212, CLAIM, bot, '10');
+  for (const prior of [[], [comment(7237486212, CLAIM, outsider, '10')], [comment(12, CLAIM, bot, '10')]]) {
+    const g = api(c, [a, ...prior, c.payload.comment], undefined, bot, RETRY_CLAIM);
+    assert.equal(await reserveSmoke(g, c, '1', 'apotet'), false);
+    assert.equal(g.writeCount(), 0);
+  }
+  const withoutProof = api(c, [expected, c.payload.comment], undefined, bot, RETRY_CLAIM);
+  assert.equal(await reserveSmoke(withoutProof, c, '1', 'apotet'), false);
+  const g = api(c, [a, expected, c.payload.comment], undefined, bot, RETRY_CLAIM);
+  assert.equal(await reserveSmoke(g, c, '1', 'apotet'), true);
+  assert.equal(await reserveSmoke(g, c, '1', 'apotet'), false);
+  assert.equal(g.writeCount(),1);
 });

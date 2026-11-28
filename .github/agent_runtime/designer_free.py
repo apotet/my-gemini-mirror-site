@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 import urllib.error
 import urllib.request
 from . import policy
@@ -26,8 +27,9 @@ FIELDS = ('promptTokenCount','candidatesTokenCount','thoughtsTokenCount',
 
 
 class Stop(ValueError):
-    def __init__(self, reason, status=None, *, usage=None):
+    def __init__(self, reason, status=None, *, usage=None, retry_after=None):
         self.reason, self.status, self.usage = reason, status, usage
+        self.retry_after = retry_after
         super().__init__(reason)
 
 
@@ -64,7 +66,7 @@ def audit_env(env, event, expected_mode):
                 'pull_request' not in issue and
                 all(owner(u) and u.get('type') == 'User' for u in
                     (obj(event, 'sender'), obj(issue, 'user'), obj(comment, 'user'))) and
-                comment.get('body') == '/gennady smoke' and type(cid) is int and cid > 0 and
+                comment.get('body') in ('/gennady smoke', '/gennady retry-503') and type(cid) is int and cid > 0 and
                 isinstance(comment.get('created_at'), str) and
                 comment.get('created_at') == comment.get('updated_at') and
                 env.get('DESIGNER_COMMENT_RESERVATION') == f'{run_id}:{cid}'):
@@ -122,8 +124,10 @@ def post(raw,key,opener=None):
                 raise Stop('provider_response_too_large',200)
             return body
     except urllib.error.HTTPError as e:
+        retry_after = e.headers.get('Retry-After') if e.code == 503 and e.headers is not None else None
         e.close()
-        raise Stop('quota_or_rate_limit_no_retry' if e.code==429 else 'provider_http_error_no_retry',e.code) from None
+        raise Stop('quota_or_rate_limit_no_retry' if e.code==429 else 'provider_http_error_no_retry',
+                   e.code, retry_after=retry_after) from None
     except (OSError,ValueError) as e:
         if isinstance(e,Stop):
             raise
@@ -205,8 +209,11 @@ def write_report(path,result):
         f.write('\n')
 
 
-def run(mode,report,env=os.environ,send=post,root=ROOT):
-    audit_env(env,json.loads(Path(env.get('GITHUB_EVENT_PATH','')).read_text()),mode)
+def run(mode,report,env=os.environ,send=post,root=ROOT,sleep=time.sleep):
+    event = json.loads(Path(env.get('GITHUB_EVENT_PATH','')).read_text())
+    audit_env(env,event,mode)
+    recovery = (mode == 'smoke' and env.get('GITHUB_EVENT_NAME') == 'issue_comment' and
+                event['comment']['body'] == '/gennady retry-503')
     image_root=root/EVIDENCE.relative_to(ROOT)/mode
     # Manifests and public screenshots are part of the reviewed, default-branch-only workflow checkout.
     manifest_hash=hashlib.sha256((image_root/'manifest.json').read_bytes()).hexdigest()
@@ -222,7 +229,25 @@ def run(mode,report,env=os.environ,send=post,root=ROOT):
     path=Path(report)
     if os.path.lexists(path):
         raise Stop('report_path_already_exists')
-    body=send(raw,key)
+    delays = (15, 45) if recovery else ()
+    for attempt in range(len(delays) + 1):
+        try:
+            body = send(raw,key)
+            break
+        except Stop as exc:
+            if (exc.status != 503 or exc.reason != 'provider_http_error_no_retry' or
+                    attempt == len(delays)):
+                raise
+            wait = delays[attempt]
+            # Never retry sooner than the upstream explicitly requested. A date or
+            # out-of-band delay stops this bounded recovery instead.
+            if exc.retry_after is not None:
+                if not re.fullmatch(r'[0-9]{1,3}', exc.retry_after) or int(exc.retry_after) > 60:
+                    raise
+                wait = max(wait, int(exc.retry_after))
+            print(json.dumps({'status':'recovery_wait', 'http_status':503,
+                              'attempt':attempt + 1, 'next_delay_seconds':wait}), flush=True)
+            sleep(wait)
     design,usage=decode(body,[a.label for a in pkg.images],key)
     result=dict(status='answered',mode=mode,model=MODEL,http_status=200,usage=usage,
         cost_usd=0, cost_basis='official Free tier, same-project confirmation by owner; not invoice data',
