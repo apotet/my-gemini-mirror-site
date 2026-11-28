@@ -70,9 +70,6 @@ def make_payload(pkg, mode, source=()):
         parts.append({'text': 'Image label: '+image.label})
         parts.append({'inlineData': {'mimeType':'image/png','data':base64.b64encode(image.data).decode('ascii')}})
     config = {'responseMimeType':'application/json'}
-    if mode == 'smoke':
-        config['maxOutputTokens'] = 2048  # Shared by visible and thought tokens.
-        config['thinkingConfig'] = {'thinkingLevel': 'LOW'}  # Smoke only; not a separate token budget.
     raw = json.dumps({'systemInstruction':{'parts':[{'text':preamble}]},
         'contents':[{'role':'user','parts':parts}],'generationConfig':config},
         ensure_ascii=False, separators=(',',':'),allow_nan=False).encode('utf-8')

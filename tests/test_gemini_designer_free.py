@@ -46,7 +46,7 @@ class FreeDesigner(unittest.TestCase):
         pkg=SimpleNamespace(images=[SimpleNamespace(label='arp-mobile',data=b'exact-image-bytes')])
         payload=json.loads(d.make_payload(pkg,'smoke'))
         self.assertEqual(payload['generationConfig'], {'responseMimeType':'application/json',
-            'maxOutputTokens':2048, 'thinkingConfig':{'thinkingLevel':'LOW'}})
+        })
         self.assertNotIn('tools',payload)
         self.assertEqual(base64.b64decode(payload['contents'][0]['parts'][-1]['inlineData']['data']),b'exact-image-bytes')
         full=json.loads(d.make_payload(pkg,'pilot',[('public', 'Public lesson')]))
