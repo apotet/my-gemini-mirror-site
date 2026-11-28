@@ -299,6 +299,12 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, onBack, onOpenLe
               <BookOpen className="w-4 h-4 text-cyan-500" />
               <span className="min-w-0">{['l1-poe-injectors-splitters', 'l7-http-status-basics', 'l1-poe-screen-reading'].includes(lesson.id) ? b.heading : <GlossaryText key={textMode} scope={glossaryScope}>{b.heading}</GlossaryText>}</span>
             </h3>
+            {b.visual && (
+              <figure className="mx-auto w-full max-w-[30rem]" data-lesson-visual={b.visual.file}>
+                <ZoomableImage src={`${import.meta.env.BASE_URL}lesson-images/${b.visual.file}`}
+                  alt={b.visual.alt} previewFullHeight className="w-full" />
+              </figure>
+            )}
             <div className={b.image && !b.imageCollapsible ? "grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] md:items-start" : ""}>
               <div className="min-w-0 space-y-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"><FormattedExplanation text={b.body} glossaryScope={glossaryScope} />{b.pinout === 't568' && <EthernetPinout />}</div>
               {b.image && !b.imageCollapsible && <LessonPhoto image={b.image} />}

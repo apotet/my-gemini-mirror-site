@@ -21,6 +21,8 @@ export interface LessonCheatsheet {
 }
 
 export interface LessonBlock {
+  /** Static primary illustration, visible before the explanation. */
+  visual?: LessonCheatsheet;
   cheatsheet?: LessonCheatsheet;
   /** Primary visual aids can start expanded; readers may still collapse them. */
   cheatsheetInitiallyOpen?: boolean;
