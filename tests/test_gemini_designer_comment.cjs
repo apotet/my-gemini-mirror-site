@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke, PROBE, SMOKE, ATTEST, REVOKE, CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -20,6 +20,9 @@ function context(body = SMOKE) {
       issue: { number: 591, id: 6662809692, state: 'open', user: { ...owner } }
     }
   };
+}
+function reserveSmoke(g, c, attempt, actor) {
+  return reserve(g, c, attempt, actor, Date.parse('2026-11-28T10:00:40Z'));
 }
 function api(c, comments, issue = c.payload.issue, claimAuthor = bot) {
   let writes = 0;
@@ -88,10 +91,11 @@ test('no launch on missing, edited, forged, later, or revoked attestation', asyn
   const c = context();
   const edited = comment(10, ATTEST);
   edited.updated_at = '2026-11-28T10:00:21Z';
+  const editedRevoke = { ...comment(3, REVOKE), updated_at: '2026-11-28T10:00:22Z' };
   for (const signals of [
     [], [edited], [comment(10, ATTEST, outsider)], [comment(30, ATTEST, owner, '21')],
     [comment(30, ATTEST, owner, '20')], [comment(10, ATTEST), comment(11, REVOKE)],
-    [comment(10, ATTEST), comment(30, REVOKE, owner, '25')],
+    [comment(10, ATTEST), comment(30, REVOKE, owner, '25')], [comment(10, ATTEST), editedRevoke],
   ]) {
     const g = api(c, [...signals, c.payload.comment]);
     assert.equal(await reserveSmoke(g, c, '1', 'apotet'), false);
@@ -120,4 +124,11 @@ test('unexpected identity or uncertain claim write never authorizes provider', a
   await assert.rejects(reserveSmoke(g, c, '1', 'apotet'), /Unexpected reservation identity/);
   g.rest.issues.createComment = async () => { throw new Error('transport failed'); };
   await assert.rejects(reserveSmoke(g, c, '1', 'apotet'), /transport failed/);
+});
+
+test('expired proof cannot authorize a fresh or queued request', async () => {
+  const c = context();
+  const g = api(c, [comment(10, ATTEST), c.payload.comment]);
+  assert.equal(await reserve(g, c, '1', 'apotet', Date.parse('2026-11-28T10:30:01Z')), false);
+  assert.equal(g.writeCount(), 0);
 });
