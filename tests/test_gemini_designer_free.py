@@ -175,3 +175,41 @@ class FreeDesigner(unittest.TestCase):
             self.assertIn('src/data/lessons/tcpip-model.ts',combined)
             self.assertNotIn('src/data/lessons/l3-arp.ts',combined)
             self.assertEqual(len([p for p in request['contents'][0]['parts'] if 'inlineData' in p]),13)
+
+class CommentDesigner(unittest.TestCase):
+    def test_real_entry_point_sends_one_mock_for_reserved_owner_smoke_only(self):
+        from copy import deepcopy
+        owner = {'login':'apotet','id':332418397,'type':'User'}
+        event = {'action':'created', 'repository':{'full_name':d.REPO}, 'sender':owner.copy(),
+                 'issue':{'number':591,'id':6662809692,'state':'open','user':owner.copy()},
+                 'comment':{'id':6789,'body':'/gennady smoke','user':owner.copy(),
+                            'created_at':'2026-11-28T10:00:00Z','updated_at':'2026-11-28T10:00:00Z'}}
+        with TemporaryDirectory() as dname:
+            p = Path(dname)
+            event_path, report = p/'event.json', p/'report.json'
+            env = dict(ENV, GITHUB_EVENT_NAME='issue_comment', GITHUB_EVENT_PATH=str(event_path),
+                       DESIGNER_COMMENT_RESERVATION='1234:6789')
+            event_path.write_text(json.dumps(event))
+            sender = Mock(return_value=mock_response())
+            self.assertEqual(d.run('smoke', report, env=env, send=sender)['http_status'], 200)
+            sender.assert_called_once()
+            report.unlink()
+            attempts = []
+            for patch_env in ({'DESIGNER_COMMENT_RESERVATION':''}, {'DESIGNER_COMMENT_RESERVATION':'1233:6789'},
+                              {'DESIGNER_COMMENT_RESERVATION':'1234:7890'}, {'GITHUB_RUN_ATTEMPT':'2'}):
+                attempts.append((event, dict(env, **patch_env), 'smoke'))
+            attempts.append((event, env, 'pilot'))
+            for field, key, value in (('issue','number',590), ('issue','pull_request',{}),
+                                      ('issue','state','closed'), ('comment','body','/gennady check'),
+                                      ('comment','body','/GENNADY SMOKE'), ('comment','id',True),
+                                      ('sender','type','Bot'), ('comment','updated_at','different')):
+                wrong = deepcopy(event)
+                wrong[field][key] = value
+                attempts.append((wrong, env, 'smoke'))
+            for body, state, mode in attempts:
+                event_path.write_text(json.dumps(body))
+                sender = Mock()
+                with self.assertRaisesRegex(d.Stop, 'owner_free_project_dispatch_required'):
+                    d.run(mode, report, env=state, send=sender)
+                sender.assert_not_called()
+                self.assertFalse(report.exists())
