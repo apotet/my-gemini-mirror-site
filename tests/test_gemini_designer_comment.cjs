@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM, VISUAL, VISUAL_CLAIM, VISUAL_RETRY, VISUAL_RETRY_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -181,6 +181,18 @@ test('visual acceptance is one owner-only slot, distinct from pilot', async () =
     assert.equal(g.writeCount(),0);
   }
   const g = api(c, [a,comment(7237907673,PILOT_CLAIM,bot),c.payload.comment],undefined,bot,VISUAL_CLAIM);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+  assert.equal(g.writeCount(),1);
+});
+
+test('exact visual 503 recovery consumes its own slot only after original claim', async () => {
+  const c = context(VISUAL_RETRY);
+  assert.equal(authorize(c,'1','apotet'),'retry-visual');
+  const a = comment(10,ATTEST);
+  const noPrior = api(c,[a,c.payload.comment],undefined,bot,VISUAL_RETRY_CLAIM);
+  assert.equal(await reserveSmoke(noPrior,c,'1','apotet'),false);
+  const g = api(c,[a,comment(7238286113,VISUAL_CLAIM,bot),c.payload.comment],undefined,bot,VISUAL_RETRY_CLAIM);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
   assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
   assert.equal(g.writeCount(),1);
