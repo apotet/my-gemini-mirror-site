@@ -26,8 +26,8 @@ FIELDS = ('promptTokenCount','candidatesTokenCount','thoughtsTokenCount',
 
 
 class Stop(ValueError):
-    def __init__(self, reason, status=None):
-        self.reason, self.status = reason, status
+    def __init__(self, reason, status=None, *, usage=None):
+        self.reason, self.status, self.usage = reason, status, usage
         super().__init__(reason)
 
 
@@ -71,7 +71,8 @@ def make_payload(pkg, mode, source=()):
         parts.append({'inlineData': {'mimeType':'image/png','data':base64.b64encode(image.data).decode('ascii')}})
     config = {'responseMimeType':'application/json'}
     if mode == 'smoke':
-        config['maxOutputTokens'] = 2048  # A small connectivity test, not a limit on the designer pilot.
+        config['maxOutputTokens'] = 2048  # Shared by visible and thought tokens.
+        config['thinkingConfig'] = {'thinkingLevel': 'LOW'}  # Smoke only; not a separate token budget.
     raw = json.dumps({'systemInstruction':{'parts':[{'text':preamble}]},
         'contents':[{'role':'user','parts':parts}],'generationConfig':config},
         ensure_ascii=False, separators=(',',':'),allow_nan=False).encode('utf-8')
@@ -108,6 +109,24 @@ def post(raw,key,opener=None):
         raise Stop('provider_transport_uncertain_no_retry') from None
 
 
+def token_usage(obj, *, include_image=False):
+    usage = obj.get('usageMetadata') if isinstance(obj, dict) else None
+    if not isinstance(usage, dict):
+        return None
+
+    def token_count(n):
+        return type(n) is int and 0 <= n <= 2_147_483_647
+
+    counts = {field: usage[field] for field in FIELDS if token_count(usage.get(field))}
+    details = usage.get('promptTokensDetails')
+    if include_image and isinstance(details, list):
+        image = [row.get('tokenCount') for row in details
+                 if isinstance(row, dict) and row.get('modality') == 'IMAGE']
+        if len(image) == 1 and token_count(image[0]) and image[0] > 0:
+            counts['promptImageTokenCount'] = image[0]
+    return counts or None
+
+
 def decode(raw,labels,key):
     def unique(items):
         out={}
@@ -120,11 +139,12 @@ def decode(raw,labels,key):
         return json.loads(v,object_pairs_hook=unique)
     def string(v):
         return isinstance(v,str) and bool(v.strip())
+    obj = None
     try:
         obj = parse(raw)
         [candidate] = obj['candidates']
         if candidate['finishReason'] != 'STOP':
-            raise Stop('nonfinal_response_no_retry',200)
+            raise Stop('nonfinal_response_no_retry', 200, usage=token_usage(obj, include_image=True))
         texts = []
         for p in candidate['content']['parts']:
             if set(p)-{'text','thought','thoughtSignature'} or not isinstance(p.get('text'),str):
@@ -151,13 +171,11 @@ def decode(raw,labels,key):
         for secret in (key,base64.b64encode(key.encode()).decode(),base64.urlsafe_b64encode(key.encode()).decode()):
             if secret and (secret in checked or secret.rstrip('=') in checked):
                 raise ValueError
-        usage = obj.get('usageMetadata')
-        counts = {f:usage[f] for f in FIELDS if f in usage and type(usage[f]) is int and usage[f]>=0} if isinstance(usage,dict) else {}
-        return data, counts or None
+        return data, token_usage(obj)
     except Stop:
         raise
     except (KeyError,TypeError,ValueError,AttributeError,RecursionError):
-        raise Stop('invalid_or_sensitive_response_no_retry',200) from None
+        raise Stop('invalid_or_sensitive_response_no_retry', 200, usage=token_usage(obj, include_image=True)) from None
 
 
 def write_report(path,result):
@@ -206,7 +224,7 @@ def main():
     except Stop as e:
         # Never print response bodies, exceptions containing paths, credentials or input bytes.
         print(json.dumps({'status':'stopped','model':MODEL,'reason':e.reason,'http_status':e.status,
-                          'cost_usd':None,'usage':None}))
+                          'cost_usd':None,'usage':e.usage}))
         return 1
     except (ValueError,OSError,IntakeError,TypeError):
         print('{"status":"stopped","reason":"input_or_runtime_invalid_no_retry","usage":null,"cost_usd":null}')

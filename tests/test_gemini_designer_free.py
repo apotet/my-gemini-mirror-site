@@ -45,11 +45,12 @@ class FreeDesigner(unittest.TestCase):
     def test_native_inline_no_tools_no_paid_fallback_no_pilot_output_cap(self):
         pkg=SimpleNamespace(images=[SimpleNamespace(label='arp-mobile',data=b'exact-image-bytes')])
         payload=json.loads(d.make_payload(pkg,'smoke'))
-        self.assertEqual(payload['generationConfig']['maxOutputTokens'],2048)
+        self.assertEqual(payload['generationConfig'], {'responseMimeType':'application/json',
+            'maxOutputTokens':2048, 'thinkingConfig':{'thinkingLevel':'LOW'}})
         self.assertNotIn('tools',payload)
         self.assertEqual(base64.b64decode(payload['contents'][0]['parts'][-1]['inlineData']['data']),b'exact-image-bytes')
         full=json.loads(d.make_payload(pkg,'pilot',[('public', 'Public lesson')]))
-        self.assertNotIn('maxOutputTokens',full['generationConfig'])
+        self.assertEqual(full['generationConfig'], {'responseMimeType':'application/json'})
         self.assertNotIn('tools',full)
 
     def test_fixed_endpoint_and_quota_never_retry(self):
@@ -79,6 +80,62 @@ class FreeDesigner(unittest.TestCase):
                        mock_response(dict(RESULT,image_observations=[])),mock_response(finish='MAX_TOKENS')):
             with self.assertRaises(d.Stop):
                 d.decode(values,['arp-mobile'],KEY)
+
+    def test_stopped_http_200_retains_only_sanitized_usage(self):
+        for finish, result, reason in (
+                ('MAX_TOKENS', RESULT, 'nonfinal_response_no_retry'),
+                ('STOP', dict(RESULT, next_iteration=KEY), 'invalid_or_sensitive_response_no_retry'),
+                ('STOP', '', 'invalid_or_sensitive_response_no_retry')):
+            with self.subTest(finish=finish, reason=reason):
+                raw = json.loads(mock_response(result, finish))
+                raw['usageMetadata'] = {
+                    'promptTokenCount': 860, 'candidatesTokenCount': 0, 'thoughtsTokenCount': 2047,
+                    'totalTokenCount': 2907, 'cachedContentTokenCount': True,
+                    'unknown': KEY, 'promptTokensDetails': [
+                        {'modality':'TEXT', 'tokenCount':100}, {'modality':'IMAGE', 'tokenCount':760, 'echo':KEY}]}
+                if result == '':
+                    raw.pop('candidates')  # HTTP 200 with usage but no answer body.
+                with self.assertRaisesRegex(d.Stop, reason) as caught:
+                    d.decode(json.dumps(raw).encode(), ['arp-mobile'], KEY)
+                self.assertEqual(caught.exception.status, 200)
+                self.assertEqual(caught.exception.usage, {'promptTokenCount':860, 'candidatesTokenCount':0,
+                    'thoughtsTokenCount':2047, 'totalTokenCount':2907, 'promptImageTokenCount':760})
+                self.assertNotIn(KEY, str(caught.exception))
+
+    def test_ambiguous_missing_or_invalid_usage_is_not_exported(self):
+        for image in (0, -1, True, 5.0, '5', 2**31):
+            with self.subTest(image=image):
+                self.assertIsNone(d.token_usage({'usageMetadata':{'promptTokensDetails':[
+                    {'modality':'IMAGE','tokenCount':image}]}}, include_image=True))
+        counts = d.token_usage({'usageMetadata':{'promptTokenCount':0,'cachedContentTokenCount':2**31,
+            'thoughtsTokenCount':True,'totalTokenCount':5.0}})
+        self.assertEqual(counts, {'promptTokenCount':0})
+        self.assertIsNone(d.token_usage({'usageMetadata':{'promptTokensDetails':[
+            {'modality':'IMAGE','tokenCount':5},{'modality':'IMAGE','tokenCount':6}]}}, include_image=True))
+        with self.assertRaises(d.Stop) as caught:
+            d.decode(b'{', ['arp-mobile'], KEY)
+        self.assertIsNone(caught.exception.usage)
+
+    def test_cli_http_200_failure_logs_counts_once_without_writing_report(self):
+        with TemporaryDirectory() as dname:
+            event = Path(dname)/'event.json'
+            event.write_text(json.dumps(EVENT))
+            out = Path(dname)/'report.json'
+            response = json.loads(mock_response(finish='MAX_TOKENS'))
+            response['responseId'] = KEY
+            sender = Mock(return_value=json.dumps(response).encode())
+            run = d.run
+            def offline(mode, report):
+                return run(mode, report, env=dict(ENV,GITHUB_EVENT_PATH=str(event)), send=sender)
+            with patch.object(d, 'run', side_effect=offline), patch('sys.argv',
+                    ['designer_free','--mode','smoke','--report',str(out)]), \
+                    patch('sys.stdout', new_callable=io.StringIO) as stream:
+                self.assertEqual(d.main(), 1)
+            self.assertEqual(json.loads(stream.getvalue()), {'status':'stopped','model':d.MODEL,
+                'reason':'nonfinal_response_no_retry','http_status':200,'cost_usd':None,
+                'usage':{'promptTokenCount':220,'candidatesTokenCount':50,'thoughtsTokenCount':15,'totalTokenCount':285}})
+            sender.assert_called_once()
+            self.assertFalse(out.exists())
 
     def test_actual_public_manifests_and_mock_full_run(self):
         with TemporaryDirectory() as dname:
@@ -113,7 +170,7 @@ class FreeDesigner(unittest.TestCase):
             pilot=d.run('pilot',p/'pilot.json',env=env,send=full)
             self.assertEqual([x['label'] for x in pilot['image_provenance']],full_labels)
             request=json.loads(full.call_args.args[0])
-            self.assertNotIn('maxOutputTokens',request['generationConfig'])
+            self.assertEqual(request['generationConfig'], {'responseMimeType':'application/json'})
             combined=' '.join(x.get('text','') for x in request['contents'][0]['parts'])
             self.assertIn('src/data/lessons/tcpip-model.ts',combined)
             self.assertNotIn('src/data/lessons/l3-arp.ts',combined)
