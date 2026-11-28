@@ -220,6 +220,11 @@ async function zoom(page, figure, path) {
   await expanded.waitFor();
   await expanded.evaluate(node=>node.decode());
   assert.equal(await expanded.evaluate(node=>node.currentSrc),preview,'fullscreen uses the visible diagram variant');
+  await dialog.locator('[data-photo-viewer-pan]').click();
+  await page.keyboard.press('Tab');
+  assert(await dialog.evaluate(el=>el.contains(document.activeElement)),'pointer then Tab must stay inside zoom dialog');
+  await page.keyboard.press('Shift+Tab');
+  assert(await dialog.evaluate(el=>el.contains(document.activeElement)),'pointer then reverse Tab stays inside zoom dialog');
   const zoomIn=openButton(dialog,'Увеличить фото');
   const before=await expanded.boundingBox();
   await zoomIn.focus();

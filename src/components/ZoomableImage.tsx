@@ -91,14 +91,22 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
       const first = focusables[0];
       const last = focusables.at(-1);
       if (!first || !last) return;
-      if ((e.shiftKey && document.activeElement === first) || (!e.shiftKey && document.activeElement === last)) {
+      if (!dialog.contains(document.activeElement) ||
+          (e.shiftKey && document.activeElement === first) || (!e.shiftKey && document.activeElement === last)) {
         e.preventDefault();
         (e.shiftKey ? last : first).focus();
       }
     };
-    dialog?.addEventListener('keydown', contain);
+    // A pointer on the non-focusable pan viewport can move browser focus
+    // back to the surrounding lesson. Keep keyboard navigation in the modal.
+    const containFocus = (e: FocusEvent) => {
+      if (dialog && e.target instanceof Node && !dialog.contains(e.target)) closeRef.current?.focus();
+    };
+    document.addEventListener('keydown', contain, true);
+    document.addEventListener('focusin', containFocus);
     return () => {
-      dialog?.removeEventListener('keydown', contain);
+      document.removeEventListener('keydown', contain, true);
+      document.removeEventListener('focusin', containFocus);
       opener?.focus({ preventScroll: true });
     };
   }, [open, manageDialogFocus]);
