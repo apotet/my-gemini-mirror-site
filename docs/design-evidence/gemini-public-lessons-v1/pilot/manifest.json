@@ -1,9 +1,9 @@
 {
   "version": 1,
   "task_id": "netops-public-tcpip-design",
-  "round_id": "tcpip-pilot-v1",
+  "round_id": "tcpip-pilot-v2",
   "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c",
-  "brief": "Independent UX and teaching-design review of public TCP/IP lesson.",
+  "brief": "Independent engineering, instructional and visual audit of the public TCP/IP lesson at 375, 768 and 1440 px.",
   "context": [],
   "images": [
     {
@@ -32,6 +32,34 @@
       "path": "tcpip-mobile-dark-pro.png",
       "mime_type": "image/png",
       "sha256": "4f2b4a5dbe3a1177374032bda2d94c1fbd12e66007e1990792346ec2e07d9991",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-tablet-light-plain",
+      "path": "tcpip-tablet-light-plain.png",
+      "mime_type": "image/png",
+      "sha256": "39677c472e0112d3247e96969dec6ea9512e4c811ee451b11ab757afe08fabc7",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-tablet-light-pro",
+      "path": "tcpip-tablet-light-pro.png",
+      "mime_type": "image/png",
+      "sha256": "8b8e196c8971f3495e36202db1cd39ef36f3ae005a9a12909a93f7675e343403",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-tablet-dark-plain",
+      "path": "tcpip-tablet-dark-plain.png",
+      "mime_type": "image/png",
+      "sha256": "07aa6d2be2d1e60ba756bfd90ca623ebfbb2e7d27cd7a7788ecb6c99bd25f4e0",
+      "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
+    },
+    {
+      "label": "tcpip-tablet-dark-pro",
+      "path": "tcpip-tablet-dark-pro.png",
+      "mime_type": "image/png",
+      "sha256": "b0794190921252a68c6926bac8102adf989ad5615795c30e2a42a6570d698a8d",
       "source_sha": "4a9b2f0c0aed052dbfcdca5b08a6a3a4487aa51c"
     },
     {

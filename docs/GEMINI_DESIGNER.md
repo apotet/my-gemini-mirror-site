@@ -30,7 +30,7 @@ Do not edit or remove the attestation, revocation or reservation comments. To
 withdraw consent, post a new revoke before reservation; once reserved, cancel
 the workflow to stop queued work (a request already sent cannot be withdrawn).
 The separate owner-only manual dispatch is unchanged. Do not launch the same
-smoke through both entry points. This comment route cannot start the full pilot.
+smoke through both entry points. The smoke command cannot start the full pilot.
 
 For the reviewed ARP smoke HTTP 503 in run 46132217797, the owner separately
 authorized one recovery window via `/gennady retry-503` and the same current
@@ -42,3 +42,12 @@ after a definite HTTP 503. A numeric Retry-After can extend a pause to at most
 incomplete responses, uncertain transport, reruns, paid fallback and the full
 pilot are not retried by this command. The original and manual paths remain
 single-request.
+
+The confirmed clean visual result of ARP recovery 46132875247 enables one
+separate owner command, `/gennady pilot-tcpip`, on #591. It keeps that
+same-project Free-tier attestation, checks the original recovery reservation
+and published verified result, and consumes a separate one-use TCP/IP
+reservation. Pilot never retries automatically and cannot edit any lesson.
+The evidence includes actual 375, 768 and 1440 px views, both color themes and
+reading modes, two extra diagram views and the three personally accepted
+benchmarks. All observations and design suggestions are for review only.

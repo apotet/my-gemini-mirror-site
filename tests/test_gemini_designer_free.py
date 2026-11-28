@@ -161,7 +161,7 @@ class FreeDesigner(unittest.TestCase):
                 d.run('smoke',p/'none.json',env=dict(env,GEMINI_API_KEY=''),send=no_key)
             no_key.assert_not_called()
             event.write_text(json.dumps(dict(EVENT,inputs=dict(EVENT['inputs'],mode='pilot'))))
-            full_labels=[f'tcpip-{device}-{theme}-{mode}' for device in ('mobile','desktop')
+            full_labels=[f'tcpip-{device}-{theme}-{mode}' for device in ('mobile','tablet','desktop')
                          for theme in ('light','dark') for mode in ('plain','pro')] + [
                              'tcpip-mobile-dark-diagram','tcpip-desktop-light-diagram',
                              'poe-connected','poe-budget','poe-splitter']
@@ -174,7 +174,7 @@ class FreeDesigner(unittest.TestCase):
             combined=' '.join(x.get('text','') for x in request['contents'][0]['parts'])
             self.assertIn('src/data/lessons/tcpip-model.ts',combined)
             self.assertNotIn('src/data/lessons/l3-arp.ts',combined)
-            self.assertEqual(len([p for p in request['contents'][0]['parts'] if 'inlineData' in p]),13)
+            self.assertEqual(len([p for p in request['contents'][0]['parts'] if 'inlineData' in p]),17)
 
 class CommentDesigner(unittest.TestCase):
     def test_real_entry_point_sends_one_mock_for_reserved_owner_smoke_only(self):
@@ -261,3 +261,25 @@ class CommentDesigner(unittest.TestCase):
                 d.run('smoke',report,env=env,send=send,sleep=sleep)
             send.assert_called_once()
             sleep.assert_not_called()
+
+    def test_pilot_command_has_own_mode_and_never_retries(self):
+        owner = {'login':'apotet','id':332418397,'type':'User'}
+        event = {'action':'created', 'repository':{'full_name':d.REPO}, 'sender':owner.copy(),
+                 'issue':{'number':591,'id':6662809692,'state':'open','user':owner.copy()},
+                 'comment':{'id':6789,'body':'/gennady pilot-tcpip','user':owner.copy(),
+                            'created_at':'2026-11-28T10:00:00Z','updated_at':'2026-11-28T10:00:00Z'}}
+        with TemporaryDirectory() as dname:
+            p=Path(dname)
+            event_path, report = p/'event.json', p/'report.json'
+            env = dict(ENV, GITHUB_EVENT_NAME='issue_comment', GITHUB_EVENT_PATH=str(event_path),
+                       DESIGNER_COMMENT_RESERVATION='1234:6789')
+            event_path.write_text(json.dumps(event))
+            sender, sleep = Mock(side_effect=d.Stop('provider_http_error_no_retry',503)), Mock()
+            with self.assertRaisesRegex(d.Stop,'owner_free_project_dispatch_required'):
+                d.run('smoke',report,env=env,send=sender,sleep=sleep)
+            sender.assert_not_called()
+            with self.assertRaisesRegex(d.Stop,'provider_http_error_no_retry'):
+                d.run('pilot',report,env=env,send=sender,sleep=sleep)
+            sender.assert_called_once()
+            sleep.assert_not_called()
+            self.assertFalse(report.exists())

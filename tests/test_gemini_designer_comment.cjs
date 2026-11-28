@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM } =
+const { authorize, reserveSmoke: reserve, PROBE, SMOKE, ATTEST, REVOKE, CLAIM, RETRY, RETRY_CLAIM, PILOT, PILOT_CLAIM } =
   require('../scripts/gemini_designer_comment.cjs');
 
 const owner = { login: 'apotet', id: 332418397, type: 'User' };
@@ -150,5 +150,22 @@ test('recovery needs the exact prior bot claim, fresh proof and its own one-shot
   const g = api(c, [a, expected, c.payload.comment], undefined, bot, RETRY_CLAIM);
   assert.equal(await reserveSmoke(g, c, '1', 'apotet'), true);
   assert.equal(await reserveSmoke(g, c, '1', 'apotet'), false);
+  assert.equal(g.writeCount(),1);
+});
+
+test('TCP/IP pilot has its own one-shot claim and demands reviewed visual smoke', async () => {
+  const c = context(PILOT);
+  assert.equal(authorize(c, '1', 'apotet'), 'pilot');
+  const a = comment(10, ATTEST);
+  const reserved = comment(7237579922, RETRY_CLAIM, bot, '10');
+  const result = comment(7237606629, '<!-- fedot-gemini-recovery-result:v1:46132875247 -->\nPASS', owner, '11');
+  for (const e of [[reserved], [result], [reserved, {...result, user:outsider}]]) {
+    const g = api(c,[a,...e,c.payload.comment],undefined,bot,PILOT_CLAIM);
+    assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
+    assert.equal(g.writeCount(),0);
+  }
+  const g = api(c,[a,reserved,result,c.payload.comment],undefined,bot,PILOT_CLAIM);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),true);
+  assert.equal(await reserveSmoke(g,c,'1','apotet'),false);
   assert.equal(g.writeCount(),1);
 });
