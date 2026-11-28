@@ -1,7 +1,8 @@
 import { applyInDepthExplanation } from './inDepth';
 import { AUDITED_QUESTION_EXPLANATIONS } from './auditedQuestionExplanations';
 import { explanationText } from '../utils/explanationFormat';
-import { explainGeneratedMask, ipv4CalculationPrefix } from './ipv4ExplanationPractice';
+import { explainGeneratedMask, getIpv4CalculatorExample, ipv4CalculationPrefix } from './ipv4ExplanationPractice';
+import { getIpv6QuestionPractice, type Ipv6PracticeTarget } from './ipv6Practice';
 import { EXPERT_CASES_177 } from './expertCases177';
 import { DIAGNOSTIC_CASES_177 } from './diagnosticCases177';
 import { MONITORING_CASES } from './monitoringCases';
@@ -43,9 +44,10 @@ export interface QuestionDeepDive {
     enabled: boolean;
     reason: string;
     targetPrefix?: number;
+    targetAddress?: string;
     targetMode?: 'calc' | 'trainer';
   };
-  ipv6Practice?: { targetMode: 'concept' | 'type' };
+  ipv6Practice?: Ipv6PracticeTarget;
   keyTakeaways: string[];
   nextStudy?: string;
 }
@@ -625,7 +627,7 @@ const HISTORICAL_DIAGNOSTIC_DEEP: Partial<Record<string, typeof INDIVIDUAL_DEEP[
 
 const INDIVIDUAL_DEEP: Record<
   string,
-  { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; practicalTip?: string; ipv6Practice?: boolean; professional?: QuestionDeepDive['professional']; practiceLink?: PracticeLink }
+  { brief: string; deep: string; plain?: string; pro?: string; glossaryInProfessional?: boolean; trap?: string; next?: string; practicalTip?: string; professional?: QuestionDeepDive['professional']; practiceLink?: PracticeLink }
 > = {
   ...ADVANCED_INDIVIDUAL_DEEP,
   ...APPLIED_INDIVIDUAL_DEEP,
@@ -723,6 +725,7 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
   const individual: (typeof INDIVIDUAL_DEEP)[string] | undefined = historical ? HISTORICAL_DIAGNOSTIC_DEEP[question.id] : INDIVIDUAL_DEEP[question.id] ?? explainGeneratedMask(question.id);
   const diagnostic = historical ? undefined : DIAGNOSTIC_EXPLANATIONS[question.id];
   const ipv4Prefix = ipv4CalculationPrefix(question.id);
+  const ipv4Example = getIpv4CalculatorExample(question);
   const audited = historical ? undefined : AUDITED_QUESTION_EXPLANATIONS[question.id];
   const baseExpl = audited?.brief ?? explanationText(question.explanation) ?? '';
 
@@ -777,14 +780,14 @@ export function getQuestionDeepDive(question: Question): QuestionDeepDive {
       : getPracticalTip(category))))),
     memorizationRule: question.remember,
     visualDiagram: generateDiagramForQuestion(question),
-    ipv4Practice: ipv4Prefix === undefined ? undefined : {
+    ipv4Practice: ipv4Example === undefined ? undefined : {
       enabled: true,
       reason: 'Вопрос опирается на расчёт маски или границ подсети.',
-      targetPrefix: ipv4Prefix,
+      targetPrefix: ipv4Example.prefix,
+      targetAddress: ipv4Example.address,
       targetMode: 'calc',
     },
-    ipv6Practice: question.id === 'l3-d06' ? { targetMode: 'type' }
-      : individual?.ipv6Practice ? { targetMode: 'concept' } : undefined,
+    ipv6Practice: getIpv6QuestionPractice(question.id),
     keyTakeaways: generateKeyTakeaways(question, correctText, ipv4Prefix !== undefined),
     nextStudy: individual?.next,
   };

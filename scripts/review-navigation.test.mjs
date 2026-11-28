@@ -16,7 +16,7 @@ await build({ stdin: { contents: `
   export { getQuestionDeepDive } from './src/data/questionExplanations';
   export { getLessonForQuestion, getLesson } from './src/data/lessons';
   export const render = question => renderToStaticMarkup(React.createElement(EngineeringReview,
-    {question, onOpenLesson() {}}));
+    {question, onOpenLesson() {}, onNavigateToIpv4() {}, onNavigateToIpv6() {}}));
   export const renderTheory = question => renderToStaticMarkup(React.createElement(TheoryRazbory,
     {initialQuestionId: question.id, onOpenLesson() {}, onNavigateToIpv4() {}, onNavigateToIpv6() {}}));
   // Invoke the actual stateless button's event prop, not a duplicated mapping or HTML string.
@@ -28,9 +28,18 @@ const { ALL_QUESTIONS, getQuestionDeepDive, getLessonForQuestion, getLesson, ren
   await import(pathToFileURL(outfile).href);
 const missingLessonIds = [], missingProfessionalIds = [];
 const materialCombinations = new Set();
+const conceptsByQuestion = {
+  'review-ndp-1': 'ndp-multicast', 'review-ndp-2': 'ra-router-lifetime',
+  'review-ndp-3': 'dad-duplicate', 'review-slaac-4': 'slaac-compose',
+  'review-slaac-5': 'slaac-prefix-flags', 'review-slaac-6': 'slaac-invalid-lifetime',
+};
 const escape = value => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#x27;');
 for (const q of ALL_QUESTIONS) {
   const before = JSON.stringify(q), lesson = getLessonForQuestion(q.id), deep = getQuestionDeepDive(q);
+  const exercise = conceptsByQuestion[q.id];
+  const ipv6 = q.id === 'l3-d06' ? { targetMode: 'type' }
+    : exercise ? { targetMode: 'concept', exercise } : undefined;
+  assert.deepEqual(deep.ipv6Practice, ipv6, q.id + ': exact IPv6 practice context');
   const calls = [];
   const button = lessonButton({questionId: q.id, onOpenLesson: (...args) => calls.push(args)});
   if (lesson) {
@@ -44,6 +53,7 @@ for (const q of ALL_QUESTIONS) {
   }
   for (const renderSurface of [render, renderTheory]) {
     const html = renderSurface(q);
+    assert.equal(html.includes('Открыть IPv6-тренажёр'), Boolean(ipv6), q.id);
     materialCombinations.add(`${Boolean(lesson)}:${Boolean(deep.professional?.deep.trim())}`);
     if (lesson) {
       assert.equal(getLesson(lesson.id)?.id, lesson.id);
@@ -79,6 +89,37 @@ for (const fixture of reviewMaterialFixtures) {
   assert.deepEqual(calls, fixture.lessonId ? [[fixture.lessonId, q.id]] : [], q.id + ': independently specified lesson ID');
 }
 assert.equal(new Set(reviewMaterialFixtures.map(f => `${Boolean(f.lessonId)}:${f.professional}`)).size, 4);
+const find = id => {
+  const q = ALL_QUESTIONS.find(x => x.id === id);
+  assert.ok(q, id);
+  return { question: q, deep: getQuestionDeepDive(q) };
+};
+for (const [id, prefix, address] of [
+  ['l3-06', 24, undefined],
+  ['l3-08', 26, '192.168.10.70'],
+  ['l3-11', 28, '10.0.0.32'],
+  ['new-l3-23', 23, '192.168.10.0'],
+  ['gen-bin-dec-252', 22, '172.20.6.14'],
+  ['gen-bc-26-1', 26, '192.168.60.130'],
+  ['gen-net-26-4', 26, '192.168.70.96'],
+  ['gen-bc-26-4', 26, '10.60.0.128'],
+  ['gen-hosts-27', 26, undefined],
+]) {
+  const { question, deep: { ipv4Practice: route } } = find(id);
+  for (const surface of [render, renderTheory]) assert.ok(surface(question).includes('Открыть IPv4-тренажёр'), id);
+  assert.deepEqual([route?.targetMode, route?.targetPrefix, route?.targetAddress], ['calc', prefix, address], id);
+}
+const unsupportedIpv4 = [
+  'gen-net-25-2', 'gen-bc-25-2', 'gen-bc-25-3', 'gen-bc-25-4', 'gen-net-25-3', 'gen-net-25-4',
+];
+for (const id of [...unsupportedIpv4, 'l3-15', 'review-ndp-1']) {
+  const { question, deep } = find(id);
+  assert.equal(deep.ipv4Practice, undefined, id);
+  for (const surface of [render, renderTheory]) assert.ok(!surface(question).includes('Открыть IPv4-тренажёр'), id);
+}
+for (const id of unsupportedIpv4) {
+  assert.equal(getLessonForQuestion(id)?.id, 'l3-subnets', 'practice filtering must not remove lesson links');
+}
 const audit = { baseCommit: '0eb8f5b11b62f949b48554236664ab33f2de3957', totalQuestions: ALL_QUESTIONS.length,
   lessonCoverage: ALL_QUESTIONS.length - missingLessonIds.length,
   professionalCoverage: ALL_QUESTIONS.length - missingProfessionalIds.length,

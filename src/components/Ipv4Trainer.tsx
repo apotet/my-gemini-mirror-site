@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   Calculator,
   Binary,
@@ -93,11 +93,13 @@ interface QuestionTask {
 
 interface Ipv4TrainerProps {
   initialPrefix?: number;
+  initialAddress?: string;
   initialSubTab?: Ipv4SubTab;
 }
 
 export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
   initialPrefix,
+  initialAddress,
   initialSubTab,
 }) => {
   const [subTab, setSubTab] = useState<Ipv4SubTab>(initialSubTab || 'practice');
@@ -109,18 +111,26 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
   const decimalValue = bits.reduce((sum, b, i) => sum + b * bitWeights[i], 0);
 
   // Subnet Calculator State
-  const [calcIp, setCalcIp] = useState<string>('192.168.10.45');
+  const [calcIp, setCalcIp] = useState<string>(initialAddress ?? '192.168.10.45');
   const [calcPrefix, setCalcPrefix] = useState<number>(initialPrefix || 27);
+
+  const calcHeading = useRef<HTMLHeadingElement>(null);
+  useLayoutEffect(() => {
+    if (initialSubTab !== 'calculator') return;
+    calcHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    calcHeading.current?.focus({ preventScroll: true });
+  }, [initialSubTab]);
 
   // Update when props change from external navigation
   useEffect(() => {
+    if (initialAddress) setCalcIp(initialAddress);
     if (initialPrefix) {
       setCalcPrefix(initialPrefix);
     }
     if (initialSubTab) {
       setSubTab(initialSubTab);
     }
-  }, [initialPrefix, initialSubTab]);
+  }, [initialAddress, initialPrefix, initialSubTab]);
 
   // Interactive Practice State
   const [currentTask, setCurrentTask] = useState<QuestionTask | null>(null);
@@ -650,7 +660,7 @@ export const Ipv4Trainer: React.FC<Ipv4TrainerProps> = ({
       {subTab === 'calculator' && (
         <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#091524] border border-cyan-500/20 shadow-2xl space-y-6">
           <div>
-            <h2 className="text-xl text-slate-900 dark:text-white flex items-center gap-2 font-sans font-bold">
+            <h2 ref={calcHeading} tabIndex={-1} className="scroll-mt-24 text-xl text-slate-900 dark:text-white flex items-center gap-2 font-sans font-bold">
               <Calculator className="w-5 h-5 text-cyan-700 dark:text-cyan-400" />
               Интерактивный калькулятор подсетей IPv4
             </h2>
